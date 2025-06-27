@@ -1,3 +1,2 @@
-Gramatica.tab.h
-Gramatica.tab.c
-Gramatica.output
+parser.output
+parser.tab.c
