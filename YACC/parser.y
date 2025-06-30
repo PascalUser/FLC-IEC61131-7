@@ -3,6 +3,8 @@
 #include <stdlib.h>
 %}
 
+%glr-parser
+
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
 %token FUZZIFY END_FUZZIFY
 %token DEFUZZIFY END_DEFUZZIFY
@@ -16,7 +18,7 @@
 %token IDENTIFIER INTEGER_LITERAL REAL_LITERAL
 %token PRAGMA
 
-/* -------------------------------------------------- */
+/* ----------------------- Tokens Anexo B --------------------------- */
 
 %token VAR_INPUT RETAIN NON_RETAIN END_VAR BOOL R_EDGE F_EDGE VAR_OUTPUT VAR CONSTANT
 %token STRING WSTRING BYTE WORD DWORD LWORD TIME TIME_OF_DAY TOD DATE DATE_AND_TIME DT 
@@ -646,7 +648,7 @@ function_block_type_name:
 ;
 
 standard_function_block_name:
-    // This would be defined in 2.5.2.3, placeholder for now
+    // VER QUE HACEMOS
     IDENTIFIER
 ;
 
