@@ -5,49 +5,30 @@
 
 %}
 
-POINT := "(" INTEGER "," INTEGER ")" 
-
-fuzz = (0, 10), (0, 20); => bit
-
+/*  caracteres */
 LETTER              [a-zA-Z]
 DIGIT               [0-9]
-
 HEX_DIGIT           [a-fA-F0-9]
 BIT                 0|1
+COMMON_CHARACTER    [^\'\$\"]|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t
 
-/*  Tipos Numericos */
-INTEGER             [{DIGIT}]+
-REAL                DIGIT+\.DIGIT+
-
+/*  construcciones de caracteres */
 IDENTIFIER          ({LETTER}|_({LETTER}|{DIGIT}))(_?[a-zA-Z0-9])*
-
-BINARY              2#{{BIT}}+
+NATURAL_NUMBER      {DIGIT}(_?{DIGIT})*
+INTEGER_NUMBER      [\+\-]{NATURAL_NUMBER}
+REAL_NUMBER         {DIGIT}+\.{DIGIT}+
+BINARY              2#{BIT}+
 OCTAL               8#[0-7]+
-HEXADECIMAL         16#[{HEX_DIGIT}]+
-
-COMMON_CHARACTER    ([^'$"]|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t)*
-
-SINGLE_BYTE_STRING  '({COMMON_CHARACTER}|"|\$'|\${HEX_DIGIT}{2})*'
-DOUBLE_BYTE_STRING  "({COMMON_CHARACTER}|'|\$"|\${HEX_DIGIT}{4})*"
+HEXADECIMAL         16#{HEX_DIGIT}+
+SINGLE_BYTE_STRING  \'({COMMON_CHARACTER}*|\"|\$\'|\${HEX_DIGIT}{2})*\'
+DOUBLE_BYTE_STRING  \"({COMMON_CHARACTER}*|\'|\$\"|\${HEX_DIGIT}{4})*\"
 CHARACTER_STRING    {SINGLE_BYTE_STRING}|{DOUBLE_BYTE_STRING}
-
-
-OCTAL_INTEGER 
-HEX_INTEGER
-BIT_STRING_LITERAL
-DURATION_LITERAL
-DATE_LITERAL
-TIME_OF_DAY_LITERAL
-DATE_AND_TIME_LITERAL
 
 %%
 
-/*  ----------------------------------- Macros  ----------------------------------- */
-
-INTEGER              { yyval.integer = atoi(yytext); return INTEGER_LITERAL; }
-REAL                 { yyval.real    = atoi(yytext); return REAL_LITERAL; }
-
-/*  ---------------------------- IEC 61131-7 Keywords  ---------------------------- */
+{NATURAL_NUMBER}     { yyval.integer = atoi(yytext); return INTEGER_NUMBER; }
+{INTEGER_NUMBER}     { yyval.integer = atoi(yytext); return SIGNED_INTEGER; }
+{REAL_NUMBER}        { yyval.real    = atof(yytext); return REAL_NUMBER; }
 
 "FUNCTION_BLOCK"     { return FUNCTION_BLOCK; }
 "END_FUNCTION_BLOCK" { return END_FUNCTION_BLOCK; }
@@ -74,7 +55,6 @@ REAL                 { yyval.real    = atoi(yytext); return REAL_LITERAL; }
 "AND"                { return AND; }
 "OR"                 { return OR; }
 
-/* Métodos de defuzzificación */
 "COG"                { return COG; }
 "COGS"               { return COGS; }
 "COA"                { return COA; }
@@ -82,7 +62,6 @@ REAL                 { yyval.real    = atoi(yytext); return REAL_LITERAL; }
 "RM"                 { return RM; }
 "NC"                 { return NC; }
 
-/* Operadores difusos */
 "MIN"                { return MIN; }
 "MAX"                { return MAX; }
 "ASUM"               { return ASUM; }
@@ -90,8 +69,6 @@ REAL                 { yyval.real    = atoi(yytext); return REAL_LITERAL; }
 "PROD"               { return PROD; }
 "BDIF"               { return BDIF; }
 "NSUM"               { return NSUM; }
-
-/*  ---------------------------- IEC 61131-3 Keywords  ---------------------------- */
 
 "VAR_INPUT"          { return VAR_INPUT; }
 "VAR_OUTPUT"         { return VAR_OUTPUT; }
@@ -101,7 +78,6 @@ REAL                 { yyval.real    = atoi(yytext); return REAL_LITERAL; }
 "NON_RETAIN"         { return NON_RETAIN; }
 "CONSTANT"           { return CONSTANT; }
 
-/* Tipos de datos */
 "BOOL"               { return BOOL; }
 "SINT"               { return SINT; }
 "INT"                { return INT; }
@@ -128,13 +104,13 @@ REAL                 { yyval.real    = atoi(yytext); return REAL_LITERAL; }
 "ARRAY"              { return ARRAY; }
 "OF"                 { return OF; }
 
-/* Valores booleanos */
 "TRUE"               { return TRUE; }
 "FALSE"              { return FALSE; }
 
-/* Detección de flancos */
 "R_EDGE"             { return R_EDGE; }
 "F_EDGE"             { return F_EDGE; }
+
+.
 
 %%
 

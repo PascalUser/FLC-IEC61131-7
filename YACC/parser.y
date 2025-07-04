@@ -15,7 +15,7 @@
 %token IS NOT AND OR
 %token COG COGS COA LM RM NC
 %token MIN MAX ASUM BSUM PROD BDIF NSUM
-%token IDENTIFIER INTEGER_LITERAL REAL_LITERAL
+%token IDENTIFIER
 %token PRAGMA
 
 /* ----------------------- Tokens Anexo B --------------------------- */
@@ -25,9 +25,10 @@
 %token OF
 %token SINT INT DINT LINT USINT UINT UDINT ULINT REAL LREAL
 %token TRUE FALSE
-%token BINARY_INTEGER OCTAL_INTEGER HEX_INTEGER BIT_STRING_LITERAL 
-%token CHARACTER_STRING DURATION_LITERAL DATE_LITERAL TIME_OF_DAY_LITERAL DATE_AND_TIME_LITERAL
+%token BINARY_INTEGER OCTAL_INTEGER HEX_INTEGER 
+%token CHARACTER_STRING 
 %token ARRAY
+%token INTEGER_NUMBER REAL_NUMBER SIGNED_INTEGER
 
 %%
 /* ---------------------------------- IEC61131-7 ---------------------------------------- */
@@ -216,7 +217,7 @@ rule_list:
 ;
 
 rule:
-    RULE INTEGER_LITERAL ':' IF condition THEN conclusion weighting_opt ';'
+    RULE integer_literal ':' IF condition THEN conclusion weighting_opt ';'
 ;
 
 weighting_opt:
@@ -305,14 +306,14 @@ pragma_list:
 
 pragma:
     PRAGMA IDENTIFIER 
-  | PRAGMA IDENTIFIER integer_literal
+  | PRAGMA IDENTIFIER INTEGER_NUMBER
 ;
 
 /* TOKENS */
 
 numeric_literal:
-    INTEGER_LITERAL
-  | REAL_LITERAL
+    integer_literal
+  | real_literal
 ;
 
 /* ------------------------------- IEC61131-3 Annex B ------------------------------------ */
@@ -439,53 +440,164 @@ date_type_name:
 ;
 
 bit_string_type_name:
-    BOOL | BYTE | WORD | DWORD | LWORD
+    BOOL | bit_string_type_name_without_bool
 ;
 
 simple_type_name:
     IDENTIFIER
 ;
 
+/*  literals  */
+
 constant:
     numeric_literal
     | CHARACTER_STRING
     | time_literal
-    | BIT_STRING_LITERAL
+    | bit_string_literal
     | boolean_literal
 ;
 
 integer_literal:
-    signed_integer
+    integer_type_name_opt type_integer_literal
+;
+
+integer_type_name_opt:
+    /* vacio */
+    integer_type_name '#'
+;
+
+type_integer_literal:
+    SIGNED_INTEGER
     | BINARY_INTEGER
     | OCTAL_INTEGER
     | HEX_INTEGER
 ;
 
-signed_integer:
-    INTEGER_LITERAL
-    | '+' INTEGER_LITERAL
-    | '-' INTEGER_LITERAL
+real_literal:
+    real_type_name_opt REAL_NUMBER
 ;
 
-
-
-/* ----------------- codigo 2 ---------- */
+real_type_name_opt:
+    /* vacio */
+  | real_type_name '#'
+;
 
 time_literal:
-    DURATION_LITERAL
-    | TIME_OF_DAY_LITERAL
-    | DATE_LITERAL
-    | DATE_AND_TIME_LITERAL
+    duration_literal
+    | time_of_day_literal
+    | date_literal
+    | date_and_time_literal
+;
+
+duration_literal:
+    'T' '#' interval
+    | TIME '#' interval
+    | 'T' '#' '-' interval
+    | TIME '#' '-' interval
+;
+
+interval:
+    days
+    | hours 
+    | minutes
+    | seconds
+    | milliseconds
+;
+
+days:
+    fixed_point 'd'
+    | INTEGER_NUMBER 'd' hours
+    | INTEGER_NUMBER 'd' '_' hours
+;
+hours:
+    fixed_point 'h'
+    | INTEGER_NUMBER 'h' minutes
+    | INTEGER_NUMBER 'h' '_' minutes
+;
+
+minutes:
+    fixed_point 'm'
+    | INTEGER_NUMBER 'm' seconds
+    | INTEGER_NUMBER 'm' '_' seconds
+;
+
+seconds:
+    fixed_point 's'
+    | INTEGER_NUMBER 's' milliseconds
+    | INTEGER_NUMBER 's' '_' milliseconds
+;
+
+milliseconds:
+    fixed_point 'm''s'
+;
+
+fixed_point:
+    INTEGER_NUMBER 
+    | INTEGER_NUMBER '.' INTEGER_NUMBER;
+;
+
+time_of_day_literal:
+    TIME_OF_DAY '#' daytime
+    | TOD '#' daytime
+;
+
+daytime:
+    INTEGER_NUMBER ':' INTEGER_NUMBER ':' fixed_point
+;
+
+date_literal:
+    DATE '#' date
+    |'D' '#' date
+;
+
+date:
+    INTEGER_NUMBER '-' INTEGER_NUMBER '-' INTEGER_NUMBER
+;
+
+date_and_time_literal:
+    DATE_AND_TIME '#' date_literal '-' daytime
 ;
 
 boolean_literal:
-    TRUE
+    boolean_type_name_opt '0'
+    | boolean_type_name_opt '1'
+    | TRUE 
     | FALSE
 ;
 
+boolean_type_name_opt:
+    /* vacio */
+    | BOOL '#'
+;
+
+bit_string_literal :
+    bit_string_type_name_opt bit_string_integer_literals
+;
+
+bit_string_type_name_opt:
+    /* vacio */
+    | bit_string_type_name '#'
+;
+
+bit_string_type_name_without_bool:
+    BYTE 
+    | WORD 
+    | DWORD 
+    | LWORD
+;
+
+bit_string_integer_literals:
+    INTEGER_NUMBER
+    | BINARY_INTEGER
+    | OCTAL_INTEGER
+    | HEX_INTEGER
+;
+
+/* end of literals */
+
 subrange_spec_init:
     subrange_specification
-    | subrange_specification ':' '=' signed_integer
+    | subrange_specification ':' '=' SIGNED_INTEGER
 ;
 
 subrange_specification:
@@ -498,7 +610,7 @@ subrange_type_name:
 ;
 
 subrange:
-    signed_integer '.' '.' signed_integer
+    SIGNED_INTEGER '.' '.' SIGNED_INTEGER
 ;
 
 enumerated_spec_init:
@@ -585,7 +697,7 @@ array_initial_elements_list:
 
 array_initial_elements:
     array_initial_element
-    | INTEGER_LITERAL '(' array_initial_element ')'
+    | INTEGER_NUMBER '(' array_initial_element ')'
 ;
 
 array_initial_element:
@@ -667,9 +779,9 @@ single_byte_string_var_declaration:
 
 single_byte_string_spec:
     STRING
-    | STRING '[' INTEGER_LITERAL ']'
+    | STRING '[' INTEGER_NUMBER ']'
     | STRING ':' '=' CHARACTER_STRING
-    | STRING '[' INTEGER_LITERAL ']' ':' '=' CHARACTER_STRING
+    | STRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
 ;
 
 double_byte_string_var_declaration:
@@ -678,9 +790,9 @@ double_byte_string_var_declaration:
 
 double_byte_string_spec:
     WSTRING
-    | WSTRING '[' INTEGER_LITERAL ']'
+    | WSTRING '[' INTEGER_NUMBER ']'
     | WSTRING ':' '=' CHARACTER_STRING
-    | WSTRING '[' INTEGER_LITERAL ']' ':' '=' CHARACTER_STRING
+    | WSTRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
 ;
 
 %% /* ------------------------------- Código C ------------------------------------ */
