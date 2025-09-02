@@ -16,6 +16,7 @@
 %token COG COGS COA LM RM NC
 %token MIN MAX ASUM BSUM PROD BDIF NSUM
 %token IDENTIFIER
+%token STD_FB_IDENTIFIER
 %token PRAGMA
 
 /* ----------------------- Tokens Anexo B --------------------------- */
@@ -32,12 +33,13 @@
 
 %%
 /* ---------------------------------- IEC61131-7 ---------------------------------------- */
+
 program:
     function_block_declaration
 ;
 
 function_block_declaration:
-    FUNCTION_BLOCK function_block_name
+    FUNCTION_BLOCK IDENTIFIER
     fb_io_var_declarations_list
     other_var_declarations_list
     function_block_body
@@ -46,17 +48,17 @@ function_block_declaration:
 
 fb_io_var_declarations_list:
     /* vacío */
-  | fb_io_var_declarations_list fb_io_var_declarations
+    | fb_io_var_declarations_list fb_io_var_declarations
 ;
 
 fb_io_var_declarations:
     input_declarations
-  | output_declarations
+    | output_declarations
 ;
 
 other_var_declarations_list:
     /* vacío */
-  | other_var_declarations_list other_var_declarations
+    | other_var_declarations_list other_var_declarations
 ;
 
 other_var_declarations:
@@ -72,22 +74,22 @@ function_block_body:
 
 fuzzify_block_list:
     /* vacío */
-  | fuzzify_block_list fuzzify_block
+    | fuzzify_block_list fuzzify_block
 ;
 
 fuzzify_block:
-    FUZZIFY variable_name
+    FUZZIFY IDENTIFIER
     linguistic_term_list
     END_FUZZIFY
 ;
 
 defuzzify_block_list:
     /* vacío */
-  | defuzzify_block_list defuzzify_block
+    | defuzzify_block_list defuzzify_block
 ;
 
 defuzzify_block:
-    DEFUZZIFY f_variable_name
+    DEFUZZIFY IDENTIFIER
     range_opt
     linguistic_term_list
     defuzzification_method
@@ -97,21 +99,21 @@ defuzzify_block:
 
 linguistic_term_list:
     /* vacío */
-  | linguistic_term_list linguistic_term
+    | linguistic_term_list linguistic_term
 ;
 
 linguistic_term:
-    TERM term_name ':' '=' membership_function ';'
+    TERM IDENTIFIER ':' '=' IDENTIFIER ';'
+    TERM IDENTIFIER ':' '=' membership_function ';'
 ;
 
 membership_function:
     singleton
-  | points
+    | points
 ;
 
 singleton:
     numeric_literal
-  | variable_name
 ;
 
 points:
@@ -120,16 +122,12 @@ points:
 
 point_list:
     point
-  | point_list point
+    | point_list point
 ;
 
 point:
-    '(' point_x ',' numeric_literal ')'
-;
-
-point_x:
-    numeric_literal
-  | variable_name
+    '(' numeric_literal ',' numeric_literal ')'
+    '(' IDENTIFIER ',' numeric_literal ')'
 ;
 
 defuzzification_method:
@@ -146,21 +144,21 @@ default_value:
 
 default_val:
     numeric_literal
-  | NC
+    | NC
 ;
 
 range_opt:
     /* vacío */
-  | RANGE '(' numeric_literal '.''.' numeric_literal ')' ';'
+    | RANGE '(' numeric_literal '.''.' numeric_literal ')' ';'
 ;
 
 rule_block_list:
     /* vacío */
-  | rule_block_list rule_block
+    | rule_block_list rule_block
 ;
 
 rule_block:
-    RULEBLOCK rule_block_name
+    RULEBLOCK IDENTIFIER
     operator_definition
     activation_method_opt
     accumulation_method
@@ -174,12 +172,12 @@ operator_definition:
 
 operator_or_opt:
     /* vacío */
-  | OR ':' or_type
+    | OR ':' or_type
 ;
 
 operator_and_opt:
     /* vacío */
-  | AND ':' and_type
+    | AND ':' and_type
 ;
 
 or_type:
@@ -192,7 +190,7 @@ and_type:
 
 activation_method_opt:
     /* vacío */
-  | activation_method
+    | activation_method
 ;
 
 activation_method:
@@ -213,91 +211,69 @@ accu_type:
 
 rule_list:
     /* vacío */
-  | rule_list rule
+    | rule_list rule
 ;
 
 rule:
-    RULE integer_literal ':' IF condition THEN conclusion weighting_opt ';'
+    RULE integer_literal ':' IF condition THEN identifier_list IDENTIFIER weighting_opt ';'
+    | RULE integer_literal ':' IF condition THEN conclusion_list IDENTIFIER IS IDENTIFIER weighting_opt ';'
 ;
 
 weighting_opt:
     /* vacío */
-  | WITH weighting_factor
+    | WITH weighting_factor
+    | WITH IDENTIFIER
 ;
 
 condition:
     x condition_tail
+    | IDENTIFIER condition_tail
 ;
 
 condition_tail:
     /* vacío */
-  | AND x condition_tail
-  | OR x condition_tail
+    | AND IDENTIFIER condition_tail
+    | OR IDENTIFIER condition_tail
+    | AND x condition_tail
+    | OR x condition_tail
 ;
 
 x:
     NOT x
-  | subcondition
-  | '(' condition ')'
+    | NOT IDENTIFIER
+    | subcondition
+    | '(' condition ')'
 ;
 
 subcondition:
-    variable_name
-  | variable_name IS term_name
-  | variable_name IS NOT term_name
+    IDENTIFIER IS IDENTIFIER
+    | IDENTIFIER IS NOT IDENTIFIER
 ;
 
-conclusion:
-    conclusion_elements
-;
-
-conclusion_elements:
-    conclusion_elements ',' conclusion_element
-  | conclusion_element
-;
-
-conclusion_element:
-    variable_name
-  | variable_name IS term_name
+conclusion_list:
+    IDENTIFIER IS IDENTIFIER ','
+    | conclusion_list IDENTIFIER IS IDENTIFIER ','
 ;
 
 weighting_factor:
-    variable_name
-  | numeric_literal
+    numeric_literal
 ;
 
 option_block_list:
     /* vacío */
-  | option_block_list option_block
+    | option_block_list option_block
 ;
 
 option_block:
     OPTION pragma_list END_OPTION
 ;
 
-/* Terminal rules (identifiers y literales) */
-
-function_block_name:
-    IDENTIFIER
+numeric_literal:
+    integer_literal
+    | real_literal
 ;
 
-rule_block_name:
-    IDENTIFIER
-;
-
-term_name:
-    IDENTIFIER
-;
-
-f_variable_name:
-    IDENTIFIER
-;
-
-variable_name:
-    IDENTIFIER
-;
-
-/* PRAGMAS */
+/* ------------------------------------- Pragmas ------------------------------------------ */
 
 pragma_list:
     /* vacío */
@@ -306,14 +282,7 @@ pragma_list:
 
 pragma:
     PRAGMA IDENTIFIER 
-  | PRAGMA IDENTIFIER INTEGER_NUMBER
-;
-
-/* TOKENS */
-
-numeric_literal:
-    integer_literal
-  | real_literal
+    | PRAGMA IDENTIFIER INTEGER_NUMBER
 ;
 
 /* ------------------------------- IEC61131-3 Annex B ------------------------------------ */
@@ -333,16 +302,6 @@ input_declaration_list:
 
 input_declaration:
     var_init_decl
-    | edge_declaration
-;
-
-edge_declaration:
-    var1_list ':' BOOL edge_type
-;
-
-edge_type:
-    R_EDGE 
-    | F_EDGE
 ;
 
 var_declarations:
@@ -360,25 +319,46 @@ var_constant_spec:
     | /* vacío */
 ;
 
-/*  var_init_decl */
-
 var_init_decl_list:
     var_init_decl
     | var_init_decl_list ';' var_init_decl
 ;
 
 var_init_decl:
-    var1_init_decl
-    | array_var_init_decl
-    | structured_var_init_decl
+    IDENTIFIER ':' type_declaration
+    | identifier_list IDENTIFIER ':' type_declaration
+    | var1_init_decl
     | fb_name_decl
-    | string_var_declaration
 ;
 
-/*  var1  */
+type_declaration:
+    IDENTIFIER
+    | BOOL opt_edge
+    | STRING opt_single_byte_string_spec
+    | WSTRING opt_double_byte_string_spec
+    | initialized_structure
+    | array_spec_init
+;
+
+opt_edge:
+    /* vacio */
+    | R_EDGE 
+    | F_EDGE
+;
+
+opt_single_byte_string_spec:
+    /* vacio */
+    | single_byte_string_spec
+;
+
+opt_double_byte_string_spec:
+    /* vacio */
+    | double_byte_string_spec
+;
 
 var1_init_decl:
-    var1_list ':' spec_init_type
+    IDENTIFIER ':' spec_init_type
+    | identifier_list IDENTIFIER ':' spec_init_type
 ;
 
 spec_init_type:
@@ -387,29 +367,22 @@ spec_init_type:
     | enumerated_spec_init
 ;
 
-var1_list:
-    variable_name
-    | var1_list ',' variable_name
-;
-
 simple_spec_init:
     simple_specification
     | simple_specification ':' '=' constant
+    | initialized_constant
 ;
 
 simple_specification:
     elementary_type_name
-    | simple_type_name
 ;
 
-/*  elementary types */
+/* ----------------------- Elementary Types --------------------------- */
 
 elementary_type_name:
     numeric_type_name
     | date_type_name
     | bit_string_type_name
-    | STRING
-    | WSTRING
     | TIME
 ;
 
@@ -440,14 +413,10 @@ date_type_name:
 ;
 
 bit_string_type_name:
-    BOOL | bit_string_type_name_without_bool
+    bit_string_type_name_without_bool
 ;
 
-simple_type_name:
-    IDENTIFIER
-;
-
-/*  literals  */
+/* ----------------------- Literals --------------------------- */
 
 constant:
     numeric_literal
@@ -479,7 +448,7 @@ real_literal:
 
 real_type_name_opt:
     /* vacio */
-  | real_type_name '#'
+    | real_type_name '#'
 ;
 
 time_literal:
@@ -593,7 +562,7 @@ bit_string_integer_literals:
     | HEX_INTEGER
 ;
 
-/* end of literals */
+/* ----------------------- What? --------------------------- */
 
 subrange_spec_init:
     subrange_specification
@@ -602,11 +571,6 @@ subrange_spec_init:
 
 subrange_specification:
     integer_type_name '(' subrange ')'
-    | subrange_type_name
-;
-
-subrange_type_name:
-    IDENTIFIER
 ;
 
 subrange:
@@ -614,31 +578,21 @@ subrange:
 ;
 
 enumerated_spec_init:
-    enumerated_specification
-    | enumerated_specification ':' '=' enumerated_value
+    initialized_variable
+    | initialized_enumerate
+    | enumerated_specification ':' '=' IDENTIFIER
+    | enumerated_specification ':' '=' IDENTIFIER '#' IDENTIFIER
 ;
 
 enumerated_specification:
-    '(' enumerated_value_list ')'
-    | enumerated_type_name
+    '(' IDENTIFIER ')'
+    | '(' IDENTIFIER '#' IDENTIFIER ')'
+    | '(' identifier_list IDENTIFIER ')'
+    | '(' enumerated_list IDENTIFIER '#' IDENTIFIER ')'
 ;
-
-enumerated_value_list:
-    enumerated_value
-    | enumerated_value_list ',' enumerated_value
-;
-
-enumerated_value:
-    IDENTIFIER
-    | enumerated_type_name '#' IDENTIFIER
-;
-
-enumerated_type_name:
-    IDENTIFIER
-;
-
-array_var_init_decl:
-    var1_list ':' array_spec_init
+enumerated_list:
+    IDENTIFIER '#' IDENTIFIER ','
+    | enumerated_list IDENTIFIER '#' IDENTIFIER ','
 ;
 
 array_spec_init:
@@ -647,12 +601,8 @@ array_spec_init:
 ;
 
 array_specification:
-    array_type_name
+    ARRAY '[' subrange_list ']' OF IDENTIFIER
     | ARRAY '[' subrange_list ']' OF non_generic_type_name
-;
-
-array_type_name:
-    IDENTIFIER
 ;
 
 subrange_list:
@@ -662,28 +612,6 @@ subrange_list:
 
 non_generic_type_name:
     elementary_type_name
-    | derived_type_name
-;
-
-derived_type_name:
-    single_element_type_name
-    | array_type_name
-    | structure_type_name
-    | string_type_name
-;
-
-single_element_type_name:
-    simple_type_name
-    | subrange_type_name
-    | enumerated_type_name
-;
-
-structure_type_name:
-    IDENTIFIER
-;
-
-string_type_name:
-    IDENTIFIER
 ;
 
 array_initialization:
@@ -697,23 +625,15 @@ array_initial_elements_list:
 
 array_initial_elements:
     array_initial_element
+    | INTEGER_NUMBER '(' IDENTIFIER ')'
+    | INTEGER_NUMBER '(' IDENTIFIER '#' IDENTIFIER ')'
     | INTEGER_NUMBER '(' array_initial_element ')'
 ;
 
 array_initial_element:
     constant
-    | enumerated_value
     | structure_initialization
     | array_initialization
-;
-
-structured_var_init_decl:
-    var1_list ':' initialized_structure
-;
-
-initialized_structure:
-    structure_type_name
-    | structure_type_name ':' '=' structure_initialization
 ;
 
 structure_initialization:
@@ -726,71 +646,58 @@ structure_element_initialization_list:
 ;
 
 structure_element_initialization:
-    structure_element_name ':' '=' structure_element_type
+    initialized_constant
+    | initialized_variable
+    | initialized_enumerate
+    | IDENTIFIER ':' '=' structure_element_type
 ;
 
 structure_element_type:
-    constant 
-    | enumerated_value 
-    | array_initialization 
+    array_initialization 
     | structure_initialization
 ;
 
-structure_element_name:
-    IDENTIFIER
+initialized_variable:
+    IDENTIFIER ':' '=' IDENTIFIER 
+;
+
+initialized_constant:
+    IDENTIFIER ':' '=' constant 
+;
+
+initialized_enumerate:
+    IDENTIFIER ':' '=' IDENTIFIER '#' IDENTIFIER 
+;
+
+initialized_structure:
+    IDENTIFIER ':' '=' structure_initialization
 ;
 
 fb_name_decl:
-    fb_name_list ':' function_block_type_name
-    | fb_name_list ':' function_block_type_name ':' '=' structure_initialization
+    IDENTIFIER ':' standard_function_block_name
+    | identifier_list IDENTIFIER ':' standard_function_block_name
+    | IDENTIFIER ':' standard_function_block_name ':' '=' structure_initialization
+    | identifier_list IDENTIFIER ':' standard_function_block_name ':' '=' structure_initialization
 ;
 
-fb_name_list:
-    fb_name
-    | fb_name_list ',' fb_name
-;
-
-fb_name:
-    IDENTIFIER
-;
-
-function_block_type_name:
-    standard_function_block_name
-    | derived_function_block_name
+identifier_list:
+    IDENTIFIER ','
+    | identifier_list IDENTIFIER ','
 ;
 
 standard_function_block_name:
     // VER QUE HACEMOS
-    IDENTIFIER
-;
-
-derived_function_block_name:
-    IDENTIFIER
-;
-
-string_var_declaration:
-    single_byte_string_var_declaration
-    | double_byte_string_var_declaration
-;
-
-single_byte_string_var_declaration:
-    var1_list ':' single_byte_string_spec
+    STD_FB_IDENTIFIER
 ;
 
 single_byte_string_spec:
-    STRING
-    | STRING '[' INTEGER_NUMBER ']'
+    STRING '[' INTEGER_NUMBER ']'
     | STRING ':' '=' CHARACTER_STRING
     | STRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
 ;
 
-double_byte_string_var_declaration:
-    var1_list ':' double_byte_string_spec
-;
-
 double_byte_string_spec:
-    WSTRING
-    | WSTRING '[' INTEGER_NUMBER ']'
+    WSTRING '[' INTEGER_NUMBER ']'
     | WSTRING ':' '=' CHARACTER_STRING
     | WSTRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
 ;
