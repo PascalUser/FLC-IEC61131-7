@@ -17,7 +17,7 @@
 %token MIN MAX ASUM BSUM PROD BDIF NSUM
 %token IDENTIFIER
 %token STD_FB_IDENTIFIER
-%token PRAGMA
+%token PRAGMA interval
 
 /* ----------------------- Tokens Anexo B --------------------------- */
 
@@ -464,7 +464,9 @@ duration_literal:
     | 'T' '#' '-' interval
     | TIME '#' '-' interval
 ;
-
+// Que pasa si comentamos esta seccion y detectamos el token el tipo de dato directamente?
+// Ejemplo, detectamos con expresiones regulares 1d3h en lugar de tener todos los tokens.
+/*
 interval:
     days
     | hours 
@@ -499,7 +501,7 @@ seconds:
 milliseconds:
     fixed_point 'm''s'
 ;
-
+*/
 fixed_point:
     INTEGER_NUMBER 
     | INTEGER_NUMBER '.' INTEGER_NUMBER;
