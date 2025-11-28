@@ -558,7 +558,6 @@ bit_string_type_name_without_bool:
 ;
 
 bit_string_integer_literals:
-    INTEGER_NUMBER
     | BINARY_INTEGER
     | OCTAL_INTEGER
     | HEX_INTEGER
@@ -660,7 +659,7 @@ structure_element_type:
 ;
 
 initialized_variable:
-    IDENTIFIER ':' '=' IDENTIFIER 
+    IDENTIFIER ':' '=' IDENTIFIER
 ;
 
 initialized_constant:
