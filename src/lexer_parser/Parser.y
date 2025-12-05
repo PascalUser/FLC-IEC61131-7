@@ -1,9 +1,11 @@
-%{
-#include <stdio.h>
-#include <stdlib.h>
-%}
+%language "Java"
+%define api.parser.class {Parser}
+%define api.package {lexer_parser}
+%define api.parser.public
 
-%glr-parser
+%code imports {
+  import java.io.*;
+}
 
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
 %token FUZZIFY END_FUZZIFY
@@ -32,6 +34,7 @@
 %token INTEGER_NUMBER REAL_NUMBER SIGNED_INTEGER
 
 %%
+
 /* ---------------------------------- IEC61131-7 ---------------------------------------- */
 
 program:
@@ -703,8 +706,9 @@ double_byte_string_spec:
     | WSTRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
 ;
 
-%% /* ------------------------------- Código C ------------------------------------ */
+%% /* ------------------------------- Código Java ------------------------------------ */
 
+/*
 int main() {
     return yyparse();
 }
@@ -713,3 +717,4 @@ int yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
     return 1;
 }
+*/
