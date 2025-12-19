@@ -1,5 +1,8 @@
 *.output
 *.tab.c
 *.yy.c
-
 *.txt
+*.iml
+.idea
+out
+Luca.y

@@ -1,7 +1,6 @@
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import lexer_parser.Lexer;
 
 public class Main {
@@ -19,8 +18,8 @@ public class Main {
         do {
             try {
                 lexema = lexer.yylex();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ignored) {
+
             }
             System.out.println("Lexema: " + lexema + ", Valor: " + lexer.yytext());
         } while (lexema > 0);

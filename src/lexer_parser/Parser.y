@@ -17,8 +17,8 @@
 %token IS NOT AND OR
 %token COG COGS COA LM RM NC
 %token MIN MAX ASUM BSUM PROD BDIF NSUM
-%token IDENTIFIER
-%token STD_FB_IDENTIFIER
+%token IDENTIFIER STD_FB_IDENTIFIER
+%token ASSIGN_OP
 %token PRAGMA interval
 
 /* ----------------------- Tokens Anexo B --------------------------- */
@@ -30,7 +30,7 @@
 %token TRUE FALSE
 %token BINARY_INTEGER OCTAL_INTEGER HEX_INTEGER 
 %token CHARACTER_STRING 
-%token ARRAY
+%token ARRAY RANGE_OP
 %token INTEGER_NUMBER REAL_NUMBER SIGNED_INTEGER
 
 %%
@@ -106,8 +106,8 @@ linguistic_term_list:
 ;
 
 linguistic_term:
-    TERM IDENTIFIER ':' '=' IDENTIFIER ';'
-    TERM IDENTIFIER ':' '=' membership_function ';'
+    TERM IDENTIFIER ASSIGN_OP IDENTIFIER ';'
+    TERM IDENTIFIER ASSIGN_OP membership_function ';'
 ;
 
 membership_function:
@@ -142,7 +142,7 @@ defuzz_method:
 ;
 
 default_value:
-    DEFAULT ':' '=' default_val ';'
+    DEFAULT ASSIGN_OP default_val ';'
 ;
 
 default_val:
@@ -372,7 +372,7 @@ spec_init_type:
 
 simple_spec_init:
     simple_specification
-    | simple_specification ':' '=' constant
+    | simple_specification ASSIGN_OP constant
     | initialized_constant
 ;
 
@@ -434,7 +434,7 @@ integer_literal:
 ;
 
 integer_type_name_opt:
-    /* vacio */
+   /* vacio */
     integer_type_name '#'
 ;
 
@@ -507,7 +507,7 @@ milliseconds:
 */
 fixed_point:
     INTEGER_NUMBER 
-    | INTEGER_NUMBER '.' INTEGER_NUMBER;
+    | INTEGER_NUMBER '.' INTEGER_NUMBER
 ;
 
 time_of_day_literal:
@@ -570,7 +570,7 @@ bit_string_integer_literals:
 
 subrange_spec_init:
     subrange_specification
-    | subrange_specification ':' '=' SIGNED_INTEGER
+    | subrange_specification ASSIGN_OP SIGNED_INTEGER
 ;
 
 subrange_specification:
@@ -578,14 +578,14 @@ subrange_specification:
 ;
 
 subrange:
-    SIGNED_INTEGER '.' '.' SIGNED_INTEGER
+    SIGNED_INTEGER RANGE_OP SIGNED_INTEGER
 ;
 
 enumerated_spec_init:
     initialized_variable
     | initialized_enumerate
-    | enumerated_specification ':' '=' IDENTIFIER
-    | enumerated_specification ':' '=' IDENTIFIER '#' IDENTIFIER
+    | enumerated_specification ASSIGN_OP IDENTIFIER
+    | enumerated_specification ASSIGN_OP IDENTIFIER '#' IDENTIFIER
 ;
 
 enumerated_specification:
@@ -601,7 +601,7 @@ enumerated_list:
 
 array_spec_init:
     array_specification
-    | array_specification ':' '=' array_initialization
+    | array_specification ASSIGN_OP array_initialization
 ;
 
 array_specification:
@@ -653,7 +653,7 @@ structure_element_initialization:
     initialized_constant
     | initialized_variable
     | initialized_enumerate
-    | IDENTIFIER ':' '=' structure_element_type
+    | IDENTIFIER ASSIGN_OP structure_element_type
 ;
 
 structure_element_type:
@@ -662,26 +662,26 @@ structure_element_type:
 ;
 
 initialized_variable:
-    IDENTIFIER ':' '=' IDENTIFIER
+    IDENTIFIER ASSIGN_OP IDENTIFIER
 ;
 
 initialized_constant:
-    IDENTIFIER ':' '=' constant 
+    IDENTIFIER ASSIGN_OP constant 
 ;
 
 initialized_enumerate:
-    IDENTIFIER ':' '=' IDENTIFIER '#' IDENTIFIER 
+    IDENTIFIER ASSIGN_OP IDENTIFIER '#' IDENTIFIER 
 ;
 
 initialized_structure:
-    IDENTIFIER ':' '=' structure_initialization
+    IDENTIFIER ASSIGN_OP structure_initialization
 ;
 
 fb_name_decl:
     IDENTIFIER ':' standard_function_block_name
     | identifier_list IDENTIFIER ':' standard_function_block_name
-    | IDENTIFIER ':' standard_function_block_name ':' '=' structure_initialization
-    | identifier_list IDENTIFIER ':' standard_function_block_name ':' '=' structure_initialization
+    | IDENTIFIER ':' standard_function_block_name ASSIGN_OP structure_initialization
+    | identifier_list IDENTIFIER ':' standard_function_block_name ASSIGN_OP structure_initialization
 ;
 
 identifier_list:
@@ -696,14 +696,14 @@ standard_function_block_name:
 
 single_byte_string_spec:
     STRING '[' INTEGER_NUMBER ']'
-    | STRING ':' '=' CHARACTER_STRING
-    | STRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
+    | STRING ASSIGN_OP CHARACTER_STRING
+    | STRING '[' INTEGER_NUMBER ']' ASSIGN_OP CHARACTER_STRING
 ;
 
 double_byte_string_spec:
     WSTRING '[' INTEGER_NUMBER ']'
-    | WSTRING ':' '=' CHARACTER_STRING
-    | WSTRING '[' INTEGER_NUMBER ']' ':' '=' CHARACTER_STRING
+    | WSTRING ASSIGN_OP CHARACTER_STRING
+    | WSTRING '[' INTEGER_NUMBER ']' ASSIGN_OP CHARACTER_STRING
 ;
 
 %% /* ------------------------------- Código Java ------------------------------------ */
