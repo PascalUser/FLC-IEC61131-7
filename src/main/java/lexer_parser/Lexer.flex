@@ -17,17 +17,14 @@ import utils.LexemeInfo;
 %eofval}
 
 %{
-  /* Variable auxiliar para guardar el valor del token (el equivalente a yylval) */
   private Object yylval;
 
-  /* Implementación obligatoria de getLVal para Bison */
   public Object getLVal() {
     return this.yylval;
   }
 
-  /* Implementación obligatoria de yyerror */
   public void yyerror(String msg) {
-    System.err.println("Error lexico: " + msg);
+    System.err.println("Line " + (yyline + 1) + ": " + msg);
   }
 
   /* Funcion para devolver el token correspondiente a un IDENTIFIER del lexico */
@@ -111,5 +108,5 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}*|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 [ \t\r\n]+            { }
 
-.                     { System.err.println("Line: " + (yyline + 1) + ", Caracter no permitido: " + yytext()); }
+.                     { yyerror("Invalid Character: " + yytext()); }
 

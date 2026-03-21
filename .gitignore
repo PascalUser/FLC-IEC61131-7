@@ -3,6 +3,9 @@
 *.yy.c
 *.txt
 *.iml
+
+lib
 .idea
 out
+
 Luca.y

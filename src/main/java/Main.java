@@ -14,14 +14,14 @@ public class Main {
             return;
         }
         Lexer lexer = new Lexer(reader);
-        int lexema = 0;
+        int lexeme = 0;
         do {
             try {
-                lexema = lexer.yylex();
+                lexeme = lexer.yylex();
             } catch (IOException ignored) {
 
             }
-            System.out.println("Lexema: " + lexema + ", Valor: " + lexer.yytext());
-        } while (lexema > 0);
+            System.out.println("lexeme: " + lexeme + ", Valor: " + lexer.yytext());
+        } while (lexeme > 0);
     }
 }

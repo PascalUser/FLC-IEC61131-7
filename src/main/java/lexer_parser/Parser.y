@@ -112,16 +112,13 @@ linguistic_term:
 
 membership_function:
     singleton
-    | points
+    | point_list
 ;
 
 singleton:
     numeric_literal
 ;
 
-points:
-    point_list
-;
 
 point_list:
     point
@@ -291,11 +288,11 @@ pragma:
 /* ------------------------------- IEC61131-3 Annex B ------------------------------------ */
 
 output_declarations:
-    VAR_OUTPUT var_retain_spec var_init_decl_list END_VAR
+    VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
 ;
 
 input_declarations:
-    VAR_INPUT var_retain_spec input_declaration_list END_VAR
+    VAR_INPUT var_retain_spec input_declaration_list ';' END_VAR
 ;
 
 input_declaration_list:
@@ -308,7 +305,7 @@ input_declaration:
 ;
 
 var_declarations:
-    VAR var_constant_spec var_init_decl_list END_VAR
+    VAR var_constant_spec var_init_decl_list ';' END_VAR
 ;
 
 var_retain_spec:
@@ -435,7 +432,7 @@ integer_literal:
 
 integer_type_name_opt:
    /* vacio */
-    integer_type_name '#'
+   | integer_type_name '#'
 ;
 
 type_integer_literal:
@@ -505,6 +502,7 @@ milliseconds:
     fixed_point 'm''s'
 ;
 */
+
 fixed_point:
     INTEGER_NUMBER 
     | INTEGER_NUMBER '.' INTEGER_NUMBER
@@ -707,14 +705,3 @@ double_byte_string_spec:
 ;
 
 %% /* ------------------------------- Código Java ------------------------------------ */
-
-/*
-int main() {
-    return yyparse();
-}
-
-int yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
-    return 1;
-}
-*/
