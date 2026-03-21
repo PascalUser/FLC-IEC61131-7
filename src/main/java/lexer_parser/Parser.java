@@ -70,212 +70,223 @@ public class Parser
     S_YYEOF(0),                    /* "end of file"  */
     S_YYerror(1),                  /* error  */
     S_YYUNDEF(2),                  /* "invalid token"  */
-    S_FUNCTION_BLOCK(3),           /* FUNCTION_BLOCK  */
-    S_END_FUNCTION_BLOCK(4),       /* END_FUNCTION_BLOCK  */
-    S_FUZZIFY(5),                  /* FUZZIFY  */
-    S_END_FUZZIFY(6),              /* END_FUZZIFY  */
-    S_DEFUZZIFY(7),                /* DEFUZZIFY  */
-    S_END_DEFUZZIFY(8),            /* END_DEFUZZIFY  */
-    S_RULEBLOCK(9),                /* RULEBLOCK  */
-    S_END_RULEBLOCK(10),           /* END_RULEBLOCK  */
-    S_OPTION(11),                  /* OPTION  */
-    S_END_OPTION(12),              /* END_OPTION  */
-    S_TERM(13),                    /* TERM  */
-    S_METHOD(14),                  /* METHOD  */
-    S_DEFAULT(15),                 /* DEFAULT  */
-    S_RANGE(16),                   /* RANGE  */
-    S_RULE(17),                    /* RULE  */
-    S_IF(18),                      /* IF  */
-    S_THEN(19),                    /* THEN  */
-    S_WITH(20),                    /* WITH  */
-    S_ACT(21),                     /* ACT  */
-    S_ACCU(22),                    /* ACCU  */
-    S_IS(23),                      /* IS  */
-    S_NOT(24),                     /* NOT  */
-    S_AND(25),                     /* AND  */
-    S_OR(26),                      /* OR  */
-    S_COG(27),                     /* COG  */
-    S_COGS(28),                    /* COGS  */
-    S_COA(29),                     /* COA  */
-    S_LM(30),                      /* LM  */
-    S_RM(31),                      /* RM  */
-    S_NC(32),                      /* NC  */
-    S_MIN(33),                     /* MIN  */
-    S_MAX(34),                     /* MAX  */
-    S_ASUM(35),                    /* ASUM  */
-    S_BSUM(36),                    /* BSUM  */
-    S_PROD(37),                    /* PROD  */
-    S_BDIF(38),                    /* BDIF  */
-    S_NSUM(39),                    /* NSUM  */
-    S_IDENTIFIER(40),              /* IDENTIFIER  */
-    S_STD_FB_IDENTIFIER(41),       /* STD_FB_IDENTIFIER  */
-    S_ASSIGN_OP(42),               /* ASSIGN_OP  */
-    S_PRAGMA(43),                  /* PRAGMA  */
-    S_interval(44),                /* interval  */
-    S_VAR_INPUT(45),               /* VAR_INPUT  */
-    S_RETAIN(46),                  /* RETAIN  */
-    S_NON_RETAIN(47),              /* NON_RETAIN  */
-    S_END_VAR(48),                 /* END_VAR  */
-    S_BOOL(49),                    /* BOOL  */
-    S_R_EDGE(50),                  /* R_EDGE  */
-    S_F_EDGE(51),                  /* F_EDGE  */
-    S_VAR_OUTPUT(52),              /* VAR_OUTPUT  */
-    S_VAR(53),                     /* VAR  */
-    S_CONSTANT(54),                /* CONSTANT  */
-    S_STRING(55),                  /* STRING  */
-    S_WSTRING(56),                 /* WSTRING  */
-    S_BYTE(57),                    /* BYTE  */
-    S_WORD(58),                    /* WORD  */
-    S_DWORD(59),                   /* DWORD  */
-    S_LWORD(60),                   /* LWORD  */
-    S_TIME(61),                    /* TIME  */
-    S_TIME_OF_DAY(62),             /* TIME_OF_DAY  */
-    S_TOD(63),                     /* TOD  */
-    S_DATE(64),                    /* DATE  */
-    S_DATE_AND_TIME(65),           /* DATE_AND_TIME  */
-    S_DT(66),                      /* DT  */
-    S_OF(67),                      /* OF  */
-    S_SINT(68),                    /* SINT  */
-    S_INT(69),                     /* INT  */
-    S_DINT(70),                    /* DINT  */
-    S_LINT(71),                    /* LINT  */
-    S_USINT(72),                   /* USINT  */
-    S_UINT(73),                    /* UINT  */
-    S_UDINT(74),                   /* UDINT  */
-    S_ULINT(75),                   /* ULINT  */
-    S_REAL(76),                    /* REAL  */
-    S_LREAL(77),                   /* LREAL  */
-    S_TRUE(78),                    /* TRUE  */
-    S_FALSE(79),                   /* FALSE  */
-    S_CHARACTER_STRING(80),        /* CHARACTER_STRING  */
-    S_ARRAY(81),                   /* ARRAY  */
-    S_RANGE_OP(82),                /* RANGE_OP  */
-    S_NUMERIC_LITERAL(83),         /* NUMERIC_LITERAL  */
-    S_84_(84),                     /* ';'  */
-    S_85_(85),                     /* '('  */
-    S_86_(86),                     /* ','  */
-    S_87_(87),                     /* ')'  */
-    S_88_(88),                     /* ':'  */
-    S_89_(89),                     /* '.'  */
-    S_90_(90),                     /* '#'  */
-    S_91_T_(91),                   /* 'T'  */
-    S_92_(92),                     /* '-'  */
-    S_93_D_(93),                   /* 'D'  */
-    S_94_(94),                     /* '['  */
-    S_95_(95),                     /* ']'  */
-    S_YYACCEPT(96),                /* $accept  */
-    S_program(97),                 /* program  */
-    S_function_block_declaration(98), /* function_block_declaration  */
-    S_fb_io_var_declarations_list(99), /* fb_io_var_declarations_list  */
-    S_fb_io_var_declarations(100), /* fb_io_var_declarations  */
-    S_other_var_declarations_list(101), /* other_var_declarations_list  */
-    S_other_var_declarations(102), /* other_var_declarations  */
-    S_function_block_body(103),    /* function_block_body  */
-    S_fuzzify_block_list(104),     /* fuzzify_block_list  */
-    S_fuzzify_block(105),          /* fuzzify_block  */
-    S_defuzzify_block_list(106),   /* defuzzify_block_list  */
-    S_defuzzify_block(107),        /* defuzzify_block  */
-    S_opt_linguistic_term_list(108), /* opt_linguistic_term_list  */
-    S_linguistic_term_list(109),   /* linguistic_term_list  */
-    S_linguistic_term(110),        /* linguistic_term  */
-    S_membership_function(111),    /* membership_function  */
-    S_singleton(112),              /* singleton  */
-    S_point_list(113),             /* point_list  */
-    S_point(114),                  /* point  */
-    S_defuzzification_method(115), /* defuzzification_method  */
-    S_defuzz_method(116),          /* defuzz_method  */
-    S_default_value(117),          /* default_value  */
-    S_default_val(118),            /* default_val  */
-    S_range_opt(119),              /* range_opt  */
-    S_rule_block_list(120),        /* rule_block_list  */
-    S_rule_block(121),             /* rule_block  */
-    S_operator_definition(122),    /* operator_definition  */
-    S_operator_or_opt(123),        /* operator_or_opt  */
-    S_operator_and_opt(124),       /* operator_and_opt  */
-    S_or_type(125),                /* or_type  */
-    S_and_type(126),               /* and_type  */
-    S_activation_method_opt(127),  /* activation_method_opt  */
-    S_activation_method(128),      /* activation_method  */
-    S_act_type(129),               /* act_type  */
-    S_accumulation_method(130),    /* accumulation_method  */
-    S_accu_type(131),              /* accu_type  */
-    S_rule_list(132),              /* rule_list  */
-    S_rule(133),                   /* rule  */
-    S_opt_weighting(134),          /* opt_weighting  */
-    S_condition(135),              /* condition  */
-    S_condition_tail(136),         /* condition_tail  */
-    S_x(137),                      /* x  */
-    S_subcondition(138),           /* subcondition  */
-    S_conclusion_list(139),        /* conclusion_list  */
-    S_option_block_list(140),      /* option_block_list  */
-    S_option_block(141),           /* option_block  */
-    S_pragma_list(142),            /* pragma_list  */
-    S_pragma(143),                 /* pragma  */
-    S_output_declarations(144),    /* output_declarations  */
-    S_input_declarations(145),     /* input_declarations  */
-    S_input_declaration_list(146), /* input_declaration_list  */
-    S_input_declaration(147),      /* input_declaration  */
-    S_var_declarations(148),       /* var_declarations  */
-    S_var_retain_spec(149),        /* var_retain_spec  */
-    S_var_constant_spec(150),      /* var_constant_spec  */
-    S_var_init_decl_list(151),     /* var_init_decl_list  */
-    S_var_init_decl(152),          /* var_init_decl  */
-    S_type_declaration(153),       /* type_declaration  */
-    S_opt_edge(154),               /* opt_edge  */
-    S_var1_init_decl(155),         /* var1_init_decl  */
-    S_spec_init_type(156),         /* spec_init_type  */
-    S_simple_spec_init(157),       /* simple_spec_init  */
-    S_simple_specification(158),   /* simple_specification  */
-    S_elementary_type_name(159),   /* elementary_type_name  */
-    S_numeric_type_name(160),      /* numeric_type_name  */
-    S_integer_type_name(161),      /* integer_type_name  */
-    S_signed_integer_type_name(162), /* signed_integer_type_name  */
-    S_unsigned_integer_type_name(163), /* unsigned_integer_type_name  */
-    S_real_type_name(164),         /* real_type_name  */
-    S_date_type_name(165),         /* date_type_name  */
-    S_bit_string_type_name(166),   /* bit_string_type_name  */
-    S_constant(167),               /* constant  */
-    S_numeric_constant(168),       /* numeric_constant  */
-    S_integer_literal(169),        /* integer_literal  */
-    S_real_literal(170),           /* real_literal  */
-    S_time_literal(171),           /* time_literal  */
-    S_duration_literal(172),       /* duration_literal  */
-    S_fixed_point(173),            /* fixed_point  */
-    S_time_of_day_literal(174),    /* time_of_day_literal  */
-    S_daytime(175),                /* daytime  */
-    S_date_literal(176),           /* date_literal  */
-    S_date(177),                   /* date  */
-    S_date_and_time_literal(178),  /* date_and_time_literal  */
-    S_boolean_literal(179),        /* boolean_literal  */
-    S_bit_string_literal(180),     /* bit_string_literal  */
-    S_bit_string_type_name_without_bool(181), /* bit_string_type_name_without_bool  */
-    S_subrange_spec_init(182),     /* subrange_spec_init  */
-    S_subrange_specification(183), /* subrange_specification  */
-    S_subrange(184),               /* subrange  */
-    S_enumerated_spec_init(185),   /* enumerated_spec_init  */
-    S_enumerated_specification(186), /* enumerated_specification  */
-    S_enumerated_list(187),        /* enumerated_list  */
-    S_array_spec_init(188),        /* array_spec_init  */
-    S_array_specification(189),    /* array_specification  */
-    S_subrange_list(190),          /* subrange_list  */
-    S_non_generic_type_name(191),  /* non_generic_type_name  */
-    S_array_initialization(192),   /* array_initialization  */
-    S_array_initial_elements_list(193), /* array_initial_elements_list  */
-    S_array_initial_elements(194), /* array_initial_elements  */
-    S_array_initial_element(195),  /* array_initial_element  */
-    S_structure_initialization(196), /* structure_initialization  */
-    S_structure_element_initialization_list(197), /* structure_element_initialization_list  */
-    S_structure_element_initialization(198), /* structure_element_initialization  */
-    S_structure_element_type(199), /* structure_element_type  */
-    S_initialized_variable(200),   /* initialized_variable  */
-    S_initialized_constant(201),   /* initialized_constant  */
-    S_initialized_enumerate(202),  /* initialized_enumerate  */
-    S_initialized_structure(203),  /* initialized_structure  */
-    S_fb_name_decl(204),           /* fb_name_decl  */
-    S_identifier_list(205),        /* identifier_list  */
-    S_standard_function_block_name(206), /* standard_function_block_name  */
-    S_string_specification(207),   /* string_specification  */
-    S_type_string(208);            /* type_string  */
+    S_TYPE(3),                     /* TYPE  */
+    S_END_TYPE(4),                 /* END_TYPE  */
+    S_STRUCT(5),                   /* STRUCT  */
+    S_END_STRUCT(6),               /* END_STRUCT  */
+    S_FUNCTION_BLOCK(7),           /* FUNCTION_BLOCK  */
+    S_END_FUNCTION_BLOCK(8),       /* END_FUNCTION_BLOCK  */
+    S_FUZZIFY(9),                  /* FUZZIFY  */
+    S_END_FUZZIFY(10),             /* END_FUZZIFY  */
+    S_DEFUZZIFY(11),               /* DEFUZZIFY  */
+    S_END_DEFUZZIFY(12),           /* END_DEFUZZIFY  */
+    S_RULEBLOCK(13),               /* RULEBLOCK  */
+    S_END_RULEBLOCK(14),           /* END_RULEBLOCK  */
+    S_OPTION(15),                  /* OPTION  */
+    S_END_OPTION(16),              /* END_OPTION  */
+    S_TERM(17),                    /* TERM  */
+    S_METHOD(18),                  /* METHOD  */
+    S_DEFAULT(19),                 /* DEFAULT  */
+    S_RANGE(20),                   /* RANGE  */
+    S_RULE(21),                    /* RULE  */
+    S_IF(22),                      /* IF  */
+    S_THEN(23),                    /* THEN  */
+    S_WITH(24),                    /* WITH  */
+    S_ACT(25),                     /* ACT  */
+    S_ACCU(26),                    /* ACCU  */
+    S_IS(27),                      /* IS  */
+    S_NOT(28),                     /* NOT  */
+    S_AND(29),                     /* AND  */
+    S_OR(30),                      /* OR  */
+    S_COG(31),                     /* COG  */
+    S_COGS(32),                    /* COGS  */
+    S_COA(33),                     /* COA  */
+    S_LM(34),                      /* LM  */
+    S_RM(35),                      /* RM  */
+    S_NC(36),                      /* NC  */
+    S_MIN(37),                     /* MIN  */
+    S_MAX(38),                     /* MAX  */
+    S_ASUM(39),                    /* ASUM  */
+    S_BSUM(40),                    /* BSUM  */
+    S_PROD(41),                    /* PROD  */
+    S_BDIF(42),                    /* BDIF  */
+    S_NSUM(43),                    /* NSUM  */
+    S_IDENTIFIER(44),              /* IDENTIFIER  */
+    S_STD_FB_IDENTIFIER(45),       /* STD_FB_IDENTIFIER  */
+    S_ASSIGN_OP(46),               /* ASSIGN_OP  */
+    S_PRAGMA(47),                  /* PRAGMA  */
+    S_interval(48),                /* interval  */
+    S_VAR_INPUT(49),               /* VAR_INPUT  */
+    S_RETAIN(50),                  /* RETAIN  */
+    S_NON_RETAIN(51),              /* NON_RETAIN  */
+    S_END_VAR(52),                 /* END_VAR  */
+    S_BOOL(53),                    /* BOOL  */
+    S_R_EDGE(54),                  /* R_EDGE  */
+    S_F_EDGE(55),                  /* F_EDGE  */
+    S_VAR_OUTPUT(56),              /* VAR_OUTPUT  */
+    S_VAR(57),                     /* VAR  */
+    S_CONSTANT(58),                /* CONSTANT  */
+    S_STRING(59),                  /* STRING  */
+    S_WSTRING(60),                 /* WSTRING  */
+    S_BYTE(61),                    /* BYTE  */
+    S_WORD(62),                    /* WORD  */
+    S_DWORD(63),                   /* DWORD  */
+    S_LWORD(64),                   /* LWORD  */
+    S_TIME(65),                    /* TIME  */
+    S_INTERVAL_LITERAL(66),        /* INTERVAL_LITERAL  */
+    S_TIME_OF_DAY(67),             /* TIME_OF_DAY  */
+    S_DAYTIME_LITERAL(68),         /* DAYTIME_LITERAL  */
+    S_DATE(69),                    /* DATE  */
+    S_DATE_LITERAL(70),            /* DATE_LITERAL  */
+    S_DATE_AND_TIME(71),           /* DATE_AND_TIME  */
+    S_DATE_AND_TIME_LITERAL(72),   /* DATE_AND_TIME_LITERAL  */
+    S_OF(73),                      /* OF  */
+    S_SINT(74),                    /* SINT  */
+    S_INT(75),                     /* INT  */
+    S_DINT(76),                    /* DINT  */
+    S_LINT(77),                    /* LINT  */
+    S_USINT(78),                   /* USINT  */
+    S_UINT(79),                    /* UINT  */
+    S_UDINT(80),                   /* UDINT  */
+    S_ULINT(81),                   /* ULINT  */
+    S_REAL(82),                    /* REAL  */
+    S_LREAL(83),                   /* LREAL  */
+    S_TRUE(84),                    /* TRUE  */
+    S_FALSE(85),                   /* FALSE  */
+    S_STRING_LITERAL(86),          /* STRING_LITERAL  */
+    S_ARRAY(87),                   /* ARRAY  */
+    S_RANGE_OP(88),                /* RANGE_OP  */
+    S_NUMERIC_LITERAL(89),         /* NUMERIC_LITERAL  */
+    S_90_(90),                     /* ';'  */
+    S_91_(91),                     /* '('  */
+    S_92_(92),                     /* ','  */
+    S_93_(93),                     /* ')'  */
+    S_94_(94),                     /* ':'  */
+    S_95_(95),                     /* '.'  */
+    S_96_(96),                     /* '#'  */
+    S_97_(97),                     /* '-'  */
+    S_98_(98),                     /* '['  */
+    S_99_(99),                     /* ']'  */
+    S_YYACCEPT(100),               /* $accept  */
+    S_program(101),                /* program  */
+    S_function_block_declaration(102), /* function_block_declaration  */
+    S_fb_io_var_declarations_list(103), /* fb_io_var_declarations_list  */
+    S_fb_io_var_declarations(104), /* fb_io_var_declarations  */
+    S_other_var_declarations_list(105), /* other_var_declarations_list  */
+    S_other_var_declarations(106), /* other_var_declarations  */
+    S_function_block_body(107),    /* function_block_body  */
+    S_fuzzify_block_list(108),     /* fuzzify_block_list  */
+    S_fuzzify_block(109),          /* fuzzify_block  */
+    S_defuzzify_block_list(110),   /* defuzzify_block_list  */
+    S_defuzzify_block(111),        /* defuzzify_block  */
+    S_opt_linguistic_term_list(112), /* opt_linguistic_term_list  */
+    S_linguistic_term_list(113),   /* linguistic_term_list  */
+    S_linguistic_term(114),        /* linguistic_term  */
+    S_membership_function(115),    /* membership_function  */
+    S_singleton(116),              /* singleton  */
+    S_point_list(117),             /* point_list  */
+    S_point(118),                  /* point  */
+    S_defuzzification_method(119), /* defuzzification_method  */
+    S_defuzz_method(120),          /* defuzz_method  */
+    S_default_value(121),          /* default_value  */
+    S_default_val(122),            /* default_val  */
+    S_opt_range(123),              /* opt_range  */
+    S_rule_block_list(124),        /* rule_block_list  */
+    S_rule_block(125),             /* rule_block  */
+    S_operator_definition(126),    /* operator_definition  */
+    S_opt_operator_or(127),        /* opt_operator_or  */
+    S_operator_and_opt(128),       /* operator_and_opt  */
+    S_or_type(129),                /* or_type  */
+    S_and_type(130),               /* and_type  */
+    S_activation_method_opt(131),  /* activation_method_opt  */
+    S_activation_method(132),      /* activation_method  */
+    S_act_type(133),               /* act_type  */
+    S_accumulation_method(134),    /* accumulation_method  */
+    S_accu_type(135),              /* accu_type  */
+    S_rule_list(136),              /* rule_list  */
+    S_rule(137),                   /* rule  */
+    S_opt_weighting(138),          /* opt_weighting  */
+    S_condition(139),              /* condition  */
+    S_condition_tail(140),         /* condition_tail  */
+    S_x(141),                      /* x  */
+    S_subcondition(142),           /* subcondition  */
+    S_conclusion_list(143),        /* conclusion_list  */
+    S_option_block_list(144),      /* option_block_list  */
+    S_option_block(145),           /* option_block  */
+    S_pragma_list(146),            /* pragma_list  */
+    S_pragma(147),                 /* pragma  */
+    S_output_declarations(148),    /* output_declarations  */
+    S_input_declarations(149),     /* input_declarations  */
+    S_input_declaration_list(150), /* input_declaration_list  */
+    S_input_declaration(151),      /* input_declaration  */
+    S_var_declarations(152),       /* var_declarations  */
+    S_var_retain_spec(153),        /* var_retain_spec  */
+    S_var_constant_spec(154),      /* var_constant_spec  */
+    S_var_init_decl_list(155),     /* var_init_decl_list  */
+    S_var_init_decl(156),          /* var_init_decl  */
+    S_type_specification(157),     /* type_specification  */
+    S_opt_edge(158),               /* opt_edge  */
+    S_var1_init_decl(159),         /* var1_init_decl  */
+    S_spec_init_type(160),         /* spec_init_type  */
+    S_simple_spec_init(161),       /* simple_spec_init  */
+    S_simple_specification(162),   /* simple_specification  */
+    S_elementary_type_name(163),   /* elementary_type_name  */
+    S_numeric_type_name(164),      /* numeric_type_name  */
+    S_integer_type_name(165),      /* integer_type_name  */
+    S_signed_integer_type_name(166), /* signed_integer_type_name  */
+    S_unsigned_integer_type_name(167), /* unsigned_integer_type_name  */
+    S_real_type_name(168),         /* real_type_name  */
+    S_date_type_name(169),         /* date_type_name  */
+    S_bit_string_type_name(170),   /* bit_string_type_name  */
+    S_constant(171),               /* constant  */
+    S_number(172),                 /* number  */
+    S_integer(173),                /* integer  */
+    S_real(174),                   /* real  */
+    S_time(175),                   /* time  */
+    S_duration(176),               /* duration  */
+    S_time_of_day(177),            /* time_of_day  */
+    S_date(178),                   /* date  */
+    S_date_and_time(179),          /* date_and_time  */
+    S_boolean(180),                /* boolean  */
+    S_bit_string(181),             /* bit_string  */
+    S_bit_string_type_name_without_bool(182), /* bit_string_type_name_without_bool  */
+    S_subrange_spec_init(183),     /* subrange_spec_init  */
+    S_subrange_specification(184), /* subrange_specification  */
+    S_subrange(185),               /* subrange  */
+    S_enumerated_spec_init(186),   /* enumerated_spec_init  */
+    S_enumerated_specification(187), /* enumerated_specification  */
+    S_enumerated_list(188),        /* enumerated_list  */
+    S_array_spec_init(189),        /* array_spec_init  */
+    S_array_specification(190),    /* array_specification  */
+    S_subrange_list(191),          /* subrange_list  */
+    S_non_generic_type_name(192),  /* non_generic_type_name  */
+    S_array_initialization(193),   /* array_initialization  */
+    S_array_initial_elements_list(194), /* array_initial_elements_list  */
+    S_array_initial_elements(195), /* array_initial_elements  */
+    S_array_initial_element(196),  /* array_initial_element  */
+    S_structure_initialization(197), /* structure_initialization  */
+    S_structure_element_initialization_list(198), /* structure_element_initialization_list  */
+    S_structure_element_initialization(199), /* structure_element_initialization  */
+    S_structure_element_type(200), /* structure_element_type  */
+    S_initialized_variable(201),   /* initialized_variable  */
+    S_initialized_constant(202),   /* initialized_constant  */
+    S_initialized_enumerate(203),  /* initialized_enumerate  */
+    S_initialized_structure(204),  /* initialized_structure  */
+    S_fb_name_decl(205),           /* fb_name_decl  */
+    S_identifier_list(206),        /* identifier_list  */
+    S_standard_function_block_name(207), /* standard_function_block_name  */
+    S_string_specification(208),   /* string_specification  */
+    S_type_string(209),            /* type_string  */
+    S_opt_data_type_declaration(210), /* opt_data_type_declaration  */
+    S_data_type_declaration(211),  /* data_type_declaration  */
+    S_type_declaration_list(212),  /* type_declaration_list  */
+    S_type_declaration(213),       /* type_declaration  */
+    S_specification_list(214),     /* specification_list  */
+    S_structure_specification(215), /* structure_specification  */
+    S_structure_declaration(216),  /* structure_declaration  */
+    S_structure_element_declaration_list(217), /* structure_element_declaration_list  */
+    S_structure_element_declaration(218), /* structure_element_declaration  */
+    S_specification_sublist(219);  /* specification_sublist  */
 
 
     private final int yycode_;
@@ -288,6 +299,10 @@ public class Parser
       SymbolKind.S_YYEOF,
       SymbolKind.S_YYerror,
       SymbolKind.S_YYUNDEF,
+      SymbolKind.S_TYPE,
+      SymbolKind.S_END_TYPE,
+      SymbolKind.S_STRUCT,
+      SymbolKind.S_END_STRUCT,
       SymbolKind.S_FUNCTION_BLOCK,
       SymbolKind.S_END_FUNCTION_BLOCK,
       SymbolKind.S_FUZZIFY,
@@ -347,11 +362,13 @@ public class Parser
       SymbolKind.S_DWORD,
       SymbolKind.S_LWORD,
       SymbolKind.S_TIME,
+      SymbolKind.S_INTERVAL_LITERAL,
       SymbolKind.S_TIME_OF_DAY,
-      SymbolKind.S_TOD,
+      SymbolKind.S_DAYTIME_LITERAL,
       SymbolKind.S_DATE,
+      SymbolKind.S_DATE_LITERAL,
       SymbolKind.S_DATE_AND_TIME,
-      SymbolKind.S_DT,
+      SymbolKind.S_DATE_AND_TIME_LITERAL,
       SymbolKind.S_OF,
       SymbolKind.S_SINT,
       SymbolKind.S_INT,
@@ -365,22 +382,20 @@ public class Parser
       SymbolKind.S_LREAL,
       SymbolKind.S_TRUE,
       SymbolKind.S_FALSE,
-      SymbolKind.S_CHARACTER_STRING,
+      SymbolKind.S_STRING_LITERAL,
       SymbolKind.S_ARRAY,
       SymbolKind.S_RANGE_OP,
       SymbolKind.S_NUMERIC_LITERAL,
-      SymbolKind.S_84_,
-      SymbolKind.S_85_,
-      SymbolKind.S_86_,
-      SymbolKind.S_87_,
-      SymbolKind.S_88_,
-      SymbolKind.S_89_,
       SymbolKind.S_90_,
-      SymbolKind.S_91_T_,
+      SymbolKind.S_91_,
       SymbolKind.S_92_,
-      SymbolKind.S_93_D_,
+      SymbolKind.S_93_,
       SymbolKind.S_94_,
       SymbolKind.S_95_,
+      SymbolKind.S_96_,
+      SymbolKind.S_97_,
+      SymbolKind.S_98_,
+      SymbolKind.S_99_,
       SymbolKind.S_YYACCEPT,
       SymbolKind.S_program,
       SymbolKind.S_function_block_declaration,
@@ -404,11 +419,11 @@ public class Parser
       SymbolKind.S_defuzz_method,
       SymbolKind.S_default_value,
       SymbolKind.S_default_val,
-      SymbolKind.S_range_opt,
+      SymbolKind.S_opt_range,
       SymbolKind.S_rule_block_list,
       SymbolKind.S_rule_block,
       SymbolKind.S_operator_definition,
-      SymbolKind.S_operator_or_opt,
+      SymbolKind.S_opt_operator_or,
       SymbolKind.S_operator_and_opt,
       SymbolKind.S_or_type,
       SymbolKind.S_and_type,
@@ -438,7 +453,7 @@ public class Parser
       SymbolKind.S_var_constant_spec,
       SymbolKind.S_var_init_decl_list,
       SymbolKind.S_var_init_decl,
-      SymbolKind.S_type_declaration,
+      SymbolKind.S_type_specification,
       SymbolKind.S_opt_edge,
       SymbolKind.S_var1_init_decl,
       SymbolKind.S_spec_init_type,
@@ -453,19 +468,16 @@ public class Parser
       SymbolKind.S_date_type_name,
       SymbolKind.S_bit_string_type_name,
       SymbolKind.S_constant,
-      SymbolKind.S_numeric_constant,
-      SymbolKind.S_integer_literal,
-      SymbolKind.S_real_literal,
-      SymbolKind.S_time_literal,
-      SymbolKind.S_duration_literal,
-      SymbolKind.S_fixed_point,
-      SymbolKind.S_time_of_day_literal,
-      SymbolKind.S_daytime,
-      SymbolKind.S_date_literal,
+      SymbolKind.S_number,
+      SymbolKind.S_integer,
+      SymbolKind.S_real,
+      SymbolKind.S_time,
+      SymbolKind.S_duration,
+      SymbolKind.S_time_of_day,
       SymbolKind.S_date,
-      SymbolKind.S_date_and_time_literal,
-      SymbolKind.S_boolean_literal,
-      SymbolKind.S_bit_string_literal,
+      SymbolKind.S_date_and_time,
+      SymbolKind.S_boolean,
+      SymbolKind.S_bit_string,
       SymbolKind.S_bit_string_type_name_without_bool,
       SymbolKind.S_subrange_spec_init,
       SymbolKind.S_subrange_specification,
@@ -493,7 +505,17 @@ public class Parser
       SymbolKind.S_identifier_list,
       SymbolKind.S_standard_function_block_name,
       SymbolKind.S_string_specification,
-      SymbolKind.S_type_string
+      SymbolKind.S_type_string,
+      SymbolKind.S_opt_data_type_declaration,
+      SymbolKind.S_data_type_declaration,
+      SymbolKind.S_type_declaration_list,
+      SymbolKind.S_type_declaration,
+      SymbolKind.S_specification_list,
+      SymbolKind.S_structure_specification,
+      SymbolKind.S_structure_declaration,
+      SymbolKind.S_structure_element_declaration_list,
+      SymbolKind.S_structure_element_declaration,
+      SymbolKind.S_specification_sublist
     };
 
     static final SymbolKind get(int code) {
@@ -543,30 +565,31 @@ public class Parser
   {
     return new String[]
     {
-  "\"end of file\"", "error", "\"invalid token\"", "FUNCTION_BLOCK",
-  "END_FUNCTION_BLOCK", "FUZZIFY", "END_FUZZIFY", "DEFUZZIFY",
-  "END_DEFUZZIFY", "RULEBLOCK", "END_RULEBLOCK", "OPTION", "END_OPTION",
-  "TERM", "METHOD", "DEFAULT", "RANGE", "RULE", "IF", "THEN", "WITH",
-  "ACT", "ACCU", "IS", "NOT", "AND", "OR", "COG", "COGS", "COA", "LM",
-  "RM", "NC", "MIN", "MAX", "ASUM", "BSUM", "PROD", "BDIF", "NSUM",
-  "IDENTIFIER", "STD_FB_IDENTIFIER", "ASSIGN_OP", "PRAGMA", "interval",
-  "VAR_INPUT", "RETAIN", "NON_RETAIN", "END_VAR", "BOOL", "R_EDGE",
-  "F_EDGE", "VAR_OUTPUT", "VAR", "CONSTANT", "STRING", "WSTRING", "BYTE",
-  "WORD", "DWORD", "LWORD", "TIME", "TIME_OF_DAY", "TOD", "DATE",
-  "DATE_AND_TIME", "DT", "OF", "SINT", "INT", "DINT", "LINT", "USINT",
-  "UINT", "UDINT", "ULINT", "REAL", "LREAL", "TRUE", "FALSE",
-  "CHARACTER_STRING", "ARRAY", "RANGE_OP", "NUMERIC_LITERAL", "';'", "'('",
-  "','", "')'", "':'", "'.'", "'#'", "'T'", "'-'", "'D'", "'['", "']'",
-  "$accept", "program", "function_block_declaration",
+  "\"end of file\"", "error", "\"invalid token\"", "TYPE", "END_TYPE",
+  "STRUCT", "END_STRUCT", "FUNCTION_BLOCK", "END_FUNCTION_BLOCK",
+  "FUZZIFY", "END_FUZZIFY", "DEFUZZIFY", "END_DEFUZZIFY", "RULEBLOCK",
+  "END_RULEBLOCK", "OPTION", "END_OPTION", "TERM", "METHOD", "DEFAULT",
+  "RANGE", "RULE", "IF", "THEN", "WITH", "ACT", "ACCU", "IS", "NOT", "AND",
+  "OR", "COG", "COGS", "COA", "LM", "RM", "NC", "MIN", "MAX", "ASUM",
+  "BSUM", "PROD", "BDIF", "NSUM", "IDENTIFIER", "STD_FB_IDENTIFIER",
+  "ASSIGN_OP", "PRAGMA", "interval", "VAR_INPUT", "RETAIN", "NON_RETAIN",
+  "END_VAR", "BOOL", "R_EDGE", "F_EDGE", "VAR_OUTPUT", "VAR", "CONSTANT",
+  "STRING", "WSTRING", "BYTE", "WORD", "DWORD", "LWORD", "TIME",
+  "INTERVAL_LITERAL", "TIME_OF_DAY", "DAYTIME_LITERAL", "DATE",
+  "DATE_LITERAL", "DATE_AND_TIME", "DATE_AND_TIME_LITERAL", "OF", "SINT",
+  "INT", "DINT", "LINT", "USINT", "UINT", "UDINT", "ULINT", "REAL",
+  "LREAL", "TRUE", "FALSE", "STRING_LITERAL", "ARRAY", "RANGE_OP",
+  "NUMERIC_LITERAL", "';'", "'('", "','", "')'", "':'", "'.'", "'#'",
+  "'-'", "'['", "']'", "$accept", "program", "function_block_declaration",
   "fb_io_var_declarations_list", "fb_io_var_declarations",
   "other_var_declarations_list", "other_var_declarations",
   "function_block_body", "fuzzify_block_list", "fuzzify_block",
   "defuzzify_block_list", "defuzzify_block", "opt_linguistic_term_list",
   "linguistic_term_list", "linguistic_term", "membership_function",
   "singleton", "point_list", "point", "defuzzification_method",
-  "defuzz_method", "default_value", "default_val", "range_opt",
+  "defuzz_method", "default_value", "default_val", "opt_range",
   "rule_block_list", "rule_block", "operator_definition",
-  "operator_or_opt", "operator_and_opt", "or_type", "and_type",
+  "opt_operator_or", "operator_and_opt", "or_type", "and_type",
   "activation_method_opt", "activation_method", "act_type",
   "accumulation_method", "accu_type", "rule_list", "rule", "opt_weighting",
   "condition", "condition_tail", "x", "subcondition", "conclusion_list",
@@ -574,15 +597,13 @@ public class Parser
   "output_declarations", "input_declarations", "input_declaration_list",
   "input_declaration", "var_declarations", "var_retain_spec",
   "var_constant_spec", "var_init_decl_list", "var_init_decl",
-  "type_declaration", "opt_edge", "var1_init_decl", "spec_init_type",
+  "type_specification", "opt_edge", "var1_init_decl", "spec_init_type",
   "simple_spec_init", "simple_specification", "elementary_type_name",
   "numeric_type_name", "integer_type_name", "signed_integer_type_name",
   "unsigned_integer_type_name", "real_type_name", "date_type_name",
-  "bit_string_type_name", "constant", "numeric_constant",
-  "integer_literal", "real_literal", "time_literal", "duration_literal",
-  "fixed_point", "time_of_day_literal", "daytime", "date_literal", "date",
-  "date_and_time_literal", "boolean_literal", "bit_string_literal",
-  "bit_string_type_name_without_bool", "subrange_spec_init",
+  "bit_string_type_name", "constant", "number", "integer", "real", "time",
+  "duration", "time_of_day", "date", "date_and_time", "boolean",
+  "bit_string", "bit_string_type_name_without_bool", "subrange_spec_init",
   "subrange_specification", "subrange", "enumerated_spec_init",
   "enumerated_specification", "enumerated_list", "array_spec_init",
   "array_specification", "subrange_list", "non_generic_type_name",
@@ -592,7 +613,12 @@ public class Parser
   "structure_element_initialization", "structure_element_type",
   "initialized_variable", "initialized_constant", "initialized_enumerate",
   "initialized_structure", "fb_name_decl", "identifier_list",
-  "standard_function_block_name", "string_specification", "type_string", null
+  "standard_function_block_name", "string_specification", "type_string",
+  "opt_data_type_declaration", "data_type_declaration",
+  "type_declaration_list", "type_declaration", "specification_list",
+  "structure_specification", "structure_declaration",
+  "structure_element_declaration_list", "structure_element_declaration",
+  "specification_sublist", null
     };
   }
 
@@ -616,168 +642,180 @@ public class Parser
     static final int YYerror = 256;
     /** Token "invalid token", to be returned by the scanner.  */
     static final int YYUNDEF = 257;
+    /** Token TYPE, to be returned by the scanner.  */
+    static final int TYPE = 258;
+    /** Token END_TYPE, to be returned by the scanner.  */
+    static final int END_TYPE = 259;
+    /** Token STRUCT, to be returned by the scanner.  */
+    static final int STRUCT = 260;
+    /** Token END_STRUCT, to be returned by the scanner.  */
+    static final int END_STRUCT = 261;
     /** Token FUNCTION_BLOCK, to be returned by the scanner.  */
-    static final int FUNCTION_BLOCK = 258;
+    static final int FUNCTION_BLOCK = 262;
     /** Token END_FUNCTION_BLOCK, to be returned by the scanner.  */
-    static final int END_FUNCTION_BLOCK = 259;
+    static final int END_FUNCTION_BLOCK = 263;
     /** Token FUZZIFY, to be returned by the scanner.  */
-    static final int FUZZIFY = 260;
+    static final int FUZZIFY = 264;
     /** Token END_FUZZIFY, to be returned by the scanner.  */
-    static final int END_FUZZIFY = 261;
+    static final int END_FUZZIFY = 265;
     /** Token DEFUZZIFY, to be returned by the scanner.  */
-    static final int DEFUZZIFY = 262;
+    static final int DEFUZZIFY = 266;
     /** Token END_DEFUZZIFY, to be returned by the scanner.  */
-    static final int END_DEFUZZIFY = 263;
+    static final int END_DEFUZZIFY = 267;
     /** Token RULEBLOCK, to be returned by the scanner.  */
-    static final int RULEBLOCK = 264;
+    static final int RULEBLOCK = 268;
     /** Token END_RULEBLOCK, to be returned by the scanner.  */
-    static final int END_RULEBLOCK = 265;
+    static final int END_RULEBLOCK = 269;
     /** Token OPTION, to be returned by the scanner.  */
-    static final int OPTION = 266;
+    static final int OPTION = 270;
     /** Token END_OPTION, to be returned by the scanner.  */
-    static final int END_OPTION = 267;
+    static final int END_OPTION = 271;
     /** Token TERM, to be returned by the scanner.  */
-    static final int TERM = 268;
+    static final int TERM = 272;
     /** Token METHOD, to be returned by the scanner.  */
-    static final int METHOD = 269;
+    static final int METHOD = 273;
     /** Token DEFAULT, to be returned by the scanner.  */
-    static final int DEFAULT = 270;
+    static final int DEFAULT = 274;
     /** Token RANGE, to be returned by the scanner.  */
-    static final int RANGE = 271;
+    static final int RANGE = 275;
     /** Token RULE, to be returned by the scanner.  */
-    static final int RULE = 272;
+    static final int RULE = 276;
     /** Token IF, to be returned by the scanner.  */
-    static final int IF = 273;
+    static final int IF = 277;
     /** Token THEN, to be returned by the scanner.  */
-    static final int THEN = 274;
+    static final int THEN = 278;
     /** Token WITH, to be returned by the scanner.  */
-    static final int WITH = 275;
+    static final int WITH = 279;
     /** Token ACT, to be returned by the scanner.  */
-    static final int ACT = 276;
+    static final int ACT = 280;
     /** Token ACCU, to be returned by the scanner.  */
-    static final int ACCU = 277;
+    static final int ACCU = 281;
     /** Token IS, to be returned by the scanner.  */
-    static final int IS = 278;
+    static final int IS = 282;
     /** Token NOT, to be returned by the scanner.  */
-    static final int NOT = 279;
+    static final int NOT = 283;
     /** Token AND, to be returned by the scanner.  */
-    static final int AND = 280;
+    static final int AND = 284;
     /** Token OR, to be returned by the scanner.  */
-    static final int OR = 281;
+    static final int OR = 285;
     /** Token COG, to be returned by the scanner.  */
-    static final int COG = 282;
+    static final int COG = 286;
     /** Token COGS, to be returned by the scanner.  */
-    static final int COGS = 283;
+    static final int COGS = 287;
     /** Token COA, to be returned by the scanner.  */
-    static final int COA = 284;
+    static final int COA = 288;
     /** Token LM, to be returned by the scanner.  */
-    static final int LM = 285;
+    static final int LM = 289;
     /** Token RM, to be returned by the scanner.  */
-    static final int RM = 286;
+    static final int RM = 290;
     /** Token NC, to be returned by the scanner.  */
-    static final int NC = 287;
+    static final int NC = 291;
     /** Token MIN, to be returned by the scanner.  */
-    static final int MIN = 288;
+    static final int MIN = 292;
     /** Token MAX, to be returned by the scanner.  */
-    static final int MAX = 289;
+    static final int MAX = 293;
     /** Token ASUM, to be returned by the scanner.  */
-    static final int ASUM = 290;
+    static final int ASUM = 294;
     /** Token BSUM, to be returned by the scanner.  */
-    static final int BSUM = 291;
+    static final int BSUM = 295;
     /** Token PROD, to be returned by the scanner.  */
-    static final int PROD = 292;
+    static final int PROD = 296;
     /** Token BDIF, to be returned by the scanner.  */
-    static final int BDIF = 293;
+    static final int BDIF = 297;
     /** Token NSUM, to be returned by the scanner.  */
-    static final int NSUM = 294;
+    static final int NSUM = 298;
     /** Token IDENTIFIER, to be returned by the scanner.  */
-    static final int IDENTIFIER = 295;
+    static final int IDENTIFIER = 299;
     /** Token STD_FB_IDENTIFIER, to be returned by the scanner.  */
-    static final int STD_FB_IDENTIFIER = 296;
+    static final int STD_FB_IDENTIFIER = 300;
     /** Token ASSIGN_OP, to be returned by the scanner.  */
-    static final int ASSIGN_OP = 297;
+    static final int ASSIGN_OP = 301;
     /** Token PRAGMA, to be returned by the scanner.  */
-    static final int PRAGMA = 298;
+    static final int PRAGMA = 302;
     /** Token interval, to be returned by the scanner.  */
-    static final int interval = 299;
+    static final int interval = 303;
     /** Token VAR_INPUT, to be returned by the scanner.  */
-    static final int VAR_INPUT = 300;
+    static final int VAR_INPUT = 304;
     /** Token RETAIN, to be returned by the scanner.  */
-    static final int RETAIN = 301;
+    static final int RETAIN = 305;
     /** Token NON_RETAIN, to be returned by the scanner.  */
-    static final int NON_RETAIN = 302;
+    static final int NON_RETAIN = 306;
     /** Token END_VAR, to be returned by the scanner.  */
-    static final int END_VAR = 303;
+    static final int END_VAR = 307;
     /** Token BOOL, to be returned by the scanner.  */
-    static final int BOOL = 304;
+    static final int BOOL = 308;
     /** Token R_EDGE, to be returned by the scanner.  */
-    static final int R_EDGE = 305;
+    static final int R_EDGE = 309;
     /** Token F_EDGE, to be returned by the scanner.  */
-    static final int F_EDGE = 306;
+    static final int F_EDGE = 310;
     /** Token VAR_OUTPUT, to be returned by the scanner.  */
-    static final int VAR_OUTPUT = 307;
+    static final int VAR_OUTPUT = 311;
     /** Token VAR, to be returned by the scanner.  */
-    static final int VAR = 308;
+    static final int VAR = 312;
     /** Token CONSTANT, to be returned by the scanner.  */
-    static final int CONSTANT = 309;
+    static final int CONSTANT = 313;
     /** Token STRING, to be returned by the scanner.  */
-    static final int STRING = 310;
+    static final int STRING = 314;
     /** Token WSTRING, to be returned by the scanner.  */
-    static final int WSTRING = 311;
+    static final int WSTRING = 315;
     /** Token BYTE, to be returned by the scanner.  */
-    static final int BYTE = 312;
+    static final int BYTE = 316;
     /** Token WORD, to be returned by the scanner.  */
-    static final int WORD = 313;
+    static final int WORD = 317;
     /** Token DWORD, to be returned by the scanner.  */
-    static final int DWORD = 314;
+    static final int DWORD = 318;
     /** Token LWORD, to be returned by the scanner.  */
-    static final int LWORD = 315;
+    static final int LWORD = 319;
     /** Token TIME, to be returned by the scanner.  */
-    static final int TIME = 316;
+    static final int TIME = 320;
+    /** Token INTERVAL_LITERAL, to be returned by the scanner.  */
+    static final int INTERVAL_LITERAL = 321;
     /** Token TIME_OF_DAY, to be returned by the scanner.  */
-    static final int TIME_OF_DAY = 317;
-    /** Token TOD, to be returned by the scanner.  */
-    static final int TOD = 318;
+    static final int TIME_OF_DAY = 322;
+    /** Token DAYTIME_LITERAL, to be returned by the scanner.  */
+    static final int DAYTIME_LITERAL = 323;
     /** Token DATE, to be returned by the scanner.  */
-    static final int DATE = 319;
+    static final int DATE = 324;
+    /** Token DATE_LITERAL, to be returned by the scanner.  */
+    static final int DATE_LITERAL = 325;
     /** Token DATE_AND_TIME, to be returned by the scanner.  */
-    static final int DATE_AND_TIME = 320;
-    /** Token DT, to be returned by the scanner.  */
-    static final int DT = 321;
+    static final int DATE_AND_TIME = 326;
+    /** Token DATE_AND_TIME_LITERAL, to be returned by the scanner.  */
+    static final int DATE_AND_TIME_LITERAL = 327;
     /** Token OF, to be returned by the scanner.  */
-    static final int OF = 322;
+    static final int OF = 328;
     /** Token SINT, to be returned by the scanner.  */
-    static final int SINT = 323;
+    static final int SINT = 329;
     /** Token INT, to be returned by the scanner.  */
-    static final int INT = 324;
+    static final int INT = 330;
     /** Token DINT, to be returned by the scanner.  */
-    static final int DINT = 325;
+    static final int DINT = 331;
     /** Token LINT, to be returned by the scanner.  */
-    static final int LINT = 326;
+    static final int LINT = 332;
     /** Token USINT, to be returned by the scanner.  */
-    static final int USINT = 327;
+    static final int USINT = 333;
     /** Token UINT, to be returned by the scanner.  */
-    static final int UINT = 328;
+    static final int UINT = 334;
     /** Token UDINT, to be returned by the scanner.  */
-    static final int UDINT = 329;
+    static final int UDINT = 335;
     /** Token ULINT, to be returned by the scanner.  */
-    static final int ULINT = 330;
+    static final int ULINT = 336;
     /** Token REAL, to be returned by the scanner.  */
-    static final int REAL = 331;
+    static final int REAL = 337;
     /** Token LREAL, to be returned by the scanner.  */
-    static final int LREAL = 332;
+    static final int LREAL = 338;
     /** Token TRUE, to be returned by the scanner.  */
-    static final int TRUE = 333;
+    static final int TRUE = 339;
     /** Token FALSE, to be returned by the scanner.  */
-    static final int FALSE = 334;
-    /** Token CHARACTER_STRING, to be returned by the scanner.  */
-    static final int CHARACTER_STRING = 335;
+    static final int FALSE = 340;
+    /** Token STRING_LITERAL, to be returned by the scanner.  */
+    static final int STRING_LITERAL = 341;
     /** Token ARRAY, to be returned by the scanner.  */
-    static final int ARRAY = 336;
+    static final int ARRAY = 342;
     /** Token RANGE_OP, to be returned by the scanner.  */
-    static final int RANGE_OP = 337;
+    static final int RANGE_OP = 343;
     /** Token NUMERIC_LITERAL, to be returned by the scanner.  */
-    static final int NUMERIC_LITERAL = 338;
+    static final int NUMERIC_LITERAL = 344;
 
     /** Deprecated, use YYEOF instead.  */
     public static final int EOF = YYEOF;
@@ -830,34 +868,6 @@ public class Parser
   }
 
 
-  private java.io.PrintStream yyDebugStream = System.err;
-
-  /**
-   * The <tt>PrintStream</tt> on which the debugging output is printed.
-   */
-  public final java.io.PrintStream getDebugStream() { return yyDebugStream; }
-
-  /**
-   * Set the <tt>PrintStream</tt> on which the debug output is printed.
-   * @param s The stream that is used for debugging output.
-   */
-  public final void setDebugStream(java.io.PrintStream s) { yyDebugStream = s; }
-
-  private int yydebug = 0;
-
-  /**
-   * Answer the verbosity of the debugging output; 0 means that all kinds of
-   * output from the parser are suppressed.
-   */
-  public final int getDebugLevel() { return yydebug; }
-
-  /**
-   * Set the verbosity of the debugging output; 0 means that all kinds of
-   * output from the parser are suppressed.
-   * @param level The verbosity level for debugging output.
-   */
-  public final void setDebugLevel(int level) { yydebug = level; }
-
 
   private int yynerrs = 0;
 
@@ -876,15 +886,6 @@ public class Parser
   }
 
 
-  protected final void yycdebugNnl(String s) {
-    if (0 < yydebug)
-      yyDebugStream.print(s);
-  }
-
-  protected final void yycdebug(String s) {
-    if (0 < yydebug)
-      yyDebugStream.println(s);
-  }
 
   private final class YYStack {
     private int[] stateStack = new int[16];
@@ -1010,17 +1011,13 @@ public class Parser
        users should not rely upon it.  */
     Object yyval = (0 < yylen) ? yystack.valueAt(yylen - 1) : yystack.valueAt(0);
 
-    yyReducePrint(yyn, yystack);
-
     switch (yyn)
       {
         
-/* "src/main/java/lexer_parser/Parser.java":1019  */
+/* "src/main/java/lexer_parser/Parser.java":1018  */
 
         default: break;
       }
-
-    yySymbolPrint("-> $$ =", SymbolKind.get(yyr1_[yyn]), yyval);
 
     yystack.pop(yylen);
     yylen = 0;
@@ -1031,19 +1028,6 @@ public class Parser
   }
 
 
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  private void yySymbolPrint(String s, SymbolKind yykind,
-                             Object yyvalue) {
-      if (0 < yydebug) {
-          yycdebug(s
-                   + (yykind.getCode() < YYNTOKENS_ ? " token " : " nterm ")
-                   + yykind.getName() + " ("
-                   + (yyvalue == null ? "(null)" : yyvalue.toString()) + ")");
-      }
-  }
 
 
   /**
@@ -1077,7 +1061,6 @@ public class Parser
 
 
 
-    yycdebug ("Starting parse");
     yyerrstatus_ = 0;
     yynerrs = 0;
 
@@ -1092,9 +1075,6 @@ public class Parser
         /* New state.  Unlike in the C/C++ skeletons, the state is already
            pushed when we come here.  */
       case YYNEWSTATE:
-        yycdebug ("Entering state " + yystate);
-        if (0 < yydebug)
-          yystack.print (yyDebugStream);
 
         /* Accept?  */
         if (yystate == YYFINAL_)
@@ -1112,7 +1092,6 @@ public class Parser
         if (yychar == YYEMPTY_)
           {
 
-            yycdebug ("Reading a token");
             yychar = yylexer.yylex ();
             yylval = yylexer.getLVal();
 
@@ -1120,8 +1099,6 @@ public class Parser
 
         /* Convert token to internal form.  */
         yytoken = yytranslate_ (yychar);
-        yySymbolPrint("Next token is", yytoken,
-                      yylval);
 
         if (yytoken == SymbolKind.S_YYerror)
           {
@@ -1156,9 +1133,6 @@ public class Parser
             else
               {
                 /* Shift the lookahead token.  */
-                yySymbolPrint("Shifting", yytoken,
-                              yylval);
-
                 /* Discard the token being shifted.  */
                 yychar = YYEMPTY_;
 
@@ -1269,8 +1243,6 @@ public class Parser
 
             yystack.pop ();
             yystate = yystack.stateAt(0);
-            if (0 < yydebug)
-              yystack.print (yyDebugStream);
           }
 
         if (label == YYABORT)
@@ -1280,8 +1252,6 @@ public class Parser
 
 
         /* Shift the error token.  */
-        yySymbolPrint("Shifting", SymbolKind.get(yystos_[yyn]),
-                      yylval);
 
         yystate = yyn;
         yystack.push (yyn, yylval);
@@ -1397,7 +1367,7 @@ public class Parser
     return yyvalue == yytable_ninf_;
   }
 
-  private static final short yypact_ninf_ = -329;
+  private static final short yypact_ninf_ = -348;
   private static final short yytable_ninf_ = -1;
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
@@ -1407,47 +1377,48 @@ public class Parser
   {
     return new short[]
     {
-      73,    -1,    44,  -329,  -329,  -329,   -21,     3,     3,  -329,
-      25,  -329,  -329,  -329,  -329,    52,    52,    78,  -329,   123,
-     131,  -329,  -329,    63,  -329,  -329,  -329,  -329,    19,   102,
-    -329,  -329,    52,  -329,   135,  -329,   176,    31,   147,   287,
-      48,   104,   177,   149,  -329,   182,  -329,  -329,  -329,   151,
-    -329,    95,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,  -329,  -329,  -329,    98,   154,  -329,  -329,  -329,   153,
-    -329,  -329,   111,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-     155,  -329,   156,  -329,   157,  -329,  -329,  -329,  -329,   158,
-    -329,   -27,  -329,  -329,    55,   161,    59,  -329,   186,   163,
-    -329,   193,   209,  -329,  -329,  -329,   122,   117,    36,   316,
-     122,   126,   166,   118,   125,   133,   128,  -329,   172,  -329,
-    -329,   130,   177,   190,  -329,  -329,   129,   144,   145,   160,
-     162,   164,   165,  -329,  -329,  -329,  -329,   180,   167,   170,
-     173,   174,   175,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,  -329,  -329,  -329,  -329,   139,   189,   181,   216,   250,
-    -329,  -329,   204,  -329,   203,   246,  -329,  -329,  -329,   201,
-     -17,   453,   283,   177,   210,   278,   276,     5,   272,   230,
-     -28,   247,   247,   249,   -30,   291,    86,  -329,  -329,  -329,
-    -329,   -23,   249,   251,   252,   255,   258,   122,   299,  -329,
-     264,  -329,   327,   284,  -329,  -329,     7,  -329,  -329,  -329,
-     328,   298,   357,   314,  -329,   286,  -329,  -329,   294,   312,
-     386,    -8,   315,   380,  -329,   317,   320,  -329,   368,  -329,
-    -329,  -329,  -329,   366,   323,  -329,  -329,   321,  -329,   326,
-      91,   180,  -329,  -329,   375,  -329,  -329,  -329,  -329,  -329,
-    -329,   424,   372,  -329,   168,   246,  -329,   340,  -329,   335,
-     336,  -329,  -329,   334,   150,   382,   430,  -329,  -329,  -329,
-    -329,    71,   351,  -329,    88,  -329,   358,  -329,   359,   360,
-     247,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,     4,   361,  -329,  -329,   453,   453,   453,  -329,  -329,
-    -329,  -329,  -329,   363,    41,  -329,  -329,  -329,   365,    99,
-      72,  -329,  -329,  -329,  -329,  -329,   356,   353,  -329,  -329,
-     410,  -329,   364,   371,   373,  -329,  -329,   369,  -329,  -329,
-    -329,  -329,  -329,   377,  -329,   376,  -329,   379,   394,   391,
-    -329,  -329,   395,  -329,  -329,   403,   374,  -329,  -329,  -329,
-    -329,   434,   420,   -11,  -329,   -10,   116,   -11,   485,   132,
-    -329,   482,  -329,    -2,    -5,    -4,  -329,   419,   467,  -329,
-     468,  -329,   116,   132,   116,   132,  -329,   486,    -9,  -329,
-    -329,  -329,  -329,  -329,   474,   397,   475,   432,  -329,  -329,
-    -329,   494,  -329,   478,  -329
+      35,    38,   104,   103,  -348,    26,    13,    32,  -348,    77,
+    -348,    80,  -348,    33,  -348,  -348,    81,    83,  -348,  -348,
+    -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,
+    -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,    28,    86,
+    -348,  -348,   100,  -348,  -348,    36,  -348,  -348,  -348,  -348,
+    -348,  -348,  -348,   102,  -348,   106,  -348,   107,  -348,  -348,
+    -348,  -348,  -348,   -27,  -348,  -348,  -348,  -348,    21,    56,
+      14,    74,   284,    79,    70,     0,   585,    79,    84,   121,
+      71,    88,    87,    51,    51,  -348,   113,  -348,  -348,   367,
+    -348,    82,  -348,    85,    90,    91,    92,    93,    94,  -348,
+    -348,  -348,  -348,   131,    95,    97,    98,  -348,  -348,  -348,
+    -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,    96,
+     110,    78,   134,   135,  -348,  -348,   111,  -348,    99,   440,
+    -348,  -348,   115,  -348,  -348,   136,   136,   124,  -348,   175,
+     176,  -348,  -348,  -348,  -348,  -348,  -348,  -348,   152,   114,
+     -45,   137,   146,   149,   172,    16,  -348,  -348,  -348,  -348,
+     147,   151,   153,   154,    79,   165,  -348,   145,  -348,   201,
+     129,  -348,  -348,   -18,  -348,  -348,  -348,   202,  -348,   157,
+    -348,  -348,  -348,  -348,   -43,   159,  -348,  -348,   136,  -348,
+     206,  -348,   240,  -348,  -348,  -348,   193,  -348,  -348,  -348,
+     148,   131,  -348,  -348,  -348,  -348,  -348,  -348,   554,   213,
+    -348,   191,   440,  -348,   177,   -15,   217,   327,    11,   174,
+     262,   237,  -348,   270,  -348,  -348,  -348,  -348,  -348,  -348,
+    -348,  -348,  -348,  -348,     7,   192,  -348,  -348,  -348,  -348,
+    -348,    83,  -348,    60,  -348,  -348,  -348,  -348,   238,  -348,
+    -348,  -348,    23,   243,    66,  -348,   266,   244,  -348,   275,
+    -348,   247,  -348,  -348,  -348,  -348,   203,  -348,   246,  -348,
+    -348,   205,   262,   263,   250,  -348,   207,  -348,   407,   619,
+     280,   262,   208,   274,   272,   264,    12,  -348,  -348,   219,
+     483,   220,  -348,   216,  -348,  -348,   218,   221,   292,    67,
+     235,   286,  -348,   236,   224,    27,  -348,  -348,  -348,   241,
+     248,  -348,  -348,   239,     1,   289,   320,  -348,  -348,  -348,
+    -348,    54,   245,  -348,    31,  -348,   251,  -348,   619,   619,
+     619,  -348,  -348,  -348,  -348,  -348,   252,   242,  -348,  -348,
+    -348,   253,    10,    76,  -348,  -348,  -348,  -348,  -348,   257,
+     259,   261,  -348,  -348,   254,  -348,  -348,  -348,  -348,  -348,
+     267,  -348,   249,  -348,  -348,  -348,   287,  -348,  -348,   282,
+    -348,   314,    -5,    -4,    69,    -5,   333,    89,  -348,   347,
+    -348,     3,    -3,    -2,  -348,   285,   335,  -348,   337,  -348,
+      69,    89,    69,    89,  -348,   355,    -8,  -348,  -348,  -348,
+    -348,  -348,   339,   525,   340,   295,  -348,  -348,  -348,   366,
+    -348,   351,  -348
     };
   }
 
@@ -1459,47 +1430,48 @@ public class Parser
   {
     return new short[]
     {
-       0,     0,     0,     2,     4,     1,     8,   103,   103,     5,
-      12,     7,     6,   101,   102,     0,     0,   105,     9,     0,
-      15,    10,   231,     0,    97,    99,   109,   110,     0,     0,
-     106,   104,     0,     3,     0,    13,    42,     0,     0,     0,
-       0,     0,     0,     0,    16,    88,    96,    98,   232,   111,
-     233,   116,   238,   239,   182,   183,   184,   185,   130,   146,
-     147,   145,   148,   149,   135,   136,   137,   138,   139,   140,
-     141,   142,   143,   144,     0,     0,   108,   119,   120,   123,
-     126,   127,   131,   133,   134,   132,   128,   129,   150,   121,
-     186,   122,     0,   115,   199,   190,   125,   191,   114,   229,
-     113,   234,    95,   107,     0,     0,     0,    20,    40,     0,
-      43,    11,     0,   117,   118,   112,     0,   196,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   100,     0,    14,
-      21,     0,    18,    46,    91,    89,   225,     0,     0,     0,
-       0,     0,     0,   179,   180,   151,   154,     0,     0,     0,
-       0,     0,     0,   226,   153,   155,   156,   152,   161,   162,
-     163,   164,   158,   157,   228,     0,   203,     0,     0,     0,
-     194,   124,     0,   187,   192,     0,   200,   230,   236,     0,
-       0,     0,     0,    19,     0,    56,    48,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   217,   220,   219,
-     221,     0,     0,     0,     0,     0,     0,     0,     0,   195,
-     198,   188,     0,   154,   213,   215,     0,   207,   209,   214,
-     235,     0,     0,     0,    24,    25,    27,    26,     0,     0,
-       0,     0,     0,     0,    57,     0,     0,    90,     0,    92,
-     227,   178,   166,     0,     0,   171,   172,     0,   174,     0,
-       0,     0,   216,   165,     0,   175,   159,   160,   181,   189,
-     204,     0,     0,   193,     0,     0,   206,     0,    22,     0,
+     230,     0,     0,     0,   231,     0,     0,     0,     1,     0,
+       2,     0,   232,     0,   233,     4,     0,     0,   228,   229,
+     172,   173,   174,   175,   130,   146,   145,   147,   135,   136,
+     137,   138,   139,   140,   141,   142,   143,   144,     0,     0,
+     236,   120,   123,   126,   127,   131,   133,   134,   132,   128,
+     129,   148,   121,   176,   122,     0,   237,   189,   180,   125,
+     181,   240,   239,   224,   235,   238,   241,   234,     8,     0,
+       0,     0,     0,     0,   186,     0,     0,     0,     0,     0,
+       0,     0,     0,   101,   101,     5,    12,     7,     6,     0,
+     242,     0,   243,   215,     0,     0,     0,     0,     0,   169,
+     170,   149,   152,     0,     0,     0,     0,   216,   151,   153,
+     154,   150,   159,   160,   161,   162,   156,   155,   218,     0,
+     193,     0,     0,     0,   184,   124,     0,   177,   182,     0,
+     190,   226,     0,   102,   103,     0,     0,   104,     9,     0,
+      15,    10,   246,   247,   248,   249,   245,   244,     0,     0,
+       0,     0,     0,     0,     0,     0,   207,   210,   209,   211,
+       0,     0,     0,     0,     0,     0,   185,   188,   178,     0,
+     152,   203,   205,     0,   197,   199,   204,   225,   221,     0,
+      97,    99,   109,   110,     0,     0,   106,   105,     0,     3,
+       0,    13,    42,   217,   168,   163,     0,   165,   166,   167,
+       0,     0,   206,   157,   158,   171,   179,   194,     0,     0,
+     183,     0,     0,   196,     0,     0,     0,     0,     0,     0,
+       0,     0,    16,    88,   164,   213,   214,   212,   208,   191,
+     195,   131,   192,   187,     0,     0,   198,   227,    96,    98,
+     222,   111,   223,   116,   108,   119,   115,   114,   219,   113,
+      95,   107,     0,     0,     0,    20,    40,     0,    43,    11,
+     200,     0,   202,   117,   118,   112,     0,   100,     0,    14,
+      21,     0,    18,    46,     0,    89,     0,   220,     0,     0,
+       0,    19,     0,    56,    48,     0,     0,    91,   201,     0,
+       0,     0,    24,    25,    27,    26,     0,     0,     0,     0,
+       0,     0,    57,     0,     0,     0,    90,    92,    22,     0,
        0,    23,    28,     0,     0,     0,     0,    50,    51,    52,
-      47,     0,     0,    65,     0,    45,    93,   168,     0,     0,
-       0,   223,   224,   222,   218,   167,   201,   205,   131,   202,
-     197,     0,     0,   208,   237,     0,     0,     0,    32,    33,
-      34,    35,    36,     0,     0,    17,    60,    59,     0,     0,
-       0,    53,    54,    55,    49,    94,     0,     0,   177,   210,
-       0,   212,     0,     0,     0,    31,    39,     0,    38,    58,
-      62,    63,    64,     0,    44,     0,    66,     0,     0,     0,
-      30,    29,     0,    37,    61,     0,   169,   173,   176,   211,
-      41,     0,     0,     0,   170,     0,    73,     0,     0,    73,
-      80,    79,    78,     0,     0,     0,    72,     0,     0,    71,
-       0,    82,    73,    73,    73,    73,    81,    85,    68,    83,
-      74,    76,    75,    77,     0,     0,     0,     0,    84,    70,
-      69,    87,    67,     0,    86
+      47,     0,     0,    65,     0,    45,     0,    93,     0,     0,
+       0,    32,    33,    34,    35,    36,     0,     0,    17,    60,
+      59,     0,     0,     0,    53,    54,    55,    49,    94,     0,
+       0,     0,    31,    39,     0,    38,    58,    62,    63,    64,
+       0,    44,     0,    66,    30,    29,     0,    37,    61,     0,
+      41,     0,     0,     0,    73,     0,     0,    73,    80,    79,
+      78,     0,     0,     0,    72,     0,     0,    71,     0,    82,
+      73,    73,    73,    73,    81,    85,    68,    83,    74,    76,
+      75,    77,     0,     0,     0,     0,    84,    70,    69,    87,
+      67,     0,    86
     };
   }
 
@@ -1509,18 +1481,18 @@ public class Parser
   {
     return new short[]
     {
-    -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,  -329,  -329,   387,   -96,  -329,  -329,  -329,   295,  -329,
-    -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,   171,
-    -299,  -328,  -329,  -329,  -329,  -329,  -329,  -329,  -329,  -329,
-    -329,   496,  -329,   526,  -329,   503,    -7,  -329,  -329,  -329,
-    -329,  -329,  -329,   279,  -329,   -39,  -329,  -329,   -38,  -329,
-     -37,  -107,  -177,  -329,  -329,  -329,  -329,  -329,  -329,  -184,
-     343,   337,  -329,  -329,  -329,  -329,  -329,  -329,   421,  -329,
-    -329,  -329,  -329,  -329,   338,  -329,  -116,  -329,   277,   280,
-    -106,  -329,   292,  -329,   507,   508,   509,  -329,  -329,  -329,
-    -329,  -329,  -329
+    -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,
+    -348,  -348,  -348,   125,  -227,  -348,  -348,  -348,   119,  -348,
+    -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,
+    -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,  -348,    24,
+    -347,  -317,  -348,  -348,  -348,  -348,  -348,   127,  -348,  -348,
+    -348,   185,  -348,   331,  -348,   228,  -124,  -348,  -348,  -348,
+     -85,  -348,  -348,   209,  -348,   -11,  -348,  -348,   -10,  -348,
+      -9,   -69,  -268,  -348,  -348,  -348,  -348,  -348,  -348,  -348,
+    -348,  -348,  -348,  -348,  -348,   342,  -348,  -348,  -348,   -84,
+    -348,   256,  -348,   -62,  -348,   210,   212,   -66,  -348,   223,
+    -348,   -90,   -89,   -88,   -81,  -348,  -348,  -348,   -80,  -348,
+    -348,  -348,  -348,   415,  -348,  -348,  -348,  -348,   363,  -348
     };
   }
 
@@ -1530,18 +1502,18 @@ public class Parser
   {
     return new short[]
     {
-       0,     2,     3,     6,     9,    10,    18,    19,    20,    35,
-      36,    44,   182,   106,   107,   223,   224,   225,   226,   230,
-     313,   276,   337,   132,    45,   110,   185,   186,   236,   280,
-     324,   233,   234,   318,   283,   343,   320,   346,   397,   368,
-     376,   369,   370,   388,   111,   135,   187,   239,    11,    12,
-      23,    24,    21,    15,    32,    29,    25,    76,   115,    26,
-      77,    78,    79,    80,    81,   150,    83,    84,   151,    86,
-     152,   214,   154,   155,   156,   157,   158,   357,   159,   245,
-     160,   248,   161,   162,   163,    88,    89,    90,   166,    91,
-      92,   118,    93,    94,   167,   299,   215,   216,   217,   218,
-     219,   196,   197,   293,   198,   199,   200,    98,    27,    28,
-      99,   100,   101
+       0,     2,    10,    68,    85,    86,   138,   139,   140,   191,
+     192,   222,   280,   254,   255,   291,   292,   293,   294,   298,
+     336,   316,   354,   272,   223,   258,   283,   284,   304,   320,
+     347,   301,   302,   341,   323,   360,   343,   363,   405,   376,
+     384,   377,   378,   396,   259,   275,   286,   287,    87,    88,
+     179,   180,   141,   135,   188,   185,   181,   244,   265,   182,
+      40,    41,    42,    43,    44,   104,    46,    47,   105,    49,
+     106,   171,   108,   109,   110,   111,   112,   113,   114,   115,
+     116,   117,    51,    52,    53,   120,    54,    55,    75,    56,
+      57,   121,   232,   172,   173,   174,   175,   176,   155,   156,
+     227,    58,    59,    60,    61,   183,   184,   248,    62,    63,
+       3,     4,     6,     7,    64,    65,    66,    70,    71,   146
     };
   }
 
@@ -1553,61 +1525,77 @@ public class Parser
   {
     return new short[]
     {
-      82,    85,    87,   227,   228,   153,   164,   176,   246,    30,
-     130,   395,   171,   365,   365,   125,   242,   237,   177,   365,
-     365,   253,   380,   221,     7,    30,   277,   278,   279,   366,
-     371,     8,   137,   103,   141,   382,   384,   372,   381,     4,
-      54,    55,    56,    57,     5,   270,   383,   385,   238,    13,
-      14,    64,    65,    66,    67,    68,    69,    70,    71,    72,
-      73,   143,   144,   149,   243,   129,   146,   126,   222,   254,
-     379,    22,   105,   336,   367,   367,     1,   396,    17,    46,
-     367,   367,   344,   390,   391,   392,   393,   130,    22,   345,
-     137,   329,    22,   265,   330,    22,   102,   103,    54,    55,
-      56,    57,   266,   127,   316,    38,   328,    39,   317,    64,
-      65,    66,    67,    68,    69,    70,    71,    72,    73,   143,
-     144,   321,   169,   170,   146,   322,   323,    33,   332,   333,
-     334,   136,    31,   340,   291,   341,    34,   338,   342,   373,
-     137,   374,   375,   153,   292,   113,   114,    37,    54,    55,
-      56,    57,   138,   139,   140,   141,   142,   374,   375,    64,
-      65,    66,    67,    68,    69,    70,    71,    72,    73,   143,
-     144,   145,   251,   252,   146,    42,   147,   308,   309,   310,
-     311,   312,   148,    43,   149,   175,    40,    48,   104,   108,
-     105,   109,   116,   112,   117,   119,   120,   121,   122,   123,
-     124,   128,   131,   133,   134,   165,   174,   168,   301,   173,
-     147,   179,   175,   178,   180,   181,   184,   137,   400,   188,
-     195,   206,   298,    85,    87,    54,    55,    56,    57,   138,
-     139,   140,   141,   142,   189,   190,    64,    65,    66,    67,
-      68,    69,    70,    71,    72,    73,   143,   144,   145,   136,
-     191,   146,   192,   147,   193,   194,   209,   201,   137,   148,
-     202,   149,   175,   203,   204,   205,    54,    55,    56,    57,
-     138,   139,   140,   141,   142,   207,   208,    64,    65,    66,
-      67,    68,    69,    70,    71,    72,    73,   143,   144,   145,
-     210,   211,   146,   212,   147,   137,   220,   229,   231,   232,
-     148,   235,   149,    54,    55,    56,    57,   138,   139,   140,
-     141,   142,   240,   241,    64,    65,    66,    67,    68,    69,
-      70,    71,    72,    73,   143,   144,   145,    49,    50,   213,
-     244,   147,   247,   250,   256,   257,    51,   148,   258,   149,
-     175,   259,    52,    53,    54,    55,    56,    57,    58,    59,
-      60,    61,    62,    63,   262,    64,    65,    66,    67,    68,
-      69,    70,    71,    72,    73,   137,   261,   263,    74,   264,
-     267,   222,    75,    54,    55,    56,    57,   138,   139,   140,
-     141,   142,   268,   273,    64,    65,    66,    67,    68,    69,
-      70,    71,    72,    73,   143,   144,   145,   269,   271,   146,
-     274,   275,   282,   281,   285,   284,   137,   148,   286,   149,
-     287,   288,   300,   289,    54,    55,    56,    57,   290,   295,
-     304,   305,   306,   307,   314,    64,    65,    66,    67,    68,
-      69,    70,    71,    72,    73,   143,   144,   399,   315,   319,
-     146,   325,   326,   327,   347,   348,   137,   335,   331,   339,
-     349,   350,   363,   353,    54,    55,    56,    57,   351,   355,
-     352,   354,   356,   362,   296,    64,    65,    66,    67,    68,
-      69,    70,    71,    72,    73,   143,   144,   358,   359,   360,
-     146,    54,    55,    56,    57,    58,    59,    60,    61,    62,
-      63,   361,    64,    65,    66,    67,    68,    69,    70,    71,
-      72,    73,   137,   364,   378,   373,   386,   387,   389,   394,
-      54,    55,    56,    57,   398,   401,   402,   403,   404,   183,
-     272,    64,    65,    66,    67,    68,    69,    70,    71,    72,
-      73,   143,   144,    47,    16,    41,   146,   249,   377,   255,
-     297,   172,   303,   294,   302,   260,    95,    96,    97
+      45,    48,    50,   107,   142,   143,   118,   125,   144,   145,
+     295,   296,   186,   157,   158,   159,   403,    12,   130,    81,
+      90,   195,   310,   373,   373,   373,   373,   270,   306,   178,
+     387,   388,   331,   332,   333,   334,   335,   238,     1,   374,
+     379,   390,   392,   398,   399,   400,   401,   389,   357,   216,
+     358,   217,   196,   359,   270,   178,   380,     5,    69,   285,
+     349,   350,   351,   250,   186,   391,   393,   178,   344,   355,
+      83,    82,   345,   346,   212,   267,   269,    84,    45,    48,
+      50,   213,     5,   253,   404,    16,   375,   375,   375,   375,
+     361,   339,   123,   124,   251,   340,   381,   362,   382,   383,
+     260,   133,   134,   261,     8,   317,   318,   319,   201,   202,
+       9,   157,   158,   159,   263,   264,   326,   327,   382,   383,
+      11,    15,    14,    67,    17,    69,    73,    77,   251,    72,
+      74,   107,   245,   246,   226,   408,   247,   249,   225,    18,
+      19,    20,    21,    22,    23,    24,    76,    25,    78,    26,
+      89,    27,    79,    80,    28,    29,    30,    31,    32,    33,
+      34,    35,    36,    37,    92,   128,   122,    38,   119,   129,
+     137,    39,   147,   127,   131,   154,   132,   165,   166,   167,
+     178,   148,   187,   189,   163,   190,   149,   150,   151,   152,
+     153,   160,    93,   161,   162,   169,   193,   231,    48,    50,
+     277,    94,   164,   194,   168,   197,    45,    48,    50,    20,
+      21,    22,    23,    95,   177,    96,   198,    97,   200,    98,
+     211,   199,    28,    29,    30,    31,    32,    33,    34,    35,
+      36,    37,    99,   100,   101,   234,   203,   102,   208,   103,
+     204,   209,   205,   206,    94,   210,   129,   215,   214,   218,
+     220,   221,    20,    21,    22,    23,    95,   233,    96,   224,
+      97,   240,    98,   237,   252,    28,    29,    30,    31,    32,
+      33,    34,    35,    36,    37,    99,   100,   101,   353,   253,
+     102,   256,   103,   257,   266,   262,   271,   268,   273,   129,
+     274,   276,   278,   282,   103,    94,   279,   285,   297,   300,
+     288,   303,   299,    20,    21,    22,    23,   290,   305,   308,
+     311,   315,   322,   313,   325,   314,    28,    29,    30,    31,
+      32,    33,    34,    35,    36,    37,    99,   100,    93,   321,
+     324,   102,   338,   328,   330,   337,   372,    94,   369,   342,
+     329,   348,   352,   356,   367,    20,    21,    22,    23,    95,
+     364,    96,   365,    97,   366,    98,   386,   368,    28,    29,
+      30,    31,    32,    33,    34,    35,    36,    37,    99,   100,
+     101,   241,   242,   102,   381,   103,   371,   370,   394,   395,
+     243,   397,   402,   406,   409,   410,    18,    19,    20,    21,
+      22,    23,    24,   411,    25,   412,    26,   281,    27,   385,
+     239,    28,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,    17,   312,   307,    38,   136,   219,   230,    39,   126,
+     207,    13,   236,   235,   228,     0,    18,    19,    20,    21,
+      22,    23,    24,    91,    25,     0,    26,     0,    27,     0,
+       0,    28,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,   289,     0,     0,    38,     0,     0,     0,    39,     0,
+      94,     0,     0,     0,     0,     0,     0,     0,    20,    21,
+      22,    23,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,    28,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,    99,   100,    94,     0,     0,   102,     0,   290,     0,
+       0,    20,    21,    22,    23,    95,     0,    96,     0,    97,
+       0,    98,     0,     0,    28,    29,    30,    31,    32,    33,
+      34,    35,    36,    37,    99,   100,   101,   309,     0,   170,
+       0,   103,     0,     0,     0,     0,    94,     0,   129,     0,
+       0,     0,     0,     0,    20,    21,    22,    23,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,    28,    29,    30,
+      31,    32,    33,    34,    35,    36,    37,    99,   100,   407,
+       0,     0,   102,     0,     0,     0,     0,     0,    94,     0,
+       0,     0,     0,     0,     0,     0,    20,    21,    22,    23,
+       0,     0,     0,     0,     0,     0,     0,     0,   229,    28,
+      29,    30,    31,    32,    33,    34,    35,    36,    37,    99,
+     100,     0,     0,     0,   102,    20,    21,    22,    23,    24,
+       0,    25,     0,    26,     0,    27,     0,     0,    28,    29,
+      30,    31,    32,    33,    34,    35,    36,    37,    94,     0,
+       0,     0,     0,     0,     0,     0,    20,    21,    22,    23,
+      95,     0,    96,     0,    97,     0,    98,     0,     0,    28,
+      29,    30,    31,    32,    33,    34,    35,    36,    37,    99,
+     100,   101,    94,     0,   102,     0,     0,     0,     0,     0,
+      20,    21,    22,    23,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,    28,    29,    30,    31,    32,    33,    34,
+      35,    36,    37,    99,   100,     0,     0,     0,   102
     };
   }
 
@@ -1616,61 +1604,77 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new short[]
     {
-      39,    39,    39,   180,   181,   112,   112,   123,   192,    16,
-     106,    20,   119,    24,    24,    42,    44,    12,   124,    24,
-      24,    44,    24,    40,    45,    32,    34,    35,    36,    40,
-      40,    52,    49,    40,    64,    40,    40,   365,    40,    40,
-      57,    58,    59,    60,     0,   222,   374,   375,    43,    46,
-      47,    68,    69,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    93,    92,     6,    83,    94,    85,    92,
-     369,    40,    13,    32,    85,    85,     3,    86,    53,    48,
-      85,    85,    10,   382,   383,   384,   385,   183,    40,    17,
-      49,    87,    40,    86,    90,    40,    48,   104,    57,    58,
-      59,    60,    95,    48,    33,    86,   290,    88,    37,    68,
-      69,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,    33,    86,    87,    83,    37,    38,     4,   305,   306,
-     307,    40,    54,    34,   250,    36,     5,   314,    39,    23,
-      49,    25,    26,   250,   250,    50,    51,    84,    57,    58,
-      59,    60,    61,    62,    63,    64,    65,    25,    26,    68,
-      69,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,    80,    86,    87,    83,    40,    85,    27,    28,    29,
-      30,    31,    91,     7,    93,    94,    84,    40,    84,    40,
-      13,     9,    94,    42,    40,    42,    85,    42,    42,    42,
-      42,    40,    16,    40,    11,    83,    40,    90,    40,    83,
-      85,    83,    94,    80,    42,    85,    26,    49,   395,    90,
-      40,    82,   261,   261,   261,    57,    58,    59,    60,    61,
-      62,    63,    64,    65,    90,    90,    68,    69,    70,    71,
-      72,    73,    74,    75,    76,    77,    78,    79,    80,    40,
-      90,    83,    90,    85,    90,    90,    40,    90,    49,    91,
-      90,    93,    94,    90,    90,    90,    57,    58,    59,    60,
-      61,    62,    63,    64,    65,    86,    95,    68,    69,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-      40,    87,    83,    90,    85,    49,    95,    14,    88,    21,
-      91,    25,    93,    57,    58,    59,    60,    61,    62,    63,
-      64,    65,    40,    83,    68,    69,    70,    71,    72,    73,
-      74,    75,    76,    77,    78,    79,    80,    40,    41,    83,
-      83,    85,    83,    42,    83,    83,    49,    91,    83,    93,
-      94,    83,    55,    56,    57,    58,    59,    60,    61,    62,
-      63,    64,    65,    66,    90,    68,    69,    70,    71,    72,
-      73,    74,    75,    76,    77,    49,    67,    40,    81,    85,
-      42,    85,    85,    57,    58,    59,    60,    61,    62,    63,
-      64,    65,    84,    89,    68,    69,    70,    71,    72,    73,
-      74,    75,    76,    77,    78,    79,    80,    40,    84,    83,
-      88,    15,    22,    88,    84,    88,    49,    91,    40,    93,
-      44,    88,    40,    92,    57,    58,    59,    60,    92,    44,
-      80,    86,    86,    89,    42,    68,    69,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    40,     8,    88,
-      83,    83,    83,    83,    88,    92,    49,    84,    87,    84,
-      40,    87,    18,    84,    57,    58,    59,    60,    87,    83,
-      87,    84,    83,    89,    40,    68,    69,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    83,    87,    84,
-      83,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-      66,    88,    68,    69,    70,    71,    72,    73,    74,    75,
-      76,    77,    49,    83,    19,    23,    87,    40,    40,    23,
-      57,    58,    59,    60,    40,    40,    84,    23,    40,   132,
-     225,    68,    69,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    37,     8,    32,    83,   194,   367,   202,
-     261,   120,   265,   251,   264,   207,    39,    39,    39
+      11,    11,    11,    72,    89,    89,    72,    76,    89,    89,
+     278,   279,   136,   103,   103,   103,    24,     4,    80,    46,
+       6,    66,   290,    28,    28,    28,    28,   254,    16,    44,
+     377,    28,    31,    32,    33,    34,    35,    52,     3,    44,
+      44,    44,    44,   390,   391,   392,   393,    44,    38,    92,
+      40,    94,    97,    43,   281,    44,   373,    44,    44,    47,
+     328,   329,   330,    52,   188,   382,   383,    44,    37,   337,
+      49,    98,    41,    42,    92,    52,    10,    56,    89,    89,
+      89,    99,    44,    17,    92,     5,    91,    91,    91,    91,
+      14,    37,    92,    93,   218,    41,    27,    21,    29,    30,
+      93,    50,    51,    96,     0,    38,    39,    40,    92,    93,
+       7,   201,   201,   201,    54,    55,    89,    90,    29,    30,
+      94,    44,    90,    90,    44,    44,    98,    91,   252,    46,
+      44,   200,   217,   217,   200,   403,   217,   217,   200,    59,
+      60,    61,    62,    63,    64,    65,    46,    67,    46,    69,
+      94,    71,    46,    46,    74,    75,    76,    77,    78,    79,
+      80,    81,    82,    83,    90,    44,    96,    87,    89,    98,
+      57,    91,    90,    89,    86,    44,    89,    99,    44,    44,
+      44,    96,    58,     8,    88,     9,    96,    96,    96,    96,
+      96,    96,    44,    96,    96,    96,    44,   208,   208,   208,
+     266,    53,    92,    89,    93,    68,   217,   217,   217,    61,
+      62,    63,    64,    65,    99,    67,    70,    69,    46,    71,
+      91,    72,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,    83,    84,    85,    86,    44,    89,    89,    73,    91,
+      89,    96,    89,    89,    53,    44,    98,    90,    46,    90,
+      44,    11,    61,    62,    63,    64,    65,    44,    67,    66,
+      69,    44,    71,    86,    90,    74,    75,    76,    77,    78,
+      79,    80,    81,    82,    83,    84,    85,    86,    36,    17,
+      89,    44,    91,    13,    46,    93,    20,    44,    44,    98,
+      15,    44,    46,    30,    91,    53,    91,    47,    18,    25,
+      93,    29,    94,    61,    62,    63,    64,    91,    44,    90,
+      90,    19,    26,    95,    90,    94,    74,    75,    76,    77,
+      78,    79,    80,    81,    82,    83,    84,    85,    44,    94,
+      94,    89,    12,    92,    95,    46,    22,    53,    89,    94,
+      92,    90,    90,    90,    90,    61,    62,    63,    64,    65,
+      93,    67,    93,    69,    93,    71,    23,    90,    74,    75,
+      76,    77,    78,    79,    80,    81,    82,    83,    84,    85,
+      86,    44,    45,    89,    27,    91,    94,    90,    93,    44,
+      53,    44,    27,    44,    44,    90,    59,    60,    61,    62,
+      63,    64,    65,    27,    67,    44,    69,   272,    71,   375,
+     215,    74,    75,    76,    77,    78,    79,    80,    81,    82,
+      83,    44,   293,   286,    87,    84,   188,   208,    91,    77,
+     164,     6,   212,   211,   201,    -1,    59,    60,    61,    62,
+      63,    64,    65,    70,    67,    -1,    69,    -1,    71,    -1,
+      -1,    74,    75,    76,    77,    78,    79,    80,    81,    82,
+      83,    44,    -1,    -1,    87,    -1,    -1,    -1,    91,    -1,
+      53,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    61,    62,
+      63,    64,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    74,    75,    76,    77,    78,    79,    80,    81,    82,
+      83,    84,    85,    53,    -1,    -1,    89,    -1,    91,    -1,
+      -1,    61,    62,    63,    64,    65,    -1,    67,    -1,    69,
+      -1,    71,    -1,    -1,    74,    75,    76,    77,    78,    79,
+      80,    81,    82,    83,    84,    85,    86,    44,    -1,    89,
+      -1,    91,    -1,    -1,    -1,    -1,    53,    -1,    98,    -1,
+      -1,    -1,    -1,    -1,    61,    62,    63,    64,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    74,    75,    76,
+      77,    78,    79,    80,    81,    82,    83,    84,    85,    44,
+      -1,    -1,    89,    -1,    -1,    -1,    -1,    -1,    53,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    61,    62,    63,    64,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    44,    74,
+      75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
+      85,    -1,    -1,    -1,    89,    61,    62,    63,    64,    65,
+      -1,    67,    -1,    69,    -1,    71,    -1,    -1,    74,    75,
+      76,    77,    78,    79,    80,    81,    82,    83,    53,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    61,    62,    63,    64,
+      65,    -1,    67,    -1,    69,    -1,    71,    -1,    -1,    74,
+      75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
+      85,    86,    53,    -1,    89,    -1,    -1,    -1,    -1,    -1,
+      61,    62,    63,    64,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    74,    75,    76,    77,    78,    79,    80,
+      81,    82,    83,    84,    85,    -1,    -1,    -1,    89
     };
   }
 
@@ -1681,47 +1685,48 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new short[]
     {
-       0,     3,    97,    98,    40,     0,    99,    45,    52,   100,
-     101,   144,   145,    46,    47,   149,   149,    53,   102,   103,
-     104,   148,    40,   146,   147,   152,   155,   204,   205,   151,
-     152,    54,   150,     4,     5,   105,   106,    84,    86,    88,
-      84,   151,    40,     7,   107,   120,    48,   147,    40,    40,
-      41,    49,    55,    56,    57,    58,    59,    60,    61,    62,
-      63,    64,    65,    66,    68,    69,    70,    71,    72,    73,
-      74,    75,    76,    77,    81,    85,   153,   156,   157,   158,
-     159,   160,   161,   162,   163,   164,   165,   166,   181,   182,
-     183,   185,   186,   188,   189,   200,   201,   202,   203,   206,
-     207,   208,    48,   152,    84,    13,   109,   110,    40,     9,
-     121,   140,    42,    50,    51,   154,    94,    40,   187,    42,
-      85,    42,    42,    42,    42,    42,    94,    48,    40,     6,
-     110,    16,   119,    40,    11,   141,    40,    49,    61,    62,
-      63,    64,    65,    78,    79,    80,    83,    85,    91,    93,
-     161,   164,   166,   167,   168,   169,   170,   171,   172,   174,
-     176,   178,   179,   180,   196,    83,   184,   190,    90,    86,
-      87,   167,   184,    83,    40,    94,   192,   196,    80,    83,
-      42,    85,   108,   109,    26,   122,   123,   142,    90,    90,
-      90,    90,    90,    90,    90,    40,   197,   198,   200,   201,
-     202,    90,    90,    90,    90,    90,    82,    86,    95,    40,
-      40,    87,    90,    83,   167,   192,   193,   194,   195,   196,
-      95,    40,    85,   111,   112,   113,   114,   168,   168,    14,
-     115,    88,    21,   127,   128,    25,   124,    12,    43,   143,
-      40,    83,    44,    92,    83,   175,   175,    83,   177,   176,
-      42,    86,    87,    44,    92,   177,    83,    83,    83,    83,
-     190,    67,    90,    40,    85,    86,    95,    42,    84,    40,
-     168,    84,   114,    89,    88,    15,   117,    34,    35,    36,
-     125,    88,    22,   130,    88,    84,    40,    44,    88,    92,
-      92,   192,   196,   199,   198,    44,    40,   159,   161,   191,
-      40,    40,   195,   194,    80,    86,    86,    89,    27,    28,
-      29,    30,    31,   116,    42,     8,    33,    37,   129,    88,
-     132,    33,    37,    38,   126,    83,    83,    83,   175,    87,
-      90,    87,   168,   168,   168,    84,    32,   118,   168,    84,
-      34,    36,    39,   131,    10,    17,   133,    88,    92,    40,
-      87,    87,    87,    84,    84,    83,    83,   173,    83,    87,
-      84,    88,    89,    18,    83,    24,    40,    85,   135,   137,
-     138,    40,   137,    23,    25,    26,   136,   135,    19,   136,
-      24,    40,    40,   137,    40,   137,    87,    40,   139,    40,
-     136,   136,   136,   136,    23,    20,    86,   134,    40,    40,
-     168,    40,    84,    23,    40
+       0,     3,   101,   210,   211,    44,   212,   213,     0,     7,
+     102,    94,     4,   213,    90,    44,     5,    44,    59,    60,
+      61,    62,    63,    64,    65,    67,    69,    71,    74,    75,
+      76,    77,    78,    79,    80,    81,    82,    83,    87,    91,
+     160,   161,   162,   163,   164,   165,   166,   167,   168,   169,
+     170,   182,   183,   184,   186,   187,   189,   190,   201,   202,
+     203,   204,   208,   209,   214,   215,   216,    90,   103,    44,
+     217,   218,    46,    98,    44,   188,    46,    91,    46,    46,
+      46,    46,    98,    49,    56,   104,   105,   148,   149,    94,
+       6,   218,    90,    44,    53,    65,    67,    69,    71,    84,
+      85,    86,    89,    91,   165,   168,   170,   171,   172,   173,
+     174,   175,   176,   177,   178,   179,   180,   181,   197,    89,
+     185,   191,    96,    92,    93,   171,   185,    89,    44,    98,
+     193,    86,    89,    50,    51,   153,   153,    57,   106,   107,
+     108,   152,   160,   189,   204,   208,   219,    90,    96,    96,
+      96,    96,    96,    96,    44,   198,   199,   201,   202,   203,
+      96,    96,    96,    88,    92,    99,    44,    44,    93,    96,
+      89,   171,   193,   194,   195,   196,   197,    99,    44,   150,
+     151,   156,   159,   205,   206,   155,   156,    58,   154,     8,
+       9,   109,   110,    44,    89,    66,    97,    68,    70,    72,
+      46,    92,    93,    89,    89,    89,    89,   191,    73,    96,
+      44,    91,    92,    99,    46,    90,    92,    94,    90,   155,
+      44,    11,   111,   124,    66,   193,   197,   200,   199,    44,
+     163,   165,   192,    44,    44,   196,   195,    86,    52,   151,
+      44,    44,    45,    53,   157,   160,   189,   204,   207,   208,
+      52,   156,    90,    17,   113,   114,    44,    13,   125,   144,
+      93,    96,    93,    54,    55,   158,    46,    52,    44,    10,
+     114,    20,   123,    44,    15,   145,    44,   197,    46,    91,
+     112,   113,    30,   126,   127,    47,   146,   147,    93,    44,
+      91,   115,   116,   117,   118,   172,   172,    18,   119,    94,
+      25,   131,   132,    29,   128,    44,    16,   147,    90,    44,
+     172,    90,   118,    95,    94,    19,   121,    38,    39,    40,
+     129,    94,    26,   134,    94,    90,    89,    90,    92,    92,
+      95,    31,    32,    33,    34,    35,   120,    46,    12,    37,
+      41,   133,    94,   136,    37,    41,    42,   130,    90,   172,
+     172,   172,    90,    36,   122,   172,    90,    38,    40,    43,
+     135,    14,    21,   137,    93,    93,    93,    90,    90,    89,
+      90,    94,    22,    28,    44,    91,   139,   141,   142,    44,
+     141,    27,    29,    30,   140,   139,    23,   140,    28,    44,
+      44,   141,    44,   141,    93,    44,   143,    44,   140,   140,
+     140,   140,    27,    24,    92,   138,    44,    44,   172,    44,
+      90,    27,    44
     };
   }
 
@@ -1731,30 +1736,31 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new short[]
     {
-       0,    96,    97,    98,    99,    99,   100,   100,   101,   101,
-     102,   103,   104,   104,   105,   106,   106,   107,   108,   108,
-     109,   109,   110,   110,   111,   111,   112,   113,   113,   114,
-     114,   115,   116,   116,   116,   116,   116,   117,   118,   118,
-     119,   119,   120,   120,   121,   122,   123,   123,   124,   124,
-     125,   125,   125,   126,   126,   126,   127,   127,   128,   129,
-     129,   130,   131,   131,   131,   132,   132,   133,   134,   134,
-     134,   135,   135,   136,   136,   136,   136,   136,   137,   137,
-     137,   137,   138,   138,   139,   139,   139,   139,   140,   140,
-     141,   142,   142,   143,   143,   144,   145,   146,   146,   147,
-     148,   149,   149,   149,   150,   150,   151,   151,   152,   152,
-     152,   153,   153,   153,   153,   153,   154,   154,   154,   155,
-     156,   156,   156,   157,   157,   157,   158,   159,   159,   159,
-     159,   160,   160,   161,   161,   162,   162,   162,   162,   163,
-     163,   163,   163,   164,   164,   165,   165,   165,   165,   165,
-     166,   167,   167,   167,   168,   168,   168,   168,   168,   169,
-     170,   171,   171,   171,   171,   172,   172,   172,   172,   173,
-     173,   174,   174,   175,   176,   176,   177,   178,   179,   179,
-     179,   180,   181,   181,   181,   181,   182,   182,   183,   184,
-     185,   185,   185,   185,   186,   187,   187,   187,   187,   188,
-     188,   189,   189,   190,   190,   191,   192,   193,   193,   194,
-     194,   194,   194,   195,   195,   195,   196,   197,   197,   198,
-     198,   198,   198,   199,   199,   200,   201,   202,   203,   204,
-     204,   205,   205,   206,   207,   207,   207,   207,   208,   208
+       0,   100,   101,   102,   103,   103,   104,   104,   105,   105,
+     106,   107,   108,   108,   109,   110,   110,   111,   112,   112,
+     113,   113,   114,   114,   115,   115,   116,   117,   117,   118,
+     118,   119,   120,   120,   120,   120,   120,   121,   122,   122,
+     123,   123,   124,   124,   125,   126,   127,   127,   128,   128,
+     129,   129,   129,   130,   130,   130,   131,   131,   132,   133,
+     133,   134,   135,   135,   135,   136,   136,   137,   138,   138,
+     138,   139,   139,   140,   140,   140,   140,   140,   141,   141,
+     141,   141,   142,   142,   143,   143,   143,   143,   144,   144,
+     145,   146,   146,   147,   147,   148,   149,   150,   150,   151,
+     152,   153,   153,   153,   154,   154,   155,   155,   156,   156,
+     156,   157,   157,   157,   157,   157,   158,   158,   158,   159,
+     160,   160,   160,   161,   161,   161,   162,   163,   163,   163,
+     163,   164,   164,   165,   165,   166,   166,   166,   166,   167,
+     167,   167,   167,   168,   168,   169,   169,   169,   170,   171,
+     171,   171,   172,   172,   172,   172,   172,   173,   174,   175,
+     175,   175,   175,   176,   176,   177,   178,   179,   180,   180,
+     180,   181,   182,   182,   182,   182,   183,   183,   184,   185,
+     186,   186,   186,   186,   187,   188,   188,   188,   188,   189,
+     189,   190,   190,   191,   191,   192,   193,   194,   194,   195,
+     195,   195,   195,   196,   196,   196,   197,   198,   198,   199,
+     199,   199,   199,   200,   200,   201,   202,   203,   204,   205,
+     205,   206,   206,   207,   208,   208,   208,   208,   209,   209,
+     210,   210,   211,   212,   212,   213,   214,   214,   214,   214,
+     215,   215,   216,   217,   217,   218,   219,   219,   219,   219
     };
   }
 
@@ -1764,7 +1770,7 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new byte[]
     {
-       0,     2,     1,     6,     0,     2,     1,     1,     0,     2,
+       0,     2,     2,     6,     0,     2,     1,     1,     0,     2,
        1,     4,     0,     2,     4,     0,     2,     7,     0,     1,
        1,     2,     5,     5,     1,     1,     1,     1,     2,     5,
        5,     4,     1,     1,     1,     1,     1,     4,     1,     1,
@@ -1773,85 +1779,34 @@ private static final short[] yycheck_ = yycheck_init();
        1,     4,     1,     1,     1,     0,     2,     9,     0,     2,
        2,     2,     2,     0,     3,     3,     3,     3,     2,     2,
        1,     3,     3,     4,     3,     1,     5,     3,     0,     2,
-       3,     0,     2,     2,     3,     5,     5,     1,     3,     1,
-       5,     1,     1,     0,     1,     0,     1,     3,     3,     1,
+       3,     1,     2,     3,     4,     5,     5,     1,     3,     1,
+       5,     0,     1,     1,     0,     1,     1,     3,     3,     1,
        1,     1,     2,     1,     1,     1,     0,     1,     1,     3,
        1,     1,     1,     1,     3,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     3,
-       3,     1,     1,     1,     1,     3,     3,     4,     4,     1,
-       3,     3,     3,     5,     3,     3,     5,     5,     3,     1,
+       1,     1,     1,     1,     1,     1,     1,     3,     3,     1,
+       1,     1,     1,     3,     4,     3,     3,     3,     3,     1,
        1,     3,     1,     1,     1,     1,     1,     3,     4,     3,
        1,     1,     3,     5,     3,     3,     1,     5,     3,     1,
        3,     6,     6,     1,     3,     1,     3,     1,     3,     1,
        4,     6,     4,     1,     1,     1,     3,     1,     3,     1,
        1,     1,     3,     1,     1,     3,     3,     5,     3,     3,
-       5,     1,     3,     1,     1,     4,     3,     6,     1,     1
+       5,     1,     3,     1,     1,     4,     3,     6,     1,     1,
+       0,     1,     3,     2,     3,     3,     1,     1,     1,     1,
+       1,     1,     3,     2,     3,     3,     1,     1,     1,     1
     };
   }
 
 
 
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-  private static final short[] yyrline_ = yyrline_init();
-  private static final short[] yyrline_init()
-  {
-    return new short[]
-    {
-       0,    42,    42,    46,    53,    55,    59,    60,    63,    65,
-      69,    73,    79,    81,    85,    90,    92,    96,   104,   106,
-     110,   111,   115,   116,   120,   121,   125,   129,   130,   134,
-     135,   139,   143,   143,   143,   143,   143,   147,   151,   152,
-     155,   157,   160,   162,   166,   175,   178,   180,   183,   185,
-     189,   189,   189,   193,   193,   193,   196,   198,   202,   206,
-     206,   210,   214,   214,   214,   217,   219,   223,   226,   228,
-     229,   233,   234,   237,   239,   240,   241,   242,   246,   247,
-     248,   249,   253,   254,   258,   259,   260,   261,   264,   266,
-     270,   275,   277,   281,   282,   288,   292,   296,   297,   301,
-     305,   309,   310,   311,   315,   316,   320,   321,   325,   326,
-     327,   331,   332,   333,   334,   335,   338,   340,   341,   345,
-     349,   350,   351,   355,   356,   357,   361,   367,   368,   369,
-     370,   374,   375,   379,   380,   384,   384,   384,   384,   388,
-     388,   388,   388,   392,   392,   396,   396,   396,   396,   396,
-     400,   406,   407,   408,   412,   413,   414,   415,   416,   420,
-     424,   428,   429,   430,   431,   435,   436,   437,   438,   481,
-     482,   486,   487,   491,   495,   496,   500,   504,   508,   509,
-     510,   514,   518,   519,   520,   521,   527,   528,   532,   536,
-     540,   541,   542,   543,   547,   551,   552,   553,   554,   558,
-     559,   563,   564,   568,   569,   573,   577,   581,   582,   586,
-     587,   588,   589,   593,   594,   595,   599,   603,   604,   608,
-     609,   610,   611,   615,   616,   620,   624,   628,   632,   636,
-     637,   641,   642,   647,   651,   652,   653,   654,   658,   659
-    };
-  }
-
-
-  // Report on the debug stream that the rule yyrule is going to be reduced.
-  private void yyReducePrint (int yyrule, YYStack yystack)
-  {
-    if (yydebug == 0)
-      return;
-
-    int yylno = yyrline_[yyrule];
-    int yynrhs = yyr2_[yyrule];
-    /* Print the symbols being reduced, and their result.  */
-    yycdebug ("Reducing stack by rule " + (yyrule - 1)
-              + " (line " + yylno + "):");
-
-    /* The symbols being reduced.  */
-    for (int yyi = 0; yyi < yynrhs; yyi++)
-      yySymbolPrint("   $" + (yyi + 1) + " =",
-                    SymbolKind.get(yystos_[yystack.stateAt(yynrhs - (yyi + 1))]),
-                    yystack.valueAt ((yynrhs) - (yyi + 1)));
-  }
 
   /* YYTRANSLATE_(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
      as returned by yylex, with out-of-bounds checking.  */
   private static final SymbolKind yytranslate_(int t)
   {
     // Last valid token kind.
-    int code_max = 338;
+    int code_max = 344;
     if (t <= 0)
       return SymbolKind.S_YYEOF;
     else if (t <= code_max)
@@ -1867,13 +1822,13 @@ private static final short[] yycheck_ = yycheck_init();
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,    90,     2,     2,     2,     2,
-      85,    87,     2,     2,    86,    92,    89,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,    88,    84,
-       2,     2,     2,     2,     2,     2,     2,     2,    93,     2,
+       2,     2,     2,     2,     2,    96,     2,     2,     2,     2,
+      91,    93,     2,     2,    92,    97,    95,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,    94,    90,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,    91,     2,     2,     2,     2,     2,
-       2,    94,     2,    95,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,    98,     2,    99,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -1897,17 +1852,18 @@ private static final short[] yycheck_ = yycheck_init();
       45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
       65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,    81,    82,    83
+      75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
+      85,    86,    87,    88,    89
     };
   }
 
 
-  private static final int YYLAST_ = 548;
+  private static final int YYLAST_ = 708;
   private static final int YYEMPTY_ = -2;
-  private static final int YYFINAL_ = 5;
-  private static final int YYNTOKENS_ = 96;
+  private static final int YYFINAL_ = 8;
+  private static final int YYNTOKENS_ = 100;
 
 
 }
-/* "src/main/java/lexer_parser/Parser.y":662  */
- /* ------------------------------- Código Java ------------------------------------ */
+/* "src/main/java/lexer_parser/Parser.y":661  */
+ /* --------------------------------- Código Java ------------------------------------- */

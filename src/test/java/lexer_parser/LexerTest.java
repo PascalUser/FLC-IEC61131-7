@@ -13,7 +13,7 @@ class LexerTest {
     void testLexerExample() throws IOException {
         String codigoFuente = """
             FUNCTION_BLOK JAJA
-                    FUZZIFY TRUE R_EDGE
+                    fuzzify TRUE R_EDGE
                             = : , := 1 2 +1 +1 -2 2.3 -2.3 .. 2#10 16#2 8#24
                     "hola mundo 'a'" 'aaa'
         """;
@@ -23,7 +23,7 @@ class LexerTest {
 
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "FUNCTION_BLOK");
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "JAJA");
-        this.assertNextToken(lexer, Lexer.FUZZIFY, "FUZZIFY");
+        this.assertNextToken(lexer, Lexer.FUZZIFY, "fuzzify");
         this.assertNextToken(lexer, Lexer.TRUE, "TRUE");
         this.assertNextToken(lexer, Lexer.R_EDGE, "R_EDGE");
         this.assertNextToken(lexer, '=', "=");
@@ -41,8 +41,8 @@ class LexerTest {
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "2#10");
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "16#2");
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "8#24");
-        this.assertNextToken(lexer, Lexer.CHARACTER_STRING, "\"hola mundo 'a'\"");
-        this.assertNextToken(lexer, Lexer.CHARACTER_STRING, "'aaa'");
+        this.assertNextToken(lexer, Lexer.STRING_LITERAL, "\"hola mundo 'a'\"");
+        this.assertNextToken(lexer, Lexer.STRING_LITERAL, "'aaa'");
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 
@@ -74,6 +74,67 @@ class LexerTest {
         this.assertNextToken(lexer, ')', ")");
         this.assertNextToken(lexer, ';', ";");
         this.assertNextToken(lexer, Lexer.END_FUZZIFY, "END_FUZZIFY");
+        this.assertNextToken(lexer, Lexer.EOF, "");
+    }
+
+    @Test
+    void testLexerTimeLiterals() throws IOException {
+        String codigoFuente = """
+            dt #0001-01-01-00:00:00
+            Date_and_Time# 0001-01-01-00:00:00
+            time_of_day# 00:00:00
+            tod #00:00:00
+            D #0001-01-01
+            d# 00-00-1111
+            date# 1100-00-00
+            t# 0S
+            time #5d14h12m18s3.5ms
+            tImE#5d_14h_12m_18s_3.5ms
+        """;
+
+        Reader reader = new StringReader(codigoFuente);
+        Lexer lexer = new Lexer(reader);
+
+        this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "dt");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DATE_AND_TIME_LITERAL, "0001-01-01-00:00:00");
+
+        this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "Date_and_Time");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DATE_AND_TIME_LITERAL, "0001-01-01-00:00:00");
+
+        this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "time_of_day");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DAYTIME_LITERAL, "00:00:00");
+
+        this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "tod");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DAYTIME_LITERAL, "00:00:00");
+
+        this.assertNextToken(lexer, Lexer.DATE, "D");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DATE_LITERAL, "0001-01-01");
+
+        this.assertNextToken(lexer, Lexer.DATE, "d");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DATE_LITERAL, "00-00-1111");
+
+        this.assertNextToken(lexer, Lexer.DATE, "date");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.DATE_LITERAL, "1100-00-00");
+
+        this.assertNextToken(lexer, Lexer.TIME, "t");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "0S");
+
+        this.assertNextToken(lexer, Lexer.TIME, "time");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "5d14h12m18s3.5ms");
+
+        this.assertNextToken(lexer, Lexer.TIME, "tImE");
+        this.assertNextToken(lexer, '#', "#");
+        this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "5d_14h_12m_18s_3.5ms");
+
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 

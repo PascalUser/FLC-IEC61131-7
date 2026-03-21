@@ -7,8 +7,7 @@
   import java.io.*;
 }
 
-%debug
-
+%token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
 %token FUZZIFY END_FUZZIFY
 %token DEFUZZIFY END_DEFUZZIFY
@@ -23,14 +22,15 @@
 %token ASSIGN_OP
 %token PRAGMA interval
 
-/* ----------------------- Tokens Anexo B --------------------------- */
+/* -------------------------------- Tokens Anexo B -------------------------------------- */
 
 %token VAR_INPUT RETAIN NON_RETAIN END_VAR BOOL R_EDGE F_EDGE VAR_OUTPUT VAR CONSTANT
-%token STRING WSTRING BYTE WORD DWORD LWORD TIME TIME_OF_DAY TOD DATE DATE_AND_TIME DT 
+%token STRING WSTRING BYTE WORD DWORD LWORD
+%token TIME INTERVAL_LITERAL TIME_OF_DAY DAYTIME_LITERAL DATE DATE_LITERAL DATE_AND_TIME DATE_AND_TIME_LITERAL
 %token OF
 %token SINT INT DINT LINT USINT UINT UDINT ULINT REAL LREAL
 %token TRUE FALSE
-%token CHARACTER_STRING
+%token STRING_LITERAL
 %token ARRAY RANGE_OP
 %token NUMERIC_LITERAL
 
@@ -39,8 +39,11 @@
 /* ---------------------------------- IEC61131-7 ---------------------------------------- */
 
 program:
+    opt_data_type_declaration
     function_block_declaration
 ;
+
+/* -------------------------------- FUNCTION_BLOCK -------------------------------------- */
 
 function_block_declaration:
     FUNCTION_BLOCK IDENTIFIER
@@ -94,7 +97,7 @@ defuzzify_block_list:
 
 defuzzify_block:
     DEFUZZIFY IDENTIFIER
-    range_opt
+    opt_range
     opt_linguistic_term_list
     defuzzification_method
     default_value
@@ -122,7 +125,7 @@ membership_function:
 ;
 
 singleton:
-    numeric_constant
+    number
 ;
 
 point_list:
@@ -131,8 +134,8 @@ point_list:
 ;
 
 point:
-    '(' numeric_constant ',' numeric_constant ')'
-    | '(' IDENTIFIER ',' numeric_constant ')'
+    '(' number ',' number ')'
+    | '(' IDENTIFIER ',' number ')'
 ;
 
 defuzzification_method:
@@ -148,13 +151,13 @@ default_value:
 ;
 
 default_val:
-    numeric_constant
+    number
     | NC
 ;
 
-range_opt:
+opt_range:
     /* vacio */
-    | RANGE '(' numeric_constant '.''.' numeric_constant ')' ';'
+    | RANGE '(' number '.''.' number ')' ';'
 ;
 
 rule_block_list:
@@ -172,10 +175,10 @@ rule_block:
 ;
 
 operator_definition:
-    operator_or_opt operator_and_opt ';'
+    opt_operator_or operator_and_opt ';'
 ;
 
-operator_or_opt:
+opt_operator_or:
     /* vacio */
     | OR ':' or_type
 ;
@@ -225,7 +228,7 @@ rule:
 
 opt_weighting:
     /* vacio */
-    | WITH numeric_constant
+    | WITH number
     | WITH IDENTIFIER
 ;
 
@@ -270,19 +273,19 @@ option_block:
     OPTION pragma_list END_OPTION
 ;
 
-/* ------------------------------------- Pragmas ------------------------------------------ */
+/* ------------------------------------ Pragmas ----------------------------------------- */
 
 pragma_list:
-    /* vacio */
+    pragma
     | pragma_list pragma
 ;
 
 pragma:
-    PRAGMA IDENTIFIER 
-    | PRAGMA IDENTIFIER NUMERIC_LITERAL
+    PRAGMA IDENTIFIER ';'
+    | PRAGMA IDENTIFIER NUMERIC_LITERAL ';'
 ;
 
-/* ------------------------------- IEC61131-3 Annex B ------------------------------------ */
+/* ------------------------------ IEC61131-3 Annex B ------------------------------------ */
 
 output_declarations:
     VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
@@ -306,14 +309,14 @@ var_declarations:
 ;
 
 var_retain_spec:
-    RETAIN
+    /* vacio */
+    | RETAIN
     | NON_RETAIN
-    | /* vacio */
 ;
 
 var_constant_spec:
-    CONSTANT
-    | /* vacio */
+    /* vacio */
+    | CONSTANT
 ;
 
 var_init_decl_list:
@@ -322,12 +325,12 @@ var_init_decl_list:
 ;
 
 var_init_decl:
-    identifier_list ':' type_declaration
+    identifier_list ':' type_specification
     | var1_init_decl
     | fb_name_decl
 ;
 
-type_declaration:
+type_specification:
     IDENTIFIER
     | BOOL opt_edge
     | string_specification
@@ -361,7 +364,7 @@ simple_specification:
     elementary_type_name
 ;
 
-/* ----------------------- Elementary Types --------------------------- */
+/* -------------------------------- Elementary Types ------------------------------------ */
 
 elementary_type_name:
     numeric_type_name
@@ -393,124 +396,68 @@ real_type_name:
 ;
 
 date_type_name:
-    DATE | TIME_OF_DAY | TOD | DATE_AND_TIME | DT
+    DATE | TIME_OF_DAY | DATE_AND_TIME
 ;
 
 bit_string_type_name:
     bit_string_type_name_without_bool
 ;
 
-/* ----------------------- Literals --------------------------- */
+/* ----------------------------------- Literals ----------------------------------------- */
 
 constant:
-    CHARACTER_STRING
-    | time_literal
-    | numeric_constant
+    STRING_LITERAL
+    | time
+    | number
 ;
 
-numeric_constant:
+number:
     NUMERIC_LITERAL
-    | integer_literal
-    | real_literal
-    | bit_string_literal
-    | boolean_literal
+    | integer
+    | real
+    | bit_string
+    | boolean
 ;
 
-integer_literal:
+integer:
     integer_type_name '#' NUMERIC_LITERAL
 ;
 
-real_literal:
+real:
     real_type_name '#' NUMERIC_LITERAL
 ;
 
-time_literal:
-    duration_literal
-    | time_of_day_literal
-    | date_literal
-    | date_and_time_literal
+time:
+    duration
+    | time_of_day
+    | date
+    | date_and_time
 ;
 
-duration_literal:
-    'T' '#' interval
-    | TIME '#' interval
-    | 'T' '#' '-' interval
-    | TIME '#' '-' interval
+duration:
+    TIME '#' INTERVAL_LITERAL
+    | TIME '#' '-' INTERVAL_LITERAL
 ;
 
-// Que pasa si comentamos esta seccion y detectamos el token el tipo de dato directamente?
-// Ejemplo, detectamos con expresiones regulares 1d3h en lugar de tener todos los tokens.
-/*
-interval:
-    days
-    | hours 
-    | minutes
-    | seconds
-    | milliseconds
-;
-
-days:
-    fixed_point 'd'
-    | NUMERIC_LITERAL 'd' hours
-    | NUMERIC_LITERAL 'd' '_' hours
-;
-hours:
-    fixed_point 'h'
-    | NUMERIC_LITERAL 'h' minutes
-    | NUMERIC_LITERAL 'h' '_' minutes
-;
-
-minutes:
-    fixed_point 'm'
-    | NUMERIC_LITERAL 'm' seconds
-    | NUMERIC_LITERAL 'm' '_' seconds
-;
-
-seconds:
-    fixed_point 's'
-    | NUMERIC_LITERAL 's' milliseconds
-    | NUMERIC_LITERAL 's' '_' milliseconds
-;
-
-milliseconds:
-    fixed_point 'm''s'
-;
-*/
-
-fixed_point:
-    NUMERIC_LITERAL 
-    | NUMERIC_LITERAL '.' NUMERIC_LITERAL
-;
-
-time_of_day_literal:
-    TIME_OF_DAY '#' daytime
-    | TOD '#' daytime
-;
-
-daytime:
-    NUMERIC_LITERAL ':' NUMERIC_LITERAL ':' fixed_point
-;
-
-date_literal:
-    DATE '#' date
-    |'D' '#' date
+time_of_day:
+    TIME_OF_DAY '#' DAYTIME_LITERAL
 ;
 
 date:
-    NUMERIC_LITERAL '-' NUMERIC_LITERAL '-' NUMERIC_LITERAL
+    DATE '#' DATE_LITERAL
 ;
 
-date_and_time_literal:
-    DATE_AND_TIME '#' date_literal '-' daytime
+date_and_time:
+    DATE_AND_TIME '#' DATE_AND_TIME_LITERAL
 ;
 
-boolean_literal:
+boolean:
     BOOL '#' NUMERIC_LITERAL
     | TRUE 
     | FALSE
 ;
 
-bit_string_literal :
+bit_string :
     bit_string_type_name '#' NUMERIC_LITERAL
 ;
 
@@ -521,7 +468,7 @@ bit_string_type_name_without_bool:
     | LWORD
 ;
 
-/* ----------------------- What? --------------------------- */
+/* --------------------------------- Derived Types  ------------------------------------- */
 
 subrange_spec_init:
     subrange_specification
@@ -650,8 +597,8 @@ standard_function_block_name:
 string_specification:
     type_string
     | type_string '[' NUMERIC_LITERAL ']'
-    | type_string ASSIGN_OP CHARACTER_STRING
-    | type_string '[' NUMERIC_LITERAL ']' ASSIGN_OP CHARACTER_STRING
+    | type_string ASSIGN_OP STRING_LITERAL
+    | type_string '[' NUMERIC_LITERAL ']' ASSIGN_OP STRING_LITERAL
 ;
 
 type_string:
@@ -659,4 +606,56 @@ type_string:
     | WSTRING
 ;
 
-%% /* ------------------------------- Código Java ------------------------------------ */
+/* ----------------------------------- Data Type ---------------------------------------- */
+
+opt_data_type_declaration:
+    /* vacio */
+    | data_type_declaration
+;
+
+data_type_declaration:
+    TYPE type_declaration_list END_TYPE
+;
+
+type_declaration_list:
+    type_declaration ';'
+    | type_declaration_list type_declaration ';'
+;
+
+type_declaration:
+    IDENTIFIER ':' specification_list
+;
+
+specification_list:
+    spec_init_type
+    | array_spec_init
+    | structure_specification
+    | string_specification
+;
+
+structure_specification:
+    initialized_structure
+    | structure_declaration
+;
+
+structure_declaration:
+    STRUCT structure_element_declaration_list END_STRUCT
+;
+
+structure_element_declaration_list:
+    structure_element_declaration ';'
+    | structure_element_declaration_list structure_element_declaration ';'
+;
+
+structure_element_declaration:
+    IDENTIFIER ':' specification_sublist
+;
+
+specification_sublist:
+    spec_init_type
+    | array_spec_init
+    | initialized_structure
+    | string_specification
+;
+
+%% /* --------------------------------- Código Java ------------------------------------- */

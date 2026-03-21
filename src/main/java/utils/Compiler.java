@@ -12,7 +12,7 @@ public class Compiler {
     }
 	
 	private static void initTable() {
-		table = new  HashMap<String, LexemeInfo>();
+		table = new  HashMap<>();
 		
 		table.put("FUNCTION_BLOCK",     new LexemeInfo(Lexer.FUNCTION_BLOCK, "reserved"));
         table.put("END_FUNCTION_BLOCK", new LexemeInfo(Lexer.END_FUNCTION_BLOCK, "reserved"));
@@ -38,9 +38,9 @@ public class Compiler {
         table.put("NOT",                new LexemeInfo(Lexer.NOT, "reserved"));
         table.put("AND",                new LexemeInfo(Lexer.AND, "reserved"));
         table.put("OR",                 new LexemeInfo(Lexer.OR, "reserved"));
-        table.put("CoG",                new LexemeInfo(Lexer.COG, "reserved"));
-        table.put("CoGS",               new LexemeInfo(Lexer.COGS, "reserved"));
-        table.put("CoA",                new LexemeInfo(Lexer.COA, "reserved"));
+        table.put("COG",                new LexemeInfo(Lexer.COG, "reserved"));
+        table.put("COGS",               new LexemeInfo(Lexer.COGS, "reserved"));
+        table.put("COA",                new LexemeInfo(Lexer.COA, "reserved"));
         table.put("LM",                 new LexemeInfo(Lexer.LM, "reserved"));
         table.put("RM",                 new LexemeInfo(Lexer.RM, "reserved"));
         table.put("NC",                 new LexemeInfo(Lexer.NC, "reserved"));
@@ -76,17 +76,23 @@ public class Compiler {
         table.put("DWORD",              new LexemeInfo(Lexer.DWORD, "reserved"));
         table.put("LWORD",              new LexemeInfo(Lexer.LWORD, "reserved"));
         table.put("TIME",               new LexemeInfo(Lexer.TIME, "reserved"));
+        table.put("T",                  new LexemeInfo(Lexer.TIME, "reserved"));
         table.put("TIME_OF_DAY",        new LexemeInfo(Lexer.TIME_OF_DAY, "reserved"));
-        table.put("TOD",                new LexemeInfo(Lexer.TOD, "reserved"));
+        table.put("TOD",                new LexemeInfo(Lexer.TIME_OF_DAY, "reserved"));
         table.put("DATE",               new LexemeInfo(Lexer.DATE, "reserved"));
+        table.put("D",                  new LexemeInfo(Lexer.DATE, "reserved"));
         table.put("DATE_AND_TIME",      new LexemeInfo(Lexer.DATE_AND_TIME, "reserved"));
-        table.put("DT",                 new LexemeInfo(Lexer.DT, "reserved"));
+        table.put("DT",                 new LexemeInfo(Lexer.DATE_AND_TIME, "reserved"));
         table.put("ARRAY",              new LexemeInfo(Lexer.ARRAY, "reserved"));
         table.put("OF",                 new LexemeInfo(Lexer.OF, "reserved"));
         table.put("TRUE",               new LexemeInfo(Lexer.TRUE, "reserved"));
         table.put("FALSE",              new LexemeInfo(Lexer.FALSE, "reserved"));
         table.put("R_EDGE",             new LexemeInfo(Lexer.R_EDGE, "reserved"));
         table.put("F_EDGE",             new LexemeInfo(Lexer.F_EDGE, "reserved"));
-        table.put("PRAGMA",             new LexemeInfo(Lexer.PRAGMA, "reserved"));   
+        table.put("PRAGMA",             new LexemeInfo(Lexer.PRAGMA, "reserved"));
+        table.put("TYPE",               new LexemeInfo(Lexer.TYPE, "reserved"));
+        table.put("END_TYPE",           new LexemeInfo(Lexer.END_TYPE, "reserved"));
+        table.put("STRUCT",             new LexemeInfo(Lexer.STRUCT, "reserved"));
+        table.put("END_STRUCT",         new LexemeInfo(Lexer.END_STRUCT, "reserved"));
     }
 }
