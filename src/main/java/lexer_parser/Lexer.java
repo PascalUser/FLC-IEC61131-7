@@ -782,7 +782,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 32: break;
           case 9:
-            { return GenericSemanticAction(yytext(), Parser.Lexer.INTEGER_NUMBER, "natural");
+            { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "natural");
             }
             // fall through
           case 33: break;
@@ -827,7 +827,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 41: break;
           case 18:
-            { return GenericSemanticAction(yytext(), Parser.Lexer.SIGNED_INTEGER, "integer");
+            { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "integer");
             }
             // fall through
           case 42: break;
@@ -842,22 +842,22 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 44: break;
           case 21:
-            { return GenericSemanticAction(yytext(), Parser.Lexer.REAL_NUMBER, "real");
+            { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "real");
             }
             // fall through
           case 45: break;
           case 22:
-            { return GenericSemanticAction(yytext(), Parser.Lexer.BINARY_INTEGER, "binary");
+            { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "binary");
             }
             // fall through
           case 46: break;
           case 23:
-            { return GenericSemanticAction(yytext(), Parser.Lexer.OCTAL_INTEGER, "octal");
+            { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "octal");
             }
             // fall through
           case 47: break;
           case 24:
-            { return GenericSemanticAction(yytext(), Parser.Lexer.HEX_INTEGER, "hexadecimal");
+            { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "hexadecimal");
             }
             // fall through
           case 48: break;

@@ -7,6 +7,8 @@
   import java.io.*;
 }
 
+%debug
+
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
 %token FUZZIFY END_FUZZIFY
 %token DEFUZZIFY END_DEFUZZIFY
@@ -28,10 +30,9 @@
 %token OF
 %token SINT INT DINT LINT USINT UINT UDINT ULINT REAL LREAL
 %token TRUE FALSE
-%token BINARY_INTEGER OCTAL_INTEGER HEX_INTEGER 
-%token CHARACTER_STRING 
+%token CHARACTER_STRING
 %token ARRAY RANGE_OP
-%token INTEGER_NUMBER REAL_NUMBER SIGNED_INTEGER
+%token NUMERIC_LITERAL
 
 %%
 
@@ -50,7 +51,7 @@ function_block_declaration:
 ;
 
 fb_io_var_declarations_list:
-    /* vacío */
+    /* vacio */
     | fb_io_var_declarations_list fb_io_var_declarations
 ;
 
@@ -60,7 +61,7 @@ fb_io_var_declarations:
 ;
 
 other_var_declarations_list:
-    /* vacío */
+    /* vacio */
     | other_var_declarations_list other_var_declarations
 ;
 
@@ -76,7 +77,7 @@ function_block_body:
 ;
 
 fuzzify_block_list:
-    /* vacío */
+    /* vacio */
     | fuzzify_block_list fuzzify_block
 ;
 
@@ -87,27 +88,32 @@ fuzzify_block:
 ;
 
 defuzzify_block_list:
-    /* vacío */
+    /* vacio */
     | defuzzify_block_list defuzzify_block
 ;
 
 defuzzify_block:
     DEFUZZIFY IDENTIFIER
     range_opt
-    linguistic_term_list
+    opt_linguistic_term_list
     defuzzification_method
     default_value
     END_DEFUZZIFY
 ;
 
+opt_linguistic_term_list:
+    /* vacio */
+    | linguistic_term_list
+;
+
 linguistic_term_list:
-    /* vacío */
+    linguistic_term
     | linguistic_term_list linguistic_term
 ;
 
 linguistic_term:
     TERM IDENTIFIER ASSIGN_OP IDENTIFIER ';'
-    TERM IDENTIFIER ASSIGN_OP membership_function ';'
+    | TERM IDENTIFIER ASSIGN_OP membership_function ';'
 ;
 
 membership_function:
@@ -116,9 +122,8 @@ membership_function:
 ;
 
 singleton:
-    numeric_literal
+    numeric_constant
 ;
-
 
 point_list:
     point
@@ -126,8 +131,8 @@ point_list:
 ;
 
 point:
-    '(' numeric_literal ',' numeric_literal ')'
-    '(' IDENTIFIER ',' numeric_literal ')'
+    '(' numeric_constant ',' numeric_constant ')'
+    | '(' IDENTIFIER ',' numeric_constant ')'
 ;
 
 defuzzification_method:
@@ -143,17 +148,17 @@ default_value:
 ;
 
 default_val:
-    numeric_literal
+    numeric_constant
     | NC
 ;
 
 range_opt:
-    /* vacío */
-    | RANGE '(' numeric_literal '.''.' numeric_literal ')' ';'
+    /* vacio */
+    | RANGE '(' numeric_constant '.''.' numeric_constant ')' ';'
 ;
 
 rule_block_list:
-    /* vacío */
+    /* vacio */
     | rule_block_list rule_block
 ;
 
@@ -171,12 +176,12 @@ operator_definition:
 ;
 
 operator_or_opt:
-    /* vacío */
+    /* vacio */
     | OR ':' or_type
 ;
 
 operator_and_opt:
-    /* vacío */
+    /* vacio */
     | AND ':' and_type
 ;
 
@@ -189,7 +194,7 @@ and_type:
 ;
 
 activation_method_opt:
-    /* vacío */
+    /* vacio */
     | activation_method
 ;
 
@@ -210,18 +215,17 @@ accu_type:
 ;
 
 rule_list:
-    /* vacío */
+    /* vacio */
     | rule_list rule
 ;
 
 rule:
-    RULE integer_literal ':' IF condition THEN identifier_list IDENTIFIER weighting_opt ';'
-    | RULE integer_literal ':' IF condition THEN conclusion_list IDENTIFIER IS IDENTIFIER weighting_opt ';'
+    RULE NUMERIC_LITERAL ':' IF condition THEN conclusion_list opt_weighting ';'
 ;
 
-weighting_opt:
-    /* vacío */
-    | WITH weighting_factor
+opt_weighting:
+    /* vacio */
+    | WITH numeric_constant
     | WITH IDENTIFIER
 ;
 
@@ -231,7 +235,7 @@ condition:
 ;
 
 condition_tail:
-    /* vacío */
+    /* vacio */
     | AND IDENTIFIER condition_tail
     | OR IDENTIFIER condition_tail
     | AND x condition_tail
@@ -251,16 +255,14 @@ subcondition:
 ;
 
 conclusion_list:
-    IDENTIFIER IS IDENTIFIER ','
-    | conclusion_list IDENTIFIER IS IDENTIFIER ','
-;
-
-weighting_factor:
-    numeric_literal
+    IDENTIFIER IS IDENTIFIER
+    | IDENTIFIER
+    | conclusion_list ',' IDENTIFIER IS IDENTIFIER
+    | conclusion_list ',' IDENTIFIER
 ;
 
 option_block_list:
-    /* vacío */
+    /* vacio */
     | option_block_list option_block
 ;
 
@@ -268,21 +270,16 @@ option_block:
     OPTION pragma_list END_OPTION
 ;
 
-numeric_literal:
-    integer_literal
-    | real_literal
-;
-
 /* ------------------------------------- Pragmas ------------------------------------------ */
 
 pragma_list:
-    /* vacío */
+    /* vacio */
     | pragma_list pragma
 ;
 
 pragma:
     PRAGMA IDENTIFIER 
-    | PRAGMA IDENTIFIER INTEGER_NUMBER
+    | PRAGMA IDENTIFIER NUMERIC_LITERAL
 ;
 
 /* ------------------------------- IEC61131-3 Annex B ------------------------------------ */
@@ -311,12 +308,12 @@ var_declarations:
 var_retain_spec:
     RETAIN
     | NON_RETAIN
-    | /* vacío */
+    | /* vacio */
 ;
 
 var_constant_spec:
     CONSTANT
-    | /* vacío */
+    | /* vacio */
 ;
 
 var_init_decl_list:
@@ -325,8 +322,7 @@ var_init_decl_list:
 ;
 
 var_init_decl:
-    IDENTIFIER ':' type_declaration
-    | identifier_list IDENTIFIER ':' type_declaration
+    identifier_list ':' type_declaration
     | var1_init_decl
     | fb_name_decl
 ;
@@ -334,8 +330,7 @@ var_init_decl:
 type_declaration:
     IDENTIFIER
     | BOOL opt_edge
-    | STRING opt_single_byte_string_spec
-    | WSTRING opt_double_byte_string_spec
+    | string_specification
     | initialized_structure
     | array_spec_init
 ;
@@ -346,19 +341,8 @@ opt_edge:
     | F_EDGE
 ;
 
-opt_single_byte_string_spec:
-    /* vacio */
-    | single_byte_string_spec
-;
-
-opt_double_byte_string_spec:
-    /* vacio */
-    | double_byte_string_spec
-;
-
 var1_init_decl:
-    IDENTIFIER ':' spec_init_type
-    | identifier_list IDENTIFIER ':' spec_init_type
+    identifier_list ':' spec_init_type
 ;
 
 spec_init_type:
@@ -419,36 +403,25 @@ bit_string_type_name:
 /* ----------------------- Literals --------------------------- */
 
 constant:
-    numeric_literal
-    | CHARACTER_STRING
+    CHARACTER_STRING
     | time_literal
+    | numeric_constant
+;
+
+numeric_constant:
+    NUMERIC_LITERAL
+    | integer_literal
+    | real_literal
     | bit_string_literal
     | boolean_literal
 ;
 
 integer_literal:
-    integer_type_name_opt type_integer_literal
-;
-
-integer_type_name_opt:
-   /* vacio */
-   | integer_type_name '#'
-;
-
-type_integer_literal:
-    SIGNED_INTEGER
-    | BINARY_INTEGER
-    | OCTAL_INTEGER
-    | HEX_INTEGER
+    integer_type_name '#' NUMERIC_LITERAL
 ;
 
 real_literal:
-    real_type_name_opt REAL_NUMBER
-;
-
-real_type_name_opt:
-    /* vacio */
-    | real_type_name '#'
+    real_type_name '#' NUMERIC_LITERAL
 ;
 
 time_literal:
@@ -464,6 +437,7 @@ duration_literal:
     | 'T' '#' '-' interval
     | TIME '#' '-' interval
 ;
+
 // Que pasa si comentamos esta seccion y detectamos el token el tipo de dato directamente?
 // Ejemplo, detectamos con expresiones regulares 1d3h en lugar de tener todos los tokens.
 /*
@@ -477,25 +451,25 @@ interval:
 
 days:
     fixed_point 'd'
-    | INTEGER_NUMBER 'd' hours
-    | INTEGER_NUMBER 'd' '_' hours
+    | NUMERIC_LITERAL 'd' hours
+    | NUMERIC_LITERAL 'd' '_' hours
 ;
 hours:
     fixed_point 'h'
-    | INTEGER_NUMBER 'h' minutes
-    | INTEGER_NUMBER 'h' '_' minutes
+    | NUMERIC_LITERAL 'h' minutes
+    | NUMERIC_LITERAL 'h' '_' minutes
 ;
 
 minutes:
     fixed_point 'm'
-    | INTEGER_NUMBER 'm' seconds
-    | INTEGER_NUMBER 'm' '_' seconds
+    | NUMERIC_LITERAL 'm' seconds
+    | NUMERIC_LITERAL 'm' '_' seconds
 ;
 
 seconds:
     fixed_point 's'
-    | INTEGER_NUMBER 's' milliseconds
-    | INTEGER_NUMBER 's' '_' milliseconds
+    | NUMERIC_LITERAL 's' milliseconds
+    | NUMERIC_LITERAL 's' '_' milliseconds
 ;
 
 milliseconds:
@@ -504,8 +478,8 @@ milliseconds:
 */
 
 fixed_point:
-    INTEGER_NUMBER 
-    | INTEGER_NUMBER '.' INTEGER_NUMBER
+    NUMERIC_LITERAL 
+    | NUMERIC_LITERAL '.' NUMERIC_LITERAL
 ;
 
 time_of_day_literal:
@@ -514,7 +488,7 @@ time_of_day_literal:
 ;
 
 daytime:
-    INTEGER_NUMBER ':' INTEGER_NUMBER ':' fixed_point
+    NUMERIC_LITERAL ':' NUMERIC_LITERAL ':' fixed_point
 ;
 
 date_literal:
@@ -523,7 +497,7 @@ date_literal:
 ;
 
 date:
-    INTEGER_NUMBER '-' INTEGER_NUMBER '-' INTEGER_NUMBER
+    NUMERIC_LITERAL '-' NUMERIC_LITERAL '-' NUMERIC_LITERAL
 ;
 
 date_and_time_literal:
@@ -531,24 +505,13 @@ date_and_time_literal:
 ;
 
 boolean_literal:
-    boolean_type_name_opt '0'
-    | boolean_type_name_opt '1'
+    BOOL '#' NUMERIC_LITERAL
     | TRUE 
     | FALSE
 ;
 
-boolean_type_name_opt:
-    /* vacio */
-    | BOOL '#'
-;
-
 bit_string_literal :
-    bit_string_type_name_opt bit_string_integer_literals
-;
-
-bit_string_type_name_opt:
-    /* vacio */
-    | bit_string_type_name '#'
+    bit_string_type_name '#' NUMERIC_LITERAL
 ;
 
 bit_string_type_name_without_bool:
@@ -558,17 +521,11 @@ bit_string_type_name_without_bool:
     | LWORD
 ;
 
-bit_string_integer_literals:
-    | BINARY_INTEGER
-    | OCTAL_INTEGER
-    | HEX_INTEGER
-;
-
 /* ----------------------- What? --------------------------- */
 
 subrange_spec_init:
     subrange_specification
-    | subrange_specification ASSIGN_OP SIGNED_INTEGER
+    | subrange_specification ASSIGN_OP NUMERIC_LITERAL
 ;
 
 subrange_specification:
@@ -576,7 +533,7 @@ subrange_specification:
 ;
 
 subrange:
-    SIGNED_INTEGER RANGE_OP SIGNED_INTEGER
+    NUMERIC_LITERAL RANGE_OP NUMERIC_LITERAL
 ;
 
 enumerated_spec_init:
@@ -587,14 +544,14 @@ enumerated_spec_init:
 ;
 
 enumerated_specification:
-    '(' IDENTIFIER ')'
-    | '(' IDENTIFIER '#' IDENTIFIER ')'
-    | '(' identifier_list IDENTIFIER ')'
-    | '(' enumerated_list IDENTIFIER '#' IDENTIFIER ')'
+    '(' enumerated_list')'
 ;
+
 enumerated_list:
-    IDENTIFIER '#' IDENTIFIER ','
-    | enumerated_list IDENTIFIER '#' IDENTIFIER ','
+    IDENTIFIER '#' IDENTIFIER
+    | IDENTIFIER
+    | enumerated_list ',' IDENTIFIER '#' IDENTIFIER
+    | enumerated_list ',' IDENTIFIER
 ;
 
 array_spec_init:
@@ -627,9 +584,9 @@ array_initial_elements_list:
 
 array_initial_elements:
     array_initial_element
-    | INTEGER_NUMBER '(' IDENTIFIER ')'
-    | INTEGER_NUMBER '(' IDENTIFIER '#' IDENTIFIER ')'
-    | INTEGER_NUMBER '(' array_initial_element ')'
+    | NUMERIC_LITERAL '(' IDENTIFIER ')'
+    | NUMERIC_LITERAL '(' IDENTIFIER '#' IDENTIFIER ')'
+    | NUMERIC_LITERAL '(' array_initial_element ')'
 ;
 
 array_initial_element:
@@ -676,32 +633,30 @@ initialized_structure:
 ;
 
 fb_name_decl:
-    IDENTIFIER ':' standard_function_block_name
-    | identifier_list IDENTIFIER ':' standard_function_block_name
-    | IDENTIFIER ':' standard_function_block_name ASSIGN_OP structure_initialization
-    | identifier_list IDENTIFIER ':' standard_function_block_name ASSIGN_OP structure_initialization
+    identifier_list ':' standard_function_block_name
+    | identifier_list ':' standard_function_block_name ASSIGN_OP structure_initialization
 ;
 
 identifier_list:
-    IDENTIFIER ','
-    | identifier_list IDENTIFIER ','
+    IDENTIFIER
+    | identifier_list ',' IDENTIFIER
 ;
 
+/* No hay informacion en el estandar de este tipo de funciones */
 standard_function_block_name:
-    // VER QUE HACEMOS
     STD_FB_IDENTIFIER
 ;
 
-single_byte_string_spec:
-    STRING '[' INTEGER_NUMBER ']'
-    | STRING ASSIGN_OP CHARACTER_STRING
-    | STRING '[' INTEGER_NUMBER ']' ASSIGN_OP CHARACTER_STRING
+string_specification:
+    type_string
+    | type_string '[' NUMERIC_LITERAL ']'
+    | type_string ASSIGN_OP CHARACTER_STRING
+    | type_string '[' NUMERIC_LITERAL ']' ASSIGN_OP CHARACTER_STRING
 ;
 
-double_byte_string_spec:
-    WSTRING '[' INTEGER_NUMBER ']'
-    | WSTRING ASSIGN_OP CHARACTER_STRING
-    | WSTRING '[' INTEGER_NUMBER ']' ASSIGN_OP CHARACTER_STRING
+type_string:
+    STRING
+    | WSTRING
 ;
 
 %% /* ------------------------------- Código Java ------------------------------------ */

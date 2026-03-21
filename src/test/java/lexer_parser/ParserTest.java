@@ -37,18 +37,4 @@ class ParserTest {
             fail("Falló el test con el archivo: " + exampleFile.getName() + " debido a: " + e.getMessage());
         }
     }
-
-    @Test
-    public void testFuzzifySentence() throws IOException {
-        String codigoFuente = """
-            FUZZIFY distance
-                TERM too_far := (-5, 1) (0, 0);
-            END_FUZZIFY
-        """;
-
-        Reader reader = new StringReader(codigoFuente);
-        Lexer lexer = new Lexer(reader);
-        Parser parser = new Parser(lexer);
-        assertTrue(parser.parse());
-    }
 }

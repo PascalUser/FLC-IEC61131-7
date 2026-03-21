@@ -80,12 +80,12 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}*|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 
-{NATURAL_NUMBER}      { return GenericSemanticAction(yytext(), Parser.Lexer.INTEGER_NUMBER, "natural"); }
-{INTEGER_NUMBER}      { return GenericSemanticAction(yytext(), Parser.Lexer.SIGNED_INTEGER, "integer"); }
-{REAL_NUMBER}         { return GenericSemanticAction(yytext(), Parser.Lexer.REAL_NUMBER, "real"); }
-{BINARY}              { return GenericSemanticAction(yytext(), Parser.Lexer.BINARY_INTEGER, "binary"); }
-{OCTAL}               { return GenericSemanticAction(yytext(), Parser.Lexer.OCTAL_INTEGER, "octal"); }
-{HEXADECIMAL}         { return GenericSemanticAction(yytext(), Parser.Lexer.HEX_INTEGER, "hexadecimal"); }
+{NATURAL_NUMBER}      { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "natural"); }
+{INTEGER_NUMBER}      { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "integer"); }
+{REAL_NUMBER}         { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "real"); }
+{BINARY}              { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "binary"); }
+{OCTAL}               { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "octal"); }
+{HEXADECIMAL}         { return GenericSemanticAction(yytext(), Parser.Lexer.NUMERIC_LITERAL, "hexadecimal"); }
 
 {SINGLE_BYTE_STRING}  { return GenericSemanticAction(yytext(), Parser.Lexer.CHARACTER_STRING, "single-byte-string"); }
 {DOUBLE_BYTE_STRING}  { return GenericSemanticAction(yytext(), Parser.Lexer.CHARACTER_STRING, "double-byte-string"); }
