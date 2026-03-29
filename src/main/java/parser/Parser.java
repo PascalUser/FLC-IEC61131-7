@@ -34,21 +34,22 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-package lexer_parser;
+package parser;
 
 
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 /* "%code imports" blocks.  */
-/* "src/main/java/lexer_parser/Parser.y":6  */
+/* "src/main/java/parser/Parser.y":6  */
 
   import java.io.*;
+  import utils.SymbolTable;
 
-/* "src/main/java/lexer_parser/Parser.java":49  */
+/* "src/main/java/parser/Parser.java":50  */
 
 /**
- * A Bison parser, automatically generated from <tt>src/main/java/lexer_parser/Parser.y</tt>.
+ * A Bison parser, automatically generated from <tt>src/main/java/parser/Parser.y</tt>.
  *
  * @author LALR (1) parser skeleton written by Paolo Bonzini.
  */
@@ -853,6 +854,8 @@ public class Parser
   private Lexer yylexer;
 
 
+    /* User arguments.  */
+    protected final SymbolTable symbolTable;
 
 
 
@@ -860,11 +863,12 @@ public class Parser
    * Instantiates the Bison-generated parser.
    * @param yylexer The scanner that will supply tokens to the parser.
    */
-  public Parser(Lexer yylexer)
+  public Parser(Lexer yylexer, SymbolTable symbolTable)
   {
 
     this.yylexer = yylexer;
-
+this.symbolTable = symbolTable;
+          
   }
 
 
@@ -1014,7 +1018,7 @@ public class Parser
     switch (yyn)
       {
         
-/* "src/main/java/lexer_parser/Parser.java":1018  */
+/* "src/main/java/parser/Parser.java":1022  */
 
         default: break;
       }
@@ -1865,5 +1869,4 @@ private static final short[] yycheck_ = yycheck_init();
 
 
 }
-/* "src/main/java/lexer_parser/Parser.y":661  */
- /* --------------------------------- Código Java ------------------------------------- */
+/* "src/main/java/parser/Parser.y":664  */

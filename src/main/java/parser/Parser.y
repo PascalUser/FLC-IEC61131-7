@@ -1,11 +1,14 @@
 %language "Java"
 %define api.parser.class {Parser}
-%define api.package {lexer_parser}
+%define api.package {parser}
 %define api.parser.public
 
 %code imports {
   import java.io.*;
+  import utils.SymbolTable;
 }
+
+%parse-param { SymbolTable symbolTable }
 
 %token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
@@ -658,4 +661,4 @@ specification_sublist:
     | string_specification
 ;
 
-%% /* --------------------------------- Código Java ------------------------------------- */
+%%

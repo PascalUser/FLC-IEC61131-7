@@ -1,8 +1,9 @@
-package lexer_parser;
+package parser;
 
-import org.junit.jupiter.api.Test;
+import lexer.Lexer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import utils.SymbolTable;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -28,8 +29,9 @@ class ParserTest {
     @MethodSource("exampleFileProvider")
     void testProgramExamples(File exampleFile) {
         try (FileReader reader = new FileReader(exampleFile)) {
-            Lexer lexer = new Lexer(reader);
-            Parser parser = new Parser(lexer);
+            SymbolTable st = new SymbolTable();
+            Lexer lexer = new Lexer(reader, st);
+            Parser parser = new Parser(lexer, st);
             assertTrue(parser.parse());
             System.out.println("Probando archivo: " + exampleFile.getName());
 

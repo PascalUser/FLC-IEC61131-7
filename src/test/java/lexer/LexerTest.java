@@ -1,6 +1,9 @@
-package lexer_parser;
+package lexer;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import utils.SymbolTable;
+
 import java.io.StringReader;
 import java.io.Reader;
 import java.io.IOException;
@@ -19,7 +22,7 @@ class LexerTest {
         """;
 
         Reader reader = new StringReader(codigoFuente);
-        Lexer lexer = new Lexer(reader);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
 
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "FUNCTION_BLOK");
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "JAJA");
@@ -55,7 +58,7 @@ class LexerTest {
         """;
 
         Reader reader = new StringReader(codigoFuente);
-        Lexer lexer = new Lexer(reader);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
 
         this.assertNextToken(lexer, Lexer.FUZZIFY, "FUZZIFY");
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "distance");
@@ -93,52 +96,42 @@ class LexerTest {
         """;
 
         Reader reader = new StringReader(codigoFuente);
-        Lexer lexer = new Lexer(reader);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
 
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "dt");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME_LITERAL, "0001-01-01-00:00:00");
-
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "Date_and_Time");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME_LITERAL, "0001-01-01-00:00:00");
-
         this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "time_of_day");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DAYTIME_LITERAL, "00:00:00");
-
         this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "tod");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DAYTIME_LITERAL, "00:00:00");
-
         this.assertNextToken(lexer, Lexer.DATE, "D");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DATE_LITERAL, "0001-01-01");
-
         this.assertNextToken(lexer, Lexer.DATE, "d");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DATE_LITERAL, "00-00-1111");
-
         this.assertNextToken(lexer, Lexer.DATE, "date");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.DATE_LITERAL, "1100-00-00");
-
         this.assertNextToken(lexer, Lexer.TIME, "t");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "0S");
-
         this.assertNextToken(lexer, Lexer.TIME, "time");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "5d14h12m18s3.5ms");
-
         this.assertNextToken(lexer, Lexer.TIME, "tImE");
         this.assertNextToken(lexer, '#', "#");
         this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "5d_14h_12m_18s_3.5ms");
-
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 
-    private void assertNextToken(Lexer lexer, int expectedToken, String expectedText) throws IOException {
+    private void assertNextToken(@NonNull Lexer lexer, int expectedToken, String expectedText) throws IOException {
         int token = lexer.yylex();
         assertEquals(expectedToken, token, "Token type mismatch");
         assertEquals(expectedText, lexer.yytext(), "Token text mismatch");
