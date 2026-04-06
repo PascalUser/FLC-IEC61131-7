@@ -1,0 +1,59 @@
+(*  Example 1 extracted from standard specification 311611-7  *)
+
+TYPE color_type :
+STRUCT
+    brown: REAL;
+    light: REAL;
+    dark: REAL;
+END_STRUCT;
+END_TYPE
+
+FUNCTION_BLOCK oven_control
+
+VAR_INPUT
+    humidity: REAL;
+    color : color_type;
+END_VAR
+
+VAR_OUTPUT
+    dT1: REAL;
+    dT2: REAL;
+END_VAR
+
+FUZZIFY humidity
+    TERM low    := (30,1) (50,0);
+    TERM middle := (30,0) (50,1) (70,1) (80,0);
+    TERM high   := (70,0) (80,1);
+END_FUZZIFY
+
+DEFUZZIFY dT1
+    TERM negative   := -5;
+    TERM zero       := 0;
+    TERM positive   := 5;
+    METHOD: CoGS;
+    DEFAULT:= 0;
+END_DEFUZZIFY
+
+DEFUZZIFY dT2
+    TERM negative   := -3;
+    TERM zero       := 0;
+    TERM positive   := 3;
+    METHOD: CoGS;
+    DEFAULT:= 0;
+END_DEFUZZIFY
+
+RULEBLOCK inference
+    AND: MIN;
+    ACCU: MAX;
+    RULE 1: IF humidity IS middle AND color IS brown THEN dT1 IS zero, dT2 IS zero;
+    RULE 2: IF humidity IS high THEN dT1 IS positive;
+    RULE 3: IF humidity IS low THEN dT1 IS negative;
+    RULE 4: IF humidity IS middle AND color IS light THEN dT2 IS positive;
+    RULE 5: IF humidity IS middle AND color IS dark THEN dT2 IS negative;
+END_RULEBLOCK
+
+OPTION
+    PRAGMA bit_width 16;
+END_OPTION
+
+END_FUNCTION_BLOCK

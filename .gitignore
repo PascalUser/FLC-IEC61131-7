@@ -1,7 +1,6 @@
 *.output
 *.tab.c
 *.yy.c
-*.txt
 *.iml
 
 lib

@@ -4,8 +4,10 @@
 
 package lexer;
 
+import lexer.semantics.*;
+import lexer.semantics.SemanticAnalyzer.Result;
 import parser.Parser;
-import utils.ElementaryType;
+import utils.enums.ElementaryType;
 import utils.SymbolTable;
 
 
@@ -66,16 +68,16 @@ public class Lexer implements Parser.Lexer {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\11\0\2\1\2\2\1\1\22\0\1\1\1\0\1\3"+
-    "\1\4\1\5\2\0\1\6\1\7\1\10\1\0\1\11"+
-    "\1\12\1\13\1\14\1\0\1\15\1\16\1\17\3\20"+
-    "\1\21\1\20\1\22\1\23\1\24\1\25\1\0\1\26"+
-    "\3\0\3\27\1\30\2\27\1\31\1\32\3\31\1\33"+
-    "\1\34\1\33\1\31\1\33\1\31\1\33\1\35\1\33"+
-    "\6\31\1\36\1\0\1\37\1\0\1\40\1\0\3\27"+
-    "\1\30\2\27\1\31\1\32\3\31\1\33\1\34\1\33"+
-    "\1\31\1\33\1\31\1\33\1\35\1\33\6\31\12\0"+
-    "\1\2\u01a2\0\2\2\326\0\u0100\2";
+    "\11\0\1\1\1\2\2\3\1\2\22\0\1\1\1\0"+
+    "\1\4\1\5\1\6\2\0\1\7\1\10\1\11\1\12"+
+    "\1\13\1\14\1\15\1\16\1\0\1\17\1\20\1\21"+
+    "\3\22\1\23\1\22\1\24\1\25\1\26\1\27\1\0"+
+    "\1\30\3\0\3\31\1\32\2\31\1\33\1\34\3\33"+
+    "\1\35\1\36\1\35\1\33\1\35\1\33\1\35\1\37"+
+    "\1\35\6\33\1\40\1\0\1\41\1\0\1\42\1\0"+
+    "\3\31\1\32\2\31\1\33\1\34\3\33\1\35\1\36"+
+    "\1\35\1\33\1\35\1\33\1\35\1\37\1\35\6\33"+
+    "\12\0\1\3\u01a2\0\2\3\326\0\u0100\3";
 
   private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[1024];
@@ -105,14 +107,14 @@ public class Lexer implements Parser.Lexer {
     "\1\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7"+
     "\1\1\1\10\1\1\1\11\4\12\1\13\1\14\1\15"+
     "\1\16\1\17\1\20\1\1\1\0\1\21\3\0\1\22"+
-    "\2\23\1\24\3\0\4\25\1\0\1\12\2\0\1\26"+
-    "\7\0\1\27\6\0\1\25\3\0\1\12\1\0\1\30"+
-    "\1\31\1\0\1\27\1\0\1\25\3\0\1\25\3\0"+
-    "\1\32\1\0\1\33\1\34\7\0\1\34\3\0\1\35"+
-    "\1\0\1\35";
+    "\1\0\2\23\1\24\3\0\4\25\1\0\1\12\2\0"+
+    "\1\26\10\0\1\27\6\0\1\25\3\0\1\12\1\0"+
+    "\1\30\1\31\1\0\1\2\1\27\1\0\1\25\3\0"+
+    "\1\25\3\0\1\32\1\0\1\33\1\34\7\0\1\34"+
+    "\3\0\1\35\1\0\1\35";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[95];
+    int [] result = new int[98];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -137,21 +139,22 @@ public class Lexer implements Parser.Lexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\41\0\102\0\143\0\41\0\204\0\41\0\41"+
-    "\0\245\0\41\0\306\0\347\0\u0108\0\u0129\0\u014a\0\u016b"+
-    "\0\u018c\0\41\0\41\0\u01ad\0\41\0\41\0\u01ce\0\143"+
-    "\0\41\0\u01ef\0\204\0\u0210\0\41\0\u0231\0\u0252\0\41"+
-    "\0\u0273\0\u0294\0\u02b5\0\u02d6\0\u02f7\0\u0318\0\u0339\0\u035a"+
-    "\0\u037b\0\u039c\0\u03bd\0\41\0\u01ce\0\u03de\0\u03ff\0\245"+
-    "\0\u0420\0\306\0\u0441\0\u0462\0\u0483\0\u04a4\0\u04c5\0\u04e6"+
-    "\0\u0507\0\u0528\0\41\0\u0549\0\u056a\0\u058b\0\u05ac\0\u05cd"+
-    "\0\u039c\0\u03bd\0\u05ee\0\u060f\0\u0630\0\u0651\0\u0672\0\u0693"+
-    "\0\u06b4\0\u06d5\0\u06f6\0\u0717\0\u0651\0\u05cd\0\u0738\0\u0759"+
-    "\0\u077a\0\u079b\0\u07bc\0\u07dd\0\u07fe\0\u081f\0\u0840\0\u0861"+
-    "\0\u0840\0\u0882\0\u08a3\0\u08c4\0\u08e5\0\u0906\0\u0906";
+    "\0\0\0\43\0\43\0\106\0\43\0\151\0\214\0\43"+
+    "\0\257\0\43\0\322\0\365\0\u0118\0\u013b\0\u015e\0\u0181"+
+    "\0\u01a4\0\43\0\43\0\u01c7\0\43\0\43\0\u01ea\0\106"+
+    "\0\43\0\u020d\0\151\0\u0230\0\43\0\u0253\0\u0276\0\u0299"+
+    "\0\43\0\u02bc\0\u02df\0\u0302\0\u0325\0\u0348\0\u036b\0\u038e"+
+    "\0\u03b1\0\u03d4\0\u03f7\0\u041a\0\43\0\u01ea\0\u043d\0\u0460"+
+    "\0\u0483\0\257\0\u04a6\0\322\0\u04c9\0\u04ec\0\u050f\0\u0532"+
+    "\0\u0555\0\u0578\0\u059b\0\u05be\0\43\0\u05e1\0\u0604\0\u0627"+
+    "\0\u064a\0\u066d\0\u03f7\0\u041a\0\u0690\0\u0253\0\u06b3\0\u06d6"+
+    "\0\u06f9\0\u071c\0\u073f\0\u0762\0\u0785\0\u07a8\0\u07cb\0\u06f9"+
+    "\0\u066d\0\u07ee\0\u0811\0\u0834\0\u0857\0\u087a\0\u089d\0\u08c0"+
+    "\0\u08e3\0\u0906\0\u0929\0\u0906\0\u094c\0\u096f\0\u0992\0\u09b5"+
+    "\0\u09d8\0\u09d8";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[95];
+    int [] result = new int[98];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -174,51 +177,52 @@ public class Lexer implements Parser.Lexer {
   private static final int [] ZZ_TRANS = zzUnpackTrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\1\3\1\0\1\4\1\5\1\2\1\6\1\7"+
-    "\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17"+
-    "\2\15\1\20\1\15\1\21\1\22\1\23\7\24\1\25"+
-    "\1\26\1\27\42\0\1\3\37\0\3\30\1\31\1\30"+
-    "\1\32\33\30\5\33\1\34\1\35\32\33\15\0\7\36"+
-    "\32\0\7\37\31\0\1\40\37\0\1\41\1\42\7\15"+
-    "\1\43\3\0\1\44\1\0\1\45\1\0\1\46\1\47"+
-    "\2\0\1\50\13\0\1\41\1\42\4\15\1\51\2\15"+
-    "\1\43\3\0\1\44\1\0\1\45\1\0\1\46\1\47"+
-    "\2\0\1\50\4\0\1\52\6\0\1\41\1\42\7\15"+
-    "\1\43\3\0\1\44\1\0\1\45\1\0\1\46\1\47"+
-    "\2\0\1\50\4\0\1\53\6\0\1\41\1\42\7\15"+
-    "\1\43\3\0\1\44\1\0\1\45\1\0\1\46\1\47"+
-    "\2\0\1\50\26\0\1\54\27\0\7\24\3\0\7\24"+
-    "\2\0\1\55\15\0\7\24\3\0\7\24\6\0\1\30"+
-    "\1\0\1\30\7\0\7\56\3\0\2\56\2\0\1\30"+
-    "\12\0\2\33\6\0\7\57\3\0\2\57\2\0\1\33"+
-    "\22\0\7\36\14\0\1\60\14\0\1\61\7\37\14\0"+
-    "\1\62\15\0\7\63\32\0\7\64\32\0\7\65\32\0"+
-    "\7\66\14\0\1\67\15\0\7\70\14\0\1\71\15\0"+
-    "\7\72\11\0\1\73\2\0\1\74\15\0\7\75\14\0"+
-    "\1\76\15\0\7\77\21\0\1\100\6\0\1\41\1\42"+
-    "\7\15\1\43\3\0\1\44\1\0\1\45\1\0\1\46"+
-    "\1\47\2\0\1\50\15\0\2\101\37\0\5\102\34\0"+
-    "\7\103\3\0\2\103\25\0\7\33\3\0\2\33\25\0"+
-    "\7\104\30\0\1\105\1\0\7\63\32\0\7\64\4\0"+
-    "\1\73\1\0\1\73\1\0\1\106\1\73\2\0\1\61"+
-    "\15\0\7\65\1\107\30\0\1\110\7\66\6\0\1\45"+
-    "\23\0\7\66\31\0\1\111\7\70\10\0\1\112\21\0"+
-    "\7\70\31\0\1\113\7\72\11\0\1\47\20\0\7\72"+
-    "\31\0\1\114\7\75\10\0\1\115\21\0\7\75\31\0"+
-    "\1\61\7\77\14\0\1\50\15\0\7\116\3\0\2\116"+
-    "\25\0\7\117\3\0\2\117\25\0\7\104\14\0\1\61"+
-    "\15\0\7\120\52\0\1\73\20\0\7\121\32\0\7\122"+
-    "\32\0\7\123\32\0\7\72\14\0\1\74\15\0\7\124"+
-    "\32\0\7\125\32\0\7\30\3\0\2\30\23\0\1\126"+
-    "\1\0\7\120\31\0\1\127\7\121\32\0\7\122\6\0"+
-    "\1\73\23\0\7\123\10\0\1\73\21\0\7\124\11\0"+
-    "\1\73\20\0\7\125\10\0\1\115\21\0\7\130\32\0"+
-    "\7\131\32\0\7\130\1\132\31\0\7\133\32\0\7\133"+
-    "\1\134\31\0\7\135\31\0\1\136\7\135\32\0\7\137"+
-    "\15\0";
+    "\1\2\2\3\1\0\1\4\1\5\1\2\1\6\1\7"+
+    "\1\10\1\2\1\11\1\12\1\13\1\14\1\15\1\16"+
+    "\1\17\2\15\1\20\1\15\1\21\1\22\1\23\7\24"+
+    "\1\25\1\26\1\27\43\0\4\30\1\31\1\30\1\32"+
+    "\34\30\6\33\1\34\1\35\33\33\12\0\1\36\47\0"+
+    "\7\37\34\0\7\40\33\0\1\41\41\0\1\42\1\43"+
+    "\7\15\1\44\3\0\1\45\1\0\1\46\1\0\1\47"+
+    "\1\50\2\0\1\51\15\0\1\42\1\43\4\15\1\52"+
+    "\2\15\1\44\3\0\1\45\1\0\1\46\1\0\1\47"+
+    "\1\50\2\0\1\51\5\0\1\53\7\0\1\42\1\43"+
+    "\7\15\1\44\3\0\1\45\1\0\1\46\1\0\1\47"+
+    "\1\50\2\0\1\51\5\0\1\54\7\0\1\42\1\43"+
+    "\7\15\1\44\3\0\1\45\1\0\1\46\1\0\1\47"+
+    "\1\50\2\0\1\51\30\0\1\55\31\0\7\24\3\0"+
+    "\7\24\2\0\1\56\17\0\7\24\3\0\7\24\7\0"+
+    "\1\30\1\0\1\30\10\0\7\57\3\0\2\57\2\0"+
+    "\1\30\13\0\2\33\7\0\7\60\3\0\2\60\2\0"+
+    "\1\33\5\0\2\36\2\0\6\36\1\61\30\36\17\0"+
+    "\7\37\14\0\1\62\16\0\1\63\7\40\14\0\1\64"+
+    "\17\0\7\65\34\0\7\66\34\0\7\67\34\0\7\70"+
+    "\14\0\1\71\17\0\7\72\14\0\1\73\17\0\7\74"+
+    "\11\0\1\75\2\0\1\76\17\0\7\77\14\0\1\100"+
+    "\17\0\7\101\22\0\1\102\7\0\1\42\1\43\7\15"+
+    "\1\44\3\0\1\45\1\0\1\46\1\0\1\47\1\50"+
+    "\2\0\1\51\17\0\2\103\41\0\5\104\36\0\7\105"+
+    "\3\0\2\105\27\0\7\33\3\0\2\33\10\0\2\36"+
+    "\2\0\5\36\1\106\1\61\30\36\17\0\7\107\32\0"+
+    "\1\110\1\0\7\65\34\0\7\66\4\0\1\75\1\0"+
+    "\1\75\1\0\1\111\1\75\2\0\1\63\17\0\7\67"+
+    "\1\112\32\0\1\113\7\70\6\0\1\46\25\0\7\70"+
+    "\33\0\1\114\7\72\10\0\1\115\23\0\7\72\33\0"+
+    "\1\116\7\74\11\0\1\50\22\0\7\74\33\0\1\117"+
+    "\7\77\10\0\1\120\23\0\7\77\33\0\1\63\7\101"+
+    "\14\0\1\51\17\0\7\121\3\0\2\121\27\0\7\122"+
+    "\3\0\2\122\27\0\7\107\14\0\1\63\17\0\7\123"+
+    "\54\0\1\75\22\0\7\124\34\0\7\125\34\0\7\126"+
+    "\34\0\7\74\14\0\1\76\17\0\7\127\34\0\7\130"+
+    "\34\0\7\30\3\0\2\30\25\0\1\131\1\0\7\123"+
+    "\33\0\1\132\7\124\34\0\7\125\6\0\1\75\25\0"+
+    "\7\126\10\0\1\75\23\0\7\127\11\0\1\75\22\0"+
+    "\7\130\10\0\1\120\23\0\7\133\34\0\7\134\34\0"+
+    "\7\133\1\135\33\0\7\136\34\0\7\136\1\137\33\0"+
+    "\7\140\33\0\1\141\7\140\34\0\7\142\15\0";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[2343];
+    int [] result = new int[2555];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -261,16 +265,16 @@ public class Lexer implements Parser.Lexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\1\11\2\1\1\11\1\1\2\11\1\1\1\11"+
+    "\1\0\2\11\1\1\1\11\2\1\1\11\1\1\1\11"+
     "\7\1\2\11\1\1\2\11\1\1\1\0\1\11\3\0"+
-    "\1\11\2\1\1\11\3\0\4\1\1\0\1\1\2\0"+
-    "\1\11\7\0\1\1\6\0\1\11\3\0\1\1\1\0"+
-    "\2\1\1\0\1\1\1\0\1\1\3\0\1\1\3\0"+
-    "\1\1\1\0\2\1\7\0\1\1\3\0\1\1\1\0"+
-    "\1\1";
+    "\1\11\1\0\2\1\1\11\3\0\4\1\1\0\1\1"+
+    "\2\0\1\11\10\0\1\1\6\0\1\11\3\0\1\1"+
+    "\1\0\2\1\1\0\2\1\1\0\1\1\3\0\1\1"+
+    "\3\0\1\1\1\0\2\1\7\0\1\1\3\0\1\1"+
+    "\1\0\1\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[95];
+    int [] result = new int[98];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -349,22 +353,22 @@ public class Lexer implements Parser.Lexer {
   private boolean zzEOFDone;
 
   /* user code: */
-  private Object yylval;
+    private Object yylval;
     private SemanticAnalyzer identifiers;
     private SemanticAnalyzer generic;
 
     public Object getLVal() {
-      return this.yylval;
+        return this.yylval;
     }
 
     public void yyerror(String msg) {
-      System.err.println("Line " + (yyline + 1) + ": " + msg);
+        System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
-    public int saveYyval(String text, ElementaryType type) {
-        SemanticAnalyzer.Result r = this.generic.analyze(yytext(), type);
-        this.yylval = r.value;
-        return r.tokenNumber;
+    public int saveYylval(String text, ElementaryType type, SemanticAnalyzer analyzer) {
+        Result result = analyzer.analyze(yytext(), type);
+        this.yylval = result.value;
+        return result.tokenNumber;
     }
 
 
@@ -374,8 +378,8 @@ public class Lexer implements Parser.Lexer {
    * @param   in  the java.io.Reader to read input from.
    */
   public Lexer(java.io.Reader in, SymbolTable symbolTable) {
-      this.identifiers = new IdentifierAnalyzer(symbolTable);
-    this.generic     = new GenericAnalyzer(symbolTable);
+      this.identifiers = new Identifiers(symbolTable);
+    this.generic     = new Default(symbolTable);
     this.zzReader = in;
   }
 
@@ -754,7 +758,7 @@ public class Lexer implements Parser.Lexer {
 
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
-          {   return Parser.Lexer.YYEOF;
+          {     return Parser.Lexer.YYEOF;
  }
       }
       else {
@@ -805,7 +809,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 38: break;
           case 10:
-            { return saveYyval(yytext(), ElementaryType.UINT);
+            { return saveYylval(yytext(), ElementaryType.UINT         , this.generic);
             }
             // fall through
           case 39: break;
@@ -825,9 +829,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 42: break;
           case 14:
-            { SemanticAnalyzer.Result r = this.identifiers.analyze(yytext(), ElementaryType.UNKNOWN);
-                        this.yylval = r.value;
-                        return r.tokenNumber;
+            { return saveYylval(yytext(), ElementaryType.UNKNOWN      , this.identifiers);
             }
             // fall through
           case 43: break;
@@ -842,17 +844,17 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 45: break;
           case 17:
-            { return saveYyval(yytext(), ElementaryType.WSTRING );
+            { return saveYylval(yytext(), ElementaryType.WSTRING      , this.generic);
             }
             // fall through
           case 46: break;
           case 18:
-            { return saveYyval(yytext(), ElementaryType.STRING );
+            { return saveYylval(yytext(), ElementaryType.STRING       , this.generic);
             }
             // fall through
           case 47: break;
           case 19:
-            { return saveYyval(yytext(), ElementaryType.SINT);
+            { return saveYylval(yytext(), ElementaryType.SINT         , this.generic);
             }
             // fall through
           case 48: break;
@@ -862,7 +864,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 49: break;
           case 21:
-            { return saveYyval(yytext(), ElementaryType.TIME);
+            { return saveYylval(yytext(), ElementaryType.TIME         , this.generic);
             }
             // fall through
           case 50: break;
@@ -872,37 +874,37 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 51: break;
           case 23:
-            { return saveYyval(yytext(), ElementaryType.REAL);
+            { return saveYylval(yytext(), ElementaryType.REAL         , this.generic);
             }
             // fall through
           case 52: break;
           case 24:
-            { return saveYyval(yytext(), ElementaryType.BYTE);
+            { return saveYylval(yytext(), ElementaryType.BYTE         , this.generic);
             }
             // fall through
           case 53: break;
           case 25:
-            { return saveYyval(yytext(), ElementaryType.WORD);
+            { return saveYylval(yytext(), ElementaryType.WORD         , this.generic);
             }
             // fall through
           case 54: break;
           case 26:
-            { return saveYyval(yytext(), ElementaryType.DWORD);
+            { return saveYylval(yytext(), ElementaryType.DWORD        , this.generic);
             }
             // fall through
           case 55: break;
           case 27:
-            { return saveYyval(yytext(), ElementaryType.DATE);
+            { return saveYylval(yytext(), ElementaryType.DATE         , this.generic);
             }
             // fall through
           case 56: break;
           case 28:
-            { return saveYyval(yytext(), ElementaryType.TIME_OF_DAY);
+            { return saveYylval(yytext(), ElementaryType.TIME_OF_DAY  , this.generic);
             }
             // fall through
           case 57: break;
           case 29:
-            { return saveYyval(yytext(), ElementaryType.DATE_AND_TIME);
+            { return saveYylval(yytext(), ElementaryType.DATE_AND_TIME, this.generic);
             }
             // fall through
           case 58: break;

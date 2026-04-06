@@ -1,7 +1,8 @@
-package utils;
+package utils.enums;
 
 public enum ElementaryType {
     UNKNOWN,
+    CUSTOM,
     BOOL,
     SINT,
     INT,

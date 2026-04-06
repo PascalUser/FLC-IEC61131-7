@@ -1,6 +1,6 @@
-package lexer;
+package lexer.semantics;
 
-import utils.ElementaryType;
+import utils.enums.ElementaryType;
 
 public interface SemanticAnalyzer {
     class Result {

@@ -1,14 +1,14 @@
-package lexer;
+package lexer.semantics;
 
-import parser.Parser;
-import utils.ElementaryType;
+import parser.Parser.Lexer;
+import utils.enums.ElementaryType;
 import utils.LexemeInfo;
 import utils.SymbolTable;
 
-public class GenericAnalyzer implements SemanticAnalyzer {
+public class Default implements SemanticAnalyzer {
     private final SymbolTable symbolTable;
 
-    public GenericAnalyzer(SymbolTable symbolTable) {
+    public Default(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
 
@@ -23,15 +23,10 @@ public class GenericAnalyzer implements SemanticAnalyzer {
     private int translate(ElementaryType type) {
         return switch (type) {
             case UNKNOWN -> -1;
-            case STRING, WSTRING -> Parser.Lexer.STRING_LITERAL;
-
-            case BOOL,
-                 SINT, INT, DINT, LINT,
-                 USINT, UINT, UDINT, ULINT,
-                 REAL, LREAL,
-                 TIME, DATE, TIME_OF_DAY, DATE_AND_TIME,
-                 BYTE, WORD, DWORD, LWORD
-                    -> Parser.Lexer.NUMERIC_LITERAL;
+            case STRING, WSTRING -> Lexer.STRING_LITERAL;
+            case TIME, DATE, TIME_OF_DAY, DATE_AND_TIME -> Lexer.TIME_LITERAL;
+            case BOOL, SINT, INT, DINT, LINT, USINT, UINT, UDINT, ULINT,
+                 REAL, LREAL, BYTE, WORD, DWORD, LWORD  -> Lexer.NUMERIC_LITERAL;
         };
     }
 }

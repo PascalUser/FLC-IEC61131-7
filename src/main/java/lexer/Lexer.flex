@@ -1,8 +1,9 @@
 package lexer;
 
+import lexer.semantics.*;
+import lexer.semantics.SemanticAnalyzer.Result;
 import parser.Parser;
-import utils.ElementaryType;
-import utils.SymbolTable;
+import utils.enums.ElementaryType;
 
 %%
 
@@ -13,35 +14,37 @@ import utils.SymbolTable;
 %line
 
 %eofval{
-  return Parser.Lexer.YYEOF;
+    return Parser.Lexer.YYEOF;
 %eofval}
 
 %{
-  private Object yylval;
+    private Object yylval;
     private SemanticAnalyzer identifiers;
     private SemanticAnalyzer generic;
 
     public Object getLVal() {
-      return this.yylval;
+        return this.yylval;
     }
 
     public void yyerror(String msg) {
-      System.err.println("Line " + (yyline + 1) + ": " + msg);
+        System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
-    public int saveYyval(String text, ElementaryType type) {
-        SemanticAnalyzer.Result r = this.generic.analyze(yytext(), type);
-        this.yylval = r.value;
-        return r.tokenNumber;
+    public int saveYylval(String text, ElementaryType type, SemanticAnalyzer analyzer) {
+        Result result = analyzer.analyze(yytext(), type);
+        this.yylval = result.value;
+        return result.tokenNumber;
     }
 %}
 
 %ctorarg SymbolTable symbolTable
 
 %init{
-    this.identifiers = new IdentifierAnalyzer(symbolTable);
-    this.generic     = new GenericAnalyzer(symbolTable);
+    this.identifiers = new Identifiers(symbolTable);
+    this.generic     = new Default(symbolTable);
 %init}
+
+COMMENT           = \(\*.*\*\)
 
 LETTER            = [a-zA-Z]
 DIGIT             = [0-9]
@@ -61,7 +64,7 @@ MIN                = ({FIXED}[mM]|{NUM}[mM]{SEP}{SEC})
 HOUR               = ({FIXED}[hH]|{NUM}[hH]{SEP}{MIN})
 DAY                = ({FIXED}[dD]|{NUM}[dD]{SEP}{HOUR})
 
-INTERVAL           = ({DAY}|{HOUR}|{MIN}|{SEC}|{MS})
+INTERVAL           = -?({DAY}|{HOUR}|{MIN}|{SEC}|{MS})
 DATE               = {NUM}-{NUM}-{NUM}
 DAYTIME            = {NUM}:{NUM}:{FIXED}
 DATE_AND_TIME      = {DATE}-{DAYTIME}
@@ -82,24 +85,23 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}*|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 
-{DATE_AND_TIME}       { return saveYyval(yytext(), ElementaryType.DATE_AND_TIME); }
-{DAYTIME}             { return saveYyval(yytext(), ElementaryType.TIME_OF_DAY); }
-{DATE}                { return saveYyval(yytext(), ElementaryType.DATE); }
-{INTERVAL}            { return saveYyval(yytext(), ElementaryType.TIME); }
+{DATE_AND_TIME}       { return saveYylval(yytext(), ElementaryType.DATE_AND_TIME, this.generic); }
+{DAYTIME}             { return saveYylval(yytext(), ElementaryType.TIME_OF_DAY  , this.generic); }
+{DATE}                { return saveYylval(yytext(), ElementaryType.DATE         , this.generic); }
+{INTERVAL}            { return saveYylval(yytext(), ElementaryType.TIME         , this.generic); }
 
-{NATURAL_NUMBER}      { return saveYyval(yytext(), ElementaryType.UINT); }
-{INTEGER_NUMBER}      { return saveYyval(yytext(), ElementaryType.SINT); }
-{REAL_NUMBER}         { return saveYyval(yytext(), ElementaryType.REAL); }
-{BINARY}              { return saveYyval(yytext(), ElementaryType.BYTE); } //todo checkear que sea este elementarytype y no otro
-{OCTAL}               { return saveYyval(yytext(), ElementaryType.WORD); }
-{HEXADECIMAL}         { return saveYyval(yytext(), ElementaryType.DWORD); }
+//todo checkear que sea este elementarytype y no otro
+{NATURAL_NUMBER}      { return saveYylval(yytext(), ElementaryType.UINT         , this.generic); }
+{INTEGER_NUMBER}      { return saveYylval(yytext(), ElementaryType.SINT         , this.generic); }
+{REAL_NUMBER}         { return saveYylval(yytext(), ElementaryType.REAL         , this.generic); }
+{BINARY}              { return saveYylval(yytext(), ElementaryType.BYTE         , this.generic); }
+{OCTAL}               { return saveYylval(yytext(), ElementaryType.WORD         , this.generic); }
+{HEXADECIMAL}         { return saveYylval(yytext(), ElementaryType.DWORD        , this.generic); }
 
-{SINGLE_BYTE_STRING}  { return saveYyval(yytext(), ElementaryType.STRING ); }
-{DOUBLE_BYTE_STRING}  { return saveYyval(yytext(), ElementaryType.WSTRING ); }
+{SINGLE_BYTE_STRING}  { return saveYylval(yytext(), ElementaryType.STRING       , this.generic); }
+{DOUBLE_BYTE_STRING}  { return saveYylval(yytext(), ElementaryType.WSTRING      , this.generic); }
 
-{IDENTIFIER}          { SemanticAnalyzer.Result r = this.identifiers.analyze(yytext(), ElementaryType.UNKNOWN);
-                        this.yylval = r.value;
-                        return r.tokenNumber; }
+{IDENTIFIER}          { return saveYylval(yytext(), ElementaryType.UNKNOWN      , this.identifiers); }
 
 ":"                   { return ':'; }
 "#"                   { return '#'; }
@@ -114,9 +116,10 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}*|\'|\$\"|\${HEX_DIGIT}{4})*\"
 "'"                   { return '\''; }
 "\""                  { return '\"'; }
 ":="                  { return Parser.Lexer.ASSIGN_OP; }
-".."                  { return Parser.Lexer.RANGE_OP; }
+".."                  { return Parser.Lexer.RANGE_OP;  }
 
-[ \t\r\n]+            { }
+[ \t\r\n]             { }
+{COMMENT}             { }
 
 .                     { yyerror("Invalid Character: " + yytext()); }
 

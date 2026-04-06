@@ -100,34 +100,34 @@ class LexerTest {
 
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "dt");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DATE_AND_TIME_LITERAL, "0001-01-01-00:00:00");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0001-01-01-00:00:00");
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "Date_and_Time");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DATE_AND_TIME_LITERAL, "0001-01-01-00:00:00");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0001-01-01-00:00:00");
         this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "time_of_day");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DAYTIME_LITERAL, "00:00:00");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "00:00:00");
         this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "tod");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DAYTIME_LITERAL, "00:00:00");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "00:00:00");
         this.assertNextToken(lexer, Lexer.DATE, "D");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DATE_LITERAL, "0001-01-01");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0001-01-01");
         this.assertNextToken(lexer, Lexer.DATE, "d");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DATE_LITERAL, "00-00-1111");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "00-00-1111");
         this.assertNextToken(lexer, Lexer.DATE, "date");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.DATE_LITERAL, "1100-00-00");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "1100-00-00");
         this.assertNextToken(lexer, Lexer.TIME, "t");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "0S");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0S");
         this.assertNextToken(lexer, Lexer.TIME, "time");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "5d14h12m18s3.5ms");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "5d14h12m18s3.5ms");
         this.assertNextToken(lexer, Lexer.TIME, "tImE");
         this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.INTERVAL_LITERAL, "5d_14h_12m_18s_3.5ms");
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "5d_14h_12m_18s_3.5ms");
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 

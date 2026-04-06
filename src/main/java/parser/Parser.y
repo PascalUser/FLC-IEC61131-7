@@ -4,8 +4,9 @@
 %define api.parser.public
 
 %code imports {
-  import java.io.*;
-  import utils.SymbolTable;
+    import java.source.*;
+    import utils.enums.*;
+    import utils.SymbolTable;
 }
 
 %parse-param { SymbolTable symbolTable }
@@ -21,21 +22,52 @@
 %token IS NOT AND OR
 %token COG COGS COA LM RM NC
 %token MIN MAX ASUM BSUM PROD BDIF NSUM
-%token IDENTIFIER STD_FB_IDENTIFIER
-%token ASSIGN_OP
-%token PRAGMA interval
+%token <String> IDENTIFIER STD_FB_IDENTIFIER
+%token ASSIGN_OP RANGE_OP
+%token PRAGMA
 
 /* -------------------------------- Tokens Anexo B -------------------------------------- */
 
 %token VAR_INPUT RETAIN NON_RETAIN END_VAR BOOL R_EDGE F_EDGE VAR_OUTPUT VAR CONSTANT
 %token STRING WSTRING BYTE WORD DWORD LWORD
-%token TIME INTERVAL_LITERAL TIME_OF_DAY DAYTIME_LITERAL DATE DATE_LITERAL DATE_AND_TIME DATE_AND_TIME_LITERAL
+%token TIME TIME_OF_DAY DATE DATE_AND_TIME
 %token OF
 %token SINT INT DINT LINT USINT UINT UDINT ULINT REAL LREAL
 %token TRUE FALSE
-%token STRING_LITERAL
-%token ARRAY RANGE_OP
-%token NUMERIC_LITERAL
+%token <String> NUMERIC_LITERAL STRING_LITERAL TIME_LITERAL
+%token ARRAY
+
+%type <List<Publisher>>
+    var_init_decl_list
+
+%type <Publisher>
+    var_init_decl
+
+%type <List<String>>
+    identifier_list
+
+%type <LexemeInfoBuilder>
+    spec_init_type
+
+%type <ElementaryType>
+    signed_integer_type_name
+    unsigned_integer_type_name
+    integer_type_name
+    real_type_name
+    numeric_type_name
+    date_type_name
+    bit_string_type_name
+    elementary_type_name
+    simple_specification
+
+%type <LexemeInfoBuilder>
+    simple_spec_init
+    initialized_constant
+
+%type <String>
+    constant
+    number
+    time
 
 %%
 
@@ -160,7 +192,7 @@ default_val:
 
 opt_range:
     /* vacio */
-    | RANGE '(' number '.''.' number ')' ';'
+    | RANGE '(' number RANGE_OP number ')' ';'
 ;
 
 rule_block_list:
@@ -292,19 +324,11 @@ pragma:
 
 output_declarations:
     VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
+    { $3.publish() }
 ;
 
 input_declarations:
-    VAR_INPUT var_retain_spec input_declaration_list ';' END_VAR
-;
-
-input_declaration_list:
-    input_declaration
-    | input_declaration_list ';' input_declaration
-;
-
-input_declaration:
-    var_init_decl
+    VAR_INPUT var_retain_spec var_init_decl_list ';' END_VAR
 ;
 
 var_declarations:
@@ -323,14 +347,15 @@ var_constant_spec:
 ;
 
 var_init_decl_list:
-    var_init_decl
-    | var_init_decl_list ';' var_init_decl
+    var_init_decl { $$ = new ArrayList<>(); $$.add($1); }
+    | var_init_decl_list ';' var_init_decl { $$.add($3); }
 ;
 
 var_init_decl:
-    identifier_list ':' type_specification
-    | var1_init_decl
-    | fb_name_decl
+    // todo: quitar los null
+    identifier_list ':' type_specification { $$ = null; }
+    | identifier_list ':' spec_init_type {  $$ = new VariableDeclaration(this.symbolTable, $1, $3); }
+    | fb_name_decl { $$ = null; }
 ;
 
 type_specification:
@@ -347,63 +372,73 @@ opt_edge:
     | F_EDGE
 ;
 
-var1_init_decl:
-    identifier_list ':' spec_init_type
-;
-
 spec_init_type:
-    simple_spec_init
-    | subrange_spec_init
-    | enumerated_spec_init
+    // todo: quitar los null
+    simple_spec_init { $$ = $1; }
+    | subrange_spec_init { $$ = null; }
+    | enumerated_spec_init { $$ = null; }
 ;
 
 simple_spec_init:
     simple_specification
+    {
+        $$ = new LexemeInfoBuilder();
+        $$.use(Use.VARIABLE).type($1);
+    }
     | simple_specification ASSIGN_OP constant
-    | initialized_constant
+    {
+        $$ = new LexemeInfoBuilder();
+        $$.use(Use.VARIABLE).type($1).value($3);
+    }
+    | initialized_constant  { $$ = $1; }
 ;
 
 simple_specification:
-    elementary_type_name
+    elementary_type_name            { $$ = $1 }
 ;
 
 /* -------------------------------- Elementary Types ------------------------------------ */
 
 elementary_type_name:
-    numeric_type_name
-    | date_type_name
-    | bit_string_type_name
-    | TIME
+    numeric_type_name               { $$ = $1 }
+    | date_type_name                { $$ = $1 }
+    | bit_string_type_name          { $$ = $1 }
 ;
 
 numeric_type_name:
-    integer_type_name
-    | real_type_name
+    integer_type_name               { $$ = $1 }
+    | real_type_name                { $$ = $1 }
 ;
 
 integer_type_name:
-    signed_integer_type_name
-    | unsigned_integer_type_name
+    signed_integer_type_name        { $$ = $1 }
+    | unsigned_integer_type_name    { $$ = $1 }
 ;
 
 signed_integer_type_name:
-    SINT | INT | DINT | LINT
+    SINT   { $$ = ElementaryType.SINT }
+    | INT  { $$ = ElementaryType.INT  }
+    | DINT { $$ = ElementaryType.DINT }
+    | LINT { $$ = ElementaryType.LINT }
 ;
 
 unsigned_integer_type_name:
-    USINT | UINT | UDINT | ULINT
+    USINT   { $$ = ElementaryType.USINT }
+    | UINT  { $$ = ElementaryType.UINT  }
+    | UDINT { $$ = ElementaryType.UDINT }
+    | ULINT { $$ = ElementaryType.ULINT }
 ;
 
 real_type_name:
-    REAL | LREAL
+    REAL    { $$ = ElementaryType.REAL  }
+    | LREAL { $$ = ElementaryType.LREAL }
 ;
 
 date_type_name:
-    DATE | TIME_OF_DAY | DATE_AND_TIME
-;
-
-bit_string_type_name:
-    bit_string_type_name_without_bool
+    TIME            { $$ = ElementaryType.TIME          }
+    | DATE          { $$ = ElementaryType.DATE          }
+    | TIME_OF_DAY   { $$ = ElementaryType.TIME_OF_DAY   }
+    | DATE_AND_TIME { $$ = ElementaryType.DATE_AND_TIME }
 ;
 
 /* ----------------------------------- Literals ----------------------------------------- */
@@ -416,59 +451,40 @@ constant:
 
 number:
     NUMERIC_LITERAL
-    | integer
-    | real
-    | bit_string
-    | boolean
+    | TRUE
+    {
+        this.symbolTable("TRUE" , new LexemeInfoBuilder().use(LITERAL).type(BOOL).build());
+        $$ = "TRUE";
+    }
+    | FALSE
+    {
+        this.symbolTable("FALSE" , new LexemeInfoBuilder().use(LITERAL).type(BOOL).build());
+        $$ = "FALSE";
+    }
+    | number_prefix NUMERIC_LITERAL
+    {
+        // todo: hacer conversion de esta constante en codigo
+        $$ = "";
+    }
 ;
 
-integer:
-    integer_type_name '#' NUMERIC_LITERAL
-;
-
-real:
-    real_type_name '#' NUMERIC_LITERAL
+number_prefix:
+    integer_type_name '#'
+    | real_type_name '#'
+    | bit_string_type_name '#'
 ;
 
 time:
-    duration
-    | time_of_day
-    | date
-    | date_and_time
+    date_type_name '#' TIME_LITERAL {
+        // Accion semantica que verifica que prefix es del mismo tipo que time_literal
+    }
 ;
 
-duration:
-    TIME '#' INTERVAL_LITERAL
-    | TIME '#' '-' INTERVAL_LITERAL
-;
-
-time_of_day:
-    TIME_OF_DAY '#' DAYTIME_LITERAL
-;
-
-date:
-    DATE '#' DATE_LITERAL
-;
-
-date_and_time:
-    DATE_AND_TIME '#' DATE_AND_TIME_LITERAL
-;
-
-boolean:
-    BOOL '#' NUMERIC_LITERAL
-    | TRUE 
-    | FALSE
-;
-
-bit_string :
-    bit_string_type_name '#' NUMERIC_LITERAL
-;
-
-bit_string_type_name_without_bool:
-    BYTE 
-    | WORD 
-    | DWORD 
-    | LWORD
+bit_string_type_name:
+    BYTE    { $$ = ElementaryType.BYTE  }
+    | WORD  { $$ = ElementaryType.WORD  }
+    | DWORD { $$ = ElementaryType.DWORD }
+    | LWORD { $$ = ElementaryType.LWORD }
 ;
 
 /* --------------------------------- Derived Types  ------------------------------------- */
@@ -571,7 +587,11 @@ initialized_variable:
 ;
 
 initialized_constant:
-    IDENTIFIER ASSIGN_OP constant 
+    IDENTIFIER ASSIGN_OP constant
+    {
+        $$ = new LexemeInfoBuilder();
+        $$.use(Use.VARIABLE).type(ElementaryType.CUSTOM).customType($1).value($3);
+    }
 ;
 
 initialized_enumerate:
@@ -582,14 +602,15 @@ initialized_structure:
     IDENTIFIER ASSIGN_OP structure_initialization
 ;
 
+// Todo: ver que hacer con las funciones de la biblioteca estandar
 fb_name_decl:
     identifier_list ':' standard_function_block_name
     | identifier_list ':' standard_function_block_name ASSIGN_OP structure_initialization
 ;
 
 identifier_list:
-    IDENTIFIER
-    | identifier_list ',' IDENTIFIER
+    IDENTIFIER { $$ = new ArrayList<String>(); }
+    | identifier_list ',' IDENTIFIER { $$.add(); }
 ;
 
 /* No hay informacion en el estandar de este tipo de funciones */
