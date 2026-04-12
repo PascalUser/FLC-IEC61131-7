@@ -1,0 +1,5 @@
+<configuration>
+    <configLocation>config/checkstyle/checkstyle.xml</configLocation>
+    <consoleOutput>true</consoleOutput>
+    <failsOnError>true</failsOnError>
+</configuration>

@@ -1,8 +1,9 @@
-package parser;
+package unit.parser;
 
 import lexer.Lexer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import parser.Parser;
 import utils.SymbolTable;
 
 import java.io.*;
@@ -16,12 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class ParserTest {
 
     static Stream<File> exampleFileProvider() {
-        try {
-            Path resourcesPath = Paths.get("src/test/resources/examples");
-            return Files.walk(resourcesPath)
-                    .filter(Files::isRegularFile)
-                    .map(Path::toFile);
-        } catch (IOException e) {
+        Path resourcesPath = Paths.get("src/test/resources/examples");
+        try (Stream<Path> paths = Files.walk(resourcesPath)) {
+            return paths.filter(Files::isRegularFile)
+                        .map(Path::toFile)
+                        .toList()
+                        .stream();
+        }
+        catch (IOException e) {
             throw new RuntimeException("Program examples were not found in: " + e.getMessage());
         }
     }
@@ -33,10 +36,8 @@ class ParserTest {
             Lexer lexer = new Lexer(reader, st);
             Parser parser = new Parser(lexer, st);
             assertTrue(parser.parse());
-            System.out.println("Probando archivo: " + exampleFile.getName());
-
         } catch (Exception e) {
-            fail("Falló el test con el archivo: " + exampleFile.getName() + " debido a: " + e.getMessage());
+            fail("Test failed with file: " + exampleFile.getName() + " due to: " + e.getMessage());
         }
     }
 }

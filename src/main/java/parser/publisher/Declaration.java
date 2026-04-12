@@ -2,7 +2,9 @@ package parser.publisher;
 
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
+import utils.enums.ElementaryType;
 import utils.enums.Source;
+import utils.enums.Use;
 
 import java.util.List;
 
@@ -17,12 +19,37 @@ public class Declaration implements Publisher {
         this.builder = builder;
     }
 
+    public Declaration type(ElementaryType type) {
+        builder.type(type);
+        return this;
+    }
+
+    public Declaration customType(String customType) {
+        builder.customType(customType);
+        return this;
+    }
+
+    public Declaration source(Source source){
+        builder.source(source);
+        return this;
+    }
+
+    public Declaration use(Use use) {
+        builder.use(use);
+        return this;
+    }
+
+    public Declaration value(Object value){
+        builder.value(value);
+        return this;
+    }
+
     @Override
-    public void publish(Source source) {
+    public void publish() {
         for (String variable : variables) {
             symbolTable.put(
                 variable,
-                builder.source(source).build()
+                builder.build()
             );
 
         }

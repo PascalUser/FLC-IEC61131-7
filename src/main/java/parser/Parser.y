@@ -4,9 +4,12 @@
 %define api.parser.public
 
 %code imports {
-    import java.source.*;
+    import java.util.List;
+    import java.util.ArrayList;
     import utils.enums.*;
     import utils.SymbolTable;
+    import utils.builders.LexemeInfoBuilder;
+    import parser.publisher.*;
 }
 
 %parse-param { SymbolTable symbolTable }
@@ -42,6 +45,7 @@
 
 %type <Publisher>
     var_init_decl
+    output_declarations
 
 %type <List<String>>
     identifier_list
@@ -58,7 +62,6 @@
     date_type_name
     bit_string_type_name
     elementary_type_name
-    simple_specification
 
 %type <LexemeInfoBuilder>
     simple_spec_init
@@ -324,9 +327,10 @@ pragma:
 
 output_declarations:
     VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
-    { $3.publish() }
+    { Compound c = new Compound($3); c.source(Source.OUT).publish(); $$ = c; }
 ;
 
+// Todo completar los 2 tipos de declaraciones restantes
 input_declarations:
     VAR_INPUT var_retain_spec var_init_decl_list ';' END_VAR
 ;
@@ -347,14 +351,19 @@ var_constant_spec:
 ;
 
 var_init_decl_list:
-    var_init_decl { $$ = new ArrayList<>(); $$.add($1); }
-    | var_init_decl_list ';' var_init_decl { $$.add($3); }
+    var_init_decl
+    {
+        List<Publisher> list = new ArrayList<>();
+        list.add($1);
+        $$ = list;
+    }
+    | var_init_decl_list ';' var_init_decl { (( List<Publisher>) $$).add($3); }
 ;
 
 var_init_decl:
     // todo: quitar los null
     identifier_list ':' type_specification { $$ = null; }
-    | identifier_list ':' spec_init_type {  $$ = new VariableDeclaration(this.symbolTable, $1, $3); }
+    | identifier_list ':' spec_init_type {  $$ = new Declaration(this.symbolTable, $1, $3); }
     | fb_name_decl { $$ = null; }
 ;
 
@@ -380,65 +389,63 @@ spec_init_type:
 ;
 
 simple_spec_init:
-    simple_specification
+    elementary_type_name
     {
-        $$ = new LexemeInfoBuilder();
-        $$.use(Use.VARIABLE).type($1);
+        LexemeInfoBuilder info = new LexemeInfoBuilder();
+        info.use(Use.VARIABLE).type($1);
+        $$ = info;
     }
-    | simple_specification ASSIGN_OP constant
+    | elementary_type_name ASSIGN_OP constant
     {
-        $$ = new LexemeInfoBuilder();
-        $$.use(Use.VARIABLE).type($1).value($3);
+        LexemeInfoBuilder info = new LexemeInfoBuilder();
+        info.use(Use.VARIABLE).type($1).value($3);
+        $$ = info;
     }
     | initialized_constant  { $$ = $1; }
-;
-
-simple_specification:
-    elementary_type_name            { $$ = $1 }
 ;
 
 /* -------------------------------- Elementary Types ------------------------------------ */
 
 elementary_type_name:
-    numeric_type_name               { $$ = $1 }
-    | date_type_name                { $$ = $1 }
-    | bit_string_type_name          { $$ = $1 }
+    numeric_type_name               { $$ = $1;}
+    | date_type_name                { $$ = $1;}
+    | bit_string_type_name          { $$ = $1;}
 ;
 
 numeric_type_name:
-    integer_type_name               { $$ = $1 }
-    | real_type_name                { $$ = $1 }
+    integer_type_name               { $$ = $1;}
+    | real_type_name                { $$ = $1;}
 ;
 
 integer_type_name:
-    signed_integer_type_name        { $$ = $1 }
-    | unsigned_integer_type_name    { $$ = $1 }
+    signed_integer_type_name        { $$ = $1;}
+    | unsigned_integer_type_name    { $$ = $1;}
 ;
 
 signed_integer_type_name:
-    SINT   { $$ = ElementaryType.SINT }
-    | INT  { $$ = ElementaryType.INT  }
-    | DINT { $$ = ElementaryType.DINT }
-    | LINT { $$ = ElementaryType.LINT }
+    SINT   { $$ = ElementaryType.SINT; }
+    | INT  { $$ = ElementaryType.INT;  }
+    | DINT { $$ = ElementaryType.DINT; }
+    | LINT { $$ = ElementaryType.LINT; }
 ;
 
 unsigned_integer_type_name:
-    USINT   { $$ = ElementaryType.USINT }
-    | UINT  { $$ = ElementaryType.UINT  }
-    | UDINT { $$ = ElementaryType.UDINT }
-    | ULINT { $$ = ElementaryType.ULINT }
+    USINT   { $$ = ElementaryType.USINT; }
+    | UINT  { $$ = ElementaryType.UINT;  }
+    | UDINT { $$ = ElementaryType.UDINT; }
+    | ULINT { $$ = ElementaryType.ULINT; }
 ;
 
 real_type_name:
-    REAL    { $$ = ElementaryType.REAL  }
-    | LREAL { $$ = ElementaryType.LREAL }
+    REAL    { $$ = ElementaryType.REAL;  }
+    | LREAL { $$ = ElementaryType.LREAL; }
 ;
 
 date_type_name:
-    TIME            { $$ = ElementaryType.TIME          }
-    | DATE          { $$ = ElementaryType.DATE          }
-    | TIME_OF_DAY   { $$ = ElementaryType.TIME_OF_DAY   }
-    | DATE_AND_TIME { $$ = ElementaryType.DATE_AND_TIME }
+    TIME            { $$ = ElementaryType.TIME;          }
+    | DATE          { $$ = ElementaryType.DATE;          }
+    | TIME_OF_DAY   { $$ = ElementaryType.TIME_OF_DAY;   }
+    | DATE_AND_TIME { $$ = ElementaryType.DATE_AND_TIME; }
 ;
 
 /* ----------------------------------- Literals ----------------------------------------- */
@@ -453,12 +460,12 @@ number:
     NUMERIC_LITERAL
     | TRUE
     {
-        this.symbolTable("TRUE" , new LexemeInfoBuilder().use(LITERAL).type(BOOL).build());
+        this.symbolTable.put("TRUE" , new LexemeInfoBuilder().use(Use.LITERAL).type(ElementaryType.BOOL).build());
         $$ = "TRUE";
     }
     | FALSE
     {
-        this.symbolTable("FALSE" , new LexemeInfoBuilder().use(LITERAL).type(BOOL).build());
+        this.symbolTable.put("FALSE" , new LexemeInfoBuilder().use(Use.LITERAL).type(ElementaryType.BOOL).build());
         $$ = "FALSE";
     }
     | number_prefix NUMERIC_LITERAL
@@ -481,10 +488,10 @@ time:
 ;
 
 bit_string_type_name:
-    BYTE    { $$ = ElementaryType.BYTE  }
-    | WORD  { $$ = ElementaryType.WORD  }
-    | DWORD { $$ = ElementaryType.DWORD }
-    | LWORD { $$ = ElementaryType.LWORD }
+    BYTE    { $$ = ElementaryType.BYTE;  }
+    | WORD  { $$ = ElementaryType.WORD;  }
+    | DWORD { $$ = ElementaryType.DWORD; }
+    | LWORD { $$ = ElementaryType.LWORD; }
 ;
 
 /* --------------------------------- Derived Types  ------------------------------------- */
@@ -589,8 +596,9 @@ initialized_variable:
 initialized_constant:
     IDENTIFIER ASSIGN_OP constant
     {
-        $$ = new LexemeInfoBuilder();
-        $$.use(Use.VARIABLE).type(ElementaryType.CUSTOM).customType($1).value($3);
+        LexemeInfoBuilder info = new LexemeInfoBuilder();
+        info.use(Use.VARIABLE).type(ElementaryType.CUSTOM).customType($1).value($3);
+        $$ = info;
     }
 ;
 
@@ -609,8 +617,13 @@ fb_name_decl:
 ;
 
 identifier_list:
-    IDENTIFIER { $$ = new ArrayList<String>(); }
-    | identifier_list ',' IDENTIFIER { $$.add(); }
+    IDENTIFIER
+    {
+        List<String> l = new ArrayList<String>();
+        l.add($1);
+        $$ = l;
+    }
+    | identifier_list ',' IDENTIFIER { ((List<String>) $$).add($3); }
 ;
 
 /* No hay informacion en el estandar de este tipo de funciones */

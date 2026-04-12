@@ -5,7 +5,7 @@ import utils.enums.ElementaryType;
 import utils.enums.Source;
 import utils.enums.Use;
 
-public class LexemeInfoBuilder {
+public class LexemeInfoBuilder implements LexemeInfoSchema {
     private ElementaryType type = ElementaryType.UNKNOWN;
     private String customType   = null;
     private Use use             = Use.UNKNOWN;

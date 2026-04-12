@@ -1,5 +1,6 @@
-package lexer;
+package unit.lexer;
 
+import lexer.Lexer;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import utils.SymbolTable;
@@ -14,17 +15,17 @@ class LexerTest {
 
     @Test
     void testLexerExample() throws IOException {
-        String codigoFuente = """
-            FUNCTION_BLOK JAJA
+        String sourceCode = """
+            FUNCTION_BLK JAJA
                     fuzzify TRUE R_EDGE
                             = : , := 1 2 +1 +1 -2 2.3 -2.3 .. 2#10 16#2 8#24
-                    "hola mundo 'a'" 'aaa'
+                    "hello world 'a'" 'aaa'
         """;
 
-        Reader reader = new StringReader(codigoFuente);
+        Reader reader = new StringReader(sourceCode);
         Lexer lexer = new Lexer(reader, new SymbolTable());
 
-        this.assertNextToken(lexer, Lexer.IDENTIFIER, "FUNCTION_BLOK");
+        this.assertNextToken(lexer, Lexer.IDENTIFIER, "FUNCTION_BLK");
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "JAJA");
         this.assertNextToken(lexer, Lexer.FUZZIFY, "fuzzify");
         this.assertNextToken(lexer, Lexer.TRUE, "TRUE");
@@ -44,20 +45,20 @@ class LexerTest {
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "2#10");
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "16#2");
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "8#24");
-        this.assertNextToken(lexer, Lexer.STRING_LITERAL, "\"hola mundo 'a'\"");
+        this.assertNextToken(lexer, Lexer.STRING_LITERAL, "\"hello world 'a'\"");
         this.assertNextToken(lexer, Lexer.STRING_LITERAL, "'aaa'");
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 
     @Test
     void testLexerFuzzifySentence() throws IOException {
-        String codigoFuente = """
+        String sourceCode = """
             FUZZIFY distance
                 TERM too_far := (-5, 1) (0, 0);
             END_FUZZIFY
         """;
 
-        Reader reader = new StringReader(codigoFuente);
+        Reader reader = new StringReader(sourceCode);
         Lexer lexer = new Lexer(reader, new SymbolTable());
 
         this.assertNextToken(lexer, Lexer.FUZZIFY, "FUZZIFY");
@@ -82,7 +83,7 @@ class LexerTest {
 
     @Test
     void testLexerTimeLiterals() throws IOException {
-        String codigoFuente = """
+        String sourceCode = """
             dt #0001-01-01-00:00:00
             Date_and_Time# 0001-01-01-00:00:00
             time_of_day# 00:00:00
@@ -95,7 +96,7 @@ class LexerTest {
             tImE#5d_14h_12m_18s_3.5ms
         """;
 
-        Reader reader = new StringReader(codigoFuente);
+        Reader reader = new StringReader(sourceCode);
         Lexer lexer = new Lexer(reader, new SymbolTable());
 
         this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "dt");

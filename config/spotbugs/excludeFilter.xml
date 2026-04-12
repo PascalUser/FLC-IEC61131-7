@@ -1,0 +1,6 @@
+<configuration>
+    <effort>Max</effort>
+    <threshold>Low</threshold>
+    <failOnError>true</failOnError>
+    <excludeFilterFile>config/spotbugs/excludeFilter.xml</excludeFilterFile>
+</configuration>

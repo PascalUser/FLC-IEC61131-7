@@ -24,5 +24,4 @@ public class LexemeInfo {
         this.source = source;
         this.value = value;
     }
-
 }

@@ -1,7 +1,7 @@
 package parser.publisher;
 
-import utils.enums.Source;
+import utils.builders.LexemeInfoSchema;
 
-public interface Publisher {
-    void publish(Source source);
+public interface Publisher extends LexemeInfoSchema {
+    void publish();
 }

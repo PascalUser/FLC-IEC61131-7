@@ -5,7 +5,6 @@ import parser.Parser;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.ElementaryType;
-import utils.enums.Use;
 
 public class Identifiers implements SemanticAnalyzer {
     private final SymbolTable symbolTable;
