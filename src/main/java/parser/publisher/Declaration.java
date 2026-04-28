@@ -1,10 +1,8 @@
 package parser.publisher;
 
 import utils.SymbolTable;
-import utils.builders.LexemeInfoBuilder;
-import utils.enums.ElementaryType;
-import utils.enums.Source;
-import utils.enums.Use;
+import utils.builders.*;
+import utils.enums.*;
 
 import java.util.List;
 
@@ -19,28 +17,57 @@ public class Declaration implements Publisher {
         this.builder = builder;
     }
 
-    public Declaration type(ElementaryType type) {
+    @Override
+    public Declaration type(Type type) {
         builder.type(type);
         return this;
     }
 
+    @Override
+    public Declaration subtype(Subtype subtype) {
+        builder.subtype(subtype);
+        return this;
+    }
+
+    @Override
     public Declaration customType(String customType) {
         builder.customType(customType);
         return this;
     }
 
+    @Override
     public Declaration source(Source source){
         builder.source(source);
         return this;
     }
 
+    @Override
     public Declaration use(Use use) {
         builder.use(use);
         return this;
     }
 
-    public Declaration value(Object value){
-        builder.value(value);
+    @Override
+    public LexemeInfoSchema inferiorLimit(Integer inferiorLimit) {
+        builder.inferiorLimit(inferiorLimit);
+        return this;
+    }
+
+    @Override
+    public LexemeInfoSchema superiorLimit(Integer superiorLimit) {
+        builder.superiorLimit(superiorLimit);
+        return this;
+    }
+
+    @Override
+    public LexemeInfoSchema parameters(List<String> parameters) {
+        builder.parameters(parameters);
+        return this;
+    }
+
+    @Override
+    public Declaration initialValue(Object initialValue){
+        builder.initialValue(initialValue);
         return this;
     }
 

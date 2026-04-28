@@ -25,8 +25,11 @@ public class ParserAndPublisherIT {
 
         LexemeInfo i1 = st.get("power");
         assertNotEquals(null, i1);
-        assertEquals(ElementaryType.REAL, i1.type);
+        assertEquals(Type.SIMPLE, i1.type);
+        assertEquals(Subtype.REAL, i1.subtype);
         assertEquals(Use.VARIABLE, i1.use);
         assertEquals(Source.OUT, i1.source);
     }
+
+    // todo: hacer test para tipos enumerados y subrangos
 }

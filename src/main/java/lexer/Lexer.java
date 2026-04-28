@@ -7,7 +7,7 @@ package lexer;
 import lexer.semantics.*;
 import lexer.semantics.SemanticAnalyzer.Result;
 import parser.Parser;
-import utils.enums.ElementaryType;
+import utils.enums.Subtype;
 import utils.SymbolTable;
 
 
@@ -365,8 +365,8 @@ public class Lexer implements Parser.Lexer {
         System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
-    public int saveYylval(String text, ElementaryType type, SemanticAnalyzer analyzer) {
-        Result result = analyzer.analyze(yytext(), type);
+    public int saveYylval(String text, Subtype subtype, SemanticAnalyzer analyzer) {
+        Result result = analyzer.analyze(yytext(), subtype);
         this.yylval = result.value;
         return result.tokenNumber;
     }
@@ -809,7 +809,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 38: break;
           case 10:
-            { return saveYylval(yytext(), ElementaryType.UINT         , this.generic);
+            { return saveYylval(yytext(), Subtype.UINT         , this.generic);
             }
             // fall through
           case 39: break;
@@ -829,7 +829,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 42: break;
           case 14:
-            { return saveYylval(yytext(), ElementaryType.UNKNOWN      , this.identifiers);
+            { return saveYylval(yytext(), Subtype.UNKNOWN      , this.identifiers);
             }
             // fall through
           case 43: break;
@@ -844,17 +844,17 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 45: break;
           case 17:
-            { return saveYylval(yytext(), ElementaryType.WSTRING      , this.generic);
+            { return saveYylval(yytext(), Subtype.WSTRING      , this.generic);
             }
             // fall through
           case 46: break;
           case 18:
-            { return saveYylval(yytext(), ElementaryType.STRING       , this.generic);
+            { return saveYylval(yytext(), Subtype.STRING       , this.generic);
             }
             // fall through
           case 47: break;
           case 19:
-            { return saveYylval(yytext(), ElementaryType.SINT         , this.generic);
+            { return saveYylval(yytext(), Subtype.SINT         , this.generic);
             }
             // fall through
           case 48: break;
@@ -864,7 +864,7 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 49: break;
           case 21:
-            { return saveYylval(yytext(), ElementaryType.TIME         , this.generic);
+            { return saveYylval(yytext(), Subtype.TIME         , this.generic);
             }
             // fall through
           case 50: break;
@@ -874,37 +874,37 @@ public class Lexer implements Parser.Lexer {
             // fall through
           case 51: break;
           case 23:
-            { return saveYylval(yytext(), ElementaryType.REAL         , this.generic);
+            { return saveYylval(yytext(), Subtype.REAL         , this.generic);
             }
             // fall through
           case 52: break;
           case 24:
-            { return saveYylval(yytext(), ElementaryType.BYTE         , this.generic);
+            { return saveYylval(yytext(), Subtype.BYTE         , this.generic);
             }
             // fall through
           case 53: break;
           case 25:
-            { return saveYylval(yytext(), ElementaryType.WORD         , this.generic);
+            { return saveYylval(yytext(), Subtype.WORD         , this.generic);
             }
             // fall through
           case 54: break;
           case 26:
-            { return saveYylval(yytext(), ElementaryType.DWORD        , this.generic);
+            { return saveYylval(yytext(), Subtype.DWORD        , this.generic);
             }
             // fall through
           case 55: break;
           case 27:
-            { return saveYylval(yytext(), ElementaryType.DATE         , this.generic);
+            { return saveYylval(yytext(), Subtype.DATE         , this.generic);
             }
             // fall through
           case 56: break;
           case 28:
-            { return saveYylval(yytext(), ElementaryType.TIME_OF_DAY  , this.generic);
+            { return saveYylval(yytext(), Subtype.TIME_OF_DAY  , this.generic);
             }
             // fall through
           case 57: break;
           case 29:
-            { return saveYylval(yytext(), ElementaryType.DATE_AND_TIME, this.generic);
+            { return saveYylval(yytext(), Subtype.DATE_AND_TIME, this.generic);
             }
             // fall through
           case 58: break;

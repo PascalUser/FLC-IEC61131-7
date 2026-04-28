@@ -1,12 +1,10 @@
 package utils.enums;
 
 public enum Source {
-    DEFUZZ,
-    FUNCTION,
-    FUZZ,
+    DEFUZZIFY,
+    FUZZIFY,
     IN,
     NONE,
     OUT,
-    TYPE,
-    UNKNOWN
+    UNKNOWN,
 }

@@ -1,27 +1,39 @@
 package utils;
 
-import utils.enums.ElementaryType;
-import utils.enums.Source;
-import utils.enums.Use;
+import utils.enums.*;
+
+import java.util.List;
 
 public class LexemeInfo {
-    public ElementaryType type;
+    public Type type;
+    public Subtype subtype;
     public String customType;
     public Use use;
     public Source source;
-    public Object value;
+    public Integer inferiorLimit;
+    public Integer superiorLimit;
+    public List<String> parameters;
+    public Object initialValue;
 
     public LexemeInfo(
-        ElementaryType type,
+        Type type,
+        Subtype subtype,
         String customType,
         Use use,
         Source source,
-        Object value
+        Integer inferiorLimit,
+        Integer superiorLimit,
+        List<String> parameters,
+        Object initialValue
     ) {
         this.type = type;
+        this.subtype = subtype;
         this.customType = customType;
-        this.use  = use;
+        this.use = use;
         this.source = source;
-        this.value = value;
+        this.inferiorLimit = inferiorLimit;
+        this.superiorLimit = superiorLimit;
+        this.parameters = parameters;
+        this.initialValue = initialValue;
     }
 }

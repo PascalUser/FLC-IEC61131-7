@@ -4,7 +4,7 @@ import lexer.ReservedWords;
 import parser.Parser;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
-import utils.enums.ElementaryType;
+import utils.enums.Subtype;
 
 public class Identifiers implements SemanticAnalyzer {
     private final SymbolTable symbolTable;
@@ -13,7 +13,7 @@ public class Identifiers implements SemanticAnalyzer {
         this.symbolTable = initSymbols;
     }
 
-    public Result analyze(String lexeme, ElementaryType type) {
+    public Result analyze(String lexeme, Subtype subtype) {
         Integer token = ReservedWords.isReserved(lexeme);
         if (token != null) {
             return new Result(null, token);

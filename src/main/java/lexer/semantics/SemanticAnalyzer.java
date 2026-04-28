@@ -1,6 +1,6 @@
 package lexer.semantics;
 
-import utils.enums.ElementaryType;
+import utils.enums.Subtype;
 
 public interface SemanticAnalyzer {
     class Result {
@@ -13,5 +13,5 @@ public interface SemanticAnalyzer {
         }
     }
 
-    Result analyze(String lexeme, ElementaryType type);
+    Result analyze(String lexeme, Subtype subtype);
 }

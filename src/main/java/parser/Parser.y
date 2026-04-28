@@ -49,11 +49,10 @@
 
 %type <List<String>>
     identifier_list
+    enumerated_list
+    enumerated_specification
 
-%type <LexemeInfoBuilder>
-    spec_init_type
-
-%type <ElementaryType>
+%type <Subtype>
     signed_integer_type_name
     unsigned_integer_type_name
     integer_type_name
@@ -64,8 +63,15 @@
     elementary_type_name
 
 %type <LexemeInfoBuilder>
+    spec_init_type
     simple_spec_init
     initialized_constant
+    initialized_spec_custom_type
+    initialized_custom_type
+    subrange
+    subrange_spec_init
+    subrange_specification
+    enumerated_spec_init
 
 %type <String>
     constant
@@ -363,7 +369,7 @@ var_init_decl_list:
 var_init_decl:
     // todo: quitar los null
     identifier_list ':' type_specification { $$ = null; }
-    | identifier_list ':' spec_init_type {  $$ = new Declaration(this.symbolTable, $1, $3); }
+    | identifier_list ':' spec_init_type { $$ = new Declaration(this.symbolTable, $1, $3.use(Use.VARIABLE)); }
     | fb_name_decl { $$ = null; }
 ;
 
@@ -382,70 +388,68 @@ opt_edge:
 ;
 
 spec_init_type:
-    // todo: quitar los null
     simple_spec_init { $$ = $1; }
-    | subrange_spec_init { $$ = null; }
-    | enumerated_spec_init { $$ = null; }
+    | subrange_spec_init { $$ = $1; }
+    | enumerated_spec_init { $$ = $1; }
 ;
 
 simple_spec_init:
     elementary_type_name
     {
-        LexemeInfoBuilder info = new LexemeInfoBuilder();
-        info.use(Use.VARIABLE).type($1);
-        $$ = info;
+        $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1);
     }
     | elementary_type_name ASSIGN_OP constant
     {
-        LexemeInfoBuilder info = new LexemeInfoBuilder();
-        info.use(Use.VARIABLE).type($1).value($3);
-        $$ = info;
+        $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1).initialValue($3);
     }
-    | initialized_constant  { $$ = $1; }
+    | initialized_constant  
+    { 
+        $$ = $1.type(Type.SIMPLE); 
+    }
 ;
 
 /* -------------------------------- Elementary Types ------------------------------------ */
 
 elementary_type_name:
-    numeric_type_name               { $$ = $1;}
-    | date_type_name                { $$ = $1;}
-    | bit_string_type_name          { $$ = $1;}
+    numeric_type_name               { $$ = $1; }
+    | date_type_name                { $$ = $1; }
+    | bit_string_type_name          { $$ = $1; }
 ;
 
 numeric_type_name:
-    integer_type_name               { $$ = $1;}
-    | real_type_name                { $$ = $1;}
+    integer_type_name               { $$ = $1; }
+    | real_type_name                { $$ = $1; }
 ;
 
 integer_type_name:
-    signed_integer_type_name        { $$ = $1;}
-    | unsigned_integer_type_name    { $$ = $1;}
+    signed_integer_type_name        { $$ = $1; }
+    | unsigned_integer_type_name    { $$ = $1; }
 ;
 
 signed_integer_type_name:
-    SINT   { $$ = ElementaryType.SINT; }
-    | INT  { $$ = ElementaryType.INT;  }
-    | DINT { $$ = ElementaryType.DINT; }
-    | LINT { $$ = ElementaryType.LINT; }
+    SINT   { $$ = Subtype.SINT; }
+    | INT  { $$ = Subtype.INT;  }
+    | DINT { $$ = Subtype.DINT; }
+    | LINT { $$ = Subtype.LINT; }
 ;
 
 unsigned_integer_type_name:
-    USINT   { $$ = ElementaryType.USINT; }
-    | UINT  { $$ = ElementaryType.UINT;  }
-    | UDINT { $$ = ElementaryType.UDINT; }
-    | ULINT { $$ = ElementaryType.ULINT; }
+    USINT   { $$ = Subtype.USINT; }
+    | UINT  { $$ = Subtype.UINT;  }
+    | UDINT { $$ = Subtype.UDINT; }
+    | ULINT { $$ = Subtype.ULINT; }
 ;
 
 real_type_name:
-    REAL    { $$ = ElementaryType.REAL;  }
-    | LREAL { $$ = ElementaryType.LREAL; }
+    REAL    { $$ = Subtype.REAL;  }
+    | LREAL { $$ = Subtype.LREAL; }
 ;
 
 date_type_name:
-    TIME            { $$ = ElementaryType.TIME;          }
-    | DATE          { $$ = ElementaryType.DATE;          }
-    | TIME_OF_DAY   { $$ = ElementaryType.TIME_OF_DAY;   }
-    | DATE_AND_TIME { $$ = ElementaryType.DATE_AND_TIME; }
+    TIME            { $$ = Subtype.TIME;          }
+    | DATE          { $$ = Subtype.DATE;          }
+    | TIME_OF_DAY   { $$ = Subtype.TIME_OF_DAY;   }
+    | DATE_AND_TIME { $$ = Subtype.DATE_AND_TIME; }
 ;
 
 /* ----------------------------------- Literals ----------------------------------------- */
@@ -460,12 +464,26 @@ number:
     NUMERIC_LITERAL
     | TRUE
     {
-        this.symbolTable.put("TRUE" , new LexemeInfoBuilder().use(Use.LITERAL).type(ElementaryType.BOOL).build());
+        this.symbolTable.put(
+            "TRUE" ,
+            new LexemeInfoBuilder()
+                .use(Use.LITERAL)
+                .type(Type.SIMPLE)
+                .subtype(Subtype.BOOL)
+                .build()
+        );
         $$ = "TRUE";
     }
     | FALSE
     {
-        this.symbolTable.put("FALSE" , new LexemeInfoBuilder().use(Use.LITERAL).type(ElementaryType.BOOL).build());
+        this.symbolTable.put(
+            "FALSE" ,
+            new LexemeInfoBuilder()
+                .use(Use.LITERAL)
+                .type(Type.SIMPLE)
+                .subtype(Subtype.BOOL)
+                .build()
+        );
         $$ = "FALSE";
     }
     | number_prefix NUMERIC_LITERAL
@@ -488,43 +506,79 @@ time:
 ;
 
 bit_string_type_name:
-    BYTE    { $$ = ElementaryType.BYTE;  }
-    | WORD  { $$ = ElementaryType.WORD;  }
-    | DWORD { $$ = ElementaryType.DWORD; }
-    | LWORD { $$ = ElementaryType.LWORD; }
+    BYTE    { $$ = Subtype.BYTE;  }
+    | WORD  { $$ = Subtype.WORD;  }
+    | DWORD { $$ = Subtype.DWORD; }
+    | LWORD { $$ = Subtype.LWORD; }
 ;
 
 /* --------------------------------- Derived Types  ------------------------------------- */
 
 subrange_spec_init:
-    subrange_specification
-    | subrange_specification ASSIGN_OP NUMERIC_LITERAL
+    subrange_specification  { $$ = $1; }
+    | subrange_specification ASSIGN_OP NUMERIC_LITERAL { $$ = $1.initialValue($3); }
 ;
 
 subrange_specification:
-    integer_type_name '(' subrange ')'
+    integer_type_name '(' subrange ')' 
+    { 
+        $$ = $3.subtype($1);
+    }
 ;
 
 subrange:
     NUMERIC_LITERAL RANGE_OP NUMERIC_LITERAL
+    {
+        // todo: hacer chequeo semantico y pasaje a valor (.value) en analisis lexico
+
+        Integer ilim = (Integer) this.symbolTable.get($1).initialValue;
+        Integer slim = (Integer) this.symbolTable.get($3).initialValue;
+
+        $$ = new LexemeInfoBuilder()
+            .type(Type.SUBRANGE)
+            .inferiorLimit(ilim)
+            .superiorLimit(slim);
+    }
 ;
 
 enumerated_spec_init:
-    initialized_variable
-    | initialized_enumerate
+    initialized_custom_type         
+    { $$ = $1.type(Type.ENUMERATE); }
+    | initialized_spec_custom_type  
+    { $$ = $1.type(Type.ENUMERATE); }
     | enumerated_specification ASSIGN_OP IDENTIFIER
+    {
+        $$ = new LexemeInfoBuilder()
+            .type(Type.ENUMERATE)
+            .parameters($1)
+            .initialValue($3);
+    }
     | enumerated_specification ASSIGN_OP IDENTIFIER '#' IDENTIFIER
+    {
+        $$ = new LexemeInfoBuilder()
+            .type(Type.ENUMERATE)
+            .parameters($1)
+            .initialValue($5);
+            //TODO name mangling:
+    }
 ;
 
 enumerated_specification:
-    '(' enumerated_list')'
+    '(' enumerated_list')' { $$ = $2; }
 ;
 
 enumerated_list:
-    IDENTIFIER '#' IDENTIFIER
-    | IDENTIFIER
-    | enumerated_list ',' IDENTIFIER '#' IDENTIFIER
+    IDENTIFIER
+    {
+        List<String> l = new ArrayList<String>();
+        l.add($1);
+        $$ = l;
+    }
     | enumerated_list ',' IDENTIFIER
+    {
+        $1.add($3);
+        $$ = $1;
+    }
 ;
 
 array_spec_init:
@@ -579,8 +633,8 @@ structure_element_initialization_list:
 
 structure_element_initialization:
     initialized_constant
-    | initialized_variable
-    | initialized_enumerate
+    | initialized_custom_type
+    | initialized_spec_custom_type
     | IDENTIFIER ASSIGN_OP structure_element_type
 ;
 
@@ -589,21 +643,35 @@ structure_element_type:
     | structure_initialization
 ;
 
-initialized_variable:
-    IDENTIFIER ASSIGN_OP IDENTIFIER
-;
-
 initialized_constant:
     IDENTIFIER ASSIGN_OP constant
     {
-        LexemeInfoBuilder info = new LexemeInfoBuilder();
-        info.use(Use.VARIABLE).type(ElementaryType.CUSTOM).customType($1).value($3);
-        $$ = info;
+        $$ = new LexemeInfoBuilder()
+            .subtype(Subtype.CUSTOM)
+            .customType($1)
+            .initialValue($3);
     }
 ;
 
-initialized_enumerate:
-    IDENTIFIER ASSIGN_OP IDENTIFIER '#' IDENTIFIER 
+initialized_custom_type:
+    IDENTIFIER ASSIGN_OP IDENTIFIER
+    {
+        $$ = new LexemeInfoBuilder()
+            .subtype(Subtype.CUSTOM)
+            .customType($1)
+            .initialValue($3);
+    }
+;
+
+initialized_spec_custom_type:
+    IDENTIFIER ASSIGN_OP IDENTIFIER '#' IDENTIFIER
+    {
+        $$ = new LexemeInfoBuilder()
+            .subtype(Subtype.CUSTOM)
+            .customType($1)
+            .initialValue($5);
+            // TODO: name mangling
+    }
 ;
 
 initialized_structure:
@@ -623,7 +691,7 @@ identifier_list:
         l.add($1);
         $$ = l;
     }
-    | identifier_list ',' IDENTIFIER { ((List<String>) $$).add($3); }
+    | identifier_list ',' IDENTIFIER { $1.add($3); $$ = $1; }
 ;
 
 /* No hay informacion en el estandar de este tipo de funciones */
