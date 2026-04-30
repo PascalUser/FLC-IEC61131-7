@@ -1,6 +1,9 @@
-<configuration>
-    <effort>Max</effort>
-    <threshold>Low</threshold>
-    <failOnError>true</failOnError>
-    <excludeFilterFile>config/spotbugs/excludeFilter.xml</excludeFilterFile>
-</configuration>
+<FindBugsFilter>
+    <Match>
+        <Class name="~.*Parser"/>
+    </Match>
+
+    <Match>
+        <Class name="~.*Lexer"/>
+    </Match>
+</FindBugsFilter>

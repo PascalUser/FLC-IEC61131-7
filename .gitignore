@@ -6,7 +6,11 @@
 lib
 .idea
 out
+
 Luca.y
 LucaInfo.java
+
 target
+
+.scannerwork
 javadoc
