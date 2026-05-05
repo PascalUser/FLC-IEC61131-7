@@ -28,6 +28,7 @@ class ParserTest {
             throw new RuntimeException("Program examples were not found in: " + e.getMessage());
         }
     }
+
     @ParameterizedTest
     @MethodSource("exampleFileProvider")
     void testProgramExamples(File exampleFile) {

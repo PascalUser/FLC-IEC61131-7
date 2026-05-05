@@ -1,0 +1,8 @@
+FUNCTION_BLOCK Example_AnonymousTypes
+    VAR
+        Switch : (OFF, ON);
+        Selection : (MANUAL, AUTO, TEST) := AUTO;
+        MotorSpeed : INT (100..3000);
+        AlarmPressure : INT (0..500) := 450;
+    END_VAR
+END_FUNCTION_BLOCK

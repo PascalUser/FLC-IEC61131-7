@@ -42,10 +42,15 @@
 
 %type <List<Publisher>>
     var_init_decl_list
+    type_declaration_list
 
 %type <Publisher>
     var_init_decl
     output_declarations
+    input_declarations
+    var_declarations
+    data_type_declaration
+    type_declaration
 
 %type <List<String>>
     identifier_list
@@ -63,17 +68,22 @@
     elementary_type_name
 
 %type <LexemeInfoBuilder>
-    spec_init_type
+    unified_specification
+    custom_spec_init
     simple_spec_init
-    initialized_constant
-    initialized_spec_custom_type
-    initialized_custom_type
-    subrange
-    subrange_spec_init
-    subrange_specification
     enumerated_spec_init
+    subrange_spec_init
+    // array_spec_init
+    // string_spec_init
+    // structure_declaration
+    initialized_constant
+    initialized_identifier
+    subrange
+    subrange_specification
+    specification_list
 
 %type <String>
+    opt_scope_and_value
     constant
     number
     time
@@ -98,7 +108,7 @@ function_block_declaration:
 ;
 
 fb_io_var_declarations_list:
-    /* vacio */
+    /* empty */
     | fb_io_var_declarations_list fb_io_var_declarations
 ;
 
@@ -108,7 +118,7 @@ fb_io_var_declarations:
 ;
 
 other_var_declarations_list:
-    /* vacio */
+    /* empty */
     | other_var_declarations_list other_var_declarations
 ;
 
@@ -124,7 +134,7 @@ function_block_body:
 ;
 
 fuzzify_block_list:
-    /* vacio */
+    /* empty */
     | fuzzify_block_list fuzzify_block
 ;
 
@@ -135,7 +145,7 @@ fuzzify_block:
 ;
 
 defuzzify_block_list:
-    /* vacio */
+    /* empty */
     | defuzzify_block_list defuzzify_block
 ;
 
@@ -149,7 +159,7 @@ defuzzify_block:
 ;
 
 opt_linguistic_term_list:
-    /* vacio */
+    /* empty */
     | linguistic_term_list
 ;
 
@@ -200,12 +210,12 @@ default_val:
 ;
 
 opt_range:
-    /* vacio */
+    /* empty */
     | RANGE '(' number RANGE_OP number ')' ';'
 ;
 
 rule_block_list:
-    /* vacio */
+    /* empty */
     | rule_block_list rule_block
 ;
 
@@ -223,12 +233,12 @@ operator_definition:
 ;
 
 opt_operator_or:
-    /* vacio */
+    /* empty */
     | OR ':' or_type
 ;
 
 operator_and_opt:
-    /* vacio */
+    /* empty */
     | AND ':' and_type
 ;
 
@@ -241,7 +251,7 @@ and_type:
 ;
 
 activation_method_opt:
-    /* vacio */
+    /* empty */
     | activation_method
 ;
 
@@ -262,7 +272,7 @@ accu_type:
 ;
 
 rule_list:
-    /* vacio */
+    /* empty */
     | rule_list rule
 ;
 
@@ -271,7 +281,7 @@ rule:
 ;
 
 opt_weighting:
-    /* vacio */
+    /* empty */
     | WITH number
     | WITH IDENTIFIER
 ;
@@ -282,7 +292,7 @@ condition:
 ;
 
 condition_tail:
-    /* vacio */
+    /* empty */
     | AND IDENTIFIER condition_tail
     | OR IDENTIFIER condition_tail
     | AND x condition_tail
@@ -309,7 +319,7 @@ conclusion_list:
 ;
 
 option_block_list:
-    /* vacio */
+    /* empty */
     | option_block_list option_block
 ;
 
@@ -331,28 +341,42 @@ pragma:
 
 /* ------------------------------ IEC61131-3 Annex B ------------------------------------ */
 
+// TODO: Ver que hacer con el retain
 output_declarations:
     VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
-    { Compound c = new Compound($3); c.source(Source.OUT).publish(); $$ = c; }
+    { 
+        Compound c = new Compound($3); 
+        c.source(Source.OUT).publish(); 
+        $$ = c; 
+    }
 ;
 
-// Todo completar los 2 tipos de declaraciones restantes
 input_declarations:
     VAR_INPUT var_retain_spec var_init_decl_list ';' END_VAR
+    { 
+        Compound c = new Compound($3); 
+        c.source(Source.IN).publish();
+        $$ = c; 
+    }
 ;
 
 var_declarations:
     VAR var_constant_spec var_init_decl_list ';' END_VAR
+    { 
+        Compound c = new Compound($3); 
+        c.source(Source.NONE).publish(); 
+        $$ = c; 
+    }
 ;
 
 var_retain_spec:
-    /* vacio */
+    /* empty */
     | RETAIN
     | NON_RETAIN
 ;
 
 var_constant_spec:
-    /* vacio */
+    /* empty */
     | CONSTANT
 ;
 
@@ -363,34 +387,57 @@ var_init_decl_list:
         list.add($1);
         $$ = list;
     }
-    | var_init_decl_list ';' var_init_decl { (( List<Publisher>) $$).add($3); }
+    | var_init_decl_list ';' var_init_decl 
+    { 
+        $1.add($3);
+        $$ = $1;
+    }
 ;
 
+// todo: quitar los null
 var_init_decl:
-    // todo: quitar los null
-    identifier_list ':' type_specification { $$ = null; }
-    | identifier_list ':' spec_init_type { $$ = new Declaration(this.symbolTable, $1, $3.use(Use.VARIABLE)); }
-    | fb_name_decl { $$ = null; }
+    identifier_list ':' unified_specification
+    {
+        $$ = new Declaration(this.symbolTable, $1, $3.use(Use.VARIABLE));
+    }
+    | fb_name_decl
+    {
+        $$ = null;
+    }
 ;
 
-type_specification:
+// todo: quitar los null
+unified_specification:
+    custom_spec_init
+    {
+        $$ = $1.type(Type.SIMPLE);
+    }
+    | BOOL opt_edge         { $$ = null; }
+    | simple_spec_init      { $$ = $1; }
+    | subrange_spec_init    { $$ = $1; }
+    | enumerated_spec_init  { $$ = $1; }
+    | array_spec_init       { $$ = null; }
+    | string_spec_init      { $$ = null; }
+;
+
+// todo: quitar los null
+custom_spec_init:
     IDENTIFIER
-    | BOOL opt_edge
-    | string_specification
-    | initialized_structure
-    | array_spec_init
+    {
+        $$ = new LexemeInfoBuilder()
+                    .subtype(Subtype.CUSTOM)
+                    .customType($1)
+                    .initialValue(this.symbolTable.get($1).initialValue);
+    }
+    | initialized_constant      { $$ = $1; }
+    | initialized_structure     { $$ = null; }
+    | initialized_identifier    { $$ = $1; }
 ;
 
 opt_edge:
-    /* vacio */
-    | R_EDGE 
+    /* empty */
+    | R_EDGE
     | F_EDGE
-;
-
-spec_init_type:
-    simple_spec_init { $$ = $1; }
-    | subrange_spec_init { $$ = $1; }
-    | enumerated_spec_init { $$ = $1; }
 ;
 
 simple_spec_init:
@@ -401,10 +448,6 @@ simple_spec_init:
     | elementary_type_name ASSIGN_OP constant
     {
         $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1).initialValue($3);
-    }
-    | initialized_constant  
-    { 
-        $$ = $1.type(Type.SIMPLE); 
     }
 ;
 
@@ -455,9 +498,9 @@ date_type_name:
 /* ----------------------------------- Literals ----------------------------------------- */
 
 constant:
-    STRING_LITERAL
-    | time
-    | number
+    STRING_LITERAL  { $$ = $1; }
+    | time          { $$ = $1; }
+    | number        { $$ = $1; }
 ;
 
 number:
@@ -542,24 +585,19 @@ subrange:
 ;
 
 enumerated_spec_init:
-    initialized_custom_type         
-    { $$ = $1.type(Type.ENUMERATE); }
-    | initialized_spec_custom_type  
-    { $$ = $1.type(Type.ENUMERATE); }
-    | enumerated_specification ASSIGN_OP IDENTIFIER
+    enumerated_specification
+    {
+        $$ = new LexemeInfoBuilder()
+            .type(Type.ENUMERATE)
+            .parameters($1)
+            .initialValue($1.get(0));
+    }
+    | enumerated_specification ASSIGN_OP opt_scope_and_value
     {
         $$ = new LexemeInfoBuilder()
             .type(Type.ENUMERATE)
             .parameters($1)
             .initialValue($3);
-    }
-    | enumerated_specification ASSIGN_OP IDENTIFIER '#' IDENTIFIER
-    {
-        $$ = new LexemeInfoBuilder()
-            .type(Type.ENUMERATE)
-            .parameters($1)
-            .initialValue($5);
-            //TODO name mangling:
     }
 ;
 
@@ -633,8 +671,7 @@ structure_element_initialization_list:
 
 structure_element_initialization:
     initialized_constant
-    | initialized_custom_type
-    | initialized_spec_custom_type
+    | initialized_identifier
     | IDENTIFIER ASSIGN_OP structure_element_type
 ;
 
@@ -649,12 +686,12 @@ initialized_constant:
         $$ = new LexemeInfoBuilder()
             .subtype(Subtype.CUSTOM)
             .customType($1)
-            .initialValue($3);
+            .initialValue(this.symbolTable($3).initialValue);
     }
 ;
 
-initialized_custom_type:
-    IDENTIFIER ASSIGN_OP IDENTIFIER
+initialized_identifier:
+    IDENTIFIER ASSIGN_OP opt_scope_and_value
     {
         $$ = new LexemeInfoBuilder()
             .subtype(Subtype.CUSTOM)
@@ -663,14 +700,15 @@ initialized_custom_type:
     }
 ;
 
-initialized_spec_custom_type:
-    IDENTIFIER ASSIGN_OP IDENTIFIER '#' IDENTIFIER
+opt_scope_and_value:
+    IDENTIFIER
     {
-        $$ = new LexemeInfoBuilder()
-            .subtype(Subtype.CUSTOM)
-            .customType($1)
-            .initialValue($5);
-            // TODO: name mangling
+        $$ = $1;
+    }
+    // TODO name mangling para opt_scope
+    | IDENTIFIER '#' IDENTIFIER
+    {
+        $$ = $3;
     }
 ;
 
@@ -699,7 +737,7 @@ standard_function_block_name:
     STD_FB_IDENTIFIER
 ;
 
-string_specification:
+string_spec_init:
     type_string
     | type_string '[' NUMERIC_LITERAL ']'
     | type_string ASSIGN_OP STRING_LITERAL
@@ -714,33 +752,50 @@ type_string:
 /* ----------------------------------- Data Type ---------------------------------------- */
 
 opt_data_type_declaration:
-    /* vacio */
+    /* empty */
     | data_type_declaration
 ;
 
 data_type_declaration:
     TYPE type_declaration_list END_TYPE
+    {
+        Publisher pub = new Compound($2);
+        pub.publish();
+        $$ = pub;
+    }
 ;
 
 type_declaration_list:
     type_declaration ';'
+    {
+        List<Publisher> list = new ArrayList<>();
+        list.add($1);
+        $$ = list;
+    }
     | type_declaration_list type_declaration ';'
+    {
+        $1.add($2);
+        $$ = $1;
+    }
 ;
 
 type_declaration:
     IDENTIFIER ':' specification_list
+    {
+        List<String> element = new ArrayList<>();
+        element.add($1);
+        $$ = new Declaration(this.symbolTable, element, $3);
+    }
 ;
 
 specification_list:
-    spec_init_type
-    | array_spec_init
-    | structure_specification
-    | string_specification
-;
-
-structure_specification:
-    initialized_structure
-    | structure_declaration
+    custom_spec_init        { $$ = $1.use(Use.TYPE); }
+    | simple_spec_init      { $$ = $1.use(Use.TYPE); }
+    | enumerated_spec_init  { $$ = $1.use(Use.TYPE); }
+    | subrange_spec_init    { $$ = $1.use(Use.TYPE); }
+    | array_spec_init       { $$ = null; }
+    | structure_declaration { $$ = null; }
+    | string_spec_init      { $$ = null; }
 ;
 
 structure_declaration:
@@ -757,10 +812,12 @@ structure_element_declaration:
 ;
 
 specification_sublist:
-    spec_init_type
+    custom_spec_init
+    | simple_spec_init
+    | enumerated_spec_init
+    | subrange_spec_init
     | array_spec_init
-    | initialized_structure
-    | string_specification
+    | string_spec_init
 ;
 
 %%
