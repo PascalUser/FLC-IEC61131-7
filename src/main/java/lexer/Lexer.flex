@@ -80,8 +80,8 @@ HEXADECIMAL        = 16#{HEX_DIGIT}+
 // TODO: Hacer el casting de tipos a numeros naturales (number de Luca) para poder hacer
 // las funciones fuzzificadoras con entrada positiva (los conversores manejan rangos personalizados)
 
-SINGLE_BYTE_STRING = \'({COMMON_CHARACTER}*|\"|\$\'|\${HEX_DIGIT}{2})*\'
-DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}*|\'|\$\"|\${HEX_DIGIT}{4})*\"
+SINGLE_BYTE_STRING = \'({COMMON_CHARACTER}|\"|\$\'|\${HEX_DIGIT}{2})*\'
+DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 

@@ -13,7 +13,6 @@ public class SymbolTable {
     public LexemeInfo get(String lexeme) {
         return table.get(lexeme);
     }
-
     public LexemeInfo put(String lexeme, LexemeInfo info) {
         return table.put(lexeme, info);
     }
