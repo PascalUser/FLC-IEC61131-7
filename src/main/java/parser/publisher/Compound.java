@@ -53,7 +53,7 @@ public class Compound implements Publisher {
     }
 
     @Override
-    public LexemeInfoSchema inferiorLimit(Integer inferiorLimit) {
+    public LexemeInfoSchema inferiorLimit(String inferiorLimit) {
         for (Publisher publisher : publishers){
             publisher.inferiorLimit(inferiorLimit);
         }
@@ -61,7 +61,7 @@ public class Compound implements Publisher {
     }
 
     @Override
-    public LexemeInfoSchema superiorLimit(Integer superiorLimit) {
+    public LexemeInfoSchema superiorLimit(String superiorLimit) {
         for (Publisher publisher : publishers){
             publisher.superiorLimit(superiorLimit);
         }

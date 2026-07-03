@@ -573,14 +573,11 @@ subrange:
     NUMERIC_LITERAL RANGE_OP NUMERIC_LITERAL
     {
         // todo: hacer chequeo semantico y pasaje a valor (.value) en analisis lexico
-
-        Integer ilim = (Integer) this.symbolTable.get($1).initialValue;
-        Integer slim = (Integer) this.symbolTable.get($3).initialValue;
-
         $$ = new LexemeInfoBuilder()
             .type(Type.SUBRANGE)
-            .inferiorLimit(ilim)
-            .superiorLimit(slim);
+            .inferiorLimit($1)
+            .superiorLimit($3)
+            .initialValue($1);
     }
 ;
 
@@ -686,7 +683,7 @@ initialized_constant:
         $$ = new LexemeInfoBuilder()
             .subtype(Subtype.CUSTOM)
             .customType($1)
-            .initialValue(this.symbolTable($3).initialValue);
+            .initialValue($3);
     }
 ;
 

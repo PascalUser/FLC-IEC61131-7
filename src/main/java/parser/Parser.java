@@ -1291,6 +1291,27 @@ this.symbolTable = symbolTable;
   break;
 
 
+  case 144: /* constant: STRING_LITERAL  */
+  if (yyn == 144)
+    /* "src/main/java/parser/Parser.y":501  */
+                    { yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 145: /* constant: time  */
+  if (yyn == 145)
+    /* "src/main/java/parser/Parser.y":502  */
+                    { yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 146: /* constant: number  */
+  if (yyn == 146)
+    /* "src/main/java/parser/Parser.y":503  */
+                    { yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
   case 148: /* number: TRUE  */
   if (yyn == 148)
     /* "src/main/java/parser/Parser.y":509  */
@@ -1400,21 +1421,18 @@ this.symbolTable = symbolTable;
     /* "src/main/java/parser/Parser.y":574  */
     {
         // todo: hacer chequeo semantico y pasaje a valor (.value) en analisis lexico
-
-        Integer ilim = (Integer) this.symbolTable.get(((String)(yystack.valueAt (2)))).initialValue;
-        Integer slim = (Integer) this.symbolTable.get(((String)(yystack.valueAt (0)))).initialValue;
-
         yyval = new LexemeInfoBuilder()
             .type(Type.SUBRANGE)
-            .inferiorLimit(ilim)
-            .superiorLimit(slim);
+            .inferiorLimit(((String)(yystack.valueAt (2))))
+            .superiorLimit(((String)(yystack.valueAt (0))))
+            .initialValue(((String)(yystack.valueAt (2))));
     };
   break;
 
 
   case 163: /* enumerated_spec_init: enumerated_specification  */
   if (yyn == 163)
-    /* "src/main/java/parser/Parser.y":589  */
+    /* "src/main/java/parser/Parser.y":586  */
     {
         yyval = new LexemeInfoBuilder()
             .type(Type.ENUMERATE)
@@ -1426,7 +1444,7 @@ this.symbolTable = symbolTable;
 
   case 164: /* enumerated_spec_init: enumerated_specification ASSIGN_OP opt_scope_and_value  */
   if (yyn == 164)
-    /* "src/main/java/parser/Parser.y":596  */
+    /* "src/main/java/parser/Parser.y":593  */
     {
         yyval = new LexemeInfoBuilder()
             .type(Type.ENUMERATE)
@@ -1438,14 +1456,14 @@ this.symbolTable = symbolTable;
 
   case 165: /* enumerated_specification: '(' enumerated_list ')'  */
   if (yyn == 165)
-    /* "src/main/java/parser/Parser.y":605  */
+    /* "src/main/java/parser/Parser.y":602  */
                            { yyval = ((List<String>)(yystack.valueAt (1))); };
   break;
 
 
   case 166: /* enumerated_list: IDENTIFIER  */
   if (yyn == 166)
-    /* "src/main/java/parser/Parser.y":610  */
+    /* "src/main/java/parser/Parser.y":607  */
     {
         List<String> l = new ArrayList<String>();
         l.add(((String)(yystack.valueAt (0))));
@@ -1456,7 +1474,7 @@ this.symbolTable = symbolTable;
 
   case 167: /* enumerated_list: enumerated_list ',' IDENTIFIER  */
   if (yyn == 167)
-    /* "src/main/java/parser/Parser.y":616  */
+    /* "src/main/java/parser/Parser.y":613  */
     {
         ((List<String>)(yystack.valueAt (2))).add(((String)(yystack.valueAt (0))));
         yyval = ((List<String>)(yystack.valueAt (2)));
@@ -1466,7 +1484,7 @@ this.symbolTable = symbolTable;
 
   case 193: /* initialized_constant: IDENTIFIER ASSIGN_OP constant  */
   if (yyn == 193)
-    /* "src/main/java/parser/Parser.y":685  */
+    /* "src/main/java/parser/Parser.y":682  */
     {
         yyval = new LexemeInfoBuilder()
             .subtype(Subtype.CUSTOM)
@@ -1478,7 +1496,7 @@ this.symbolTable = symbolTable;
 
   case 194: /* initialized_identifier: IDENTIFIER ASSIGN_OP opt_scope_and_value  */
   if (yyn == 194)
-    /* "src/main/java/parser/Parser.y":695  */
+    /* "src/main/java/parser/Parser.y":692  */
     {
         yyval = new LexemeInfoBuilder()
             .subtype(Subtype.CUSTOM)
@@ -1490,7 +1508,7 @@ this.symbolTable = symbolTable;
 
   case 195: /* opt_scope_and_value: IDENTIFIER  */
   if (yyn == 195)
-    /* "src/main/java/parser/Parser.y":705  */
+    /* "src/main/java/parser/Parser.y":702  */
     {
         yyval = ((String)(yystack.valueAt (0)));
     };
@@ -1499,7 +1517,7 @@ this.symbolTable = symbolTable;
 
   case 196: /* opt_scope_and_value: IDENTIFIER '#' IDENTIFIER  */
   if (yyn == 196)
-    /* "src/main/java/parser/Parser.y":710  */
+    /* "src/main/java/parser/Parser.y":707  */
     {
         yyval = ((String)(yystack.valueAt (0)));
     };
@@ -1508,7 +1526,7 @@ this.symbolTable = symbolTable;
 
   case 200: /* identifier_list: IDENTIFIER  */
   if (yyn == 200)
-    /* "src/main/java/parser/Parser.y":727  */
+    /* "src/main/java/parser/Parser.y":724  */
     {
         List<String> l = new ArrayList<String>();
         l.add(((String)(yystack.valueAt (0))));
@@ -1519,14 +1537,14 @@ this.symbolTable = symbolTable;
 
   case 201: /* identifier_list: identifier_list ',' IDENTIFIER  */
   if (yyn == 201)
-    /* "src/main/java/parser/Parser.y":732  */
+    /* "src/main/java/parser/Parser.y":729  */
                                      { ((List<String>)(yystack.valueAt (2))).add(((String)(yystack.valueAt (0)))); yyval = ((List<String>)(yystack.valueAt (2))); };
   break;
 
 
   case 211: /* data_type_declaration: TYPE type_declaration_list END_TYPE  */
   if (yyn == 211)
-    /* "src/main/java/parser/Parser.y":761  */
+    /* "src/main/java/parser/Parser.y":758  */
     {
         Publisher pub = new Compound(((List<Publisher>)(yystack.valueAt (1))));
         pub.publish();
@@ -1537,7 +1555,7 @@ this.symbolTable = symbolTable;
 
   case 212: /* type_declaration_list: type_declaration ';'  */
   if (yyn == 212)
-    /* "src/main/java/parser/Parser.y":770  */
+    /* "src/main/java/parser/Parser.y":767  */
     {
         List<Publisher> list = new ArrayList<>();
         list.add(((Publisher)(yystack.valueAt (1))));
@@ -1548,7 +1566,7 @@ this.symbolTable = symbolTable;
 
   case 213: /* type_declaration_list: type_declaration_list type_declaration ';'  */
   if (yyn == 213)
-    /* "src/main/java/parser/Parser.y":776  */
+    /* "src/main/java/parser/Parser.y":773  */
     {
         ((List<Publisher>)(yystack.valueAt (2))).add(((Publisher)(yystack.valueAt (1))));
         yyval = ((List<Publisher>)(yystack.valueAt (2)));
@@ -1558,7 +1576,7 @@ this.symbolTable = symbolTable;
 
   case 214: /* type_declaration: IDENTIFIER ':' specification_list  */
   if (yyn == 214)
-    /* "src/main/java/parser/Parser.y":784  */
+    /* "src/main/java/parser/Parser.y":781  */
     {
         List<String> element = new ArrayList<>();
         element.add(((String)(yystack.valueAt (2))));
@@ -1569,55 +1587,55 @@ this.symbolTable = symbolTable;
 
   case 215: /* specification_list: custom_spec_init  */
   if (yyn == 215)
-    /* "src/main/java/parser/Parser.y":792  */
+    /* "src/main/java/parser/Parser.y":789  */
                             { yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))).use(Use.TYPE); };
   break;
 
 
   case 216: /* specification_list: simple_spec_init  */
   if (yyn == 216)
-    /* "src/main/java/parser/Parser.y":793  */
+    /* "src/main/java/parser/Parser.y":790  */
                             { yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))).use(Use.TYPE); };
   break;
 
 
   case 217: /* specification_list: enumerated_spec_init  */
   if (yyn == 217)
-    /* "src/main/java/parser/Parser.y":794  */
+    /* "src/main/java/parser/Parser.y":791  */
                             { yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))).use(Use.TYPE); };
   break;
 
 
   case 218: /* specification_list: subrange_spec_init  */
   if (yyn == 218)
-    /* "src/main/java/parser/Parser.y":795  */
+    /* "src/main/java/parser/Parser.y":792  */
                             { yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))).use(Use.TYPE); };
   break;
 
 
   case 219: /* specification_list: array_spec_init  */
   if (yyn == 219)
-    /* "src/main/java/parser/Parser.y":796  */
+    /* "src/main/java/parser/Parser.y":793  */
                             { yyval = null; };
   break;
 
 
   case 220: /* specification_list: structure_declaration  */
   if (yyn == 220)
-    /* "src/main/java/parser/Parser.y":797  */
+    /* "src/main/java/parser/Parser.y":794  */
                             { yyval = null; };
   break;
 
 
   case 221: /* specification_list: string_spec_init  */
   if (yyn == 221)
-    /* "src/main/java/parser/Parser.y":798  */
+    /* "src/main/java/parser/Parser.y":795  */
                             { yyval = null; };
   break;
 
 
 
-/* "src/main/java/parser/Parser.java":1621  */
+/* "src/main/java/parser/Parser.java":1639  */
 
         default: break;
       }
@@ -2426,4 +2444,4 @@ private static final short[] yycheck_ = yycheck_init();
 
 
 }
-/* "src/main/java/parser/Parser.y":823  */
+/* "src/main/java/parser/Parser.y":820  */

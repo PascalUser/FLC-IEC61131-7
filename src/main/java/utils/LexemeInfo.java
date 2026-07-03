@@ -10,8 +10,8 @@ public class LexemeInfo {
     public String customType;
     public Use use;
     public Source source;
-    public Integer inferiorLimit;
-    public Integer superiorLimit;
+    public String inferiorLimit;
+    public String superiorLimit;
     public List<String> parameters;
     public Object initialValue;
 
@@ -21,8 +21,8 @@ public class LexemeInfo {
         String customType,
         Use use,
         Source source,
-        Integer inferiorLimit,
-        Integer superiorLimit,
+        String inferiorLimit,
+        String superiorLimit,
         List<String> parameters,
         Object initialValue
     ) {

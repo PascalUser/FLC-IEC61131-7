@@ -40,7 +40,6 @@ class LexerTest {
         String reservedWord = word.toLowerCase();
         Reader reader = new StringReader(reservedWord);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, token, reservedWord);
     }
 
@@ -50,7 +49,6 @@ class LexerTest {
         String reservedWord = word.toUpperCase();
         Reader reader = new StringReader(reservedWord);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, token, reservedWord);
     }
 
@@ -60,7 +58,6 @@ class LexerTest {
         String stringChar = String.valueOf(specialChar);
         Reader reader = new StringReader(stringChar);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, specialChar, stringChar);
     }
 
@@ -69,7 +66,6 @@ class LexerTest {
         String twoDots = "..";
         Reader reader = new StringReader(twoDots);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.RANGE_OP, twoDots);
     }
 
@@ -78,7 +74,6 @@ class LexerTest {
         String dotEqual = ":=";
         Reader reader = new StringReader(dotEqual);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.ASSIGN_OP, dotEqual);
     }
 
@@ -88,7 +83,6 @@ class LexerTest {
         String blankChar = String.valueOf(blank);
         Reader reader = new StringReader(blankChar);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 
@@ -97,7 +91,6 @@ class LexerTest {
         String comment = "(* comment *)";
         Reader reader = new StringReader(comment);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 
@@ -106,7 +99,6 @@ class LexerTest {
         String comment = "( * * * )";
         Reader reader = new StringReader(comment);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, '(', "(");
         this.assertNextToken(lexer, ')', ")");
     }
@@ -116,7 +108,6 @@ class LexerTest {
     void Yylex_ForTrueWords_IsTrue(String trueWord) throws IOException {
         Reader reader = new StringReader(trueWord);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.TRUE, trueWord);
     }
 
@@ -125,7 +116,22 @@ class LexerTest {
     void Yylex_ForFalseWords_IsFalse(String falseWord) throws IOException {
         Reader reader = new StringReader(falseWord);
         Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, Lexer.FALSE, falseWord);
+    }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"True", "TrUe", "tRUE"})
+    void Yylex_ForMixedCaseTrueWord_IsTrue(String trueWord) throws IOException {
+        Reader reader = new StringReader(trueWord);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, Lexer.TRUE, trueWord);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"False", "FaLsE", "fALSE"})
+    void Yylex_ForMixedCaseFalseWord_IsFalse(String falseWord) throws IOException {
+        Reader reader = new StringReader(falseWord);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
         this.assertNextToken(lexer, Lexer.FALSE, falseWord);
     }
 
@@ -146,7 +152,6 @@ class LexerTest {
     void Yylex_ForValidIdentifier_IsIdentifier(String identifier) throws IOException {
         Reader reader = new StringReader(identifier);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.IDENTIFIER, identifier);
     }
 
@@ -155,9 +160,7 @@ class LexerTest {
         String text = "snake__case";
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         lexer.yylex();
-
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "_case");
     }
 
@@ -169,7 +172,6 @@ class LexerTest {
     void Yylex_ForSeparatedWordsWithoutUnderscore_IsNotOnlyOneIdentifier(String text) throws IOException {
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "variable");
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "name");
     }
@@ -179,7 +181,6 @@ class LexerTest {
         String text = "variable.name";
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "variable");
         this.assertNextToken(lexer, '.', ".");
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "name");
@@ -194,7 +195,6 @@ class LexerTest {
     void Yylex_ForWordsThatStartsWithDigit_IsNumericLiteral(String text) throws IOException {
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "1");
     }
 
@@ -207,9 +207,7 @@ class LexerTest {
     void Yylex_ForWordsThatEndsWithUnderscore_IsNotIdentifier(String text) throws IOException {
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         lexer.yylex();
-
         assertFalse(lexer.yytext().endsWith("_"));
     }
 
@@ -221,7 +219,6 @@ class LexerTest {
     void Yylex_ForUnderscore_IsNotIdentifier(String text) throws IOException {
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.EOF, "");
     }
 
@@ -230,7 +227,6 @@ class LexerTest {
         String text = "__var";
         Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "_var");
     }
 
@@ -238,6 +234,7 @@ class LexerTest {
     @ValueSource(strings = {
             "''",
             "'hola'",
+            "'$$'",
             "'hola mundo'",
             "'abc$0a'",
             "'Don$'t'",
@@ -245,7 +242,8 @@ class LexerTest {
             "'linea$nueva'",
     })
     void Yylex_ForValidSingleByteStringLiterals_IsStringLiteral(String literal) throws IOException {
-        Lexer lexer = new Lexer(new StringReader(literal), new SymbolTable());
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
         assertNextToken(lexer, Lexer.STRING_LITERAL, literal);
     }
 
@@ -253,135 +251,260 @@ class LexerTest {
     @ValueSource(strings = {
             "\"\"",
             "\"hola\"",
+            "\"$$\"",
             "\"$0041\"",
             "\"He said $\"hello$\"\"",
             "\"texto ' simple\"",
             "\"linea$nueva\""
     })
     void Yylex_ForValidDoubleByteStringLiterals_IsStringLiteral(String literal) throws IOException {
-        Lexer lexer = new Lexer(new StringReader(literal), new SymbolTable());
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
         assertNextToken(lexer, Lexer.STRING_LITERAL, literal);
     }
 
-    //todo: Strings invalidos
-
-
-    @Test
-    void testLexerExample() throws IOException {
-        String sourceCode = """
-            FUNCTION_BLK JAJA
-                    fuzzify TRUE R_EDGE
-                            = : , := 1 2 +1 +1 -2 2.3 -2.3 .. 2#10 16#2 8#24
-                    "hello world 'a'" 'aaa'
-        """;
-
-        Reader reader = new StringReader(sourceCode);
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "'test $0'",
+            "'$'",
+            "'$\"'",
+            "'$Z'",
+            "'$x'",
+            "'$0g'",
+            "'$$$'"
+    })
+    void Yylex_ForInvalidSingleByteString_StringNotRecognised(String literal) throws IOException{
+        Reader reader = new StringReader(literal);
         Lexer lexer = new Lexer(reader, new SymbolTable());
+        int token = lexer.yylex();
+        assertNotEquals(Lexer.STRING_LITERAL,token);
+        assertEquals('\'', token);
+    }
 
-        this.assertNextToken(lexer, Lexer.IDENTIFIER, "FUNCTION_BLK");
-        this.assertNextToken(lexer, Lexer.IDENTIFIER, "JAJA");
-        this.assertNextToken(lexer, Lexer.FUZZIFY, "fuzzify");
-        this.assertNextToken(lexer, Lexer.TRUE, "TRUE");
-        this.assertNextToken(lexer, Lexer.R_EDGE, "R_EDGE");
-        this.assertNextToken(lexer, '=', "=");
-        this.assertNextToken(lexer, ':', ":");
-        this.assertNextToken(lexer, ',', ",");
-        this.assertNextToken(lexer, Lexer.ASSIGN_OP, ":=");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "1");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "2");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "+1");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "+1");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "-2");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "2.3");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "-2.3");
-        this.assertNextToken(lexer, Lexer.RANGE_OP, "..");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "2#10");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "16#2");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "8#24");
-        this.assertNextToken(lexer, Lexer.STRING_LITERAL, "\"hello world 'a'\"");
-        this.assertNextToken(lexer, Lexer.STRING_LITERAL, "'aaa'");
-        this.assertNextToken(lexer, Lexer.EOF, "");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "\"$123\"",
+            "\"$\"",
+            "\"$'\"",
+            "\"$Z\"",
+            "\"$x\"",
+            "\"$123u\"",
+            "\"$$$\"",
+    })
+    void Yylex_ForInvalidDoubleByteString_StringNotRecognised(String literal) throws IOException{
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        int token = lexer.yylex();
+        assertNotEquals(Lexer.STRING_LITERAL,token);
+        assertEquals('\"', token);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "0",
+            "123",
+            "+123",
+            "-123",
+            "1_000",
+            "123_456_789",
+            "+1_000",
+            "-1_000",
+            "+0",
+            "-0",
+            "007"
+    })
+    void Yylex_ForValidIntegerLiteral_IsNumericLiteral(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, literal);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "1__000",
+            "1000_",
+    })
+    void Yylex_ForIntegerLiteralWithInvalidUnderscorePlacement_IsNotFullyMatched(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        int token = lexer.yylex();
+        assertEquals(Lexer.NUMERIC_LITERAL, token);
+        assertNotEquals(literal, lexer.yytext());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "0.0",
+            "3.14",
+            "+3.14",
+            "-3.14",
+            "1_000.5",
+            "1.0E10",
+            "1.0e10",
+            "1.0E+10",
+            "1.0E-10",
+            "3.14e-2",
+            "1_000.0E+5",
+            "1.E10",
+            "-1.E-10",
+            "1.0E1_000",
+            "+0.0",
+            "-0.0",
+            "007.5",
+            "123.456_789"
+    })
+    void Yylex_ForValidRealLiteral_IsNumericLiteral(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, literal);
     }
 
     @Test
-    void testLexerFuzzifySentence() throws IOException {
-        String sourceCode = """
-            FUZZIFY distance
-                TERM too_far := (-5, 1) (0, 0);
-            END_FUZZIFY
-        """;
-
-        Reader reader = new StringReader(sourceCode);
+    void Yylex_ForRealLiteralWithoutDecimalDigits_IsNotARealLiteral() throws IOException {
+        String text = "1.";
+        Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
-
-        this.assertNextToken(lexer, Lexer.FUZZIFY, "FUZZIFY");
-        this.assertNextToken(lexer, Lexer.IDENTIFIER, "distance");
-        this.assertNextToken(lexer, Lexer.TERM, "TERM");
-        this.assertNextToken(lexer, Lexer.IDENTIFIER, "too_far");
-        this.assertNextToken(lexer, Lexer.ASSIGN_OP, ":=");
-        this.assertNextToken(lexer, '(', "(");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "-5");
-        this.assertNextToken(lexer, ',', ",");
         this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "1");
-        this.assertNextToken(lexer, ')', ")");
-        this.assertNextToken(lexer, '(', "(");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "0");
-        this.assertNextToken(lexer, ',', ",");
-        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "0");
-        this.assertNextToken(lexer, ')', ")");
-        this.assertNextToken(lexer, ';', ";");
-        this.assertNextToken(lexer, Lexer.END_FUZZIFY, "END_FUZZIFY");
-        this.assertNextToken(lexer, Lexer.EOF, "");
+        this.assertNextToken(lexer, '.', ".");
     }
 
     @Test
-    void testLexerTimeLiterals() throws IOException {
-        String sourceCode = """
-            dt #0001-01-01-00:00:00
-            Date_and_Time# 0001-01-01-00:00:00
-            time_of_day# 00:00:00
-            tod #00:00:00
-            D #0001-01-01
-            d# 00-00-1111
-            date# 1100-00-00
-            t# 0S
-            time #5d14h12m18s3.5ms
-            tImE#5d_14h_12m_18s_3.5ms
-        """;
-
-        Reader reader = new StringReader(sourceCode);
+    void Yylex_ForDotWithoutIntegerPart_IsNotARealLiteral() throws IOException {
+        String text = ".5";
+        Reader reader = new StringReader(text);
         Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, '.', ".");
+        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, "5");
+    }
 
-        this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "dt");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0001-01-01-00:00:00");
-        this.assertNextToken(lexer, Lexer.DATE_AND_TIME, "Date_and_Time");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0001-01-01-00:00:00");
-        this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "time_of_day");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "00:00:00");
-        this.assertNextToken(lexer, Lexer.TIME_OF_DAY, "tod");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "00:00:00");
-        this.assertNextToken(lexer, Lexer.DATE, "D");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0001-01-01");
-        this.assertNextToken(lexer, Lexer.DATE, "d");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "00-00-1111");
-        this.assertNextToken(lexer, Lexer.DATE, "date");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "1100-00-00");
-        this.assertNextToken(lexer, Lexer.TIME, "t");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "0S");
-        this.assertNextToken(lexer, Lexer.TIME, "time");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "5d14h12m18s3.5ms");
-        this.assertNextToken(lexer, Lexer.TIME, "tImE");
-        this.assertNextToken(lexer, '#', "#");
-        this.assertNextToken(lexer, Lexer.TIME_LITERAL, "5d_14h_12m_18s_3.5ms");
-        this.assertNextToken(lexer, Lexer.EOF, "");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "1.0E",
+            "1.E",
+            "1.E+",
+            "1.E-",
+            "1.0E+",
+            "1.0E-"
+    })
+    void Yylex_ForRealLiteralWithIncompleteExponent_ExponentIsNotConsumed(String realLiteral) throws IOException {
+        Reader reader = new StringReader(realLiteral);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        int token = lexer.yylex();
+        assertEquals(Lexer.NUMERIC_LITERAL, token);
+        assertNotEquals(realLiteral, lexer.yytext());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "2#0",
+            "2#1010",
+            "2#1111_0000",
+            "8#17",
+            "8#777",
+            "16#1F",
+            "16#ff",
+            "16#DEAD_BEEF",
+    })
+    void Yylex_ForValidBasedIntegerLiteral_IsNumericLiteral(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, Lexer.NUMERIC_LITERAL, literal);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "2#12",
+            "2#1012",
+            "8#8",
+            "8#89",
+            "16#G",
+            "16#1G",
+    })
+    void Yylex_ForBasedLiteralWithDigitInvalidForBase_IsNotFullyMatched(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        int token = lexer.yylex();
+        assertEquals(Lexer.NUMERIC_LITERAL, token);
+        assertNotEquals(literal, lexer.yytext());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "16#_FF",
+            "16#FF_",
+            "16#F__F",
+            "2#1__0"
+    })
+    void Yylex_ForBasedLiteralWithInvalidUnderscorePlacement_IsNotFullyMatched(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        int token = lexer.yylex();
+        assertEquals(Lexer.NUMERIC_LITERAL, token);
+        assertNotEquals(literal, lexer.yytext());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "1#0",
+            "9#0",
+            "3#12",
+    })
+    void Yylex_ForUnsupportedBase_IsNotABasedLiteral(String literal) throws IOException {
+        Reader reader = new StringReader(literal);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        lexer.yylex();
+        assertNotEquals(literal, lexer.yytext());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "0001-01-01-00:00:00",
+            "00:00:00",
+            "0001-01-01",
+            "00-00-1111",
+            "1100-00-00",
+            "0S",
+            "5d14h12m18s3.5ms",
+            "5d_14h_12m_18s_3.5ms",
+            "2026-07-03",
+            "14:30:00",
+            "14:30:45.5",
+            "2026-07-03-14:30:00.0",
+            "5ms",
+            "10.5s",
+            "-12h",
+            "1d_2h",
+            "10m_30.5s",
+            "0d"
+    })
+    void Yylex_ForValidTimeLiteral_IsTimeLiteral(String timeLiteral) throws IOException {
+        Reader reader = new StringReader(timeLiteral);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        this.assertNextToken(lexer, Lexer.TIME_LITERAL, timeLiteral);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "00:00",
+            "00-01",
+            "5x14h",
+            "d14h",
+    })
+    void Yylex_ForInvalidTimeLiteral_IsNotATimeLiteral(String text) throws IOException {
+        Reader reader = new StringReader(text);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        assertNotEquals(Lexer.TIME_LITERAL, lexer.yylex());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "14h5d",
+            "5m13h"
+    })
+    void Yylex_ForTimeLiteralWithIncorrectOrder_AreMultipleTimeLiterals(String text) throws IOException {
+        Reader reader = new StringReader(text);
+        Lexer lexer = new Lexer(reader, new SymbolTable());
+        assertEquals(Lexer.TIME_LITERAL, lexer.yylex());
+        assertEquals(Lexer.TIME_LITERAL, lexer.yylex());
     }
 }

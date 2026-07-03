@@ -19,9 +19,9 @@ public interface LexemeInfoSchema {
 
     LexemeInfoSchema use(Use use);
 
-    LexemeInfoSchema inferiorLimit(Integer inferiorLimit);
+    LexemeInfoSchema inferiorLimit(String inferiorLimit);
 
-    LexemeInfoSchema superiorLimit(Integer superiorLimit);
+    LexemeInfoSchema superiorLimit(String superiorLimit);
 
     LexemeInfoSchema parameters(List<String> parameters);
 

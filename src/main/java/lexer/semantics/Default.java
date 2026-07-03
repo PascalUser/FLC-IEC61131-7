@@ -23,7 +23,7 @@ public class Default implements SemanticAnalyzer {
 
     private int translate(Subtype subtype) {
         return switch (subtype) {
-            case UNKNOWN, CUSTOM-> -1;
+            case UNKNOWN, CUSTOM -> -1;
             case STRING, WSTRING -> Lexer.STRING_LITERAL;
             case TIME, DATE, TIME_OF_DAY, DATE_AND_TIME -> Lexer.TIME_LITERAL;
             case BOOL, SINT, INT, DINT, LINT, USINT, UINT, UDINT, ULINT,

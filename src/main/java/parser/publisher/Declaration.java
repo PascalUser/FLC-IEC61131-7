@@ -48,13 +48,13 @@ public class Declaration implements Publisher {
     }
 
     @Override
-    public LexemeInfoSchema inferiorLimit(Integer inferiorLimit) {
+    public LexemeInfoSchema inferiorLimit(String inferiorLimit) {
         builder.inferiorLimit(inferiorLimit);
         return this;
     }
 
     @Override
-    public LexemeInfoSchema superiorLimit(Integer superiorLimit) {
+    public LexemeInfoSchema superiorLimit(String superiorLimit) {
         builder.superiorLimit(superiorLimit);
         return this;
     }

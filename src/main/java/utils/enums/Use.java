@@ -1,11 +1,11 @@
 package utils.enums;
 
-public enum Use {
-    FUNCTION,
-    LITERAL,
-    OPTION,
-    RULE,
-    TYPE,
-    UNKNOWN,
-    VARIABLE,
-}
+    public enum Use {
+        FUNCTION,
+        LITERAL,
+        OPTION,
+        RULE,
+        TYPE,
+        UNKNOWN,
+        VARIABLE,
+    }
