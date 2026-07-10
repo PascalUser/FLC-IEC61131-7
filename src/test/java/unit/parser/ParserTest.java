@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ParserTest {
 
-    static Stream<File> exampleFileProvider() {
+    private static Stream<File> exampleFileProvider() {
         Path resourcesPath = Paths.get("src/test/resources/examples");
         try (Stream<Path> paths = Files.walk(resourcesPath)) {
             return paths.filter(Files::isRegularFile)
@@ -31,7 +31,7 @@ class ParserTest {
 
     @ParameterizedTest
     @MethodSource("exampleFileProvider")
-    void testProgramExamples(File exampleFile) {
+    void Parse_ForSyntacticallyValidPrograms_IsTrue(File exampleFile) {
         try (FileReader reader = new FileReader(exampleFile)) {
             SymbolTable st = new SymbolTable();
             Lexer lexer = new Lexer(reader, st);
