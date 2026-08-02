@@ -7,8 +7,6 @@ import utils.LexemeInfo;
 import utils.SymbolTable;
 
 public class Default implements SemanticAnalyzer {
-    private final SymbolTable symbolTable;
-
     public Default(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }

@@ -1,10 +1,13 @@
 package lexer;
 
-import lexer.semantics.*;
-import lexer.semantics.SemanticAnalyzer.Result;
+import java.lang.Error;
+
 import parser.Parser;
-import utils.enums.Subtype;
+import lexer.semantics.*;
+import lexer.semantics.SemanticAnalyzer.*;
 import utils.SymbolTable;
+import utils.diagnostics.*;
+import utils.DiagnosticsHandler;
 
 %%
 
@@ -20,8 +23,8 @@ import utils.SymbolTable;
 
 %{
     private Object yylval;
-    private SemanticAnalyzer identifiers;
-    private SemanticAnalyzer generic;
+    private SymbolTable symbolTable;
+    private DiagnosticsHandler diagnosticsHandler;
 
     public Object getLVal() {
         return this.yylval;
@@ -31,18 +34,25 @@ import utils.SymbolTable;
         System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
-    public int saveYylval(String text, Subtype type, SemanticAnalyzer analyzer) {
-        Result result = analyzer.analyze(text, type);
-        this.yylval = result.value;
-        return result.tokenNumber;
+    public int saveYylval(SemanticAnalyzer analyzer) {
+        LexicalContext lexicalContext = new LexicalContext(
+                yytext(),
+                yyline,
+                this.symbolTable,
+                this.diagnosticsHandler
+            );
+        Result result = analyzer.analyze(lexicalContext);
+        this.yylval = result.value();
+        return result.tokenNumber();
     }
 %}
 
 %ctorarg SymbolTable symbolTable
+%ctorarg DiagnosticsHandler diagnosticsHandler
 
 %init{
-    this.identifiers = new Identifiers(symbolTable);
-    this.generic     = new Default(symbolTable);
+    this.symbolTable = symbolTable;
+    this.diagnosticsHandler = diagnosticsHandler;
 %init}
 
 COMMENT           = \(\*.*\*\)
@@ -86,24 +96,24 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 
-{DATE_AND_TIME}       { return saveYylval(yytext(), Subtype.DATE_AND_TIME, this.generic); }
-{DAYTIME}             { return saveYylval(yytext(), Subtype.TIME_OF_DAY  , this.generic); }
-{DATE}                { return saveYylval(yytext(), Subtype.DATE         , this.generic); }
-{INTERVAL}            { return saveYylval(yytext(), Subtype.TIME         , this.generic); }
+{DATE_AND_TIME}       { return saveYylval(new Default()); }
+{DAYTIME}             { return saveYylval(new Default()); }
+{DATE}                { return saveYylval(new Default()); }
+{INTERVAL}            { return saveYylval(new Default()); }
 
 // TODO: hacer que el lexico agregue los initialValue de las constantes literales. Por ejemplo
 // para el lexema "50E1" el initialValue es 500.
-{NATURAL_NUMBER}      { return saveYylval(yytext(), Subtype.UINT         , this.generic); }
-{INTEGER_NUMBER}      { return saveYylval(yytext(), Subtype.SINT         , this.generic); }
-{REAL_NUMBER}         { return saveYylval(yytext(), Subtype.REAL         , this.generic); }
-{BINARY}              { return saveYylval(yytext(), Subtype.BYTE         , this.generic); }
-{OCTAL}               { return saveYylval(yytext(), Subtype.WORD         , this.generic); }
-{HEXADECIMAL}         { return saveYylval(yytext(), Subtype.DWORD        , this.generic); }
+{NATURAL_NUMBER}      { return saveYylval(new Naturals()); }
+{INTEGER_NUMBER}      { return saveYylval(new Integers()); }
+{REAL_NUMBER}         { return saveYylval(new Reals());    }
+{BINARY}              { return saveYylval(new Default());  }
+{OCTAL}               { return saveYylval(new Default());  }
+{HEXADECIMAL}         { return saveYylval(new Default());  }
 
-{SINGLE_BYTE_STRING}  { return saveYylval(yytext(), Subtype.STRING       , this.generic); }
-{DOUBLE_BYTE_STRING}  { return saveYylval(yytext(), Subtype.WSTRING      , this.generic); }
+{SINGLE_BYTE_STRING}  { return saveYylval(new Default()); }
+{DOUBLE_BYTE_STRING}  { return saveYylval(new Default()); }
 
-{IDENTIFIER}          { return saveYylval(yytext(), Subtype.UNKNOWN      , this.identifiers); }
+{IDENTIFIER}          { return saveYylval(new Identifiers()); }
 
 ":"                   { return ':'; }
 "#"                   { return '#'; }

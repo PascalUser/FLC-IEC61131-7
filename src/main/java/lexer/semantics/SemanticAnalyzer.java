@@ -1,17 +1,20 @@
 package lexer.semantics;
 
-import utils.enums.Subtype;
+import utils.DiagnosticsHandler;
+import utils.SymbolTable;
 
 public interface SemanticAnalyzer {
-    class Result {
-        public String value;
-        public int tokenNumber;
+    record Result (
+        String value,
+        int tokenNumber
+    ) {}
 
-        public Result(String value, int tokenNumber) {
-            this.value = value;
-            this.tokenNumber = tokenNumber;
-        }
-    }
+    record LexicalContext(
+        String lexeme,
+        int line,
+        SymbolTable symbolTable,
+        DiagnosticsHandler diagnosticsHandler
+    ) {}
 
-    Result analyze(String lexeme, Subtype subtype);
+    Result analyze(LexicalContext lexicalContext);
 }
