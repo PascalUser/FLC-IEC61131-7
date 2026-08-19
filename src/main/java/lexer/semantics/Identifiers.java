@@ -4,7 +4,6 @@ import lexer.ReservedWords;
 import parser.Parser;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
-import utils.enums.Subtype;
 
 public class Identifiers implements SemanticAnalyzer {
     public Result analyze(LexicalContext lc) {

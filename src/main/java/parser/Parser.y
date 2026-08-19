@@ -544,7 +544,7 @@ number_prefix:
 
 time:
     date_type_name '#' TIME_LITERAL {
-        // Accion semantica que verifica que prefix es del mismo tipo que time_literal
+        //todo Accion semantica que verifica que prefix es del mismo tipo que time_literal
     }
 ;
 

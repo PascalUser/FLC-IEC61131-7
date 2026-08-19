@@ -92,6 +92,6 @@ public final class ReservedWords {
     }
 
     public static Integer isReserved(String identifier) {
-        return table.get(identifier.toUpperCase());
+        return table.get(identifier);
     }
 }

@@ -3,9 +3,9 @@ package utils.diagnostics;
 public class RealOutOfRange extends Error {
     private final String realLexeme;
 
-    public RealOutOfRange(int line, String outOfBoundInteger) {
+    public RealOutOfRange(int line, String outOfBoundReal) {
         super(line);
-        this.realLexeme = outOfBoundInteger;
+        this.realLexeme = outOfBoundReal;
     }
 
     @Override
