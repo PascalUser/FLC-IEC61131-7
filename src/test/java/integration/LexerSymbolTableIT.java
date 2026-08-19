@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class LexerSymbolTableIT {
 
     /**
-     * Helper method para consumir todos los tokens del lexer
-     * simulando el comportamiento del parser.
+     * Helper method to consume all lexer tokens,
+     * simulating the parser behavior.
      */
     @SuppressWarnings("StatementWithEmptyBody")
     private void consumeAllTokens(Lexer lexer) throws IOException {
@@ -387,4 +387,7 @@ public class LexerSymbolTableIT {
                 () -> assertNull(sensorInfo.initialValue)
         );
     }
+
+    // TODO: Verificar que dos identificadores con mismos caracteres son agregados de igual forma (Case Insensitive)
+    // TODO: Verificar que los guiones son ignorados
 }

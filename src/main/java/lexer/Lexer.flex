@@ -1,9 +1,9 @@
 package lexer;
 
 import java.lang.Error;
-
 import parser.Parser;
 import lexer.semantics.*;
+import lexer.transformers.*;
 import lexer.semantics.SemanticAnalyzer.*;
 import utils.SymbolTable;
 import utils.diagnostics.*;
@@ -34,9 +34,9 @@ import utils.DiagnosticsHandler;
         System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
-    public int saveYylval(SemanticAnalyzer analyzer) {
+    public int processAndSaveYylval(Transformer transformer, SemanticAnalyzer analyzer) {
         LexicalContext lexicalContext = new LexicalContext(
-                yytext(),
+                transformer.transform(yytext()),
                 yyline,
                 this.symbolTable,
                 this.diagnosticsHandler
@@ -96,24 +96,24 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 
-{DATE_AND_TIME}       { return saveYylval(new Default()); }
-{DAYTIME}             { return saveYylval(new Default()); }
-{DATE}                { return saveYylval(new Default()); }
-{INTERVAL}            { return saveYylval(new Default()); }
+{DATE_AND_TIME}       { return processAndSaveYylval(new Default()); }
+{DAYTIME}             { return processAndSaveYylval(new Default()); }
+{DATE}                { return processAndSaveYylval(new Default()); }
+{INTERVAL}            { return processAndSaveYylval(new Default()); }
 
 // TODO: hacer que el lexico agregue los initialValue de las constantes literales. Por ejemplo
 // para el lexema "50E1" el initialValue es 500.
-{NATURAL_NUMBER}      { return saveYylval(new Naturals()); }
-{INTEGER_NUMBER}      { return saveYylval(new Integers()); }
-{REAL_NUMBER}         { return saveYylval(new Reals());    }
-{BINARY}              { return saveYylval(new Default());  }
-{OCTAL}               { return saveYylval(new Default());  }
-{HEXADECIMAL}         { return saveYylval(new Default());  }
+{NATURAL_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(new StripLeadingZeros()), new Naturals()); }
+{INTEGER_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(), new Integers()); }
+{REAL_NUMBER}         { return processAndSaveYylval(new UnderscoreRemover(), new Reals());    }
+{BINARY}              { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros()), new Binary()));  }
+{OCTAL}               { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros()), new Octal()));  }
+{HEXADECIMAL}         { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros()), new Hexadecimal()));  }
 
-{SINGLE_BYTE_STRING}  { return saveYylval(new Default()); }
-{DOUBLE_BYTE_STRING}  { return saveYylval(new Default()); }
+{SINGLE_BYTE_STRING}  { return processAndSaveYylval(new Default()); }
+{DOUBLE_BYTE_STRING}  { return processAndSaveYylval(new Default()); }
 
-{IDENTIFIER}          { return saveYylval(new Identifiers()); }
+{IDENTIFIER}          { return processAndSaveYylval(new UpperCaseConverter(), new Identifiers()); }
 
 ":"                   { return ':'; }
 "#"                   { return '#'; }

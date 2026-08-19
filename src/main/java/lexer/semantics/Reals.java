@@ -1,17 +1,14 @@
 package lexer.semantics;
 
-import parser.Parser;
-import utils.builders.LexemeInfoBuilder;
+import org.jspecify.annotations.NonNull;
+import utils.diagnostics.Diagnostic;
 import utils.diagnostics.RealOutOfRange;
 import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
 
-public class Reals implements SemanticAnalyzer {
+public class Reals extends NumericAnalyzer {
 
-    public Result analyze(LexicalContext lc) {
-        String lexeme = lc.lexeme().replace("_", "");
-
+    @Override
+    protected ParsedValue parse(String lexeme) {
         Double initialValue;
         Subtype subtype;
         try {
@@ -21,30 +18,7 @@ public class Reals implements SemanticAnalyzer {
             initialValue = null;
             subtype = Subtype.UNKNOWN;
         }
-
-        if (subtype == Subtype.UNKNOWN) {
-            lc.diagnosticsHandler().add(new RealOutOfRange(lc.line(), lexeme));
-
-            // Error Correction
-            boolean isNegative = lexeme.startsWith("-");
-            initialValue = isNegative ? -Double.MAX_VALUE : Double.MAX_VALUE;
-            lexeme = Double.toString(initialValue);
-            subtype = Subtype.LREAL;
-        }
-
-        if (lc.symbolTable().get(lexeme) == null) {
-            lc.symbolTable().put(
-                lexeme,
-                new LexemeInfoBuilder()
-                        .type(Type.SIMPLE)
-                        .subtype(subtype)
-                        .use(Use.LITERAL)
-                        .initialValue(initialValue)
-                        .build()
-            );
-        }
-
-        return new Result(lexeme, Parser.Lexer.NUMERIC_LITERAL);
+        return new ParsedValue(lexeme, subtype, initialValue);
     }
 
     private Subtype getRange(double value) {
@@ -52,5 +26,19 @@ public class Reals implements SemanticAnalyzer {
         double abs = Math.abs(value);
         if (abs <= Float.MAX_VALUE) return Subtype.REAL;
         return Subtype.LREAL;
+    }
+
+    @Override
+    protected ParsedValue fallback(@NonNull String lexeme) {
+        boolean isNegative = lexeme.startsWith("-");
+        double initialValue = isNegative ? -Double.MAX_VALUE : Double.MAX_VALUE;
+        lexeme = Double.toString(initialValue);
+        Subtype subtype = Subtype.LREAL;
+        return new ParsedValue(lexeme, subtype, initialValue);
+    }
+
+    @Override
+    protected Diagnostic createDiagnostic(int line, String lexeme) {
+        return new RealOutOfRange(line, lexeme);
     }
 }

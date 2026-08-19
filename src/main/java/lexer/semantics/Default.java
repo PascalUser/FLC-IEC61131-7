@@ -7,14 +7,10 @@ import utils.LexemeInfo;
 import utils.SymbolTable;
 
 public class Default implements SemanticAnalyzer {
-    public Default(SymbolTable symbolTable) {
-        this.symbolTable = symbolTable;
-    }
-
-    public Result analyze(String lexeme, Subtype subtype) {
-        LexemeInfo info = this.symbolTable.get(lexeme);
+    public Result analyze(LexicalContext lc) {
+        LexemeInfo info = lc.symbolTable().get(lexeme);
         if (info == null) {
-            this.symbolTable.put(lexeme, new LexemeInfoBuilder().build());
+            lc.symbolTable().put(lexeme, new LexemeInfoBuilder().build());
         }
         return new Result(lexeme, this.translate(subtype));
     }
