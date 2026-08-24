@@ -6,11 +6,31 @@ import utils.enums.*;
 
 import java.util.List;
 
+/**
+ * Publisher for variable and constant declarations.
+ * <p>
+ * Collects a list of identifiers sharing the same type and attributes,
+ * and publishes them to the symbol table when {@link #publish()} is called.
+ * Used by the parser to handle declarations like {@code VAR x, y : INT;}.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class Declaration implements Publisher {
     private final SymbolTable symbolTable;
     private final List<String> variables;
     private final LexemeInfoBuilder builder;
 
+    /**
+     * Creates a new declaration publisher.
+     *
+     * @param initTable   the symbol table to publish to
+     * @param identifiers list of variable names
+     * @param builder     the builder with shared attributes
+     */
     public Declaration(SymbolTable initTable, List<String> identifiers, LexemeInfoBuilder builder) {
         this.symbolTable = initTable;
         this.variables = identifiers;

@@ -1,13 +1,14 @@
 package lexer;
 
 import java.lang.Error;
+import org.jspecify.annotations.NonNull;
 import parser.Parser;
 import lexer.semantics.*;
 import lexer.transformers.*;
 import lexer.semantics.SemanticAnalyzer.*;
 import utils.SymbolTable;
 import utils.diagnostics.*;
-import utils.DiagnosticsHandler;
+import utils.DiagnosticsHandler;import utils.enums.Subtype;
 
 %%
 
@@ -34,7 +35,12 @@ import utils.DiagnosticsHandler;
         System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
-    public int processAndSaveYylval(Transformer transformer, SemanticAnalyzer analyzer) {
+    /**
+     * @param  transformer the lexeme preprocessor that transforms the lexeme before is analyzed
+     * @param  analyzer    the lexeme's semantic analyzer
+     * @return the lexeme's corresponded token number
+     */
+    public int processAndSaveYylval(@NonNull Transformer transformer, @NonNull SemanticAnalyzer analyzer) {
         LexicalContext lexicalContext = new LexicalContext(
                 transformer.transform(yytext()),
                 yyline,
@@ -42,7 +48,7 @@ import utils.DiagnosticsHandler;
                 this.diagnosticsHandler
             );
         Result result = analyzer.analyze(lexicalContext);
-        this.yylval = result.value();
+        this.yylval = result.lexeme();
         return result.tokenNumber();
     }
 %}
@@ -96,24 +102,24 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 
-{DATE_AND_TIME}       { return processAndSaveYylval(new Default()); }
-{DAYTIME}             { return processAndSaveYylval(new Default()); }
-{DATE}                { return processAndSaveYylval(new Default()); }
-{INTERVAL}            { return processAndSaveYylval(new Default()); }
+{DATE_AND_TIME}       { return processAndSaveYylval(new Nothing(), new Default(Subtype.DATE_AND_TIME)); }
+{DAYTIME}             { return processAndSaveYylval(new Nothing(), new Default(Subtype.TIME_OF_DAY)); }
+{DATE}                { return processAndSaveYylval(new Nothing(), new Default(Subtype.DATE)); }
+{INTERVAL}            { return processAndSaveYylval(new UnderscoreRemover(), new Default(Subtype.TIME)); }
 
 // TODO: hacer que el lexico agregue los initialValue de las constantes literales. Por ejemplo
 // para el lexema "50E1" el initialValue es 500.
-{NATURAL_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(new StripLeadingZeros()), new Naturals()); }
-{INTEGER_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(), new Integers()); }
-{REAL_NUMBER}         { return processAndSaveYylval(new UnderscoreRemover(), new Reals());    }
-{BINARY}              { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros()), new Binary()));  }
-{OCTAL}               { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros()), new Octal()));  }
-{HEXADECIMAL}         { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros()), new Hexadecimal()));  }
+{NATURAL_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(new StripLeadingZeros(null)), new Naturals()); }
+{INTEGER_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(null), new Integers()); }
+{REAL_NUMBER}         { return processAndSaveYylval(new UnderscoreRemover(null), new Reals());    }
+{BINARY}              { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Binary());  }
+{OCTAL}               { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Octal());  }
+{HEXADECIMAL}         { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Hexadecimal());  }
 
-{SINGLE_BYTE_STRING}  { return processAndSaveYylval(new Default()); }
-{DOUBLE_BYTE_STRING}  { return processAndSaveYylval(new Default()); }
+{SINGLE_BYTE_STRING}  { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.STRING)); }
+{DOUBLE_BYTE_STRING}  { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.WSTRING)); }
 
-{IDENTIFIER}          { return processAndSaveYylval(new UpperCaseConverter(), new Identifiers()); }
+{IDENTIFIER}          { return processAndSaveYylval(new UpperCaseConverter(null), new Identifiers()); }
 
 ":"                   { return ':'; }
 "#"                   { return '#'; }

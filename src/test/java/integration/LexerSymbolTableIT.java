@@ -2,6 +2,7 @@ package integration;
 
 import lexer.Lexer;
 import org.junit.jupiter.api.Test;
+import utils.DiagnosticsHandler;
 import utils.LexemeInfo;
 import utils.SymbolTable;
 import utils.enums.*;
@@ -12,6 +13,18 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Integration tests for lexer and symbol table interaction.
+ * <p>
+ * Tests that the lexer correctly populates the symbol table with
+ * semantic information for various literal types and identifiers.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class LexerSymbolTableIT {
 
     /**
@@ -20,30 +33,28 @@ public class LexerSymbolTableIT {
      */
     @SuppressWarnings("StatementWithEmptyBody")
     private void consumeAllTokens(Lexer lexer) throws IOException {
-        while (lexer.yylex() != Lexer.YYEOF);
+        while (lexer.yylex() != Lexer.EOF);
     }
 
     @Test
     public void lex_WithAllNumericLiterals_PopulatesSymbolTableWithConstants() throws Exception {
-        String sourceCode = """
-            VAR
-                v1  : INT := 42;
-                v2  : INT := +15;
-                v3  : INT := -99;
-                v4  : REAL := 3.14;
-                v5  : REAL := +2.71;
-                v6  : REAL := -9.81;
-                v7  : REAL := 1.5e10;
-                v8  : REAL := -2.5E-3;
-                v9  : INT := 2#1010;
-                v10 : INT := 8#77;
-                v11 : INT := 16#FF;
-            END_VAR
-            """;
+        String sourceCode = "VAR\n"
+            + "    v1  : INT := 42;\n"
+            + "    v2  : INT := +15;\n"
+            + "    v3  : INT := -99;\n"
+            + "    v4  : REAL := 3.14;\n"
+            + "    v5  : REAL := +2.71;\n"
+            + "    v6  : REAL := -9.81;\n"
+            + "    v7  : REAL := 1.5e10;\n"
+            + "    v8  : REAL := -2.5E-3;\n"
+            + "    v9  : INT := 2#1010;\n"
+            + "    v10 : INT := 8#77;\n"
+            + "    v11 : INT := 16#FF;\n"
+            + "END_VAR\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         consumeAllTokens(lexer);
 
         LexemeInfo intUnsigned = st.get("42");
@@ -203,16 +214,14 @@ public class LexerSymbolTableIT {
 
     @Test
     public void lex_WithStringLiterals_PopulatesSymbolTableCorrectly() throws Exception {
-        String sourceCode = """
-            VAR
-                statusMsg1 : STRING  := 'System OK';
-                statusMsg2 : WSTRING := "System OK";
-            END_VAR
-            """;
+        String sourceCode = "VAR\n"
+            + "    statusMsg1 : STRING  := 'System OK';\n"
+            + "    statusMsg2 : WSTRING := \"System OK\";\n"
+            + "END_VAR\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         consumeAllTokens(lexer);
 
         LexemeInfo stringInfo = st.get("'System OK'");
@@ -246,16 +255,14 @@ public class LexerSymbolTableIT {
 
     @Test
     public void lex_WithBooleanLiterals_PopulatesSymbolTableCorrectly() throws Exception {
-        String sourceCode = """
-            VAR
-                isActive  : BOOL := TRUE;
-                isError   : BOOL := FALSE;
-            END_VAR
-            """;
+        String sourceCode = "VAR\n"
+            + "    isActive  : BOOL := TRUE;\n"
+            + "    isError   : BOOL := FALSE;\n"
+            + "END_VAR\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         consumeAllTokens(lexer);
 
         LexemeInfo trueInfo = st.get("TRUE");
@@ -289,18 +296,16 @@ public class LexerSymbolTableIT {
 
     @Test
     public void lex_WithTimeAndDateLiterals_PopulatesSymbolTableCorrectly() throws Exception {
-        String sourceCode = """
-            VAR
-                delayTime : TIME := 150ms;
-                maxWait   : TIME := 1d_12h;
-                startDate : DATE := 2026-07-03;
-                logTime   : TIME_OF_DAY := 14:30:00.0;
-            END_VAR
-            """;
+        String sourceCode = "VAR\n"
+            + "    delayTime : TIME := 150ms;\n"
+            + "    maxWait   : TIME := 1d_12h;\n"
+            + "    startDate : DATE := 2026-07-03;\n"
+            + "    logTime   : TIME_OF_DAY := 14:30:00.0;\n"
+            + "END_VAR\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         consumeAllTokens(lexer);
 
         LexemeInfo delayInfo = st.get("150ms");
@@ -362,15 +367,13 @@ public class LexerSymbolTableIT {
 
     @Test
     public void lex_WithIdentifiers_PopulatesSymbolTableWithUnknownUse() throws Exception {
-        String sourceCode = """
-            VAR
-                Sensor_Temp : REAL;
-            END_VAR
-            """;
+        String sourceCode = "VAR\n"
+            + "    Sensor_Temp : REAL;\n"
+            + "END_VAR\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         consumeAllTokens(lexer);
 
         LexemeInfo sensorInfo = st.get("Sensor_Temp");

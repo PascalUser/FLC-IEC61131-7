@@ -1,13 +1,28 @@
 package lexer.transformers;
 
-import org.jspecify.annotations.NonNull;
-
+/**
+ * Transformer that converts lexemes to uppercase.
+ * <p>
+ * IEC 61131-7 is case-insensitive for keywords and identifiers, so this
+ * transformer normalizes all input to uppercase before further processing.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class UpperCaseConverter extends Transformer {
-    UpperCaseConverter(Transformer next) {
+    public UpperCaseConverter(Transformer next) {
         super(next);
     }
 
-    String transform(@NonNull String lexeme) {
+    public UpperCaseConverter() {
+        this(null);
+    }
+
+    @Override
+    public String transform(String lexeme) {
         return super.giveToNext(lexeme.toUpperCase());
     }
 }

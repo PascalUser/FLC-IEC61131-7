@@ -1,5 +1,13 @@
 package utils.diagnostics;
 
+/**
+ * Error for unsigned decimal literals exceeding 2^64 - 1.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class NaturalOutOfRange extends Error {
     private final String natLexeme;
 

@@ -5,9 +5,27 @@ import utils.enums.*;
 
 import java.util.List;
 
+/**
+ * Composite publisher that delegates to multiple child publishers.
+ * <p>
+ * Allows applying the same attributes (type, source, etc.) to a group
+ * of declarations at once. Used for VAR_INPUT, VAR_OUTPUT, and VAR blocks
+ * where multiple variables share the same source and attributes.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class Compound implements Publisher {
     private final List<Publisher> publishers;
 
+    /**
+     * Creates a new compound publisher.
+     *
+     * @param publishers list of child publishers
+     */
     public Compound(List<Publisher> publishers) {
         this.publishers = publishers;
     }

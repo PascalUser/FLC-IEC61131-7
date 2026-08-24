@@ -5,6 +5,19 @@ import utils.diagnostics.IntegerOutOfRange;
 import utils.enums.Subtype;
 
 
+/**
+ * Semantic analyzer for signed decimal integer literals.
+ * <p>
+ * Parses signed decimal integers and determines the appropriate subtype
+ * (SINT, INT, DINT, LINT) based on the lexeme range. Handles negative values
+ * and reports an error if the lexeme exceeds LINT range.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class Integers extends NumericAnalyzer {
     private static final long MIN_SINT = -128L;
     private static final long MAX_SINT =  127L;
@@ -29,6 +42,12 @@ public class Integers extends NumericAnalyzer {
         return new NumericAnalyzer.ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /**
+     * Determines the smallest signed integer subtype that can hold the lexeme.
+     *
+     * @param value the parsed long lexeme
+     * @return the appropriate subtype
+     */
     private Subtype getRange(long value) {
         if (value >= MIN_SINT && value <= MAX_SINT) return Subtype.SINT;
         if (value >= MIN_INT  && value <= MAX_INT)  return Subtype.INT;

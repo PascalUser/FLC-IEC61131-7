@@ -4,17 +4,30 @@ import utils.diagnostics.Diagnostic;
 import utils.diagnostics.BinaryOutOfRange;
 import java.math.BigInteger;
 
+/**
+ * Semantic analyzer for binary numeric literals (base 2).
+ * <p>
+ * Handles binary literals with up to 64 bits, mapping them to BYTE, WORD,
+ * DWORD, or LWORD subtypes based on bit length.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class Binary extends BasedAnalyzer {
-    private static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615", 2);
-
+    @Override
     int getMaxDigits() {
         return 64;
     }
 
+    @Override
     int getBase() {
         return 2;
     }
 
+    @Override
     BigInteger getMaxConstant() {
         return MAX_ULINT;
     }

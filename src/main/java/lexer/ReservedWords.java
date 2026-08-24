@@ -3,6 +3,19 @@ package lexer;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * Lookup table for IEC 61131-7 reserved words and their token identifiers.
+ * <p>
+ * Maps keyword strings to their corresponding token numbers used by the
+ * generated lexer. Includes all standard function block names, operators,
+ * data types, and control structures defined in the standard.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public final class ReservedWords {
     private final static Map<String, Integer> table;
 
@@ -91,6 +104,12 @@ public final class ReservedWords {
         table.put("END_STRUCT", Lexer.END_STRUCT);
     }
 
+    /**
+     * Checks if the given identifier is a reserved word.
+     *
+     * @param identifier the identifier to check
+     * @return the token number if reserved, {@code null} otherwise
+     */
     public static Integer isReserved(String identifier) {
         return table.get(identifier);
     }

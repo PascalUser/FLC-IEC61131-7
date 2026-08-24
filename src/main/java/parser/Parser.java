@@ -974,9 +974,9 @@ this.symbolTable = symbolTable;
   if (yyn == 95)
     /* "src/main/java/parser/Parser.y":347  */
     { 
-        Compound c = new Compound(((List<Publisher>)(yystack.valueAt (2)))); 
-        c.source(Source.OUT).publish(); 
-        yyval = c; 
+        Compound entries = new Compound(((List<Publisher>)(yystack.valueAt (2))));
+        entries.source(Source.OUT).publish();
+        yyval = entries;
     };
   break;
 
@@ -985,9 +985,9 @@ this.symbolTable = symbolTable;
   if (yyn == 96)
     /* "src/main/java/parser/Parser.y":356  */
     { 
-        Compound c = new Compound(((List<Publisher>)(yystack.valueAt (2)))); 
-        c.source(Source.IN).publish();
-        yyval = c; 
+        Compound entries = new Compound(((List<Publisher>)(yystack.valueAt (2))));
+        entries.source(Source.IN).publish();
+        yyval = entries;
     };
   break;
 
@@ -996,9 +996,9 @@ this.symbolTable = symbolTable;
   if (yyn == 97)
     /* "src/main/java/parser/Parser.y":365  */
     { 
-        Compound c = new Compound(((List<Publisher>)(yystack.valueAt (2)))); 
-        c.source(Source.NONE).publish(); 
-        yyval = c; 
+        Compound entries = new Compound(((List<Publisher>)(yystack.valueAt (2))));
+        entries.source(Source.NONE).publish();
+        yyval = entries;
     };
   break;
 
@@ -1007,9 +1007,9 @@ this.symbolTable = symbolTable;
   if (yyn == 103)
     /* "src/main/java/parser/Parser.y":385  */
     {
-        List<Publisher> list = new ArrayList<>();
-        list.add(((Publisher)(yystack.valueAt (0))));
-        yyval = list;
+        List<Publisher> declarations = new ArrayList<>();
+        declarations.add(((Publisher)(yystack.valueAt (0))));
+        yyval = declarations;
     };
   break;
 
@@ -1360,7 +1360,7 @@ this.symbolTable = symbolTable;
   if (yyn == 154)
     /* "src/main/java/parser/Parser.y":546  */
                                     {
-        // Accion semantica que verifica que prefix es del mismo tipo que time_literal
+        //todo Accion semantica que verifica que prefix es del mismo tipo que time_literal
     };
   break;
 

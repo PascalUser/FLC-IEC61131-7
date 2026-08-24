@@ -5,6 +5,18 @@ import utils.enums.*;
 
 import java.util.List;
 
+/**
+ * Builder for constructing {@link LexemeInfo} instances using a fluent API.
+ * <p>
+ * Allows step-by-step configuration of semantic attributes before building
+ * the final immutable {@code LexemeInfo} object.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class LexemeInfoBuilder implements LexemeInfoSchema {
     private Type type               = Type.UNKNOWN;
     private Subtype subtype         = Subtype.UNKNOWN;
@@ -70,7 +82,11 @@ public class LexemeInfoBuilder implements LexemeInfoSchema {
         return this;
     }
 
-
+    /**
+     * Builds the {@link LexemeInfo} from the configured attributes.
+     *
+     * @return a new LexemeInfo instance
+     */
     public LexemeInfo build() {
         return new LexemeInfo(
             this.type,

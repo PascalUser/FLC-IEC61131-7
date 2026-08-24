@@ -345,27 +345,27 @@ pragma:
 output_declarations:
     VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
     { 
-        Compound c = new Compound($3); 
-        c.source(Source.OUT).publish(); 
-        $$ = c; 
+        Compound entries = new Compound($3);
+        entries.source(Source.OUT).publish();
+        $$ = entries;
     }
 ;
 
 input_declarations:
     VAR_INPUT var_retain_spec var_init_decl_list ';' END_VAR
     { 
-        Compound c = new Compound($3); 
-        c.source(Source.IN).publish();
-        $$ = c; 
+        Compound entries = new Compound($3);
+        entries.source(Source.IN).publish();
+        $$ = entries;
     }
 ;
 
 var_declarations:
     VAR var_constant_spec var_init_decl_list ';' END_VAR
     { 
-        Compound c = new Compound($3); 
-        c.source(Source.NONE).publish(); 
-        $$ = c; 
+        Compound entries = new Compound($3);
+        entries.source(Source.NONE).publish();
+        $$ = entries;
     }
 ;
 
@@ -383,9 +383,9 @@ var_constant_spec:
 var_init_decl_list:
     var_init_decl
     {
-        List<Publisher> list = new ArrayList<>();
-        list.add($1);
-        $$ = list;
+        List<Publisher> declarations = new ArrayList<>();
+        declarations.add($1);
+        $$ = declarations;
     }
     | var_init_decl_list ';' var_init_decl 
     { 
@@ -605,9 +605,9 @@ enumerated_specification:
 enumerated_list:
     IDENTIFIER
     {
-        List<String> l = new ArrayList<String>();
-        l.add($1);
-        $$ = l;
+        List<String> enumerates = new ArrayList<String>();
+        enumerates.add($1);
+        $$ = enumerates;
     }
     | enumerated_list ',' IDENTIFIER
     {
@@ -722,9 +722,9 @@ fb_name_decl:
 identifier_list:
     IDENTIFIER
     {
-        List<String> l = new ArrayList<String>();
-        l.add($1);
-        $$ = l;
+        List<String> identifiers = new ArrayList<String>();
+        identifiers.add($1);
+        $$ = identifiers;
     }
     | identifier_list ',' IDENTIFIER { $1.add($3); $$ = $1; }
 ;

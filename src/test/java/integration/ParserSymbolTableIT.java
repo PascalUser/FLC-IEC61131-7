@@ -3,6 +3,7 @@ package integration;
 import lexer.Lexer;
 import org.junit.jupiter.api.Test;
 import parser.Parser;
+import utils.DiagnosticsHandler;
 import utils.LexemeInfo;
 import utils.SymbolTable;
 import utils.enums.*;
@@ -12,22 +13,32 @@ import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Integration tests for parser and symbol table interaction.
+ * <p>
+ * Tests that the parser correctly populates the symbol table with
+ * variable declarations, type definitions, and initial values.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class ParserSymbolTableIT {
 
     @Test
     public void parse_WithOutputVariables_PopulatesSymbolTableCorrectly() throws Exception {
-        String sourceCode = """
-            FUNCTION_BLOCK main
-            VAR_OUTPUT
-                power1 : REAL;
-                power2 : REAL := 0.3e10;
-            END_VAR
-            END_FUNCTION_BLOCK
-            """;
+        String sourceCode = "FUNCTION_BLOCK main\n"
+            + "VAR_OUTPUT\n"
+            + "    power1 : REAL;\n"
+            + "    power2 : REAL := 0.3e10;\n"
+            + "END_VAR\n"
+            + "END_FUNCTION_BLOCK\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         Parser parser = new Parser(lexer, st);
         assertTrue(parser.parse());
 
@@ -56,24 +67,22 @@ public class ParserSymbolTableIT {
 
     @Test
     public void parse_WithSubrangeVariables_PopulatesSymbolTableCorrectly() throws Exception {
-        String sourceCode = """
-            TYPE
-                TANK_LEVEL : INT (0..100);
-                FREQUENCY_HZ : INT (10..60) := 25;
-            END_TYPE
-            FUNCTION_BLOCK main
-            VAR
-                Level1 : TANK_LEVEL;
-                Level2 : TANK_LEVEL := 50;
-                Freq1  : FREQUENCY_HZ;
-                Freq2  : FREQUENCY_HZ := 20;
-            END_VAR
-            END_FUNCTION_BLOCK
-            """;
+        String sourceCode = "TYPE\n"
+            + "    TANK_LEVEL : INT (0..100);\n"
+            + "    FREQUENCY_HZ : INT (10..60) := 25;\n"
+            + "END_TYPE\n"
+            + "FUNCTION_BLOCK main\n"
+            + "VAR\n"
+            + "    Level1 : TANK_LEVEL;\n"
+            + "    Level2 : TANK_LEVEL := 50;\n"
+            + "    Freq1  : FREQUENCY_HZ;\n"
+            + "    Freq2  : FREQUENCY_HZ := 20;\n"
+            + "END_VAR\n"
+            + "END_FUNCTION_BLOCK\n";
 
         SymbolTable st = new SymbolTable();
         Reader reader = new StringReader(sourceCode);
-        Lexer lexer = new Lexer(reader, st);
+        Lexer lexer = new Lexer(reader, st, new DiagnosticsHandler());
         Parser parser = new Parser(lexer, st);
         assertTrue(parser.parse());
 

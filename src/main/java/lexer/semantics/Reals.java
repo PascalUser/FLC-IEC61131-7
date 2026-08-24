@@ -5,6 +5,19 @@ import utils.diagnostics.Diagnostic;
 import utils.diagnostics.RealOutOfRange;
 import utils.enums.Subtype;
 
+/**
+ * Semantic analyzer for real (floating-point) numeric literals.
+ * <p>
+ * Parses decimal floating-point numbers and determines the appropriate
+ * subtype (REAL or LREAL) based on the magnitude. Handles special values
+ * like infinity and reports an error for out-of-range values.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class Reals extends NumericAnalyzer {
 
     @Override
@@ -21,6 +34,12 @@ public class Reals extends NumericAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /**
+     * Determines the floating-point subtype based on lexeme magnitude.
+     *
+     * @param value the parsed double lexeme
+     * @return REAL if within float range, LREAL otherwise
+     */
     private Subtype getRange(double value) {
         if (Double.isInfinite(value)) return Subtype.UNKNOWN;
         double abs = Math.abs(value);

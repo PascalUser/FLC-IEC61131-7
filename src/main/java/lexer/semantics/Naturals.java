@@ -7,6 +7,19 @@ import utils.enums.Subtype;
 
 import java.math.BigInteger;
 
+/**
+ * Semantic analyzer for natural (unsigned decimal) numeric literals.
+ * <p>
+ * Parses unsigned decimal integers and determines the appropriate subtype
+ * (USINT, UINT, UDINT, ULINT) based on the lexeme range. Reports an error
+ * if the lexeme exceeds 2^64 - 1.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
 public class Naturals extends NumericAnalyzer {
     // Final member to avoid RAM out of space
     private static final int MAX_CONSTANT_LENGTH = 20;
@@ -23,6 +36,12 @@ public class Naturals extends NumericAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /**
+     * Determines the smallest unsigned integer subtype that can hold the lexeme.
+     *
+     * @param value the parsed BigInteger lexeme
+     * @return the appropriate subtype
+     */
     private Subtype getRange(BigInteger value) {
         if (value.compareTo(MAX_USINT) <= 0) return Subtype.USINT;
         if (value.compareTo(MAX_UINT)  <= 0) return Subtype.UINT;
