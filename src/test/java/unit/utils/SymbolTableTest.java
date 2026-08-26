@@ -34,7 +34,6 @@ class SymbolTableTest {
     @Test
     void get_ForNonExistentKey_ReturnsNull() {
         SymbolTable table = new SymbolTable();
-
         assertNull(table.get("nonexistent"));
     }
 

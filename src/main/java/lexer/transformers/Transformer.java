@@ -26,13 +26,6 @@ public abstract class Transformer {
     }
 
     /**
-     * Creates a transformer with no next handler (end of chain).
-     */
-    protected Transformer() {
-        this(null);
-    }
-
-    /**
      * Transforms the given lexeme.
      *
      * @param lexeme the input lexeme

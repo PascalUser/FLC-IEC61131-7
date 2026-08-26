@@ -902,7 +902,7 @@ public class Lexer implements Parser.Lexer {
           // fall through
           case 49: break;
           case 21:
-            { return processAndSaveYylval(new UnderscoreRemover(), new Default(Subtype.TIME));
+            { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.TIME));
             }
           // fall through
           case 50: break;
@@ -917,32 +917,32 @@ public class Lexer implements Parser.Lexer {
           // fall through
           case 52: break;
           case 24:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Binary());
+            { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Binary());
             }
           // fall through
           case 53: break;
           case 25:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Octal());
+            { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Octal());
             }
           // fall through
           case 54: break;
           case 26:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Hexadecimal());
+            { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Hexadecimal());
             }
           // fall through
           case 55: break;
           case 27:
-            { return processAndSaveYylval(new Nothing(), new Default(Subtype.DATE));
+            { return processAndSaveYylval(new Nothing(null), new Default(Subtype.DATE));
             }
           // fall through
           case 56: break;
           case 28:
-            { return processAndSaveYylval(new Nothing(), new Default(Subtype.TIME_OF_DAY));
+            { return processAndSaveYylval(new Nothing(null), new Default(Subtype.TIME_OF_DAY));
             }
           // fall through
           case 57: break;
           case 29:
-            { return processAndSaveYylval(new Nothing(), new Default(Subtype.DATE_AND_TIME));
+            { return processAndSaveYylval(new Nothing(null), new Default(Subtype.DATE_AND_TIME));
             }
           // fall through
           case 58: break;

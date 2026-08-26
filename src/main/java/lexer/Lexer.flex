@@ -84,6 +84,7 @@ DATE               = {NUM}-{NUM}-{NUM}
 DAYTIME            = {NUM}:{NUM}:{FIXED}
 DATE_AND_TIME      = {DATE}-{DAYTIME}
 
+// TODO: Qué pasa si +MAX_ULINT => Se rompe todo
 NATURAL_NUMBER     = {DIGIT}(_?{DIGIT})*
 INTEGER_NUMBER     = [\+\-]{NATURAL_NUMBER}
 REAL_NUMBER        = [\+\-]?{NATURAL_NUMBER}\.({NATURAL_NUMBER}|({NATURAL_NUMBER}?[eE][\+\-]?{NATURAL_NUMBER}))
@@ -102,19 +103,19 @@ DOUBLE_BYTE_STRING = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 %%
 
-{DATE_AND_TIME}       { return processAndSaveYylval(new Nothing(), new Default(Subtype.DATE_AND_TIME)); }
-{DAYTIME}             { return processAndSaveYylval(new Nothing(), new Default(Subtype.TIME_OF_DAY)); }
-{DATE}                { return processAndSaveYylval(new Nothing(), new Default(Subtype.DATE)); }
-{INTERVAL}            { return processAndSaveYylval(new UnderscoreRemover(), new Default(Subtype.TIME)); }
+{DATE_AND_TIME}       { return processAndSaveYylval(new Nothing(null), new Default(Subtype.DATE_AND_TIME)); }
+{DAYTIME}             { return processAndSaveYylval(new Nothing(null), new Default(Subtype.TIME_OF_DAY)); }
+{DATE}                { return processAndSaveYylval(new Nothing(null), new Default(Subtype.DATE)); }
+{INTERVAL}            { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.TIME)); }
 
 // TODO: hacer que el lexico agregue los initialValue de las constantes literales. Por ejemplo
 // para el lexema "50E1" el initialValue es 500.
 {NATURAL_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(new StripLeadingZeros(null)), new Naturals()); }
 {INTEGER_NUMBER}      { return processAndSaveYylval(new UnderscoreRemover(null), new Integers()); }
-{REAL_NUMBER}         { return processAndSaveYylval(new UnderscoreRemover(null), new Reals());    }
-{BINARY}              { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Binary());  }
-{OCTAL}               { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Octal());  }
-{HEXADECIMAL}         { return processAndSaveYylval(new UnderscoreRemover(new StripTypePrefix(new StripLeadingZeros(null))), new Hexadecimal());  }
+{REAL_NUMBER}         { return processAndSaveYylval(new UnderscoreRemover(null), new Reals()); }
+{BINARY}              { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Binary()); }
+{OCTAL}               { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Octal()); }
+{HEXADECIMAL}         { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Hexadecimal()); }
 
 {SINGLE_BYTE_STRING}  { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.STRING)); }
 {DOUBLE_BYTE_STRING}  { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.WSTRING)); }

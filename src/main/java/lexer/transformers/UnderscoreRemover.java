@@ -17,10 +17,6 @@ public class UnderscoreRemover extends Transformer {
         super(next);
     }
 
-    public UnderscoreRemover() {
-        this(null);
-    }
-
     @Override
     public String transform(String lexeme) {
         return super.giveToNext(lexeme.replace("_", ""));

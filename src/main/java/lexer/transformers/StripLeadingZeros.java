@@ -17,10 +17,6 @@ public class StripLeadingZeros extends Transformer {
         super(next);
     }
 
-    public StripLeadingZeros() {
-        this(null);
-    }
-
     @Override
     public String transform(String lexeme) {
         int i = 0;

@@ -2,6 +2,8 @@ package lexer.semantics;
 
 import utils.diagnostics.Diagnostic;
 import utils.diagnostics.OctalOutOfRange;
+import utils.enums.Subtype;
+
 import java.math.BigInteger;
 
 /**
@@ -19,17 +21,12 @@ import java.math.BigInteger;
 public class Octal extends BasedAnalyzer {
     @Override
     int getMaxDigits() {
-        return 32;
+        return 22;
     }
 
     @Override
     int getBase() {
         return 8;
-    }
-
-    @Override
-    BigInteger getMaxConstant() {
-        return MAX_ULINT;
     }
 
     @Override

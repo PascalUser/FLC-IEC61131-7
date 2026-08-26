@@ -17,10 +17,6 @@ public class UpperCaseConverter extends Transformer {
         super(next);
     }
 
-    public UpperCaseConverter() {
-        this(null);
-    }
-
     @Override
     public String transform(String lexeme) {
         return super.giveToNext(lexeme.toUpperCase());

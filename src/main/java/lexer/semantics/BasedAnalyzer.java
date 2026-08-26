@@ -17,16 +17,27 @@ import java.math.BigInteger;
  * @since 1.0
  */
 public abstract class BasedAnalyzer extends NumericAnalyzer {
-    protected static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615", 16);
+    private static final BigInteger MAX_USINT = BigInteger.valueOf(255);
+    private static final BigInteger MAX_UINT  = BigInteger.valueOf(65535);
+    private static final BigInteger MAX_UDINT = new BigInteger("4294967295");
+    private static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615");
 
     @Override
     protected ParsedValue parse(String lexeme) {
-        BigInteger initialValue = (lexeme.length() <= this.getMaxDigits())
-                ? new BigInteger(lexeme, this.getBase())
+        final int prefixIndex = lexeme.indexOf("#");
+        final String digits = lexeme.substring(prefixIndex + 1);
+        BigInteger initialValue = (digits.length() <= this.getMaxDigits())
+                ? new BigInteger(digits, this.getBase())
                 : null;
+
         Subtype subtype = (initialValue != null)
-                ? getRange(lexeme.length())
+                ? getRange(initialValue)
                 : Subtype.UNKNOWN;
+
+        if (subtype.equals(Subtype.UNKNOWN)) {
+            initialValue = null;
+        }
+
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
@@ -45,50 +56,24 @@ public abstract class BasedAnalyzer extends NumericAnalyzer {
     abstract int getBase();
 
     /**
-     * Determines the subtype based on digit length.
+     * Determines the smallest unsigned integer subtype that can hold the lexeme.
      *
-     * @param length number of digits in the lexeme
-     * @return the smallest subtype that can hold the lexeme
+     * @param value the parsed BigInteger lexeme
+     * @return the appropriate subtype
      */
-    private Subtype getRange(int length) {
-        int shift = getShiftAmount(getBase());
-        if (length <=  8 >> shift) return Subtype.BYTE;
-        if (length <= 32 >> shift) return Subtype.WORD;
-        if (length <= 64 >> shift) return Subtype.DWORD;
-        return Subtype.LWORD;
+    private Subtype getRange(BigInteger value) {
+        if (value.compareTo(MAX_USINT) <= 0) return Subtype.BYTE;
+        if (value.compareTo(MAX_UINT)  <= 0) return Subtype.WORD;
+        if (value.compareTo(MAX_UDINT) <= 0) return Subtype.DWORD;
+        if (value.compareTo(MAX_ULINT) <= 0) return Subtype.LWORD;
+        return Subtype.UNKNOWN;
     }
 
-    /**
-     * Calculates bit shift amount for the given base.
-     *
-     * @param base the numeric base
-     * @return shift amount (0 for binary, 1 for octal, 2 for hex)
-     * @throws IllegalArgumentException if base is not 2, 8, or 16
-     */
-    private int getShiftAmount(int base) {
-        switch (base) {
-            case 2:
-                return 0;
-            case 8:
-                return 1;
-            case 16:
-                return 2;
-            default:
-                throw new IllegalArgumentException("Unsupported base: " + base);
-        }
-    }
 
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
-        lexeme = this.getMaxConstant().toString();
+        lexeme = MAX_ULINT.toString();
         Subtype subtype = Subtype.LWORD;
-        return new ParsedValue(lexeme, subtype, this.getMaxConstant());
+        return new ParsedValue(lexeme, subtype, MAX_ULINT);
     }
-
-    /**
-     * Returns the maximum constant lexeme for this base.
-     *
-     * @return maximum lexeme as BigInteger
-     */
-    abstract BigInteger getMaxConstant();
 }

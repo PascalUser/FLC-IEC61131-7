@@ -28,11 +28,6 @@ public class Binary extends BasedAnalyzer {
     }
 
     @Override
-    BigInteger getMaxConstant() {
-        return MAX_ULINT;
-    }
-
-    @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new BinaryOutOfRange(line, lexeme);
     }
