@@ -7,13 +7,10 @@ import utils.enums.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// TODO: chequear valores precargados
-
 /**
  * Unit tests for {@link SymbolTable}.
  *
  * @author Matias Ortiz
- * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  */

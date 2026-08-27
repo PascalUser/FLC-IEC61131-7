@@ -12,7 +12,7 @@ import utils.enums.Use;
  * <p>
  * Provides common logic for parsing numeric literals, determining their
  * subtype based on value range, registering them in the symbol table,
- * and handling out-of-range errors through error correction.
+ * and handling out-of-range values through fallback correction with warnings.
  * </p>
  *
  * @author Matias Ortiz
@@ -50,7 +50,7 @@ public abstract class NumericAnalyzer implements SemanticAnalyzer {
     }
 
     @Override
-    public Result analyze(LexicalContext currentContext) {
+    public int analyze(LexicalContext currentContext) {
         String currentLexeme = currentContext.lexeme();
 
         // Current lexeme is parsed to determine it's subtype and value
@@ -65,18 +65,16 @@ public abstract class NumericAnalyzer implements SemanticAnalyzer {
         }
 
         // The lexeme's metadata is built and published to the symbol table
-        if (currentContext.symbolTable().get(parsed.lexeme()) == null) {
-            currentContext.symbolTable().put(
-                    parsed.lexeme(),
-                    new LexemeInfoBuilder()
-                            .type(Type.SIMPLE)
-                            .subtype(parsed.subtype())
-                            .use(Use.LITERAL)
-                            .initialValue(parsed.value())
-                            .build()
-            );
-        }
-        return new Result(parsed.lexeme(), Parser.Lexer.NUMERIC_LITERAL);
+        currentContext.symbolTable().putIfAbsent(
+                parsed.lexeme(),
+                new LexemeInfoBuilder()
+                        .type(Type.SIMPLE)
+                        .subtype(parsed.subtype())
+                        .use(Use.LITERAL)
+                        .initialValue(parsed.value())
+                        .build()
+        );
+        return Parser.Lexer.NUMERIC_LITERAL;
     }
 
     /**
@@ -96,11 +94,11 @@ public abstract class NumericAnalyzer implements SemanticAnalyzer {
     protected abstract ParsedValue fallback(String lexeme);
 
     /**
-     * Creates a diagnostic for an out-of-range or invalid numeric literal.
+     * Creates a warning diagnostic for an out-of-range numeric literal.
      *
      * @param line   source line number
      * @param lexeme the invalid lexeme
-     * @return diagnostic instance
+     * @return warning diagnostic instance (extends {@link utils.diagnostics.Warning})
      */
     protected abstract Diagnostic createDiagnostic(int line, String lexeme);
 }

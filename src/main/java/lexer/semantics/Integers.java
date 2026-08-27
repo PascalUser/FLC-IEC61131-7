@@ -10,11 +10,10 @@ import utils.enums.Subtype;
  * <p>
  * Parses signed decimal integers and determines the appropriate subtype
  * (SINT, INT, DINT, LINT) based on the lexeme range. Handles negative values
- * and reports an error if the lexeme exceeds LINT range.
+ * and reports a warning if the lexeme exceeds LINT range with fallback.
  * </p>
  *
  * @author Matias Ortiz
- * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  */
@@ -42,19 +41,6 @@ public class Integers extends NumericAnalyzer {
         return new NumericAnalyzer.ParsedValue(lexeme, subtype, initialValue);
     }
 
-    /**
-     * Determines the smallest signed integer subtype that can hold the lexeme.
-     *
-     * @param value the parsed long lexeme
-     * @return the appropriate subtype
-     */
-    private Subtype getRange(long value) {
-        if (value >= MIN_SINT && value <= MAX_SINT) return Subtype.SINT;
-        if (value >= MIN_INT  && value <= MAX_INT)  return Subtype.INT;
-        if (value >= MIN_DINT && value <= MAX_DINT) return Subtype.DINT;
-        return Subtype.LINT;
-    }
-
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
         boolean isNegative = lexeme.startsWith("-");
@@ -67,5 +53,18 @@ public class Integers extends NumericAnalyzer {
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new IntegerOutOfRange(line, lexeme);
+    }
+
+    /**
+     * Determines the smallest signed integer subtype that can hold the lexeme.
+     *
+     * @param value the parsed long lexeme
+     * @return the appropriate subtype
+     */
+    private Subtype getRange(long value) {
+        if (value >= MIN_SINT && value <= MAX_SINT) return Subtype.SINT;
+        if (value >= MIN_INT  && value <= MAX_INT)  return Subtype.INT;
+        if (value >= MIN_DINT && value <= MAX_DINT) return Subtype.DINT;
+        return Subtype.LINT;
     }
 }

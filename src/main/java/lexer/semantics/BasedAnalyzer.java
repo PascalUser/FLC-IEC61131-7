@@ -26,6 +26,7 @@ public abstract class BasedAnalyzer extends NumericAnalyzer {
     protected ParsedValue parse(String lexeme) {
         final int prefixIndex = lexeme.indexOf("#");
         final String digits = lexeme.substring(prefixIndex + 1);
+
         BigInteger initialValue = (digits.length() <= this.getMaxDigits())
                 ? new BigInteger(digits, this.getBase())
                 : null;
@@ -41,19 +42,12 @@ public abstract class BasedAnalyzer extends NumericAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
-    /**
-     * Returns the maximum number of digits for this base.
-     *
-     * @return maximum digit count
-     */
-    abstract int getMaxDigits();
-
-    /**
-     * Returns the numeric base (2, 8, or 16).
-     *
-     * @return the base
-     */
-    abstract int getBase();
+    @Override
+    protected ParsedValue fallback(@NonNull String lexeme) {
+        lexeme = MAX_ULINT.toString();
+        Subtype subtype = Subtype.LWORD;
+        return new ParsedValue(lexeme, subtype, MAX_ULINT);
+    }
 
     /**
      * Determines the smallest unsigned integer subtype that can hold the lexeme.
@@ -69,11 +63,18 @@ public abstract class BasedAnalyzer extends NumericAnalyzer {
         return Subtype.UNKNOWN;
     }
 
+    /**
+     * Returns the maximum number of digits for this base.
+     *
+     * @return maximum digit count
+     */
+    protected abstract int getMaxDigits();
 
-    @Override
-    protected ParsedValue fallback(@NonNull String lexeme) {
-        lexeme = MAX_ULINT.toString();
-        Subtype subtype = Subtype.LWORD;
-        return new ParsedValue(lexeme, subtype, MAX_ULINT);
-    }
+    /**
+     * Returns the numeric base (2, 8, or 16).
+     *
+     * @return the base
+     */
+    protected abstract int getBase();
+
 }

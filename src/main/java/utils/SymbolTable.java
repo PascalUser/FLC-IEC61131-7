@@ -26,8 +26,12 @@ public class SymbolTable {
     public LexemeInfo get(String lexeme) {
         return table.get(lexeme);
     }
-    // TODO: ¿Se debería chequear si ya fue agregado un elemento o es mejor sobreescribirlo siempre?
+
     public LexemeInfo put(String lexeme, LexemeInfo info) {
         return table.put(lexeme, info);
+    }
+
+    public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) {
+        return table.putIfAbsent(lexeme, info);
     }
 }

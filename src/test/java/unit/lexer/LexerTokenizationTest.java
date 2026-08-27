@@ -2,6 +2,7 @@ package unit.lexer;
 
 import lexer.Lexer;
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -32,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 1.0
  * @since 1.0
  */
-class LexerTest {
+@Tag("lexer")
+class LexerTokenizationTest {
     private void assertNextToken(@NonNull Lexer lexer, int expectedToken, String expectedText) throws IOException {
         int token = lexer.yylex();
         assertEquals(expectedToken, token, "Token type mismatch");
@@ -122,7 +124,7 @@ class LexerTest {
     void Yylex_ForTrueWords_IsTrue(String trueWord) throws IOException {
         Reader reader = new StringReader(trueWord);
         Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
-        this.assertNextToken(lexer, Lexer.TRUE, trueWord);
+        this.assertNextToken(lexer, Lexer.BOOLEAN_LITERAL, trueWord);
     }
 
     @ParameterizedTest
@@ -130,23 +132,25 @@ class LexerTest {
     void Yylex_ForFalseWords_IsFalse(String falseWord) throws IOException {
         Reader reader = new StringReader(falseWord);
         Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
-        this.assertNextToken(lexer, Lexer.FALSE, falseWord);
+        this.assertNextToken(lexer, Lexer.BOOLEAN_LITERAL, falseWord);
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     @ParameterizedTest
     @ValueSource(strings = {"True", "TrUe", "tRUE"})
     void Yylex_ForMixedCaseTrueWord_IsTrue(String trueWord) throws IOException {
         Reader reader = new StringReader(trueWord);
         Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
-        this.assertNextToken(lexer, Lexer.TRUE, trueWord);
+        this.assertNextToken(lexer, Lexer.BOOLEAN_LITERAL, trueWord);
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     @ParameterizedTest
     @ValueSource(strings = {"False", "FaLsE", "fALSE"})
     void Yylex_ForMixedCaseFalseWord_IsFalse(String falseWord) throws IOException {
         Reader reader = new StringReader(falseWord);
         Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
-        this.assertNextToken(lexer, Lexer.FALSE, falseWord);
+        this.assertNextToken(lexer, Lexer.BOOLEAN_LITERAL, falseWord);
     }
 
     @ParameterizedTest
@@ -244,6 +248,7 @@ class LexerTest {
         this.assertNextToken(lexer, Lexer.IDENTIFIER, "_var");
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     @ParameterizedTest
     @ValueSource(strings = {
             "''",
@@ -261,6 +266,7 @@ class LexerTest {
         assertNextToken(lexer, Lexer.STRING_LITERAL, literal);
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     @ParameterizedTest
     @ValueSource(strings = {
             "\"\"",
@@ -475,8 +481,7 @@ class LexerTest {
             "0001-01-01-00:00:00",
             "00:00:00",
             "0001-01-01",
-            "00-00-1111",
-            "1100-00-00",
+            "1100-01-01",
             "0S",
             "5d14h12m18s3.5ms",
             "5d_14h_12m_18s_3.5ms",
@@ -520,5 +525,69 @@ class LexerTest {
         Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
         assertEquals(Lexer.TIME_LITERAL, lexer.yylex());
         assertEquals(Lexer.TIME_LITERAL, lexer.yylex());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "2023-02-29",
+            "2026-13-01",
+            "2026-04-31"
+    })
+    void Yylex_ForInvalidDate_IsNotTimeLiteral(String text) throws IOException {
+        Reader reader = new StringReader(text);
+        Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
+        assertNotEquals(Lexer.TIME_LITERAL, lexer.yylex());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "25:00:00",
+            "12:60:00",
+            "12:30:60"
+    })
+    void Yylex_ForInvalidTimeOfDay_IsNotTimeLiteral(String text) throws IOException {
+        Reader reader = new StringReader(text);
+        Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
+        assertNotEquals(Lexer.TIME_LITERAL, lexer.yylex());
+    }
+
+    @Test
+    void Yylex_ForInvalidDateAndTime_IsNotTimeLiteral() throws IOException {
+        String text = "2026-07-03-25:00:00";
+        Reader reader = new StringReader(text);
+        Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
+        assertNotEquals(Lexer.TIME_LITERAL, lexer.yylex());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "1d_25h",
+            "2h_65m",
+            "3m_65s",
+            "5s_1500ms"
+    })
+    void Yylex_ForIntervalConstructionError_IsNotTimeLiteral(String text) throws IOException {
+        Reader reader = new StringReader(text);
+        Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
+        assertNotEquals(Lexer.TIME_LITERAL, lexer.yylex());
+    }
+
+    @ParameterizedTest(name = "{index}: Yylex(\"{0}\") exceeds max duration range")
+    @ValueSource(strings = {
+            "106752d",
+            "2562048h",
+            "153722868m",
+            "9223372037s",
+            "9223372036855ms",
+            "106751d23h47m16s855ms",
+            "106751d24h"
+    })
+    void Yylex_ForIntervalOutOfRange_IsNotTimeLiteral(String input) throws IOException {
+        Reader reader = new StringReader(input);
+        Lexer lexer = new Lexer(reader, new SymbolTable(), new DiagnosticsHandler());
+
+        int token = lexer.yylex();
+
+        assertNotEquals(Lexer.TIME_LITERAL, token);
     }
 }

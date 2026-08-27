@@ -19,7 +19,7 @@ public abstract class Error extends Diagnostic {
 
     @Override
     public String getMessage() {
-         return "ERROR - " + super.getMessage() + ", ";
+         return "ERROR:" + super.getMessage() + ", ";
     }
 
 }

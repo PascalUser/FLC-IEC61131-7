@@ -2,7 +2,6 @@ package lexer.semantics;
 
 import utils.diagnostics.Diagnostic;
 import utils.diagnostics.BinaryOutOfRange;
-import java.math.BigInteger;
 
 /**
  * Semantic analyzer for binary numeric literals (base 2).
@@ -12,23 +11,22 @@ import java.math.BigInteger;
  * </p>
  *
  * @author Matias Ortiz
- * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  */
 public class Binary extends BasedAnalyzer {
     @Override
-    int getMaxDigits() {
+    protected Diagnostic createDiagnostic(int line, String lexeme) {
+        return new BinaryOutOfRange(line, lexeme);
+    }
+
+    @Override
+    protected int getMaxDigits() {
         return 64;
     }
 
     @Override
-    int getBase() {
+    protected int getBase() {
         return 2;
-    }
-
-    @Override
-    protected Diagnostic createDiagnostic(int line, String lexeme) {
-        return new BinaryOutOfRange(line, lexeme);
     }
 }

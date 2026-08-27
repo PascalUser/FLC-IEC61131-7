@@ -6,13 +6,15 @@ package lexer;
 
 import java.lang.Error;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import parser.Parser;
 import lexer.semantics.*;
 import lexer.transformers.*;
 import lexer.semantics.SemanticAnalyzer.*;
 import utils.SymbolTable;
 import utils.diagnostics.*;
-import utils.DiagnosticsHandler;import utils.enums.Subtype;
+import utils.DiagnosticsHandler;
+import utils.enums.Subtype;
 
 
 @SuppressWarnings("fallthrough")
@@ -371,24 +373,25 @@ public class Lexer implements Parser.Lexer {
     }
 
     public void yyerror(String msg) {
+        // TODO: Agregar al DiagnosticHandler un error generico.
         System.err.println("Line " + (yyline + 1) + ": " + msg);
     }
 
     /**
      * @param  transformer the lexeme preprocessor that transforms the lexeme before is analyzed
      * @param  analyzer    the lexeme's semantic analyzer
-     * @return the lexeme's corresponded token number
+     * @return the lexeme's corresponded token number, or YYERROR if semantic analysis failed
      */
     public int processAndSaveYylval(@NonNull Transformer transformer, @NonNull SemanticAnalyzer analyzer) {
+        String preprocessedLexeme = transformer.transform(yytext());
         LexicalContext lexicalContext = new LexicalContext(
-                transformer.transform(yytext()),
+                preprocessedLexeme,
                 yyline,
                 this.symbolTable,
                 this.diagnosticsHandler
             );
-        Result result = analyzer.analyze(lexicalContext);
-        this.yylval = result.lexeme();
-        return result.tokenNumber();
+        this.yylval = preprocessedLexeme;
+        return analyzer.analyze(lexicalContext);
     }
 
 
@@ -847,7 +850,11 @@ public class Lexer implements Parser.Lexer {
           // fall through
           case 38: break;
           case 10:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripLeadingZeros(null)), new Naturals());
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(new StripLeadingZeros(null)), new Naturals()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 39: break;
@@ -867,7 +874,11 @@ public class Lexer implements Parser.Lexer {
           // fall through
           case 42: break;
           case 14:
-            { return processAndSaveYylval(new UpperCaseConverter(null), new Identifiers());
+            { final int resultToken = processAndSaveYylval(
+                                new UpperCaseConverter(null), new Identifiers()
+                            );
+                            if (resultToken != Lexer.YYerror) return resultToken;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 43: break;
@@ -882,67 +893,120 @@ public class Lexer implements Parser.Lexer {
           // fall through
           case 45: break;
           case 17:
-            { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.WSTRING));
+            { int token = processAndSaveYylval(
+                                new Nothing(null), new Default(Subtype.WSTRING)
+                            );
+                            if (token != Lexer.YYerror) return Lexer.STRING_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 46: break;
           case 18:
-            { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.STRING));
+            { int token = processAndSaveYylval(
+                                new Nothing(null), new Default(Subtype.STRING)
+                            );
+                            if (token != Lexer.YYerror) return Lexer.STRING_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 47: break;
           case 19:
-            { return processAndSaveYylval(new UnderscoreRemover(null), new Integers());
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(null), new Integers()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 48: break;
           case 20:
-            { return Parser.Lexer.RANGE_OP;
+            { return Lexer.RANGE_OP;
             }
           // fall through
           case 49: break;
           case 21:
-            { return processAndSaveYylval(new UnderscoreRemover(null), new Default(Subtype.TIME));
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(new UpperCaseConverter(
+                                    new OmitLeadingZeroMagnitudes(
+                                        new OmitTrailingZeroMagnitudes(
+                                            new OmitLeadingZerosInMagnitudes(
+                                                new OmitTrailingZerosInMagnitudes(null)
+                                            )
+                                        )
+                                    )
+                                )),
+                                new Intervals()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.TIME_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 50: break;
           case 22:
-            { return Parser.Lexer.ASSIGN_OP;
+            { return Lexer.ASSIGN_OP;
             }
           // fall through
           case 51: break;
           case 23:
-            { return processAndSaveYylval(new UnderscoreRemover(null), new Reals());
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(null), new Reals()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 52: break;
           case 24:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Binary());
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Binary()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 53: break;
           case 25:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Octal());
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Octal()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 54: break;
           case 26:
-            { return processAndSaveYylval(new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Hexadecimal());
+            { int token = processAndSaveYylval(
+                                new UnderscoreRemover(new StripBaseNumberLeadingZeros(null)), new Hexadecimal()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 55: break;
           case 27:
-            { return processAndSaveYylval(new Nothing(null), new Default(Subtype.DATE));
+            { int token = processAndSaveYylval(
+                                new Nothing(null), new Dates()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.TIME_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 56: break;
           case 28:
-            { return processAndSaveYylval(new Nothing(null), new Default(Subtype.TIME_OF_DAY));
+            { int token = processAndSaveYylval(
+                                new Nothing(null), new DayTimes()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.TIME_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 57: break;
           case 29:
-            { return processAndSaveYylval(new Nothing(null), new Default(Subtype.DATE_AND_TIME));
+            { int token = processAndSaveYylval(
+                                new Nothing(null), new DateAndDayTimes()
+                            );
+                            if (token != Lexer.YYerror) return Lexer.TIME_LITERAL;
+                            yybegin(YYINITIAL);
             }
           // fall through
           case 58: break;

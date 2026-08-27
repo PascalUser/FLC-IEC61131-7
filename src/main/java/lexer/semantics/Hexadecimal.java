@@ -2,7 +2,6 @@ package lexer.semantics;
 
 import utils.diagnostics.Diagnostic;
 import utils.diagnostics.HexadecimalOutOfRange;
-import java.math.BigInteger;
 
 /**
  * Semantic analyzer for hexadecimal numeric literals (base 16).
@@ -12,23 +11,22 @@ import java.math.BigInteger;
  * </p>
  *
  * @author Matias Ortiz
- * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  */
 public class Hexadecimal extends BasedAnalyzer {
     @Override
-    int getMaxDigits() {
-        return 16;
-    }
-
-    @Override
-    int getBase() {
-        return 16;
-    }
-
-    @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new HexadecimalOutOfRange(line, lexeme);
+    }
+
+    @Override
+    protected int getMaxDigits() {
+        return 16;
+    }
+
+    @Override
+    protected int getBase() {
+        return 16;
     }
 }

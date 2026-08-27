@@ -1,9 +1,12 @@
 package lexer.semantics;
 
+import lexer.Lexer;
 import lexer.ReservedWords;
-import parser.Parser;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
+import utils.enums.Subtype;
+import utils.enums.Type;
+import utils.enums.Use;
 
 /**
  * Semantic analyzer for identifiers and reserved words.
@@ -19,15 +22,23 @@ import utils.builders.LexemeInfoBuilder;
  */
 public class Identifiers implements SemanticAnalyzer {
     @Override
-    public Result analyze(LexicalContext currentContext) {
+    public int analyze(LexicalContext currentContext) {
         String currentLexeme = currentContext.lexeme();
         Integer tokenNumber = ReservedWords.isReserved(currentLexeme);
         if (tokenNumber != null) {
-            return new Result(null, tokenNumber);
+            if (!tokenNumber.equals(Lexer.BOOLEAN_LITERAL)){
+                return tokenNumber;
+            }
+            currentContext.symbolTable().putIfAbsent(currentLexeme, new LexemeInfoBuilder()
+                    .type(Type.SIMPLE)
+                    .subtype(Subtype.BOOL)
+                    .use(Use.LITERAL)
+                    .initialValue(Boolean.valueOf(currentLexeme))
+                    .build()
+            );
+            return Lexer.BOOLEAN_LITERAL;
         }
-        if (currentContext.symbolTable().get(currentLexeme) == null) {
-            currentContext.symbolTable().put(currentLexeme, new LexemeInfoBuilder().build());
-        }
-        return new Result(currentLexeme, Parser.Lexer.IDENTIFIER);
+        currentContext.symbolTable().putIfAbsent(currentLexeme, new LexemeInfoBuilder().build());
+        return Lexer.IDENTIFIER;
     }
 }

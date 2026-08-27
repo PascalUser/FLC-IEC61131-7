@@ -3,18 +3,15 @@ package lexer.semantics;
 import parser.Parser.Lexer;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Subtype;
-import utils.LexemeInfo;
 
 /**
- * Semantic analyzer for default/fallback token handling.
+ * Semantic analyzer for string literal fallback handling.
  * <p>
- * Used when a lexeme doesn't match any specific pattern. Looks up the
- * lexeme in the symbol table to determine its token type based on the
- * stored subtype information.
+ * Used for STRING and WSTRING literals when no specific analyzer is matched.
+ * Looks up the lexeme in the symbol table and returns the corresponding token.
  * </p>
  *
  * @author Matias Ortiz
- * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  */
@@ -26,12 +23,9 @@ public class Default implements SemanticAnalyzer {
     }
 
     @Override
-    public Result analyze(LexicalContext currentContext) {
-        LexemeInfo info = currentContext.symbolTable().get(currentContext.lexeme());
-        if (info == null) {
-            currentContext.symbolTable().put(currentContext.lexeme(), new LexemeInfoBuilder().build());
-        }
-        return new Result(currentContext.lexeme(), this.translate(this.subtype));
+    public int analyze(LexicalContext currentContext) {
+        currentContext.symbolTable().putIfAbsent(currentContext.lexeme(), new LexemeInfoBuilder().build());
+        return this.translate(this.subtype);
     }
 
     /**

@@ -15,7 +15,6 @@ import java.util.List;
  * </p>
  *
  * @author Matias Ortiz
- * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  */
@@ -90,6 +89,9 @@ public class Declaration implements Publisher {
         builder.initialValue(initialValue);
         return this;
     }
+
+    // TODO: Verificar si hay que poner putIfAbsent en este método
+    // TODO: Ver cómo se chequean las redeclaraciones
 
     @Override
     public void publish() {

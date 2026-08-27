@@ -36,8 +36,7 @@
 %token TIME TIME_OF_DAY DATE DATE_AND_TIME
 %token OF
 %token SINT INT DINT LINT USINT UINT UDINT ULINT REAL LREAL
-%token TRUE FALSE
-%token <String> NUMERIC_LITERAL STRING_LITERAL TIME_LITERAL
+%token <String> NUMERIC_LITERAL STRING_LITERAL TIME_LITERAL BOOLEAN_LITERAL
 %token ARRAY
 
 %type <List<Publisher>>
@@ -505,30 +504,7 @@ constant:
 
 number:
     NUMERIC_LITERAL
-    | TRUE
-    {
-        this.symbolTable.put(
-            "TRUE" ,
-            new LexemeInfoBuilder()
-                .use(Use.LITERAL)
-                .type(Type.SIMPLE)
-                .subtype(Subtype.BOOL)
-                .build()
-        );
-        $$ = "TRUE";
-    }
-    | FALSE
-    {
-        this.symbolTable.put(
-            "FALSE" ,
-            new LexemeInfoBuilder()
-                .use(Use.LITERAL)
-                .type(Type.SIMPLE)
-                .subtype(Subtype.BOOL)
-                .build()
-        );
-        $$ = "FALSE";
-    }
+    | BOOLEAN_LITERAL
     | number_prefix NUMERIC_LITERAL
     {
         // todo: hacer conversion de esta constante en codigo

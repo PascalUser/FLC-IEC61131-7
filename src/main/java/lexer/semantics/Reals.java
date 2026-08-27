@@ -10,7 +10,7 @@ import utils.enums.Subtype;
  * <p>
  * Parses decimal floating-point numbers and determines the appropriate
  * subtype (REAL or LREAL) based on the magnitude. Handles special values
- * like infinity and reports an error for out-of-range values.
+ * like infinity and reports a warning for out-of-range values with fallback.
  * </p>
  *
  * @author Matias Ortiz
@@ -34,19 +34,6 @@ public class Reals extends NumericAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
-    /**
-     * Determines the floating-point subtype based on lexeme magnitude.
-     *
-     * @param value the parsed double lexeme
-     * @return REAL if within float range, LREAL otherwise
-     */
-    private Subtype getRange(double value) {
-        if (Double.isInfinite(value)) return Subtype.UNKNOWN;
-        double abs = Math.abs(value);
-        if (abs <= Float.MAX_VALUE) return Subtype.REAL;
-        return Subtype.LREAL;
-    }
-
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
         boolean isNegative = lexeme.startsWith("-");
@@ -59,5 +46,18 @@ public class Reals extends NumericAnalyzer {
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new RealOutOfRange(line, lexeme);
+    }
+
+    /**
+     * Determines the floating-point subtype based on lexeme magnitude.
+     *
+     * @param value the parsed double lexeme
+     * @return REAL if within float range, LREAL otherwise
+     */
+    private Subtype getRange(double value) {
+        if (Double.isInfinite(value)) return Subtype.UNKNOWN;
+        double abs = Math.abs(value);
+        if (abs <= Float.MAX_VALUE) return Subtype.REAL;
+        return Subtype.LREAL;
     }
 }

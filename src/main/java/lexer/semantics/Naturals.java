@@ -11,8 +11,8 @@ import java.math.BigInteger;
  * Semantic analyzer for natural (unsigned decimal) numeric literals.
  * <p>
  * Parses unsigned decimal integers and determines the appropriate subtype
- * (USINT, UINT, UDINT, ULINT) based on the lexeme range. Reports an error
- * if the lexeme exceeds 2^64 - 1.
+ * (USINT, UINT, UDINT, ULINT) based on the lexeme range. Reports a warning
+ * if the lexeme exceeds 2^64 - 1 and uses fallback value.
  * </p>
  *
  * @author Matias Ortiz
@@ -36,6 +36,18 @@ public class Naturals extends NumericAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    @Override
+    protected ParsedValue fallback(@NonNull String lexeme) {
+        lexeme = MAX_ULINT.toString();
+        Subtype subtype = Subtype.ULINT;
+        return new ParsedValue(lexeme, subtype, MAX_ULINT);
+    }
+
+    @Override
+    protected Diagnostic createDiagnostic(int line, String lexeme) {
+        return new NaturalOutOfRange(line, lexeme);
+    }
+
     /**
      * Determines the smallest unsigned integer subtype that can hold the lexeme.
      *
@@ -48,17 +60,5 @@ public class Naturals extends NumericAnalyzer {
         if (value.compareTo(MAX_UDINT) <= 0) return Subtype.UDINT;
         if (value.compareTo(MAX_ULINT) <= 0) return Subtype.ULINT;
         return Subtype.UNKNOWN;
-    }
-
-    @Override
-    protected ParsedValue fallback(@NonNull String lexeme) {
-        lexeme = MAX_ULINT.toString();
-        Subtype subtype = Subtype.ULINT;
-        return new ParsedValue(lexeme, subtype, MAX_ULINT);
-    }
-
-    @Override
-    protected Diagnostic createDiagnostic(int line, String lexeme) {
-        return new NaturalOutOfRange(line, lexeme);
     }
 }

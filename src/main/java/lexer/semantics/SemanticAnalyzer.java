@@ -1,5 +1,6 @@
 package lexer.semantics;
 
+import lexer.Lexer;
 import utils.DiagnosticsHandler;
 import utils.SymbolTable;
 
@@ -7,8 +8,9 @@ import utils.SymbolTable;
  * Interface for semantic analysis of lexemes during lexical scanning.
  * <p>
  * Each implementation handles a specific category of tokens (identifiers,
- * numeric literals, etc.) and is responsible for validating the lexeme,
- * updating the symbol table, and reporting diagnostics.
+ * numeric literals, date/time literals, etc.) and is responsible for
+ * validating the lexeme, updating the symbol table, and reporting
+ * diagnostics through the handler.
  * </p>
  *
  * @author Matias Ortiz
@@ -17,27 +19,6 @@ import utils.SymbolTable;
  * @since 1.0
  */
 public interface SemanticAnalyzer {
-
-    /**
-     * Result of semantic analysis containing the result lexeme and token number.
-     */
-    final class Result {
-        private final String lexeme;
-        private final int tokenNumber;
-
-        public Result(String lexeme, int tokenNumber) {
-            this.lexeme = lexeme;
-            this.tokenNumber = tokenNumber;
-        }
-
-        public String lexeme() {
-            return lexeme;
-        }
-
-        public int tokenNumber() {
-            return tokenNumber;
-        }
-    }
 
     /**
      * Context provided to the analyzer during lexical analysis.
@@ -76,7 +57,7 @@ public interface SemanticAnalyzer {
      * Performs semantic analysis on the given lexical context.
      *
      * @param currentContext the context containing lexeme and environment
-     * @return result with processed lexeme and token number
+     * @return the token number on success, or {@link Lexer#YYerror} on semantic error
      */
-    Result analyze(LexicalContext currentContext);
+    int analyze(LexicalContext currentContext);
 }

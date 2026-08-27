@@ -22,6 +22,9 @@ public final class ReservedWords {
     static {
         table = new HashMap<>();
 
+        table.put("TRUE", Lexer.BOOLEAN_LITERAL);
+        table.put("FALSE", Lexer.BOOLEAN_LITERAL);
+
         table.put("FUNCTION_BLOCK", Lexer.FUNCTION_BLOCK);
         table.put("END_FUNCTION_BLOCK", Lexer.END_FUNCTION_BLOCK);
         table.put("FUZZIFY", Lexer.FUZZIFY);
@@ -93,8 +96,6 @@ public final class ReservedWords {
         table.put("DT", Lexer.DATE_AND_TIME);
         table.put("ARRAY", Lexer.ARRAY);
         table.put("OF", Lexer.OF);
-        table.put("TRUE", Lexer.TRUE);
-        table.put("FALSE", Lexer.FALSE);
         table.put("R_EDGE", Lexer.R_EDGE);
         table.put("F_EDGE", Lexer.F_EDGE);
         table.put("PRAGMA", Lexer.PRAGMA);
