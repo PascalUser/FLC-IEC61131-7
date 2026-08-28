@@ -6,7 +6,7 @@ import java.math.BigInteger;
 /**
  * Abstract analyzer for based numeric literals (binary, octal, hexadecimal).
  * <p>
- * Extends {@link NumericAnalyzer} to handle literals with explicit base prefixes.
+ * Extends {@link NumbersAnalyzer} to handle literals with explicit base prefixes.
  * Determines the appropriate subtype based on the number of digits and
  * provides error correction by clamping to the maximum representable lexeme.
  * </p>
@@ -16,7 +16,7 @@ import java.math.BigInteger;
  * @version 1.0
  * @since 1.0
  */
-public abstract class BasedAnalyzer extends NumericAnalyzer {
+public abstract class BaseNumbersAnalyzer extends NumbersAnalyzer {
     private static final BigInteger MAX_USINT = BigInteger.valueOf(255);
     private static final BigInteger MAX_UINT  = BigInteger.valueOf(65535);
     private static final BigInteger MAX_UDINT = new BigInteger("4294967295");
@@ -38,7 +38,6 @@ public abstract class BasedAnalyzer extends NumericAnalyzer {
         if (subtype.equals(Subtype.UNKNOWN)) {
             initialValue = null;
         }
-
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 

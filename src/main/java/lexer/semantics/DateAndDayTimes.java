@@ -28,13 +28,13 @@ import java.time.format.DateTimeParseException;
 public class DateAndDayTimes implements SemanticAnalyzer {
 
     @Override
-    public int analyze(LexicalContext ctx) {
-        String lexeme = ctx.lexeme();
+    public Result analyze(LexicalContext ctx) {
+        String lexeme = ctx.preprocessedLexeme;
 
         // Separate date component (10 chars) from time component after the 3rd hyphen
         if (lexeme.length() < 19 || lexeme.charAt(10) != '-') {
-            ctx.diagnosticsHandler().add(new DateAndTimeOutOfRange(ctx.line(), lexeme));
-            return Lexer.YYerror;
+            ctx.diagnosticsHandler.add(new DateAndTimeOutOfRange(ctx.line, lexeme));
+            return new Result(null, Lexer.YYerror);
         }
 
         String datePart = lexeme.substring(0, 10);
@@ -46,7 +46,7 @@ public class DateAndDayTimes implements SemanticAnalyzer {
             LocalTime time = DayTimes.parse(timePart);
             LocalDateTime dateTime = LocalDateTime.of(date, time);
 
-            ctx.symbolTable().putIfAbsent(lexeme,
+            ctx.symbolTable.putIfAbsent(lexeme,
                     new LexemeInfoBuilder()
                             .type(Type.SIMPLE)
                             .subtype(Subtype.DATE_AND_TIME)
@@ -54,11 +54,11 @@ public class DateAndDayTimes implements SemanticAnalyzer {
                             .initialValue(dateTime)
                             .build()
             );
-            return Parser.Lexer.TIME_LITERAL;
+            return new Result(lexeme, Parser.Lexer.TIME_LITERAL);
 
         } catch (DateTimeParseException e) {
-            ctx.diagnosticsHandler().add(new DateAndTimeOutOfRange(ctx.line(), lexeme));
-            return Lexer.YYerror;
+            ctx.diagnosticsHandler.add(new DateAndTimeOutOfRange(ctx.line, lexeme));
+            return new Result(null, Lexer.YYerror);
         }
     }
 }

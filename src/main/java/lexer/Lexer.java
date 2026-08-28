@@ -4,17 +4,13 @@
 
 package lexer;
 
-import java.lang.Error;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import parser.Parser;
 import lexer.semantics.*;
 import lexer.transformers.*;
 import lexer.semantics.SemanticAnalyzer.*;
 import utils.SymbolTable;
-import utils.diagnostics.*;
 import utils.DiagnosticsHandler;
-import utils.enums.Subtype;
 
 
 @SuppressWarnings("fallthrough")
@@ -390,8 +386,9 @@ public class Lexer implements Parser.Lexer {
                 this.symbolTable,
                 this.diagnosticsHandler
             );
-        this.yylval = preprocessedLexeme;
-        return analyzer.analyze(lexicalContext);
+        Result result = analyzer.analyze(lexicalContext);
+        this.yylval = result.lexeme;
+        return result.token;
     }
 
 
@@ -894,7 +891,8 @@ public class Lexer implements Parser.Lexer {
           case 45: break;
           case 17:
             { int token = processAndSaveYylval(
-                                new Nothing(null), new Default(Subtype.WSTRING)
+                                new WStringHexResolver(new StringEscapeResolver(null)),
+                                new WStrings()
                             );
                             if (token != Lexer.YYerror) return Lexer.STRING_LITERAL;
                             yybegin(YYINITIAL);
@@ -903,7 +901,8 @@ public class Lexer implements Parser.Lexer {
           case 46: break;
           case 18:
             { int token = processAndSaveYylval(
-                                new Nothing(null), new Default(Subtype.STRING)
+                                new StringHexResolver(new StringEscapeResolver(null)),
+                                new Strings()
                             );
                             if (token != Lexer.YYerror) return Lexer.STRING_LITERAL;
                             yybegin(YYINITIAL);
@@ -927,13 +926,9 @@ public class Lexer implements Parser.Lexer {
           case 21:
             { int token = processAndSaveYylval(
                                 new UnderscoreRemover(new UpperCaseConverter(
-                                    new OmitLeadingZeroMagnitudes(
-                                        new OmitTrailingZeroMagnitudes(
-                                            new OmitLeadingZerosInMagnitudes(
-                                                new OmitTrailingZerosInMagnitudes(null)
-                                            )
-                                        )
-                                    )
+                                    new OmitLeadingZeroMagnitudes(new OmitTrailingZeroMagnitudes(
+                                            new OmitLeadingZerosInMagnitudes(new OmitTrailingZerosInMagnitudes(null))
+                                    ))
                                 )),
                                 new Intervals()
                             );

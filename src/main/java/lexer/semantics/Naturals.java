@@ -20,7 +20,7 @@ import java.math.BigInteger;
  * @version 1.0
  * @since 1.0
  */
-public class Naturals extends NumericAnalyzer {
+public class Naturals extends NumbersAnalyzer {
     // Final member to avoid RAM out of space
     private static final int MAX_CONSTANT_LENGTH = 20;
 

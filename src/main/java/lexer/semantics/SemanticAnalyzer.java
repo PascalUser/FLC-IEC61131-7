@@ -21,35 +21,37 @@ import utils.SymbolTable;
 public interface SemanticAnalyzer {
 
     /**
+     * Result of semantic analysis containing the processed lexeme and token number.
+     */
+    final class Result {
+        public final String lexeme;
+        public final int token;
+
+        public Result(String lexeme, int token) {
+            this.lexeme = lexeme;
+            this.token = token;
+        }
+    }
+
+    /**
      * Context provided to the analyzer during lexical analysis.
      */
     final class LexicalContext {
-        private final String lexeme;
-        private final int line;
-        private final SymbolTable symbolTable;
-        private final DiagnosticsHandler diagnosticsHandler;
+        public final String preprocessedLexeme;
+        public final int line;
+        public final SymbolTable symbolTable;
+        public final DiagnosticsHandler diagnosticsHandler;
 
-        public LexicalContext(String lexeme, int line, SymbolTable symbolTable, DiagnosticsHandler diagnosticsHandler) {
-            this.lexeme = lexeme;
+        public LexicalContext(
+                String preprocessedLexeme,
+                int line,
+                SymbolTable symbolTable,
+                DiagnosticsHandler diagnosticsHandler
+        ) {
+            this.preprocessedLexeme = preprocessedLexeme;
             this.line = line;
             this.symbolTable = symbolTable;
             this.diagnosticsHandler = diagnosticsHandler;
-        }
-
-        public String lexeme() {
-            return lexeme;
-        }
-
-        public int line() {
-            return line;
-        }
-
-        public SymbolTable symbolTable() {
-            return symbolTable;
-        }
-
-        public DiagnosticsHandler diagnosticsHandler() {
-            return diagnosticsHandler;
         }
     }
 
@@ -59,5 +61,5 @@ public interface SemanticAnalyzer {
      * @param currentContext the context containing lexeme and environment
      * @return the token number on success, or {@link Lexer#YYerror} on semantic error
      */
-    int analyze(LexicalContext currentContext);
+    Result analyze(LexicalContext currentContext);
 }

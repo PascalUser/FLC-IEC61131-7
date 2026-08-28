@@ -22,23 +22,23 @@ import utils.enums.Use;
  */
 public class Identifiers implements SemanticAnalyzer {
     @Override
-    public int analyze(LexicalContext currentContext) {
-        String currentLexeme = currentContext.lexeme();
-        Integer tokenNumber = ReservedWords.isReserved(currentLexeme);
+    public Result analyze(LexicalContext ctx) {
+        String lexeme = ctx.preprocessedLexeme;
+        Integer tokenNumber = ReservedWords.isReserved(lexeme);
         if (tokenNumber != null) {
             if (!tokenNumber.equals(Lexer.BOOLEAN_LITERAL)){
-                return tokenNumber;
+                return new Result(null, tokenNumber);
             }
-            currentContext.symbolTable().putIfAbsent(currentLexeme, new LexemeInfoBuilder()
+            ctx.symbolTable.putIfAbsent(lexeme, new LexemeInfoBuilder()
                     .type(Type.SIMPLE)
                     .subtype(Subtype.BOOL)
                     .use(Use.LITERAL)
-                    .initialValue(Boolean.valueOf(currentLexeme))
+                    .initialValue(Boolean.valueOf(lexeme))
                     .build()
             );
-            return Lexer.BOOLEAN_LITERAL;
+            return new Result(lexeme, Lexer.BOOLEAN_LITERAL);
         }
-        currentContext.symbolTable().putIfAbsent(currentLexeme, new LexemeInfoBuilder().build());
-        return Lexer.IDENTIFIER;
+        ctx.symbolTable.putIfAbsent(lexeme, new LexemeInfoBuilder().build());
+        return new Result(lexeme, Lexer.IDENTIFIER);
     }
 }

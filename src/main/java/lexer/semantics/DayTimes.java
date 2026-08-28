@@ -27,19 +27,18 @@ import java.time.format.ResolverStyle;
  * @version 1.0
  * @since 1.0
  */
-@SuppressWarnings("SpellCheckingInspection")
 public class DayTimes implements SemanticAnalyzer {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_TIME
             .withResolverStyle(ResolverStyle.STRICT);
 
     @Override
-    public int analyze(LexicalContext currentContext) {
-        String currentLexeme = currentContext.lexeme();
+    public Result analyze(LexicalContext ctx) {
+        String lexeme = ctx.preprocessedLexeme;
 
         try {
-            LocalTime time = parse(currentLexeme);
+            LocalTime time = parse(lexeme);
 
-            currentContext.symbolTable().putIfAbsent(currentLexeme,
+            ctx.symbolTable.putIfAbsent(lexeme,
                     new LexemeInfoBuilder()
                             .type(Type.SIMPLE)
                             .subtype(Subtype.TIME_OF_DAY)
@@ -47,13 +46,13 @@ public class DayTimes implements SemanticAnalyzer {
                             .initialValue(time)
                             .build()
             );
-            return Parser.Lexer.TIME_LITERAL;
+            return new Result(lexeme, Parser.Lexer.TIME_LITERAL);
 
         } catch (DateTimeParseException e) {
-            currentContext.diagnosticsHandler().add(
-                new TimeOfDayOutOfRange(currentContext.line(), currentLexeme)
+            ctx.diagnosticsHandler.add(
+                new TimeOfDayOutOfRange(ctx.line, lexeme)
             );
-            return Parser.Lexer.YYerror;
+            return new Result(null, Parser.Lexer.YYerror);
         }
     }
 

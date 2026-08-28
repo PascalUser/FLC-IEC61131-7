@@ -20,61 +20,49 @@ import utils.enums.Use;
  * @version 1.0
  * @since 1.0
  */
-public abstract class NumericAnalyzer implements SemanticAnalyzer {
+public abstract class NumbersAnalyzer implements SemanticAnalyzer {
 
     /**
      * Parsed numeric value with its determined subtype.
      */
     protected static final class ParsedValue {
-        private final String lexeme;
-        private final Subtype subtype;
-        private final Object value;
+        public final String lexeme;
+        public final Subtype subtype;
+        public final Object value;
 
         ParsedValue(String lexeme, Subtype subtype, Object value) {
             this.lexeme = lexeme;
             this.subtype = subtype;
             this.value = value;
         }
-
-        public String lexeme() {
-            return lexeme;
-        }
-
-        public Subtype subtype() {
-            return subtype;
-        }
-
-        public Object value() {
-            return value;
-        }
     }
 
     @Override
-    public int analyze(LexicalContext currentContext) {
-        String currentLexeme = currentContext.lexeme();
-
+    public Result analyze(LexicalContext ctx) {
+        String lexeme = ctx.preprocessedLexeme;
+        
         // Current lexeme is parsed to determine it's subtype and value
-        ParsedValue parsed = this.parse(currentLexeme);
+        ParsedValue parsed = this.parse(lexeme);
 
         // If parsed subtype is unknown then the lexeme is invalid and needs correction.
-        if (parsed.subtype() == Subtype.UNKNOWN) {
-            currentContext.diagnosticsHandler().add(
-                this.createDiagnostic(currentContext.line(), currentLexeme)
+        if (parsed.subtype == Subtype.UNKNOWN) {
+            ctx.diagnosticsHandler.add(
+                this.createDiagnostic(ctx.line, lexeme)
             );
-            parsed = this.fallback(currentLexeme);
+            parsed = this.fallback(lexeme);
         }
 
         // The lexeme's metadata is built and published to the symbol table
-        currentContext.symbolTable().putIfAbsent(
-                parsed.lexeme(),
+        ctx.symbolTable.putIfAbsent(
+                parsed.lexeme,
                 new LexemeInfoBuilder()
                         .type(Type.SIMPLE)
-                        .subtype(parsed.subtype())
+                        .subtype(parsed.subtype)
                         .use(Use.LITERAL)
-                        .initialValue(parsed.value())
+                        .initialValue(parsed.value)
                         .build()
         );
-        return Parser.Lexer.NUMERIC_LITERAL;
+        return new Result(parsed.lexeme, Parser.Lexer.NUMERIC_LITERAL);
     }
 
     /**

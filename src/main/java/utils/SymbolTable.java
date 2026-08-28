@@ -34,4 +34,8 @@ public class SymbolTable {
     public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) {
         return table.putIfAbsent(lexeme, info);
     }
+
+    public int size() {
+        return table.size();
+    }
 }

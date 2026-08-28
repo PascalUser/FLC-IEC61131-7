@@ -45,25 +45,25 @@ public class Intervals implements SemanticAnalyzer {
     private static final double NANOS_PER_MILLIS = 1_000_000D;
 
     @Override
-    public int analyze(LexicalContext currentContext) {
-        String currentLexeme = currentContext.lexeme();
+    public Result analyze(LexicalContext ctx) {
+        String lexeme = ctx.preprocessedLexeme;
         StringBuilder numBuf = new StringBuilder();
 
         double totalNS = 0D;
-        boolean isNegative = !currentLexeme.isEmpty() && currentLexeme.charAt(0) == '-';
+        boolean isNegative = !lexeme.isEmpty() && lexeme.charAt(0) == '-';
 
         int startIdx = isNegative ? 1 : 0;
         boolean first = true;
 
-        for (int i = startIdx; i < currentLexeme.length(); i++) {
-            char currentChar = currentLexeme.charAt(i);
+        for (int i = startIdx; i < lexeme.length(); i++) {
+            char currentChar = lexeme.charAt(i);
 
             if (this.isUnit(currentChar)) {
                 StringBuilder unitBuf = new StringBuilder();
                 unitBuf.append(currentChar);
 
-                if (this.nextIsAlsoUnit(currentLexeme, i)) {
-                    unitBuf.append(currentLexeme.charAt(++i));
+                if (this.nextIsAlsoUnit(lexeme, i)) {
+                    unitBuf.append(lexeme.charAt(++i));
                 }
 
                 double number = Double.parseDouble(numBuf.toString());
@@ -71,20 +71,20 @@ public class Intervals implements SemanticAnalyzer {
 
                 // Verifies first restriction and notifies error
                 if (this.checkIfMagnitudeOverflows(number, unit, first)) {
-                    currentContext.diagnosticsHandler().add(
-                            new IntervalConstructionError(currentContext.line(), currentLexeme)
+                    ctx.diagnosticsHandler.add(
+                            new IntervalConstructionError(ctx.line, lexeme)
                     );
-                    return Lexer.YYerror;
+                    return new Result(null, Lexer.YYerror);
                 }
                 first = false;
 
                 // Verifies second restriction and notifies error
                 double increment = this.calculateIncrementIfInRange(totalNS, number, unit);
                 if (increment == -1D) {
-                    currentContext.diagnosticsHandler().add(
-                            new IntervalOutOfRange(currentContext.line(), currentLexeme)
+                    ctx.diagnosticsHandler.add(
+                            new IntervalOutOfRange(ctx.line, lexeme)
                     );
-                    return Lexer.YYerror;
+                    return new Result(null, Lexer.YYerror);
                 }
                 totalNS += increment;
                 numBuf.setLength(0);
@@ -97,8 +97,8 @@ public class Intervals implements SemanticAnalyzer {
         long finalNanos = (long) (isNegative ? -totalNS : totalNS);
         Duration duration = Duration.ofNanos(finalNanos);
 
-        currentContext.symbolTable().putIfAbsent(
-                currentLexeme,
+        ctx.symbolTable.putIfAbsent(
+                lexeme,
                 new LexemeInfoBuilder()
                         .type(Type.SIMPLE)
                         .subtype(Subtype.TIME)
@@ -106,15 +106,15 @@ public class Intervals implements SemanticAnalyzer {
                         .initialValue(duration)
                         .build()
         );
-        return Parser.Lexer.TIME_LITERAL;
+        return new Result(lexeme, Parser.Lexer.TIME_LITERAL);
     }
 
     private boolean isUnit(char c) {
         return c != '.' && !Character.isDigit(c);
     }
 
-    private boolean nextIsAlsoUnit(String currentLexeme, int currPos) {
-        return (currPos + 1 < currentLexeme.length() && !Character.isDigit(currentLexeme.charAt(currPos + 1)));
+    private boolean nextIsAlsoUnit(String lexeme, int currPos) {
+        return (currPos + 1 < lexeme.length() && !Character.isDigit(lexeme.charAt(currPos + 1)));
     }
 
     private boolean checkIfMagnitudeOverflows(double number, String unit, boolean first) {

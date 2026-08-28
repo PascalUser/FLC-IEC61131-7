@@ -14,7 +14,7 @@ import utils.diagnostics.BinaryOutOfRange;
  * @version 1.0
  * @since 1.0
  */
-public class Binary extends BasedAnalyzer {
+public class Binary extends BaseNumbersAnalyzer {
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new BinaryOutOfRange(line, lexeme);

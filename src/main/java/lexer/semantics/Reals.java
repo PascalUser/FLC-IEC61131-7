@@ -18,7 +18,7 @@ import utils.enums.Subtype;
  * @version 1.0
  * @since 1.0
  */
-public class Reals extends NumericAnalyzer {
+public class Reals extends NumbersAnalyzer {
 
     @Override
     protected ParsedValue parse(String lexeme) {

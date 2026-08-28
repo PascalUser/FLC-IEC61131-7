@@ -15,6 +15,7 @@ import utils.SymbolTable;
 import java.io.StringReader;
 import java.io.Reader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -49,7 +50,6 @@ class LexerTokenizationTest {
         }
         return builder.build();
     }
-
     @ParameterizedTest(name = "Testing lower case: {0} -> {1}")
     @MethodSource("provideReservedWords")
     void Yylex_ForLowerCaseReservedWord_IsReservedWord(String word, Integer token) throws IOException {
@@ -589,5 +589,63 @@ class LexerTokenizationTest {
         int token = lexer.yylex();
 
         assertNotEquals(Lexer.TIME_LITERAL, token);
+    }
+
+    private static String repeatChar(char c, int count) {
+        char[] chars = new char[count];
+        Arrays.fill(chars, c);
+        return new String(chars);
+    }
+
+    private static Stream<Arguments> provideValidStringLiterals() {
+        return Stream.of(
+                Arguments.of("'It$'s $41$62$63'"),
+                Arguments.of("\"$0041$0062$0063$00E9\""),
+                Arguments.of("\"He said $\"hello$\"\""),
+                Arguments.of("'It$'s valid'"),
+                Arguments.of("''"),
+                Arguments.of("\"\""),
+                Arguments.of("'" + repeatChar('A', 255) + "'"),
+                Arguments.of("\"" + repeatChar('B', 255) + "\"")
+        );
+    }
+    @ParameterizedTest(name = "{index}: Lex(\"{0}\") -> STRING_LITERAL")
+    @MethodSource("provideValidStringLiterals")
+    void Yylex_ValidStringLiterals_ReturnsStringLiteralToken(String input) throws IOException {
+        Reader reader = new StringReader(input);
+        DiagnosticsHandler diagnosticsHandler = new DiagnosticsHandler();
+        Lexer lexer = new Lexer(reader, new SymbolTable(), diagnosticsHandler);
+        assertNextToken(lexer, Lexer.STRING_LITERAL, input);
+    }
+
+    private static Stream<Arguments> provideOverLengthStringLiterals() {
+        return Stream.of(
+                Arguments.of("'"  + repeatChar('A', 256) + "'"),
+                Arguments.of("\"" + repeatChar('B', 256) + "\""),
+                Arguments.of("'"  + repeatChar('X', 300) + "'"),
+                Arguments.of("\"" + repeatChar('Y', 500) + "\"")
+        );
+    }
+    @ParameterizedTest(name = "{index}: Lex over-length string -> YYerror")
+    @MethodSource("provideOverLengthStringLiterals")
+    void Yylex_StringLiteralsExceedingMaxLength_ReturnsErrorTokenAndLogsDiagnostic(String input) throws IOException {
+        Reader reader = new StringReader(input);
+        DiagnosticsHandler diagnosticsHandler = new DiagnosticsHandler();
+        Lexer lexer = new Lexer(reader, new SymbolTable(), diagnosticsHandler);
+        assertNextToken(lexer, Lexer.STRING_LITERAL, input);
+    }
+
+    @ParameterizedTest(name = "{index}: Lex unterminated string \"{0}\" -> YYerror")
+    @ValueSource(strings = {
+            "'Unterminated string",
+            "\"Unterminated wstring",
+            "'String with escaped quote $' but no ending quote",
+            "\"WString with escaped quote $\" but no ending quote"
+    })
+    void Yylex_UnterminatedStringLiterals_ReturnsErrorTokenAndLogsDiagnostic(String input) throws IOException {
+        Reader reader = new StringReader(input);
+        DiagnosticsHandler diagnosticsHandler = new DiagnosticsHandler();
+        Lexer lexer = new Lexer(reader, new SymbolTable(), diagnosticsHandler);
+        assertNotEquals(Lexer.STRING_LITERAL, lexer.yylex());
     }
 }

@@ -16,6 +16,7 @@ import utils.diagnostics.NaturalOutOfRange;
 import utils.diagnostics.OctalOutOfRange;
 import utils.diagnostics.RealOutOfRange;
 import utils.diagnostics.TimeOfDayOutOfRange;
+import utils.diagnostics.StringLengthWarning;
 import utils.diagnostics.Warning;
 import utils.DiagnosticsHandler;
 import utils.SymbolTable;
@@ -351,5 +352,77 @@ public class LexerDiagnosticHandlerTest {
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(IntervalOutOfRange.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral.toUpperCase()));
+    }
+
+    @Test
+    void Yylex_ForStringLiteralExceedingMaxLength_RecordsWarning() {
+        String longBody = repeatChar('A', 260);
+        String invalidStringLiteral = "'" + longBody + "'";
+
+        SymbolTable symbolTable = new SymbolTable();
+        Reader reader = new StringReader(invalidStringLiteral);
+        Lexer lexer = new Lexer(reader, symbolTable, mockDiagnostics);
+
+        assertDoesNotThrow(() -> {
+            lexer.yylex();
+        });
+
+        verify(mockDiagnostics).add(diagnosticCaptor.capture());
+
+        Diagnostic recorded = diagnosticCaptor.getValue();
+        assertInstanceOf(StringLengthWarning.class, recorded);
+        assertTrue(recorded.getMessage().contains("exceeds maximum length of 255 characters"));
+    }
+
+    @Test
+    void Yylex_ForWStringLiteralExceedingMaxLength_RecordsWarning() {
+        String longBody = repeatChar('B', 260);
+        String invalidStringLiteral = "\"" + longBody + "\"";
+
+        SymbolTable symbolTable = new SymbolTable();
+        Reader reader = new StringReader(invalidStringLiteral);
+        Lexer lexer = new Lexer(reader, symbolTable, mockDiagnostics);
+
+        assertDoesNotThrow(() -> {
+            lexer.yylex();
+        });
+
+        verify(mockDiagnostics).add(diagnosticCaptor.capture());
+
+        Diagnostic recorded = diagnosticCaptor.getValue();
+        assertInstanceOf(StringLengthWarning.class, recorded);
+        assertTrue(recorded.getMessage().contains("exceeds maximum length of 255 characters"));
+    }
+
+    @Test
+    void Yylex_ForStringLiteralAtMaxLengthBoundary_NoWarning() {
+        String longBody = repeatChar('A', 255);
+        String validStringLiteral = "'" + longBody + "'";
+
+        SymbolTable symbolTable = new SymbolTable();
+        Reader reader = new StringReader(validStringLiteral);
+        Lexer lexer = new Lexer(reader, symbolTable, mockDiagnostics);
+
+        assertDoesNotThrow(() -> {
+            lexer.yylex();
+        });
+
+        verify(mockDiagnostics, never()).add(any());
+    }
+
+    @Test
+    void Yylex_ForWStringLiteralAtMaxLengthBoundary_NoWarning() {
+        String longBody = repeatChar('B', 255);
+        String validStringLiteral = "\"" + longBody + "\"";
+
+        SymbolTable symbolTable = new SymbolTable();
+        Reader reader = new StringReader(validStringLiteral);
+        Lexer lexer = new Lexer(reader, symbolTable, mockDiagnostics);
+
+        assertDoesNotThrow(() -> {
+            lexer.yylex();
+        });
+
+        verify(mockDiagnostics, never()).add(any());
     }
 }

@@ -14,7 +14,7 @@ import utils.diagnostics.HexadecimalOutOfRange;
  * @version 1.0
  * @since 1.0
  */
-public class Hexadecimal extends BasedAnalyzer {
+public class Hexadecimal extends BaseNumbersAnalyzer {
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new HexadecimalOutOfRange(line, lexeme);

@@ -14,7 +14,7 @@ import utils.diagnostics.OctalOutOfRange;
  * @version 1.0
  * @since 1.0
  */
-public class Octal extends BasedAnalyzer {
+public class Octal extends BaseNumbersAnalyzer {
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new OctalOutOfRange(line, lexeme);

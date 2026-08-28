@@ -1,16 +1,12 @@
 package lexer;
 
-import java.lang.Error;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import parser.Parser;
 import lexer.semantics.*;
 import lexer.transformers.*;
 import lexer.semantics.SemanticAnalyzer.*;
 import utils.SymbolTable;
-import utils.diagnostics.*;
 import utils.DiagnosticsHandler;
-import utils.enums.Subtype;
 
 %%
 
@@ -51,8 +47,9 @@ import utils.enums.Subtype;
                 this.symbolTable,
                 this.diagnosticsHandler
             );
-        this.yylval = preprocessedLexeme;
-        return analyzer.analyze(lexicalContext);
+        Result result = analyzer.analyze(lexicalContext);
+        this.yylval = result.lexeme;
+        return result.token;
     }
 %}
 
@@ -130,13 +127,9 @@ DOUBLE_BYTE_STRING      = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 {INTERVAL}              {
                             int token = processAndSaveYylval(
                                 new UnderscoreRemover(new UpperCaseConverter(
-                                    new OmitLeadingZeroMagnitudes(
-                                        new OmitTrailingZeroMagnitudes(
-                                            new OmitLeadingZerosInMagnitudes(
-                                                new OmitTrailingZerosInMagnitudes(null)
-                                            )
-                                        )
-                                    )
+                                    new OmitLeadingZeroMagnitudes(new OmitTrailingZeroMagnitudes(
+                                            new OmitLeadingZerosInMagnitudes(new OmitTrailingZerosInMagnitudes(null))
+                                    ))
                                 )),
                                 new Intervals()
                             );
@@ -189,14 +182,16 @@ DOUBLE_BYTE_STRING      = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 
 {SINGLE_BYTE_STRING}    {
                             int token = processAndSaveYylval(
-                                new Nothing(null), new Default(Subtype.STRING)
+                                new StringHexResolver(new StringEscapeResolver(null)),
+                                new Strings()
                             );
                             if (token != Lexer.YYerror) return Lexer.STRING_LITERAL;
                             yybegin(YYINITIAL);
                         }
 {DOUBLE_BYTE_STRING}    {
                             int token = processAndSaveYylval(
-                                new Nothing(null), new Default(Subtype.WSTRING)
+                                new WStringHexResolver(new StringEscapeResolver(null)),
+                                new WStrings()
                             );
                             if (token != Lexer.YYerror) return Lexer.STRING_LITERAL;
                             yybegin(YYINITIAL);

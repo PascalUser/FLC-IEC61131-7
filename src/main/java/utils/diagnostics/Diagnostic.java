@@ -13,7 +13,7 @@ package utils.diagnostics;
  * @since 1.0
  */
 public abstract class Diagnostic {
-    private final int line;
+    protected final int line;
 
     Diagnostic(int diagnosticLine) {
         this.line = diagnosticLine;
