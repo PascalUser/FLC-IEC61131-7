@@ -20,9 +20,24 @@ public class StripLeadingZeros extends Transformer {
     @Override
     public String transform(String lexeme) {
         int i = 0;
-        while (i < lexeme.length() - 1 && lexeme.charAt(i) == '0')
+        int lexemeLength = lexeme.length();
+
+        String sign = "";
+        if (hasToSkipSign(lexeme.charAt(0))) {
+            sign = String.valueOf(lexeme.charAt(0));
+            i++;
+        }
+        while (uselessZero(i, lexemeLength, lexeme.charAt(i)))
             i++;
 
-        return super.giveToNext(lexeme.substring(i));
+        return super.giveToNext(sign + lexeme.substring(i));
+    }
+
+    private boolean hasToSkipSign(char firstChar) {
+        return (firstChar == '+' || firstChar == '-');
+    }
+
+    private boolean uselessZero(int position, int strLength, char character) {
+        return (position < strLength - 1 && character == '0');
     }
 }

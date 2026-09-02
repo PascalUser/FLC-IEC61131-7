@@ -22,4 +22,8 @@ public abstract class Error extends Diagnostic {
          return "ERROR:" + super.getMessage() + ", ";
     }
 
+    @Override
+    public boolean fatalForCompilation() {
+        return true;
+    }
 }

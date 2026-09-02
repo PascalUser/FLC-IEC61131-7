@@ -548,7 +548,7 @@ subrange_specification:
 subrange:
     NUMERIC_LITERAL RANGE_OP NUMERIC_LITERAL
     {
-        // todo: hacer chequeo semantico y pasaje a valor (.value) en analisis lexico
+        // todo: hacer chequeo semantico de rangos
         $$ = new LexemeInfoBuilder()
             .type(Type.SUBRANGE)
             .inferiorLimit($1)

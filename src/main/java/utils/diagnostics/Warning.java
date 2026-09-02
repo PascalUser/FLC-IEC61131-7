@@ -21,4 +21,9 @@ public abstract class Warning extends Diagnostic {
     public String getMessage() {
         return "WARNING: " + super.getMessage() + ", ";
     }
+
+    @Override
+    public boolean fatalForCompilation() {
+        return false;
+    }
 }

@@ -1,4 +1,6 @@
-package lexer;
+package lexer.utils;
+
+import lexer.Lexer;
 
 import java.util.Map;
 import java.util.HashMap;

@@ -20,19 +20,21 @@ import java.util.List;
  * @since 1.0
  */
 public class DiagnosticsHandler {
+    private boolean hasErrors;
     private final List<Diagnostic> diagnostics;
 
-    public DiagnosticsHandler(){
+    public DiagnosticsHandler() {
+        hasErrors = false;
         diagnostics = new ArrayList<>();
     }
 
     public void add(Diagnostic diagnostic){
+        hasErrors = hasErrors || diagnostic.fatalForCompilation();
         diagnostics.add(diagnostic);
     }
 
-    // TODO: no todos los diagnósticos son errores!!
     public boolean hasErrors(){
-        return !diagnostics.isEmpty();
+        return hasErrors;
     }
 
     public List<Diagnostic> getDiagnostics() {

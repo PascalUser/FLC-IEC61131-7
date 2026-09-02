@@ -379,9 +379,6 @@ public class LexerSymbolTableTest {
         assertEquals(255, ((String) info.initialValue).length());
     }
 
-    // DISABLED TESTS (FEATURES PENDING IMPLEMENTATION)
-    // =========================================================================
-
     @Test
     void Yylex_Identifiers_PopulatesSymbolTableWithUnknownUseAndUpperCaseLetters() throws Exception {
         SymbolTable result = executeLexer("Sensor_Temp");

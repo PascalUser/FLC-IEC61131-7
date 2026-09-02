@@ -42,9 +42,9 @@ public class ParserSymbolTableIT {
         Parser parser = new Parser(lexer, st);
         assertTrue(parser.parse());
 
-        LexemeInfo power1Info = st.get("power1");
-        assertNotNull(power1Info, "Variable 'power1' should exist in the symbol table.");
-        assertAll("Properties of 'power1' LexemeInfo",
+        LexemeInfo power1Info = st.get("POWER1");
+        assertNotNull(power1Info, "Variable 'POWER1' should exist in the symbol table.");
+        assertAll("Properties of 'POWER1' LexemeInfo",
                 () -> assertEquals(Type.SIMPLE, power1Info.type),
                 () -> assertEquals(Subtype.REAL, power1Info.subtype),
                 () -> assertEquals(Use.VARIABLE, power1Info.use),
@@ -54,9 +54,9 @@ public class ParserSymbolTableIT {
                 // () -> assertEquals("0.0", power1Info.initialValue)
         );
 
-        LexemeInfo power2Info = st.get("power2");
-        assertNotNull(power2Info, "Variable 'power2' should exist in the symbol table.");
-        assertAll("Properties of 'power2' LexemeInfo",
+        LexemeInfo power2Info = st.get("POWER2");
+        assertNotNull(power2Info, "Variable 'POWER2' should exist in the symbol table.");
+        assertAll("Properties of 'POWER2' LexemeInfo",
                 () -> assertEquals(Type.SIMPLE, power2Info.type),
                 () -> assertEquals(Subtype.REAL, power2Info.subtype),
                 () -> assertEquals(Use.VARIABLE, power2Info.use),

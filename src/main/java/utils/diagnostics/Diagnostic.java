@@ -22,4 +22,6 @@ public abstract class Diagnostic {
     public String getMessage() {
         return "Line " + line;
     }
+
+    abstract public boolean fatalForCompilation();
 }
