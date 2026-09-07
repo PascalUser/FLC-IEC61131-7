@@ -3,6 +3,7 @@ package parser.publisher;
 import utils.builders.LexemeInfoSchema;
 import utils.enums.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,9 +104,11 @@ public class Compound implements Publisher {
     }
 
     @Override
-    public void publish() {
+    public List<String> publish() {
+        ArrayList<String> publishedKeys = new ArrayList<>();
         for (Publisher publisher : publishers) {
-            publisher.publish();
+            publishedKeys.addAll(publisher.publish());
         }
+        return publishedKeys;
     }
 }

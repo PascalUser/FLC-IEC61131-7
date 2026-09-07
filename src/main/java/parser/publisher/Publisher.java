@@ -2,6 +2,8 @@ package parser.publisher;
 
 import utils.builders.LexemeInfoSchema;
 
+import java.util.List;
+
 /**
  * Interface for objects that can publish symbol declarations to the symbol table.
  * <p>
@@ -19,5 +21,5 @@ public interface Publisher extends LexemeInfoSchema {
     /**
      * Publishes the configured symbol(s) to the symbol table.
      */
-    void publish();
+    List<String> publish();
 }

@@ -11,7 +11,6 @@ import org.jspecify.annotations.NonNull;
 
 import lexer.transformers.Transformer;
 import lexer.semantics.SemanticAnalyzer;
-import lexer.semantics.SemanticAnalyzer.*;
 
 @SuppressWarnings("fallthrough")
 public class Lexer implements Parser.Lexer {

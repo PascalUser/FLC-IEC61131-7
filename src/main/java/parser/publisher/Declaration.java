@@ -94,12 +94,15 @@ public class Declaration implements Publisher {
     // TODO: Ver cómo se chequean las redeclaraciones
 
     @Override
-    public void publish() {
+    public List<String> publish() {
         for (String variable : variables) {
             symbolTable.put(
                 variable,
                 builder.build()
             );
         }
+        // Because variables are already published, then we don't return a copy
+        // (this Declaration instance is no longer needed)
+        return variables;
     }
 }

@@ -1,6 +1,6 @@
 package lexer.utils;
 
-public class ExponentFinder {
+public final class ExponentFinder {
 
     public static int find(String lexeme) {
         int upper = lexeme.indexOf('E');

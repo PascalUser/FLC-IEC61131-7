@@ -1,11 +1,12 @@
 (*  Example 1 extracted from standard specification 311611-7  *)
 
-TYPE color_type :
-STRUCT
-    brown: REAL;
-    light: REAL;
-    dark: REAL;
-END_STRUCT;
+TYPE
+    color_type :
+        STRUCT
+            brown: REAL; color_type::brown -> TYPE:simple | USE:variable | SUBTYPE: REAL
+            light: REAL;
+            dark:  REAL;
+        END_STRUCT;
 END_TYPE
 
 FUNCTION_BLOCK oven_control

@@ -17,7 +17,7 @@ public enum Source {
     DEFUZZIFY,
     FUZZIFY,
     IN,
-    /** VAR block (internal). */
+    INTERNAL,
     NONE,
     OUT,
     UNKNOWN,

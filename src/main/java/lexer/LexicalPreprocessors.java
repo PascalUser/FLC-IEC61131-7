@@ -22,7 +22,8 @@ public final class LexicalPreprocessors {
     // Numeric Literals
     public static final Transformer NATURALS    = new UnderscoreRemover(new StripLeadingZeros(null));
     public static final Transformer INTEGERS    = new UnderscoreRemover(new StripLeadingZeros(null));
-    public static final Transformer REALS       = new UnderscoreRemover(new StripRealZeros(null));
+    // TODO: trailing zeros, leading zeros
+    public static final Transformer REALS       = new UnderscoreRemover(new StripLeadingZeros(null));
     public static final Transformer BINARY      = new UnderscoreRemover(new StripBaseNumberLeadingZeros(null));
     public static final Transformer OCTAL       = new UnderscoreRemover(new StripBaseNumberLeadingZeros(null));
     public static final Transformer HEXADECIMAL = new UnderscoreRemover(new StripBaseNumberLeadingZeros(null));
