@@ -1,12 +1,10 @@
 package unit.parser;
 
-import lexer.Lexer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import parser.Parser;
-import utils.DiagnosticsHandler;
-import utils.SymbolTable;
+import utils.ParserTestSupport;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 1.0
  * @since 1.0
  */
-class ParserTest {
+class ParserTest extends ParserTestSupport {
 
     private static Stream<File> exampleFileProvider() {
         Path resourcesPath = Paths.get("src/test/resources/examples");
@@ -49,12 +47,7 @@ class ParserTest {
     @MethodSource("exampleFileProvider")
     void Parse_ForSyntacticallyValidPrograms_IsTrue(File exampleFile) {
         try (FileReader reader = new FileReader(exampleFile)) {
-            SymbolTable st = new SymbolTable();
-            DiagnosticsHandler dh = new DiagnosticsHandler();
-            Lexer lexer = new Lexer(reader, st, dh);
-            Parser parser = new Parser(lexer, st);
-            assertTrue(parser.parse());
-            assertFalse(dh.hasErrors());
+            parse(reader);
         } catch (Exception e) {
             fail("Test failed with file: " + exampleFile.getName() + " due to: " + e.getMessage());
         }

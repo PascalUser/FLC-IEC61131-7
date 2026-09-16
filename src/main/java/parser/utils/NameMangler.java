@@ -1,13 +1,13 @@
 package parser.utils;
 
 public final class NameMangler {
-    private static final StringBuilder PREFIX = new StringBuilder();
+    private final StringBuilder PREFIX = new StringBuilder();
 
-    public static void addScope(String scope) {
+    public void addScope(String scope) {
         PREFIX.append(scope).append('#');
     }
 
-    public static String popScope() {
+    public String popScope() {
         int length = PREFIX.length();
         if (length == 0) return "";
 
@@ -19,7 +19,7 @@ public final class NameMangler {
         return removed;
     }
 
-    public static String getNameMangled(String name) {
+    public String getNameMangled(String name) {
         return PREFIX + name;
     }
 }

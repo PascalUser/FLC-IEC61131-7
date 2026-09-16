@@ -1,7 +1,7 @@
 package lexer.semantics;
 
 import lexer.Lexer;
-import lexer.ReservedWords;
+import lexer.utils.ReservedWords;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Subtype;

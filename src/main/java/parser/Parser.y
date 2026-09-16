@@ -6,13 +6,18 @@
 %code imports {
     import java.util.List;
     import java.util.ArrayList;
+    import java.util.Collections;
+
     import utils.enums.*;
     import utils.SymbolTable;
     import utils.builders.LexemeInfoBuilder;
-    import parser.publisher.*;
+
+    import parser.publishers.*;
+    import parser.utils.NameMangler;
 }
 
 %parse-param { SymbolTable symbolTable }
+%parse-param { NameMangler nameMangler }
 
 %token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
@@ -42,15 +47,16 @@
 %type <List<Publisher>>
     var_init_decl_list
     type_declaration_list
+    structure_field_declaration_list
 
 %type <Publisher>
     var_init_decl
     type_declaration
+    structure_field_declaration
 
 %type <List<String>>
     identifier_list
     enumerated_list
-    enumerated_specification
 
 %type <Subtype>
     signed_integer_type_name
@@ -63,26 +69,47 @@
     elementary_type_name
 
 %type <LexemeInfoBuilder>
-    unified_specification
+    // spec_init: specification (right side) that could be initialized
+    var_spec_init
+    type_spec_init
     custom_spec_init
     simple_spec_init
     enumerated_spec_init
     subrange_spec_init
-    // array_spec_init
-    // string_spec_init
-    structure_declaration
-    initialized_constant
-    initialized_identifier
-    subrange
+    array_spec_init
+    string_spec_init
+    structure_field_spec_init
+    // initialized: initialized specification
+    initialized_custom
+    initialized_custom_with_constant
+    initialized_custom_with_identifier
+    initialized_custom_with_array
+    initialized_custom_with_structure
+    initialized_simple
+    initialized_enumerated
+    initialized_subrange
+    initialized_array
+    initialized_string
+    initialized_structure_field
+    initialized_structure
+    // specification: not initialized specification
+    custom_specification
+    simple_specification
+    enumerated_specification
     subrange_specification
-    specification_list
-    type_specification
+    array_specification
+    string_specification
+    structure_specification
+    // other
+    range
 
 %type <String>
-    opt_scope_and_value
     constant
-    number
-    time
+    string_constant
+    boolean_constant
+    time_constant
+    numeric_constant
+    identifier_with_opt_mangling
     type_name
 
 %%
@@ -98,15 +125,15 @@ program:
 
 function_block_declaration:
     FUNCTION_BLOCK IDENTIFIER
-    fb_io_var_declarations_list
-    other_var_declarations_list
-    function_block_body
+    opt_fb_io_var_declarations_list
+    opt_other_var_declarations_list
+    opt_function_block_body
     END_FUNCTION_BLOCK
 ;
 
-fb_io_var_declarations_list:
+opt_fb_io_var_declarations_list:
     /* empty */
-    | fb_io_var_declarations_list fb_io_var_declarations
+    | opt_fb_io_var_declarations_list fb_io_var_declarations
 ;
 
 fb_io_var_declarations:
@@ -114,25 +141,25 @@ fb_io_var_declarations:
     | output_declarations
 ;
 
-other_var_declarations_list:
+opt_other_var_declarations_list:
     /* empty */
-    | other_var_declarations_list other_var_declarations
+    | opt_other_var_declarations_list other_var_declarations
 ;
 
 other_var_declarations:
     var_declarations
 ;
 
-function_block_body:
-    fuzzify_block_list
-    defuzzify_block_list
-    rule_block_list
-    option_block_list
+opt_function_block_body:
+    opt_fuzzify_block_list
+    opt_defuzzify_block_list
+    opt_rule_block_list
+    opt_option_block_list
 ;
 
-fuzzify_block_list:
+opt_fuzzify_block_list:
     /* empty */
-    | fuzzify_block_list fuzzify_block
+    | opt_fuzzify_block_list fuzzify_block
 ;
 
 fuzzify_block:
@@ -141,9 +168,9 @@ fuzzify_block:
     END_FUZZIFY
 ;
 
-defuzzify_block_list:
+opt_defuzzify_block_list:
     /* empty */
-    | defuzzify_block_list defuzzify_block
+    | opt_defuzzify_block_list defuzzify_block
 ;
 
 defuzzify_block:
@@ -176,7 +203,7 @@ membership_function:
 ;
 
 singleton:
-    number
+    numeric_constant
 ;
 
 point_list:
@@ -185,8 +212,8 @@ point_list:
 ;
 
 point:
-    '(' number ',' number ')'
-    | '(' IDENTIFIER ',' number ')'
+    '(' numeric_constant ',' numeric_constant ')'
+    | '(' IDENTIFIER ',' numeric_constant ')'
 ;
 
 defuzzification_method:
@@ -202,18 +229,18 @@ default_value:
 ;
 
 default_val:
-    number
+    numeric_constant
     | NC
 ;
 
 opt_range:
     /* empty */
-    | RANGE '(' number RANGE_OP number ')' ';'
+    | RANGE '(' numeric_constant RANGE_OP numeric_constant ')' ';'
 ;
 
-rule_block_list:
+opt_rule_block_list:
     /* empty */
-    | rule_block_list rule_block
+    | opt_rule_block_list rule_block
 ;
 
 rule_block:
@@ -274,12 +301,12 @@ rule_list:
 ;
 
 rule:
-    RULE NUMERIC_LITERAL ':' IF condition THEN conclusion_list opt_weighting ';'
+    RULE numeric_constant ':' IF condition THEN conclusion_list opt_weighting ';'
 ;
 
 opt_weighting:
     /* empty */
-    | WITH number
+    | WITH numeric_constant
     | WITH IDENTIFIER
 ;
 
@@ -315,9 +342,9 @@ conclusion_list:
     | conclusion_list ',' IDENTIFIER
 ;
 
-option_block_list:
+opt_option_block_list:
     /* empty */
-    | option_block_list option_block
+    | opt_option_block_list option_block
 ;
 
 option_block:
@@ -333,7 +360,7 @@ pragma_list:
 
 pragma:
     PRAGMA IDENTIFIER ';'
-    | PRAGMA IDENTIFIER NUMERIC_LITERAL ';'
+    | PRAGMA IDENTIFIER numeric_constant ';'
 ;
 
 /* ------------------------------ IEC61131-3 Annex B ------------------------------------ */
@@ -356,7 +383,7 @@ input_declarations:
 ;
 
 var_declarations:
-    VAR var_constant_spec f ';' END_VAR
+    VAR var_constant_spec var_init_decl_list ';' END_VAR
     { 
         Compound variables = new Compound($3);
         variables.source(Source.NONE).publish();
@@ -390,7 +417,7 @@ var_init_decl_list:
 
 // todo: quitar los null
 var_init_decl:
-    identifier_list ':' unified_specification
+    identifier_list ':' var_spec_init
     {
         $$ = new Declaration(this.symbolTable, $1, $3.use(Use.VARIABLE));
     }
@@ -401,17 +428,39 @@ var_init_decl:
 ;
 
 // todo: quitar los null
-unified_specification:
+var_spec_init:
     custom_spec_init        { $$ = $1; }
-    | BOOL opt_edge         { $$ = null; }
+    | boolean_spec_init     { $$ = null; }
     | simple_spec_init      { $$ = $1; }
     | subrange_spec_init    { $$ = $1; }
     | enumerated_spec_init  { $$ = $1; }
-    | array_spec_init       { $$ = null; }
-    | string_spec_init      { $$ = null; }
+    | array_spec_init       { $$ = $1; }
+    | string_spec_init      { $$ = $1; }
+;
+
+boolean_spec_init:
+    boolean_specification
+    | initialized_boolean
+;
+boolean_specification:
+    BOOL
+;
+
+initialized_boolean:
+    boolean_specification edge
+;
+
+edge:
+    R_EDGE
+    | F_EDGE
 ;
 
 custom_spec_init:
+    custom_specification { $$ = $1; }
+    | initialized_custom   { $$ = $1; }
+;
+
+custom_specification:
     IDENTIFIER
     {
         $$ = new LexemeInfoBuilder()
@@ -420,23 +469,27 @@ custom_spec_init:
                     .customType($1)
                     .initialValue(this.symbolTable.get($1).initialValue);
     }
-    | initialized_constant      { $$ = $1.type(Type.SIMPLE); }
-    | initialized_structure     { $$ = $1.type(Type.SIMPLE); }
-    | initialized_identifier    { $$ = $1.type(Type.SIMPLE); }
 ;
 
-opt_edge:
-    /* empty */
-    | R_EDGE
-    | F_EDGE
+initialized_custom:
+    initialized_custom_with_constant     { $$ = $1.type(Type.SIMPLE); }
+    | initialized_custom_with_structure  { $$ = $1.type(Type.SIMPLE); }
+    | initialized_custom_with_identifier { $$ = $1.type(Type.SIMPLE); }
 ;
 
 simple_spec_init:
+    simple_specification { $$ = $1; }
+    | initialized_simple  { $$ = $1; }
+
+simple_specification:
     elementary_type_name
     {
         $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1);
     }
-    | elementary_type_name ASSIGN_OP constant
+;
+
+initialized_simple:
+    elementary_type_name ASSIGN_OP constant
     {
         $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1).initialValue($3);
     }
@@ -489,14 +542,21 @@ date_type_name:
 /* ----------------------------------- Literals ----------------------------------------- */
 
 constant:
-    STRING_LITERAL  { $$ = $1; }
-    | time          { $$ = $1; }
-    | number        { $$ = $1; }
+    string_constant    { $$ = $1; }
+    | boolean_constant { $$ = $1; }
+    | time_constant    { $$ = $1; }
+    | numeric_constant { $$ = $1; }
 ;
 
-number:
+string_constant:
+    STRING_LITERAL { $$ = $1; }
+;
+
+boolean_constant:
+    BOOLEAN_LITERAL { $$ = $1; }
+
+numeric_constant:
     NUMERIC_LITERAL
-    | BOOLEAN_LITERAL
     | number_prefix NUMERIC_LITERAL
     {
         // todo: hacer conversion de esta constante en codigo
@@ -510,7 +570,7 @@ number_prefix:
     | bit_string_type_name '#'
 ;
 
-time:
+time_constant:
     date_type_name '#' TIME_LITERAL {
         // todo: Accion semantica que verifica que prefix es del mismo tipo que time_literal
     }
@@ -527,47 +587,51 @@ bit_string_type_name:
 
 subrange_spec_init:
     subrange_specification  { $$ = $1; }
-    | subrange_specification ASSIGN_OP NUMERIC_LITERAL { $$ = $1.initialValue($3); }
+    | initialized_subrange  { $$ = $1; }
 ;
 
 subrange_specification:
-    integer_type_name '(' subrange ')' 
+    integer_type_name '(' range ')' 
     { 
         $$ = $3.subtype($1);
     }
 ;
 
-subrange:
-    NUMERIC_LITERAL RANGE_OP NUMERIC_LITERAL
+initialized_subrange:
+    subrange_specification ASSIGN_OP numeric_constant { $$ = $1.initialValue($3); }
+;
+
+range:
+    numeric_constant RANGE_OP numeric_constant
     {
         // todo: hacer chequeo semantico de rangos
         $$ = new LexemeInfoBuilder()
             .type(Type.SUBRANGE)
-            .inferiorLimit($1)
-            .superiorLimit($3)
+            .inferiorLimit(Collections.singletonList($1))
+            .superiorLimit(Collections.singletonList($3))
             .initialValue($1);
     }
 ;
 
 enumerated_spec_init:
-    enumerated_specification
-    {
-        $$ = new LexemeInfoBuilder()
-            .type(Type.ENUMERATE)
-            .parameters($1)
-            .initialValue($1.get(0));
-    }
-    | enumerated_specification ASSIGN_OP opt_scope_and_value
-    {
-        $$ = new LexemeInfoBuilder()
-            .type(Type.ENUMERATE)
-            .parameters($1)
-            .initialValue($3);
-    }
+    enumerated_specification { $$ = $1; }
+    | initialized_enumerated { $$ = $1; }
 ;
 
 enumerated_specification:
-    '(' enumerated_list')' { $$ = $2; }
+    '(' enumerated_list')' {
+        $$ = new LexemeInfoBuilder()
+            .type(Type.ENUMERATE)
+            .parameters($2)
+            .initialValue($2.get(0));
+    }
+;
+
+initialized_enumerated:
+    enumerated_specification ASSIGN_OP identifier_with_opt_mangling
+    {
+        $$ = $1.initialValue($3);
+    }
 ;
 
 enumerated_list:
@@ -585,18 +649,22 @@ enumerated_list:
 ;
 
 array_spec_init:
-    array_specification
-    | array_specification ASSIGN_OP array_initialization
+    array_specification { $$ = $1; }
+    | initialized_array { $$ = $1; }
 ;
 
 array_specification:
-    ARRAY '[' subrange_list ']' OF IDENTIFIER
-    | ARRAY '[' subrange_list ']' OF non_generic_type_name
+    ARRAY '[' range_list ']' OF IDENTIFIER              { $$ = null; }
+    | ARRAY '[' range_list ']' OF non_generic_type_name { $$ = null; }
 ;
 
-subrange_list:
-    subrange
-    | subrange ',' subrange_list
+initialized_array:
+    array_specification ASSIGN_OP array_initialization { $$ = null; }
+;
+
+range_list:
+    range
+    | range ',' range_list
 ;
 
 non_generic_type_name:
@@ -614,42 +682,40 @@ array_initial_elements_list:
 
 array_initial_elements:
     array_initial_element
-    | NUMERIC_LITERAL '(' IDENTIFIER ')'
-    | NUMERIC_LITERAL '(' IDENTIFIER '#' IDENTIFIER ')'
-    | NUMERIC_LITERAL '(' array_initial_element ')'
+    | repeated_initial_element
 ;
 
 array_initial_element:
     constant
-    | structure_initialization
+    | initialized_structure
+    | identifier_with_opt_mangling
     | array_initialization
 ;
 
-structure_initialization:
-    '(' structure_element_initialization_list ')'
+repeated_initial_element:
+    numeric_constant '(' array_initial_element ')'
+;
+
+initialized_structure:
+    '(' initialized_structure_field_list ')'
     {
 
     }
 ;
 
-structure_element_initialization_list:
-    structure_element_initialization
-    | structure_element_initialization_list ',' structure_element_initialization
+initialized_structure_field_list:
+    initialized_structure_field
+    | initialized_structure_field_list ',' initialized_structure_field
 ;
 
-structure_element_initialization:
-    initialized_constant
-    | initialized_identifier
-    | IDENTIFIER ASSIGN_OP structure_element_type
+initialized_structure_field:
+    initialized_custom_with_constant
+    | initialized_custom_with_identifier
+    | initialized_custom_with_array
+    | initialized_custom_with_structure
 ;
 
-
-structure_element_type:
-    array_initialization 
-    | structure_initialization
-;
-
-initialized_constant:
+initialized_custom_with_constant:
     IDENTIFIER ASSIGN_OP constant
     {
         $$ = new LexemeInfoBuilder()
@@ -659,8 +725,8 @@ initialized_constant:
     }
 ;
 
-initialized_identifier:
-    IDENTIFIER ASSIGN_OP opt_scope_and_value
+initialized_custom_with_identifier:
+    IDENTIFIER ASSIGN_OP identifier_with_opt_mangling
     {
         $$ = new LexemeInfoBuilder()
                 .subtype(Subtype.CUSTOM)
@@ -669,7 +735,7 @@ initialized_identifier:
     }
 ;
 
-opt_scope_and_value:
+identifier_with_opt_mangling:
     IDENTIFIER
     {
         $$ = $1;
@@ -680,43 +746,25 @@ opt_scope_and_value:
     }
 ;
 
-// TODO:
-initialized_structure:
+initialized_custom_with_array:
+    IDENTIFIER ASSIGN_OP array_initialization { $$ = null; }
+;
 
-    IDENTIFIER
-    {
-        // todo: name mangling
-    }
-
-    ASSIGN_OP structure_initialization
-    {
-        X, Y, Z: 3
-         := _ ( V1 := ... )
-
-        X, Y, Z | VARIABLE | STRUCT | PARAMETERS
-
-
-        1. initialized_structured := [ VARIABLE | STRUCT | ¡PARAMETERS! ]
-        2. StructDeclaration(st, [X, Y, Z], initialized_structured)
-
-        Compound [
-            Declaration(st, [X#V1, Y#V1, Z#V1], m1)
-            Declaration(st, [X#V2, Y#V2, Z#V2], m2)
-        ]
-    }
+initialized_custom_with_structure:
+    IDENTIFIER ASSIGN_OP initialized_structure { $$ = null; }
 ;
 
 // Todo: ver que hacer con las funciones de la biblioteca estandar
 fb_name_decl:
     identifier_list ':' standard_function_block_name
-    | identifier_list ':' standard_function_block_name ASSIGN_OP structure_initialization
+    | identifier_list ':' standard_function_block_name ASSIGN_OP initialized_structure
 ;
 
 identifier_list:
     IDENTIFIER
     {
         // Left side identifers have a scope
-        String mangledIidentifier = this.mangler.getNameMangled($1);
+        String mangledIdentifier = this.nameMangler.getNameMangled($1);
 
         List<String> identifiers = new ArrayList<String>();
         identifiers.add(mangledIdentifier);
@@ -726,7 +774,7 @@ identifier_list:
     | identifier_list ',' IDENTIFIER
     {
         // Left side identifers have a scope
-        String mangledIdentifier = this.mangler.getNameMangled($3);
+        String mangledIdentifier = this.nameMangler.getNameMangled($3);
         $1.add(mangledIdentifier);
         $$ = $1;
     }
@@ -738,13 +786,19 @@ standard_function_block_name:
 ;
 
 string_spec_init:
-    type_string
-    | type_string '[' NUMERIC_LITERAL ']'
-    | type_string ASSIGN_OP STRING_LITERAL
-    | type_string '[' NUMERIC_LITERAL ']' ASSIGN_OP STRING_LITERAL
+    string_specification { $$ = $1; }
+    | initialized_string { $$ = $1; }
+
+string_specification:
+    type_string_specification                            { $$ = null; }
+    | type_string_specification '[' numeric_constant ']' { $$ = null; }
+
+initialized_string:
+    type_string_specification  ASSIGN_OP string_constant                            { $$ = null; }
+    | type_string_specification '[' numeric_constant ']' ASSIGN_OP string_constant  { $$ = null; }
 ;
 
-type_string:
+type_string_specification:
     STRING
     | WSTRING
 ;
@@ -780,9 +834,9 @@ type_declaration_list:
 ;
 
 type_declaration:
-    type_name ':' type_specification
+    type_name ':' type_spec_init
     {
-        this.mangler.popScope();
+        this.nameMangler.popScope();
 
         List<String> left_identifiers = new ArrayList<>();
         left_identifiers.add($1);
@@ -794,26 +848,26 @@ type_declaration:
 type_name:
     IDENTIFIER
     {
-        this.mangler.addScope("$1");
+        this.nameMangler.addScope("$1");
         $$ = $1;
     }
 ;
 
-type_specification:
-    custom_spec_init        { $$ = $1; }
-    | simple_spec_init      { $$ = $1; }
-    | enumerated_spec_init  { $$ = $1; }
-    | subrange_spec_init    { $$ = $1; }
-    | array_spec_init       { $$ = $1; }
-    | structure_declaration { $$ = $1; }
-    | string_spec_init      { $$ = $1; }
+type_spec_init:
+    custom_spec_init          { $$ = $1; }
+    | simple_spec_init        { $$ = $1; }
+    | enumerated_spec_init    { $$ = $1; }
+    | subrange_spec_init      { $$ = $1; }
+    | array_spec_init         { $$ = $1; }
+    | structure_specification { $$ = $1; }
+    | string_spec_init        { $$ = $1; }
 ;
 
-structure_declaration:
-    STRUCT structure_element_declaration_list END_STRUCT
+structure_specification:
+    STRUCT structure_field_declaration_list END_STRUCT
     {
         // Builds a group of declarations
-        Pubisher declarations = new Compound($2);
+        Publisher declarations = new Compound($2);
 
         // Publish declarations on SymbolTable and returns published keys
         List<String> structVariables = declarations.publish();
@@ -825,30 +879,31 @@ structure_declaration:
     }
 ;
 
-structure_element_declaration_list:
-    structure_element_declaration ';'
+structure_field_declaration_list:
+    structure_field_declaration ';'
     {
         List<Publisher> declarations = new ArrayList<>();
         declarations.add($1);
         $$ = declarations;
     }
-    | structure_element_declaration_list structure_element_declaration ';'
+    | structure_field_declaration_list structure_field_declaration ';'
     {
-        $$.add($1);
+        $1.add($2);
+        $$ = $1;
     }
 ;
-structure_element_declaration:
-    IDENTIFIER ':' structure_element_specification
+structure_field_declaration:
+    IDENTIFIER ':' structure_field_spec_init
     {
         List<String> left_identifiers = new ArrayList<>();
-        left_identifiers.add(this.mangler.getNameMangled($1));
+        left_identifiers.add(this.nameMangler.getNameMangled($1));
 
         // Builds a declaration with the symbol table, the left identifiers and the metadata associated to them
         $$ = new Declaration(this.symbolTable, left_identifiers, $3);
     }
 ;
 
-structure_element_specification:
+structure_field_spec_init:
     custom_spec_init        { $$ = $1; }
     | simple_spec_init      { $$ = $1; }
     | enumerated_spec_init  { $$ = $1; }

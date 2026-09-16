@@ -1,4 +1,4 @@
-package parser.publisher;
+package parser.publishers;
 
 import utils.SymbolTable;
 import utils.builders.*;
@@ -67,13 +67,13 @@ public class Declaration implements Publisher {
     }
 
     @Override
-    public LexemeInfoSchema inferiorLimit(String inferiorLimit) {
+    public LexemeInfoSchema inferiorLimit(List<String> inferiorLimit) {
         builder.inferiorLimit(inferiorLimit);
         return this;
     }
 
     @Override
-    public LexemeInfoSchema superiorLimit(String superiorLimit) {
+    public LexemeInfoSchema superiorLimit(List<String> superiorLimit) {
         builder.superiorLimit(superiorLimit);
         return this;
     }

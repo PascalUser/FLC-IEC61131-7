@@ -1,4 +1,4 @@
-package parser.publisher;
+package parser.publishers;
 
 import utils.builders.LexemeInfoSchema;
 import utils.enums.*;
@@ -72,7 +72,7 @@ public class Compound implements Publisher {
     }
 
     @Override
-    public LexemeInfoSchema inferiorLimit(String inferiorLimit) {
+    public LexemeInfoSchema inferiorLimit(List<String> inferiorLimit) {
         for (Publisher publisher : publishers){
             publisher.inferiorLimit(inferiorLimit);
         }
@@ -80,7 +80,7 @@ public class Compound implements Publisher {
     }
 
     @Override
-    public LexemeInfoSchema superiorLimit(String superiorLimit) {
+    public LexemeInfoSchema superiorLimit(List<String> superiorLimit) {
         for (Publisher publisher : publishers){
             publisher.superiorLimit(superiorLimit);
         }

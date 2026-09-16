@@ -7,8 +7,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import utils.DiagnosticsHandler;
-import utils.LexemeInfo;
+import utils.LexemeInfoComparator;
 import utils.SymbolTable;
+import utils.builders.LexemeInfoBuilder;
 import utils.enums.*;
 
 import java.io.Reader;
@@ -33,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría
- * @version 2.0
+ * @version 1.0
  * @since 1.0
  */
 @Tag("lexer")
@@ -48,19 +49,13 @@ public class LexerSymbolTableTest {
     }
 
     private void assertLiteral(SymbolTable st, String lexeme, Subtype expectedSubtype, Object expectedValue) {
-        LexemeInfo info = st.get(lexeme);
-        assertNotNull(info, () -> "The literal '" + lexeme + "' should exist in the symbol table.");
-        assertAll("LexemeInfo properties for '" + lexeme + "'",
-                () -> assertEquals(Type.SIMPLE, info.type, "Main type is incorrect"),
-                () -> assertEquals(expectedSubtype, info.subtype, "Subtype is incorrect"),
-                () -> assertNull(info.customType, "customType should be null"),
-                () -> assertEquals(Use.LITERAL, info.use, "Use should be LITERAL"),
-                () -> assertEquals(Source.UNKNOWN, info.source, "Source should be UNKNOWN"),
-                () -> assertNull(info.inferiorLimit, "inferiorLimit should be null"),
-                () -> assertNull(info.superiorLimit, "superiorLimit should be null"),
-                () -> assertNull(info.parameters, "parameters should be null"),
-                () -> assertEquals(expectedValue, info.initialValue, "Initial value does not match")
-        );
+        assertTrue(LexemeInfoComparator.compare(st, lexeme, new LexemeInfoBuilder()
+                .type(Type.SIMPLE)
+                .subtype(expectedSubtype)
+                .use(Use.LITERAL)
+                .source(Source.UNKNOWN)
+                .initialValue(expectedValue)
+                .build()).isEmpty());
     }
 
     private static String repeatChar(char c, int count) {
@@ -93,7 +88,7 @@ public class LexerSymbolTableTest {
     @MethodSource("provideSignedIntegers")
     void Yylex_SignedIntegerBoundaries_PopulatesSymbolTable(
             String input, Subtype expectedSubtype, Object expectedValue)
-    throws Exception {
+            throws Exception {
         SymbolTable result = executeLexer(input);
         assertLiteral(result, input, expectedSubtype, expectedValue);
     }
@@ -186,15 +181,7 @@ public class LexerSymbolTableTest {
     void Yylex_DateAndTimeLiterals_PopulatesSymbolTable(String input, Subtype expectedSubtype, Object expectedValue)
             throws Exception {
         SymbolTable result = executeLexer(input);
-
-        LexemeInfo info = result.get(input);
-        assertNotNull(info);
-        assertAll("Date/Time Properties",
-                () -> assertEquals(Type.SIMPLE, info.type),
-                () -> assertEquals(expectedSubtype, info.subtype),
-                () -> assertEquals(Use.LITERAL, info.use),
-                () -> assertEquals(expectedValue, info.initialValue)
-        );
+        assertLiteral(result, input, expectedSubtype, expectedValue);
     }
 
     private static Stream<Arguments> provideIntervalLiterals() {
@@ -203,7 +190,6 @@ public class LexerSymbolTableTest {
                 Arguments.of("1d_2h_30m", "1D2H30M", Duration.ofDays(1).plusHours(2).plusMinutes(30)),
                 Arguments.of("25h_30m", "25H30M", Duration.ofHours(25).plusMinutes(30)),
                 Arguments.of("-12h_30m", "-12H30M", Duration.ofHours(-12).minusMinutes(30)),
-                // 1_000_000 NS == 1 MS so 500_000 NS == 0.5 MS
                 Arguments.of("5d_14h_12m_18s_3.500ms", "5D14H12M18S3.5MS",
                         Duration.ofDays(5)
                                 .plusHours(14)
@@ -219,15 +205,7 @@ public class LexerSymbolTableTest {
     void Yylex_IntervalLiterals_PopulatesSymbolTable(String input, String expectedLexemeKey, Duration expectedValue)
             throws Exception {
         SymbolTable result = executeLexer(input);
-
-        LexemeInfo info = result.get(expectedLexemeKey);
-        assertNotNull(info, () -> "Expected key '" + expectedLexemeKey + "' in symbol table.");
-        assertAll("TIME Literal Properties",
-                () -> assertEquals(Type.SIMPLE, info.type),
-                () -> assertEquals(Subtype.TIME, info.subtype),
-                () -> assertEquals(Use.LITERAL, info.use),
-                () -> assertEquals(expectedValue, info.initialValue)
-        );
+        assertLiteral(result, expectedLexemeKey, Subtype.TIME, expectedValue);
     }
 
     // =========================================================================
@@ -237,9 +215,9 @@ public class LexerSymbolTableTest {
     private static Stream<Arguments> provideOverflowFallbacks() {
         return Stream.of(
                 Arguments.of("+18446744073709551615", "9223372036854775807", Subtype.LINT, 9223372036854775807L),
-                Arguments.of("+9223372036854775808", "9223372036854775807",  Subtype.LINT, 9223372036854775807L),
+                Arguments.of("+9223372036854775808", "9223372036854775807", Subtype.LINT, 9223372036854775807L),
                 Arguments.of("-9223372036854775809", "-9223372036854775808", Subtype.LINT, -9223372036854775808L),
-                Arguments.of("1.0E400", String.valueOf(Double.MAX_VALUE),   Subtype.LREAL, Double.MAX_VALUE),
+                Arguments.of("1.0E400", String.valueOf(Double.MAX_VALUE), Subtype.LREAL, Double.MAX_VALUE),
                 Arguments.of("-1.0E400", String.valueOf(-Double.MAX_VALUE), Subtype.LREAL, -Double.MAX_VALUE),
                 Arguments.of("18446744073709551616", "18446744073709551615", Subtype.ULINT,
                         new BigInteger("18446744073709551615")
@@ -293,66 +271,41 @@ public class LexerSymbolTableTest {
 
     @Test
     void Yylex_StringLiterals_EquivalenceThroughEscapes() throws Exception {
-        // 'hello' and 'he$6c$6co' should map to the same symbol table entry
         SymbolTable result1 = executeLexer("'hello'");
         SymbolTable result2 = executeLexer("'he$6c$6co'");
 
-        LexemeInfo info1 = result1.get("'hello'");
-        LexemeInfo info2 = result2.get("'he$6c$6co'");
-
-        assertNotNull(info1);
-        assertNull(info2);
-        assertEquals("hello", info1.initialValue);
+        assertLiteral(result1, "'hello'", Subtype.STRING, "hello");
+        assertNull(result2.get("'he$6c$6co'"));
     }
 
     @Test
     void Yylex_WStringLiterals_EquivalenceThroughHexEscapes() throws Exception {
-        // "world" and "$0077$006F$0072$006C$0064" should map to the same entry
         SymbolTable result1 = executeLexer("\"world\"");
         SymbolTable result2 = executeLexer("\"$0077$006F$0072$006C$0064\"");
 
-        LexemeInfo info1 = result1.get("\"world\"");
-        LexemeInfo info2 = result2.get("\"$0077$006F$0072$006C$0064\"");
-
-        assertNotNull(info1);
-        assertNull(info2);
-        assertEquals("world", info1.initialValue);
+        assertLiteral(result1, "\"world\"", Subtype.WSTRING, "world");
+        assertNull(result2.get("\"$0077$006F$0072$006C$0064\""));
     }
 
     @Test
     void Yylex_StringAndWStringAreSeparateEntries() throws Exception {
-        // 'test' (STRING) and "test" (WSTRING) should be DIFFERENT entries
         SymbolTable result1 = executeLexer("'test'");
         SymbolTable result2 = executeLexer("\"test\"");
 
-        LexemeInfo info1 = result1.get("'test'");
-        LexemeInfo info2 = result2.get("\"test\"");
-
-        assertNotNull(info1);
-        assertNotNull(info2);
-        assertNotSame(info1, info2, "STRING and WSTRING should be separate entries");
-        assertEquals(Subtype.STRING, info1.subtype);
-        assertEquals(Subtype.WSTRING, info2.subtype);
+        assertLiteral(result1, "'test'", Subtype.STRING, "test");
+        assertLiteral(result2, "\"test\"", Subtype.WSTRING, "test");
     }
 
     @Test
     void Yylex_StringLiterals_WithComplexEscapes() throws Exception {
         SymbolTable result = executeLexer("'It$'s $41$62$63'");
-
-        LexemeInfo info = result.get("'It's Abc'");
-        assertNotNull(info);
-        assertEquals("It's Abc", info.initialValue);
-        assertEquals(Subtype.STRING, info.subtype);
+        assertLiteral(result, "'It's Abc'", Subtype.STRING, "It's Abc");
     }
 
     @Test
     void Yylex_WStringLiterals_WithUnicodeHex() throws Exception {
         SymbolTable result = executeLexer("\"$0041$0062$0063$00E9\"");
-
-        LexemeInfo info = result.get("\"Abcé\"");
-        assertNotNull(info);
-        assertEquals("Abcé", info.initialValue);
-        assertEquals(Subtype.WSTRING, info.subtype);
+        assertLiteral(result, "\"Abcé\"", Subtype.WSTRING, "Abcé");
     }
 
     @Test
@@ -361,10 +314,7 @@ public class LexerSymbolTableTest {
         String sourceCode = "'" + longContent + "'";
 
         SymbolTable result = executeLexer(sourceCode);
-
-        LexemeInfo info = result.get("'" + repeatChar('A', 255) + "'");
-        assertNotNull(info);
-        assertEquals(255, ((String) info.initialValue).length());
+        assertLiteral(result, "'" + repeatChar('A', 255) + "'", Subtype.STRING, repeatChar('A', 255));
     }
 
     @Test
@@ -373,30 +323,21 @@ public class LexerSymbolTableTest {
         String sourceCode = "\"" + longContent + "\"";
 
         SymbolTable result = executeLexer(sourceCode);
-
-        LexemeInfo info = result.get("\"" + repeatChar('B', 255) + "\"");
-        assertNotNull(info);
-        assertEquals(255, ((String) info.initialValue).length());
+        assertLiteral(result, "\"" + repeatChar('B', 255) + "\"", Subtype.WSTRING, repeatChar('B', 255));
     }
 
     @Test
     void Yylex_Identifiers_PopulatesSymbolTableWithUnknownUseAndUpperCaseLetters() throws Exception {
         SymbolTable result = executeLexer("Sensor_Temp");
 
-        LexemeInfo sensorInfo = result.get("SENSOR_TEMP");
-        assertNotNull(sensorInfo, "The identifier 'Sensor_Temp' should exist.");
-        assertAll("Identifier Properties",
-                () -> assertEquals(Type.UNKNOWN, sensorInfo.type),
-                () -> assertNull(null, "customType should be null"),
-                () -> assertEquals(Subtype.UNKNOWN, sensorInfo.subtype),
-                () -> assertEquals(Use.UNKNOWN, sensorInfo.use),
-                () -> assertEquals(Source.UNKNOWN, sensorInfo.source, "Source should be UNKNOWN"),
-                () -> assertNull(sensorInfo.inferiorLimit, "inferiorLimit should be null"),
-                () -> assertNull(sensorInfo.superiorLimit, "superiorLimit should be null"),
-                () -> assertNull(sensorInfo.parameters, "parameters should be null"),
-                () -> assertNull(sensorInfo.initialValue, "Initial value should be null")
-        );
+        assertTrue(LexemeInfoComparator.compare(result, "SENSOR_TEMP", new LexemeInfoBuilder()
+                .type(Type.UNKNOWN)
+                .subtype(Subtype.UNKNOWN)
+                .use(Use.UNKNOWN)
+                .source(Source.UNKNOWN)
+                .build()).isEmpty());
     }
+
     @Test
     void Yylex_IdentifiersWithDifferentCases_AreAddedCaseInsensitivelyToSymbolTable() throws Exception {
         String text = "sensor_temp SENSOR_TEMP";
@@ -409,18 +350,14 @@ public class LexerSymbolTableTest {
             lexer.yylex();
         }
 
-        LexemeInfo infoUpper = result.get("SENSOR_TEMP");
-        LexemeInfo infoLower = result.get("sensor_temp");
+        assertTrue(LexemeInfoComparator.compare(result, "SENSOR_TEMP", new LexemeInfoBuilder()
+                .type(Type.UNKNOWN)
+                .subtype(Subtype.UNKNOWN)
+                .use(Use.UNKNOWN)
+                .source(Source.UNKNOWN)
+                .build()).isEmpty());
 
-        assertNotNull(infoUpper, "The canonical identifier 'SENSOR_TEMP' should exist in the symbol table.");
-        assertAll("Case Insensitivity Checks",
-                () -> assertEquals(1, result.size(),
-                        "Symbol table should contain only one entry for case-equivalent identifiers"
-                ),
-                () -> assertNotSame(infoUpper, infoLower,
-                        "Lookups with different casing should reference the exact same LexemeInfo instance"
-                )
-        );
+        assertEquals(1, result.size(),
+                "Symbol table should contain only one entry for case-equivalent identifiers");
     }
-
 }

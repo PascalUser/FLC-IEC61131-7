@@ -32,11 +32,11 @@ public class LexemeInfo {
     /** Source block: IN, OUT, FUZZIFY, DEFUZZIFY, etc. */
     public Source source;
 
-    /** Lower bound for subrange types. */
-    public String inferiorLimit;
+    /** Lower bound for subrange and array types. */
+    public List<String> inferiorLimit;
 
-    /** Upper bound for subrange types. */
-    public String superiorLimit;
+    /** Upper bound for subrange and array  types. */
+    public List<String> superiorLimit;
 
     /** Parameter list for function blocks. */
     public List<String> parameters;
@@ -52,8 +52,8 @@ public class LexemeInfo {
      * @param customType     custom type name (or null)
      * @param use            usage context
      * @param source         source block
-     * @param inferiorLimit  lower bound for subranges
-     * @param superiorLimit  upper bound for subranges
+     * @param inferiorLimit  lower bounds for subranges and arrays
+     * @param superiorLimit  upper bounds for subranges and arrays
      * @param parameters     function block parameters
      * @param initialValue   initial lexeme
      */
@@ -63,8 +63,8 @@ public class LexemeInfo {
         String customType,
         Use use,
         Source source,
-        String inferiorLimit,
-        String superiorLimit,
+        List<String> inferiorLimit,
+        List<String> superiorLimit,
         List<String> parameters,
         Object initialValue
     ) {

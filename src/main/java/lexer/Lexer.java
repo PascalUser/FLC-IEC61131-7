@@ -382,13 +382,13 @@ public class Lexer implements Parser.Lexer {
      */
     public int processAndSaveYylval(@NonNull Transformer transformer, @NonNull SemanticAnalyzer analyzer) {
         String preprocessedLexeme = transformer.transform(yytext());
-        LexicalContext lexicalContext = new LexicalContext(
+        SemanticAnalyzer.LexicalContext lexicalContext = new SemanticAnalyzer.LexicalContext(
                 preprocessedLexeme,
                 yyline,
                 this.symbolTable,
                 this.diagnosticsHandler
             );
-        Result result = analyzer.analyze(lexicalContext);
+        SemanticAnalyzer.Result result = analyzer.analyze(lexicalContext);
         this.yylval = result.lexeme;
         return result.token;
     }

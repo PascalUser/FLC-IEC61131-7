@@ -13,7 +13,6 @@ public final class ExponentFinder {
         if (lower == -1) {
             return upper;
         }
-
         return Math.min(upper, lower);
     }
 }

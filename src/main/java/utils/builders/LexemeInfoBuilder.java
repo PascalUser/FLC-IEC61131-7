@@ -23,8 +23,8 @@ public class LexemeInfoBuilder implements LexemeInfoSchema {
     private String customType       = null;
     private Use use                 = Use.UNKNOWN;
     private Source source           = Source.UNKNOWN;
-    private String inferiorLimit    = null;
-    private String superiorLimit    = null;
+    private List<String> inferiorLimit    = null;
+    private List<String> superiorLimit    = null;
     private List<String> parameters = null;
     private Object initialValue     = null;
 
@@ -59,13 +59,13 @@ public class LexemeInfoBuilder implements LexemeInfoSchema {
     }
 
     @Override
-    public LexemeInfoBuilder inferiorLimit(String inferiorLimit) {
+    public LexemeInfoBuilder inferiorLimit(List<String> inferiorLimit) {
         this.inferiorLimit = inferiorLimit;
         return this;
     }
 
     @Override
-    public LexemeInfoBuilder superiorLimit(String superiorLimit) {
+    public LexemeInfoBuilder superiorLimit(List<String> superiorLimit) {
         this.superiorLimit = superiorLimit;
         return this;
     }

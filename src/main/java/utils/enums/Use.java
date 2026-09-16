@@ -13,11 +13,12 @@ package utils.enums;
  * @since 1.0
  */
 public enum Use {
+    FIELD,
     FUNCTION,
     LITERAL,
     OPTION,
     RULE,
     TYPE,
     UNKNOWN,
-    VARIABLE,
+    VARIABLE, MACRO,
 }

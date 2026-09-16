@@ -1,4 +1,4 @@
-package parser.publisher;
+package parser.publishers;
 
 import utils.builders.LexemeInfoSchema;
 
