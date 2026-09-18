@@ -3,7 +3,7 @@ package utils.diagnostics;
 /**
  * Warning for string length exceeding maximum allowed length.
  */
-public class StringLengthWarning extends Warning {
+public final class StringLengthWarning extends Warning {
     
     private final String message;
     

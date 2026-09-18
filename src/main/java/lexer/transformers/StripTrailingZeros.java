@@ -12,7 +12,7 @@ import lexer.utils.ExponentFinder;
  * @version 1.0
  * @since 1.0
  */
-public class StripTrailingZeros extends Transformer {
+public final class StripTrailingZeros extends Transformer {
 
     public StripTrailingZeros(Transformer next) {
         super(next);

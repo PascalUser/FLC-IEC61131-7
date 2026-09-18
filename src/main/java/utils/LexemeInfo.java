@@ -28,7 +28,7 @@ import java.util.List;
     },
     justification = "LexemeInfo is a DTO with public fields and direct collection references by design"
 )
-public class LexemeInfo {
+public final class LexemeInfo {
     /** The general type classification (simple, array, struct, etc.). */
     public Type type;
 

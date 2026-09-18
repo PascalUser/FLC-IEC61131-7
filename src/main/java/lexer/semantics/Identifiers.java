@@ -20,7 +20,7 @@ import utils.enums.Use;
  * @version 1.0
  * @since 1.0
  */
-public class Identifiers implements SemanticAnalyzer {
+public final class Identifiers implements SemanticAnalyzer {
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

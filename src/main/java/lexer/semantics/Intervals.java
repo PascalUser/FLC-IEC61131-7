@@ -31,7 +31,7 @@ import java.time.Duration;
  * @version 1.0
  * @since 1.0
  */
-public class Intervals implements SemanticAnalyzer {
+public final class Intervals implements SemanticAnalyzer {
     private static final double MAX_HOURS   = 23D;
     private static final double MAX_MINUTES = 59D;
     private static final double MAX_SECONDS = 59D;

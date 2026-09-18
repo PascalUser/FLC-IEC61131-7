@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class DateOutOfRange extends Error {
+public final class DateOutOfRange extends Error {
     private final String dateLexeme;
 
     public DateOutOfRange(int line, String outOfBoundDate) {

@@ -29,7 +29,7 @@ import java.time.format.ResolverStyle;
  * @version 1.0
  * @since 1.0
  */
-public class Dates implements SemanticAnalyzer {
+public final class Dates implements SemanticAnalyzer {
 
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("uuuu-MM-dd")

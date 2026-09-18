@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class NaturalOutOfRange extends Warning {
+public final class NaturalOutOfRange extends Warning {
     private final String natLexeme;
 
     public NaturalOutOfRange(int line, String outOfBoundNatural) {

@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class IntervalOutOfRange extends Error {
+public final class IntervalOutOfRange extends Error {
     private final String intervalLexeme;
 
     public IntervalOutOfRange(int line, String outOfBoundInterval) {

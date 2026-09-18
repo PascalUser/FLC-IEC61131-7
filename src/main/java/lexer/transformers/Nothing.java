@@ -12,7 +12,7 @@ package lexer.transformers;
  * @version 1.0
  * @since 1.0
  */
-public class Nothing extends Transformer {
+public final class Nothing extends Transformer {
     public Nothing(Transformer next) {
         super(next);
     }

@@ -21,7 +21,7 @@ package lexer.transformers;
  * @version 1.0
  * @since 1.0
  */
-public class OmitLeadingZeroMagnitudes extends Transformer {
+public final class OmitLeadingZeroMagnitudes extends Transformer {
     /**
      * Creates a transformer with the next handler in the chain.
      *

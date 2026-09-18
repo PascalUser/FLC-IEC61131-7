@@ -12,7 +12,7 @@ package lexer.transformers;
  * @version 1.0
  * @since 1.0
  */
-public class UnderscoreRemover extends Transformer {
+public final class UnderscoreRemover extends Transformer {
     public UnderscoreRemover(Transformer next) {
         super(next);
     }

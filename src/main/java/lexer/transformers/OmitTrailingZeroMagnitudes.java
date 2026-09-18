@@ -11,7 +11,7 @@ package lexer.transformers;
  * @version 1.1
  * @since 1.0
  */
-public class OmitTrailingZeroMagnitudes extends Transformer {
+public final class OmitTrailingZeroMagnitudes extends Transformer {
 
     public OmitTrailingZeroMagnitudes(Transformer next) {
         super(next);

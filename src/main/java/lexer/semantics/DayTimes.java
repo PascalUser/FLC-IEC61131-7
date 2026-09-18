@@ -27,7 +27,7 @@ import java.time.format.ResolverStyle;
  * @version 1.0
  * @since 1.0
  */
-public class DayTimes implements SemanticAnalyzer {
+public final class DayTimes implements SemanticAnalyzer {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_TIME
             .withResolverStyle(ResolverStyle.STRICT);
 

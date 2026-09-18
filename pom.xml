@@ -11,44 +11,42 @@
 
     <!-- ============================= Properties ============================= -->
     <properties>
-        <!-- Compilation -->
-        <maven.compiler.release>8</maven.compiler.release>
+        <!-- Compilation (Garantiza compatibilidad con Java 8) -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Plugin versions -->
+        <compiler.plugin.version>3.13.0</compiler.plugin.version>
         <surefire.version>3.5.2</surefire.version>
         <jflex.plugin.version>1.9.1</jflex.plugin.version>
         <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
-        <checkstyle.version>3.6.0</checkstyle.version>
         <spotbugs.plugin.version>4.8.3.1</spotbugs.plugin.version>
         <jacoco.plugin.version>0.8.12</jacoco.plugin.version>
         <sonar.plugin.version>4.0.0.4121</sonar.plugin.version>
 
-        <!-- Plugin Annotation Versions -->
+        <!-- Dependency Versions -->
         <spotbugs.annotations.version>4.8.3</spotbugs.annotations.version>
-
-        <!-- Test dependencies versions -->
         <junit.version>5.11.4</junit.version>
-        <mockito.version>3.12.4</mockito.version>
+        <!-- Mockito 4.11.0: Última versión compatible con Java 8 runtime -->
+        <mockito.version>4.11.0</mockito.version>
 
         <!-- ================= SonarQube & Coverage Properties ================= -->
-        <sonar.coverage.jacoco.xmlReportPaths>
-            ${project.build.directory}/site/jacoco/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.exclusions>**/Parser.java,**/Lexer.java,**/LucaInfo.java</sonar.exclusions>
         <sonar.coverage.exclusions>**/Parser.java,**/Lexer.java,**/LucaInfo.java</sonar.coverage.exclusions>
     </properties>
 
     <!-- ============================ Dependencies ============================ -->
     <dependencies>
-        <!-- Nullability annotations (@Nullable / @NonNull) -->
+        <!-- Nullability annotations -->
         <dependency>
             <groupId>org.jspecify</groupId>
             <artifactId>jspecify</artifactId>
             <version>1.0.0</version>
         </dependency>
 
-        <!-- SpotBugs Annotations: Used for @SuppressFBWarnings -->
+        <!-- SpotBugs Annotations -->
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
@@ -56,18 +54,24 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JUnit 5: Testing framework -->
+        <!-- JUnit 5: API y Engine explícito para Surefire -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
 
-        <!-- Mockito: Mocking framework for tests -->
+        <!-- Mockito 4 Inline: Permite mockear clases final sobre Java 8 -->
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <artifactId>mockito-inline</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
@@ -81,14 +85,28 @@
 
     <build>
         <plugins>
-            <!-- Surefire: Executes tests -->
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler.plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire: Ejecución sin flags específicos de JVM 21 que rompan Java 8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
+                <configuration>
+                    <argLine>@{argLine}</argLine>
+                </configuration>
             </plugin>
 
-            <!-- JaCoCo: Analiza y genera el reporte de cobertura de código para SonarQube -->
+            <!-- JaCoCo: Generación del reporte XML para SonarQube -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -117,7 +135,7 @@
                 <version>${sonar.plugin.version}</version>
             </plugin>
 
-            <!-- JFlex: Generates the Java lexer -->
+            <!-- JFlex: Generador del lexer -->
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>

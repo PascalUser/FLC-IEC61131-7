@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class OctalOutOfRange extends Warning {
+public final class OctalOutOfRange extends Warning {
     private final String octLexeme;
 
     public OctalOutOfRange(int line, String outOfBoundOctal) {

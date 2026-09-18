@@ -38,9 +38,9 @@ public final class Naturals extends NumbersAnalyzer {
 
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
-        lexeme = MAX_ULINT.toString();
+        String newLexeme = MAX_ULINT.toString();
         Subtype subtype = Subtype.ULINT;
-        return new ParsedValue(lexeme, subtype, MAX_ULINT);
+        return new ParsedValue(newLexeme, subtype, MAX_ULINT);
     }
 
     @Override

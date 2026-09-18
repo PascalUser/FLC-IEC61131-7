@@ -2,7 +2,7 @@ package lexer.transformers;
 
 import org.jspecify.annotations.NonNull;
 
-public class StringEscapeResolver extends Transformer {
+public final class StringEscapeResolver extends Transformer {
 
     public StringEscapeResolver(Transformer next) {
         super(next);

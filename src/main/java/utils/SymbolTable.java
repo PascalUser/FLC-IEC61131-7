@@ -16,7 +16,7 @@ import java.util.HashMap;
  * @version 1.0
  * @since 1.0
  */
-public class SymbolTable {
+public final class SymbolTable {
     private final Map<String, LexemeInfo> table;
 
     public SymbolTable() {

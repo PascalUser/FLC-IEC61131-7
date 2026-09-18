@@ -23,7 +23,7 @@ package lexer.transformers;
  * @version 1.0
  * @since 1.0
  */
-public class OmitTrailingZerosInMagnitudes extends Transformer {
+public final class OmitTrailingZerosInMagnitudes extends Transformer {
 
     /**
      * Creates a transformer with the next handler in the chain.

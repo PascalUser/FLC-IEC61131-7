@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class RealOutOfRange extends Warning {
+public final class RealOutOfRange extends Warning {
     private final String realLexeme;
 
     public RealOutOfRange(int line, String outOfBoundReal) {

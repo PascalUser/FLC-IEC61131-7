@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class BinaryOutOfRange extends Warning {
+public final class BinaryOutOfRange extends Warning {
     private final String binLexeme;
 
     public BinaryOutOfRange(int line, String outOfBoundBinary) {

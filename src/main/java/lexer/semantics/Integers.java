@@ -17,7 +17,7 @@ import utils.enums.Subtype;
  * @version 1.0
  * @since 1.0
  */
-public class Integers extends NumbersAnalyzer {
+public final class Integers extends NumbersAnalyzer {
     private static final long MIN_SINT = -128L;
     private static final long MAX_SINT =  127L;
     private static final long MIN_INT = -32768L;

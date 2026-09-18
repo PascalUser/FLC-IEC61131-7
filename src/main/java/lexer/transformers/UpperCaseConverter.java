@@ -12,7 +12,7 @@ package lexer.transformers;
  * @version 1.0
  * @since 1.0
  */
-public class UpperCaseConverter extends Transformer {
+public final class UpperCaseConverter extends Transformer {
     public UpperCaseConverter(Transformer next) {
         super(next);
     }

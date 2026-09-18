@@ -13,7 +13,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class IntervalConstructionError extends Error {
+public final class IntervalConstructionError extends Error {
     private final String intervalLexeme;
 
     public IntervalConstructionError(int line, String invalidInterval) {

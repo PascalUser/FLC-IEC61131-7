@@ -19,14 +19,22 @@ public final class LexicalPreprocessors {
                     )
                 )
             );
-    // Numeric Literals
+
+    // Discrete Numeric Literals
     public static final Transformer NATURALS    = new UnderscoreRemover(new StripLeadingZeros(null));
     public static final Transformer INTEGERS    = new UnderscoreRemover(new StripLeadingZeros(null));
-    // TODO: trailing zeros, leading zeros
-    public static final Transformer REALS       = new UnderscoreRemover(new StripLeadingZeros(null));
     public static final Transformer BINARY      = new UnderscoreRemover(new StripBaseNumberLeadingZeros(null));
     public static final Transformer OCTAL       = new UnderscoreRemover(new StripBaseNumberLeadingZeros(null));
     public static final Transformer HEXADECIMAL = new UnderscoreRemover(new StripBaseNumberLeadingZeros(null));
+
+    // Real Literals
+    public static final Transformer REALS       =
+            new UnderscoreRemover(
+                    new StripTrailingZeros(
+                            new StripLeadingZeros(null)
+                    )
+            );
+
     // String Literals
     public static final Transformer STRINGS  = new StringHexResolver(new StringEscapeResolver(null));
     public static final Transformer WSTRINGS = new WStringHexResolver(new StringEscapeResolver(null));

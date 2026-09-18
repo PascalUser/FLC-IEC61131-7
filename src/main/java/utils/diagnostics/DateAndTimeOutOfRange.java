@@ -8,7 +8,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class DateAndTimeOutOfRange extends Error {
+public final class DateAndTimeOutOfRange extends Error {
     private final String dateTimeLexeme;
 
     public DateAndTimeOutOfRange(int line, String outOfBoundDateTime) {

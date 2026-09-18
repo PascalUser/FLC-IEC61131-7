@@ -25,7 +25,7 @@ import java.time.format.DateTimeParseException;
  * @version 1.0
  * @since 1.0
  */
-public class DateAndDayTimes implements SemanticAnalyzer {
+public final class DateAndDayTimes implements SemanticAnalyzer {
 
     @Override
     public Result analyze(LexicalContext ctx) {

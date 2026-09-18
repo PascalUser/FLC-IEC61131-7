@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class IntegerOutOfRange extends Warning {
+public final class IntegerOutOfRange extends Warning {
     private final String intLexeme;
 
     public IntegerOutOfRange(int line, String outOfBoundInteger) {

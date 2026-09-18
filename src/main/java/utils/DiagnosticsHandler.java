@@ -19,7 +19,7 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
-public class DiagnosticsHandler {
+public final class DiagnosticsHandler {
     private boolean hasErrors;
     private final List<Diagnostic> diagnostics;
 

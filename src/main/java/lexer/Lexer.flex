@@ -14,6 +14,7 @@ import lexer.semantics.SemanticAnalyzer;
 %implements Parser.Lexer
 %int
 %line
+%final
 
 %eofval{
     return Parser.Lexer.YYEOF;

@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class TimeOfDayOutOfRange extends Error {
+public final class TimeOfDayOutOfRange extends Error {
     private final String timeLexeme;
 
     public TimeOfDayOutOfRange(int line, String outOfBoundTime) {

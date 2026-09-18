@@ -1,6 +1,6 @@
 package lexer.transformers;
 
-public class WStringHexResolver extends HexResolver {
+public final class WStringHexResolver extends HexResolver {
 
     public WStringHexResolver(Transformer next) {
         super(next);

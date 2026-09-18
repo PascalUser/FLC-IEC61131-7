@@ -11,7 +11,7 @@ package utils.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public class HexadecimalOutOfRange extends Warning {
+public final class HexadecimalOutOfRange extends Warning {
     private final String hexLexeme;
 
     public HexadecimalOutOfRange(int line, String outOfBoundHexadecimal) {

@@ -12,7 +12,7 @@ package lexer.transformers;
  * @version 1.0
  * @since 1.0
  */
-public class StripLeadingZeros extends Transformer {
+public final class StripLeadingZeros extends Transformer {
     public StripLeadingZeros(Transformer next) {
         super(next);
     }
