@@ -5,17 +5,17 @@ import java.util.HashMap;
 
 public final class Struct implements Initialization {
     private String status = null;
-    private final Map<String, String> map = new HashMap<>();
+    private final Map<String, Initialization> map = new HashMap<>();
 
-    public String add(final String key, final String value) {
+    public Initialization add(final String key, final Initialization initialValue) {
         if (status == null) {
             status = key;
         }
-        return map.put(key, value);
+        return map.put(key, initialValue);
     }
 
     @Override
-    public Initialization set(final String value) {
+    public Struct setVariableName(final String value) {
         if (!map.containsKey(value)) {
             throw new RuntimeException("Invalid use of Struct Initialization");
         }
@@ -24,10 +24,10 @@ public final class Struct implements Initialization {
     }
 
     @Override
-    public String get() {
+    public String getInitialValue() {
         if (status == null) {
             throw new RuntimeException("Invalid use of Struct Initialization");
         }
-        return map.get(status);
+        return map.get(status).getInitialValue();
     }
 }

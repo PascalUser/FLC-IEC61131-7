@@ -8,10 +8,12 @@
     import java.util.ArrayList;
     import java.util.Collections;
 
-    import utils.enums.*;
+    import utils.LexemeInfo;
     import utils.SymbolTable;
+    import utils.enums.*;
     import utils.builders.LexemeInfoBuilder;
 
+    import parser.initializations.*;
     import parser.publishers.*;
     import parser.utils.NameMangler;
 }
@@ -43,20 +45,6 @@
 %token SINT INT DINT LINT USINT UINT UDINT ULINT REAL LREAL
 %token <String> NUMERIC_LITERAL STRING_LITERAL TIME_LITERAL BOOLEAN_LITERAL
 %token ARRAY
-
-%type <List<Publisher>>
-    var_init_decl_list
-    type_declaration_list
-    structure_field_declaration_list
-
-%type <Publisher>
-    var_init_decl
-    type_declaration
-    structure_field_declaration
-
-%type <List<String>>
-    identifier_list
-    enumerated_list
 
 %type <Subtype>
     signed_integer_type_name
@@ -103,6 +91,14 @@
     // other
     range
 
+%type <Publisher>
+    var_init_decl
+    type_declaration
+
+%type <List<Publisher>>
+    var_init_decl_list
+    type_declaration_list
+
 %type <String>
     constant
     string_constant
@@ -111,6 +107,13 @@
     numeric_constant
     identifier_with_opt_mangling
     type_name
+    // Structures
+    structure_field_declaration
+
+%type <List<String>>
+    identifier_list
+    enumerated_list
+    structure_field_declaration_list
 
 %%
 
@@ -386,7 +389,7 @@ var_declarations:
     VAR var_constant_spec var_init_decl_list ';' END_VAR
     { 
         Compound variables = new Compound($3);
-        variables.source(Source.NONE).publish();
+        variables.source(Source.INTERNAL).publish();
     }
 ;
 
@@ -838,10 +841,14 @@ type_declaration:
     {
         this.nameMangler.popScope();
 
-        List<String> left_identifiers = new ArrayList<>();
-        left_identifiers.add($1);
+        List<String> left_identifier = new ArrayList<>();
+        left_identifier.add($1);
 
-        $$ = new Declaration(this.symbolTable, left_identifiers, $3.use(Use.TYPE));
+        $$ = new Declaration(
+            this.symbolTable,
+            left_identifier,
+            $3.use(Use.TYPE)
+        );
     }
 ;
 
@@ -866,25 +873,28 @@ type_spec_init:
 structure_specification:
     STRUCT structure_field_declaration_list END_STRUCT
     {
-        // Builds a group of declarations
-        Publisher declarations = new Compound($2);
+        List<String> structParameters = $2;
+        Struct structInitialValues = new Struct();
 
-        // Publish declarations on SymbolTable and returns published keys
-        List<String> structVariables = declarations.publish();
+        for (String field : structParameters) {
+            String fieldName = this.nameMangler.getNameMangled(field);
+            LexemeInfo fieldMetadata = this.symbolTable.get(fieldName);
+            structInitialValues.add(field, (Initialization) fieldMetadata.initialValue);
+        }
 
-        // Builds a LexemeInfoBuilder because STRUCT ... END_STRUCT is on the right side
         $$ = new LexemeInfoBuilder()
-                    .type(Type.STRUCT)
-                    .parameters(structVariables);
+            .type(Type.STRUCT)
+            .parameters(structParameters)
+            .initialValue(structInitialValues);
     }
 ;
 
 structure_field_declaration_list:
     structure_field_declaration ';'
     {
-        List<Publisher> declarations = new ArrayList<>();
-        declarations.add($1);
-        $$ = declarations;
+        List<String> structParameters = new ArrayList<>();
+        structParameters.add($1);
+        $$ = structParameters;
     }
     | structure_field_declaration_list structure_field_declaration ';'
     {
@@ -892,14 +902,21 @@ structure_field_declaration_list:
         $$ = $1;
     }
 ;
+
 structure_field_declaration:
     IDENTIFIER ':' structure_field_spec_init
     {
-        List<String> left_identifiers = new ArrayList<>();
-        left_identifiers.add(this.nameMangler.getNameMangled($1));
+        List<String> left_identifier = new ArrayList<>();
+        left_identifier.add(this.nameMangler.getNameMangled($1));
 
-        // Builds a declaration with the symbol table, the left identifiers and the metadata associated to them
-        $$ = new Declaration(this.symbolTable, left_identifiers, $3);
+        // Builds the declaration of the structure field and publishes it
+        Declaration fieldDeclaration = new Declaration(
+            this.symbolTable,
+            left_identifier,
+            $3.use(Use.FIELD).source(Source.NONE)
+        );
+
+        $$ = $1;
     }
 ;
 

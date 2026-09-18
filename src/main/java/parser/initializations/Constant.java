@@ -8,12 +8,12 @@ public final class Constant implements Initialization {
     }
 
     @Override
-    public Constant set(final String value) {
+    public Constant setVariableName(final String value) {
         return this;
     }
 
     @Override
-    public String get() {
+    public String getInitialValue() {
         return value;
     }
 }
