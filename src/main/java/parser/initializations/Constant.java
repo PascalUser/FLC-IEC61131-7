@@ -1,14 +1,14 @@
 package parser.initializations;
 
-public class Constant implements Initialization {
-    String value;
+public final class Constant implements Initialization {
+    private final String value;
 
-    public Constant(String value) {
+    public Constant(final String value) {
         this.value = value;
     }
 
     @Override
-    public Constant set(String value) {
+    public Constant set(final String value) {
         return this;
     }
 

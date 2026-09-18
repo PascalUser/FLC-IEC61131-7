@@ -7,13 +7,13 @@
  * @version 1.0
  * @since 1.0
  */
-public class Main {
+class Main {
     /**
      * Starts the compiler.
      *
      * @param args command-line arguments (not used)
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         System.out.println("Hola");
     }
 }

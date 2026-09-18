@@ -1,5 +1,6 @@
 package parser.publishers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import utils.SymbolTable;
 import utils.builders.*;
 import utils.enums.*;
@@ -18,7 +19,11 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
-public class Declaration implements Publisher {
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP"},
+    justification = "LexemeInfoBuilder is a builder of a DTO with direct collection references by design"
+)
+public final class Declaration implements Publisher {
     private final SymbolTable symbolTable;
     private final List<String> variables;
     private final LexemeInfoBuilder builder;

@@ -3,11 +3,11 @@ package parser.initializations;
 import java.util.Map;
 import java.util.HashMap;
 
-public class Struct implements Initialization {
+public final class Struct implements Initialization {
     private String status = null;
     private final Map<String, String> map = new HashMap<>();
 
-    public String add(String key, String value) {
+    public String add(final String key, final String value) {
         if (status == null) {
             status = key;
         }
@@ -15,7 +15,7 @@ public class Struct implements Initialization {
     }
 
     @Override
-    public Initialization set(String value) {
+    public Initialization set(final String value) {
         if (!map.containsKey(value)) {
             throw new RuntimeException("Invalid use of Struct Initialization");
         }

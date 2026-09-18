@@ -1,5 +1,6 @@
 package utils.builders;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import utils.LexemeInfo;
 import utils.enums.*;
 
@@ -17,16 +18,22 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
-public class LexemeInfoBuilder implements LexemeInfoSchema {
-    private Type type               = Type.UNKNOWN;
-    private Subtype subtype         = Subtype.UNKNOWN;
-    private String customType       = null;
-    private Use use                 = Use.UNKNOWN;
-    private Source source           = Source.UNKNOWN;
-    private List<String> inferiorLimit    = null;
-    private List<String> superiorLimit    = null;
-    private List<String> parameters = null;
-    private Object initialValue     = null;
+
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP2"},
+    justification = "LexemeInfoBuilder is a builder of a DTO with direct collection references by design"
+)
+
+public final class LexemeInfoBuilder implements LexemeInfoSchema {
+    private Type type                   = Type.UNKNOWN;
+    private Subtype subtype             = Subtype.UNKNOWN;
+    private String customType           = null;
+    private Use use                     = Use.UNKNOWN;
+    private Source source               = Source.UNKNOWN;
+    private List<String> inferiorLimit  = null;
+    private List<String> superiorLimit  = null;
+    private List<String> parameters     = null;
+    private Object initialValue         = null;
 
     @Override
     public LexemeInfoBuilder type(Type type) {

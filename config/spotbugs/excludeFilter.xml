@@ -1,9 +1,13 @@
 <FindBugsFilter>
     <Match>
-        <Class name="~.*Parser"/>
+        <Class name="~.*Parser.*"/>
     </Match>
 
     <Match>
-        <Class name="~.*Lexer"/>
+        <Class name="~.*Lexer.*"/>
+    </Match>
+
+    <Match>
+        <Class name="~.*LucaInfo"/>
     </Match>
 </FindBugsFilter>

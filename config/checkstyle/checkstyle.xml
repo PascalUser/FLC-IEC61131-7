@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="fileExtensions" value="java, properties, xml"/>
+
+    <module name="LineLength">
+        <!-- Line length limit synchronized with IntelliJ IDEA default settings -->
+        <property name="max" value="120"/>
+
+        <!-- Ignores long lines in package declarations, imports, and URLs to prevent false positives -->
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- Additional code style rules (e.g., naming conventions, whitespaces) can be configured here -->
+    </module>
+</module>

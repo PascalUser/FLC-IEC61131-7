@@ -1,6 +1,10 @@
 package utils;
 
-import utils.enums.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import utils.enums.Source;
+import utils.enums.Subtype;
+import utils.enums.Type;
+import utils.enums.Use;
 
 import java.util.List;
 
@@ -16,6 +20,14 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
+@SuppressFBWarnings(
+    value = {
+        "EI_EXPOSE_REP2",
+        "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+        "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"
+    },
+    justification = "LexemeInfo is a DTO with public fields and direct collection references by design"
+)
 public class LexemeInfo {
     /** The general type classification (simple, array, struct, etc.). */
     public Type type;
@@ -35,7 +47,7 @@ public class LexemeInfo {
     /** Lower bound for subrange and array types. */
     public List<String> inferiorLimit;
 
-    /** Upper bound for subrange and array  types. */
+    /** Upper bound for subrange and array types. */
     public List<String> superiorLimit;
 
     /** Parameter list for function blocks. */
@@ -58,15 +70,15 @@ public class LexemeInfo {
      * @param initialValue   initial lexeme
      */
     public LexemeInfo(
-        Type type,
-        Subtype subtype,
-        String customType,
-        Use use,
-        Source source,
-        List<String> inferiorLimit,
-        List<String> superiorLimit,
-        List<String> parameters,
-        Object initialValue
+            Type type,
+            Subtype subtype,
+            String customType,
+            Use use,
+            Source source,
+            List<String> inferiorLimit,
+            List<String> superiorLimit,
+            List<String> parameters,
+            Object initialValue
     ) {
         this.type = type;
         this.subtype = subtype;

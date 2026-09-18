@@ -2,7 +2,7 @@ package lexer.semantics;
 
 import utils.enums.Subtype;
 
-public class WStrings extends StringsAnalyzer {
+public final class WStrings extends StringsAnalyzer {
 
     @Override
     protected Subtype getSubtype() {

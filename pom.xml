@@ -4,34 +4,59 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Metadata-->
+    <!-- ============================== Metadata ============================== -->
     <groupId>ar.edu.unicen.exa.alumnos.matias.victoriano</groupId>
     <artifactId>flc-iec61131-7-compiler</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <!--Global Variables -->
+    <!-- ============================= Properties ============================= -->
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- Compilation -->
+        <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!-- Plugin versions -->
+        <surefire.version>3.5.2</surefire.version>
         <jflex.plugin.version>1.9.1</jflex.plugin.version>
-        <spotbugs.plugin.version>4.8.3.1</spotbugs.plugin.version>
         <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
         <checkstyle.version>3.6.0</checkstyle.version>
+        <spotbugs.plugin.version>4.8.3.1</spotbugs.plugin.version>
+        <jacoco.plugin.version>0.8.12</jacoco.plugin.version>
+        <sonar.plugin.version>4.0.0.4121</sonar.plugin.version>
+
+        <!-- Plugin Annotation Versions -->
+        <spotbugs.annotations.version>4.8.3</spotbugs.annotations.version>
+
+        <!-- Test dependencies versions -->
         <junit.version>5.11.4</junit.version>
-        <surefire.version>3.5.2</surefire.version>
         <mockito.version>3.12.4</mockito.version>
+
+        <!-- ================= SonarQube & Coverage Properties ================= -->
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.build.directory}/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.exclusions>**/Parser.java,**/Lexer.java,**/LucaInfo.java</sonar.exclusions>
+        <sonar.coverage.exclusions>**/Parser.java,**/Lexer.java,**/LucaInfo.java</sonar.coverage.exclusions>
     </properties>
 
-    <!--Integration with JUnit -->
+    <!-- ============================ Dependencies ============================ -->
     <dependencies>
+        <!-- Nullability annotations (@Nullable / @NonNull) -->
         <dependency>
             <groupId>org.jspecify</groupId>
             <artifactId>jspecify</artifactId>
             <version>1.0.0</version>
         </dependency>
 
+        <!-- SpotBugs Annotations: Used for @SuppressFBWarnings -->
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>${spotbugs.annotations.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- JUnit 5: Testing framework -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -39,13 +64,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Mockito: Mocking framework for tests -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -56,14 +81,43 @@
 
     <build>
         <plugins>
-            <!-- Surefire plugin -->
+            <!-- Surefire: Executes tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
             </plugin>
 
-            <!-- JFlex -->
+            <!-- JaCoCo: Analiza y genera el reporte de cobertura de código para SonarQube -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- SonarQube Plugin -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar.plugin.version}</version>
+            </plugin>
+
+            <!-- JFlex: Generates the Java lexer -->
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>
@@ -83,15 +137,19 @@
                 </executions>
             </plugin>
 
-            <!-- Checkstyle (integrated with maven plugin) -->
+            <!-- Checkstyle -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${checkstyle.plugin.version}</version>
                 <configuration>
+                    <configLocation>config/checkstyle/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
-                    <failsOnError>false</failsOnError>
-                    <excludes>**/Parser.java,**/Lexer.java</excludes>
+                    <failsOnError>true</failsOnError>
+                    <failOnViolation>true</failOnViolation>
+                    <maxAllowedViolations>100</maxAllowedViolations>
+                    <violationSeverity>error</violationSeverity>
+                    <excludes>**/Parser.java,**/Lexer.java,**/LucaInfo.java</excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -104,14 +162,15 @@
                 </executions>
             </plugin>
 
-            <!-- SpotBugs plugin -->
+            <!-- SpotBugs -->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>${spotbugs.plugin.version}</version>
                 <configuration>
-                    <effort>Max</effort>
-                    <threshold>Low</threshold>
+                    <threshold>Medium</threshold>
+                    <maxAllowedViolations>5</maxAllowedViolations>
+                    <failThreshold>Medium</failThreshold>
                     <failOnError>true</failOnError>
                     <excludeFilterFile>config/spotbugs/excludeFilter.xml</excludeFilterFile>
                 </configuration>
@@ -125,7 +184,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

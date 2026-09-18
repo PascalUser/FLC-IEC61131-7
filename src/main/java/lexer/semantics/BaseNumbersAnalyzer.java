@@ -23,7 +23,7 @@ public abstract class BaseNumbersAnalyzer extends NumbersAnalyzer {
     private static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615");
 
     @Override
-    protected ParsedValue parse(String lexeme) {
+    protected ParsedValue parse(final String lexeme) {
         final int prefixIndex = lexeme.indexOf("#");
         final String digits = lexeme.substring(prefixIndex + 1);
 
@@ -54,7 +54,7 @@ public abstract class BaseNumbersAnalyzer extends NumbersAnalyzer {
      * @param value the parsed BigInteger lexeme
      * @return the appropriate subtype
      */
-    private Subtype getRange(BigInteger value) {
+    private Subtype getRange(final BigInteger value) {
         if (value.compareTo(MAX_USINT) <= 0) return Subtype.BYTE;
         if (value.compareTo(MAX_UINT)  <= 0) return Subtype.WORD;
         if (value.compareTo(MAX_UDINT) <= 0) return Subtype.DWORD;

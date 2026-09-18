@@ -5,11 +5,11 @@ import utils.SymbolTable;
 /* TODO: clase que con un switch case puede determinar el valor inicial de una variable de tipo primitivo
  *   sin inicializar
  * */
-public class InitialValueResolver {
+public final class InitialValueResolver {
 
-    public InitialValueResolver(SymbolTable symbolTable) { }
+    public InitialValueResolver(final SymbolTable symbolTable) { }
 
-    public String resolve(int tokenNumber) {
+    public String resolve(final int tokenNumber) {
         switch (tokenNumber) {
             case Parser.Lexer.BOOL:
             case Parser.Lexer.REAL:
