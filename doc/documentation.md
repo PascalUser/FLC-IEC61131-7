@@ -1,0 +1,542 @@
+# FLC-IEC61131-7 Compiler: Technical Documentation
+
+## Table of Contents
+
+1. [Introduction](#1-introduction)
+2. [System Architecture](#2-system-architecture)
+3. [Lexical Analysis](#3-lexical-analysis)
+4. [Syntactic Analysis](#4-syntactic-analysis)
+5. [Symbol Table and Repository Pattern](#5-symbol-table-and-repository-pattern)
+6. [Semantic Information Model](#6-semantic-information-model)
+7. [Initialization System](#7-initialization-system)
+8. [Data Type Support](#8-data-type-support)
+9. [Error Handling and Diagnostics](#9-error-handling-and-diagnostics)
+10. [Build and Integration](#10-build-and-integration)
+
+---
+
+## 1. Introduction
+
+### 1.1 Purpose
+
+This document provides the consolidated technical documentation for the **FLC-IEC61131-7 Compiler**, a Domain Specific Language (DSL) compiler for the IEC 61131-7 standard (Fuzzy Control Language). The compiler translates FCL source code into an intermediate representation suitable for further processing or execution.
+
+### 1.2 Scope
+
+The compiler implements the declaration and initialization subsets of IEC 61131-7, including:
+- Function block declarations with VAR_INPUT, VAR_OUTPUT, VAR sections
+- User-defined data types (STRUCT, ENUMERATED, SUBRANGE, ARRAY)
+- Complex initialization expressions for all supported types
+- Fuzzify/Defuzzify blocks and rule blocks (syntactic recognition)
+
+### 1.3 Authors
+
+- **Matias Ortiz**
+- **Victoriano Etcheverría**
+
+### 1.4 Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| Lexical Analyzer Generator | JFlex 1.8+ |
+| Parser Generator | GNU Bison 3.8.2 (Java skeleton) |
+| Target Language | Java 17+ |
+| Build System | Maven/Gradle (project dependent) |
+
+---
+
+## 2. System Architecture
+
+### 2.1 Architectural Overview
+
+The compiler follows a **monolithic architecture** where the **syntactic analyzer (parser) acts as the main entry point** orchestrating the entire compilation pipeline.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        COMPILER PIPELINE                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Source Code (.fcl)                                             │
+│       │                                                          │
+│       ▼                                                          │
+│  ┌─────────────┐    Tokens (LexemeInfo)    ┌─────────────────┐  │
+│  │   LEXER     │ ─────────────────────────▶ │    PARSER       │  │
+│  │  (JFlex)    │                            │   (Bison)       │  │
+│  └─────────────┘                            └────────┬────────┘  │
+│                                                        │          │
+│                                                        ▼          │
+│                                               ┌─────────────────┐  │
+│                                               │  SYMBOL TABLE   │  │
+│                                               │   (Repository)  │  │
+│                                               └─────────────────┘  │
+│                                                        │          │
+│                                                        ▼          │
+│                                               ┌─────────────────┐  │
+│                                               │  DIAGNOSTICS    │  │
+│                                               │   HANDLER       │  │
+│                                               └─────────────────┘  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Figure 1: Monolithic Compiler Architecture with Parser as Main Orchestrator**
+
+### 2.2 Centralized Repository Pattern
+
+The `utils` package implements a **centralized repository pattern** serving as the **single source of truth** for all compilation stages:
+
+| Component | Responsibility |
+|-----------|----------------|
+| `SymbolTable` | HashMap-based storage for `LexemeInfo` entries |
+| `LexemeInfo` | Immutable DTO holding complete semantic attributes |
+| `LexemeInfoBuilder` | Fluent builder implementing `LexemeInfoSchema` |
+| `DiagnosticsHandler` | Centralized error/warning collection and reporting |
+
+This design ensures **decoupling** between lexical, syntactic, and semantic phases while maintaining **data consistency** through a shared mutable state (the symbol table) accessed via well-defined interfaces.
+
+### 2.3 Parser as Entry Point
+
+The generated `Parser` class (from `Parser.y`) receives:
+- A `Lexer` instance (implementing `Parser.Lexer` interface)
+- A shared `SymbolTable` instance
+- A `NameMangler` for qualified identifier resolution
+
+The parser drives the compilation by invoking `yylex()` on the lexer and executing semantic actions that populate the symbol table via the **Publisher pattern**.
+
+---
+
+## 3. Lexical Analysis
+
+### 3.1 Lexer Architecture (`src/main/java/lexer/`)
+
+The lexer is generated by JFlex from `Lexer.flex` and implements the `Parser.Lexer` interface.
+
+#### 3.1.1 Token Recognition Pipeline
+
+Each lexical rule in the JFlex specification follows a **two-phase pipeline**:
+
+```java
+// In Lexer.flex - typical rule structure
+{REAL_NUMBER} {
+    final int token = processAndSaveYylval(preprocessor.REALS, analyzer.REALS);
+    if (token != Lexer.YYerror) return Lexer.NUMERIC_LITERAL;
+    yybegin(YYINITIAL);
+}
+```
+
+1. **Preprocessing** (`LexicalPreprocessors`): Chain of `Transformer` decorators that normalize the raw lexeme
+2. **Semantic Analysis** (`LexicalAnalyzers`): `SemanticAnalyzer` implementations that validate and convert to semantic values
+
+#### 3.1.2 Transformer Chains (Decorator Pattern)
+
+Each literal category has a dedicated transformer chain:
+
+| Literal Type | Transformer Chain |
+|--------------|-------------------|
+| **INTERVALS** | `UnderscoreRemover` → `UpperCaseConverter` → `OmitLeadingZeroMagnitudes` → `OmitTrailingZeroMagnitudes` → `OmitLeadingZerosInMagnitudes` → `OmitTrailingZerosInMagnitudes` |
+| **NATURALS/INTEGERS** | `UnderscoreRemover` → `StripLeadingZeros` |
+| **BINARY/OCTAL/HEX** | `UnderscoreRemover` → `StripBaseNumberLeadingZeros` |
+| **REALS** | `UnderscoreRemover` → `StripTrailingZeros` → `StripLeadingZeros` |
+| **STRINGS/WSTRINGS** | `StringHexResolver`/`WStringHexResolver` → `StringEscapeResolver` |
+| **IDENTIFIERS** | `UpperCaseConverter` |
+
+#### 3.1.3 Semantic Analyzers
+
+Each analyzer implements `SemanticAnalyzer` and returns a `Result` containing:
+- `token`: The parser token type
+- `lexeme`: The semantic value (often a `LexemeInfo` or string)
+
+Key analyzers:
+- `Naturals`, `Integers`, `Reals`, `Binary`, `Octal`, `Hexadecimal`: Numeric literal validation with range checking
+- `Dates`, `DayTimes`, `DateAndDayTimes`, `Intervals`: Temporal literal parsing per IEC 61131-7
+- `Strings`, `WStrings`: String literal processing with escape sequence resolution
+- `Identifiers`: Keyword vs. user-defined identifier resolution using `ReservedWords`
+
+### 3.2 Reserved Words Handling
+
+`ReservedWords.java` maintains a mapping from uppercase identifiers to parser token types, enabling the lexer to distinguish keywords (e.g., `TYPE`, `VAR`, `REAL`) from user identifiers.
+
+---
+
+## 4. Syntactic Analysis
+
+### 4.1 Parser Generation
+
+The parser is generated by **GNU Bison 3.8.2** using the **LALR(1) Java skeleton** from `src/main/java/parser/Parser.y`.
+
+### 4.2 Grammar Overview
+
+The grammar recognizes the following major constructs (non-exhaustive):
+
+| Nonterminal | Description |
+|-------------|-------------|
+| `program` | Root: function block declaration |
+| `function_block_declaration` | `FUNCTION_BLOCK` ... `END_FUNCTION_BLOCK` |
+| `data_type_declaration` | `TYPE` ... `END_TYPE` with struct/enum/subrange/array |
+| `var_declarations` | `VAR`/`VAR_INPUT`/`VAR_OUTPUT` blocks |
+| `structure_specification` | `STRUCT` field declarations `END_STRUCT` |
+| `enumerated_specification` | `(IDENTIFIER {, IDENTIFIER})` |
+| `subrange_specification` | Base type + `RANGE_OP` bounds |
+| `array_specification` | `ARRAY [range_list] OF type` |
+| `initialized_array` | Repetition factors + element initializers |
+| `initialized_structure` | Field-wise initialization with `:=` |
+
+### 4.3 Semantic Actions and Publisher Pattern
+
+Semantic actions in `Parser.y` construct **Publisher** objects that defer symbol table population until `publish()` is called. This enables:
+
+1. **Attribute inheritance**: `Compound` publishers propagate `source`, `type`, etc. to child `Declaration` publishers
+2. **Deferred resolution**: Forward references to types not yet defined
+3. **Batch publishing**: Atomic commit of variable groups
+
+#### 4.3.1 Publisher Hierarchy
+
+```
+Publisher (interface)
+├── Declaration (single identifier list + builder)
+└── Compound (list of Publishers)
+```
+
+**Example from `Parser.y` (line 1017-1020):**
+```java
+// output_declarations: VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
+Compound variables = new Compound(((List<Publisher>)(yystack.valueAt(2))));
+variables.source(Source.OUT).publish();
+```
+
+#### 4.3.2 Declaration Flow
+
+```
+VAR x, y : INT := 10; END_VAR
+        │
+        ▼
+identifier_list = [x, y]
+        │
+        ▼
+var_spec_init → simple_spec_init → initialized_simple
+        │                            (INT, ASSIGN_OP, NUMERIC_LITERAL)
+        ▼
+LexemeInfoBuilder{type=SIMPLE, subtype=INT, initialValue="10"}
+        │
+        ▼
+Declaration(symbolTable, [x, y], builder).use(VARIABLE)
+        │
+        ▼
+publish() → symbolTable.put("X", LexemeInfo(...))
+            symbolTable.put("Y", LexemeInfo(...))
+```
+
+### 4.4 Name Mangling
+
+`NameMangler` (in `parser.utils`) generates **qualified lexeme keys** for nested structures:
+- `COLOR_TYPE` (top-level type)
+- `COLOR_TYPE#CLASSIFICATION` (struct field)
+- `COLOR_TYPE#CLASSIFICATION#WHITE` (enum value)
+- `PIXELS[0,1,3]` (array element - conceptual)
+
+This ensures **global uniqueness** in the flat `SymbolTable` HashMap.
+
+---
+
+## 5. Symbol Table and Repository Pattern
+
+### 5.1 SymbolTable (`utils.SymbolTable`)
+
+```java
+public final class SymbolTable {
+    private final Map<String, LexemeInfo> table = new HashMap<>();
+    
+    public LexemeInfo get(String lexeme) { ... }
+    public LexemeInfo put(String lexeme, LexemeInfo info) { ... }
+    public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) { ... }
+    public int size() { ... }
+}
+```
+
+**Characteristics:**
+- **Singleton-like**: Single instance shared across Lexer, Parser, and semantic phases
+- **Thread-unsafe**: Designed for single-threaded compilation
+- **Flat namespace**: Qualified keys via `NameMangler` prevent collisions
+
+### 5.2 LexemeInfo (`utils.LexemeInfo`)
+
+Immutable DTO (data transfer object) with public final fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `Type` | General classification: SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT |
+| `subtype` | `Subtype` | Specific primitive or CUSTOM |
+| `customType` | `String` | Name when `subtype == CUSTOM` |
+| `use` | `Use` | VARIABLE, FIELD, TYPE, MACRO, LITERAL, FUNCTION, RULE, OPTION |
+| `source` | `Source` | IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE |
+| `inferiorLimit` | `List<String>` | Lower bounds (subrange/array) |
+| `superiorLimit` | `List<String>` | Upper bounds (subrange/array) |
+| `parameters` | `List<String>` | Struct fields / enum values / FB params |
+| `initialValue` | `Object` | Polymorphic: String, Constant, Struct, ArrayInitialization |
+
+### 5.3 Builder Pattern: LexemeInfoSchema / LexemeInfoBuilder
+
+**Interface `LexemeInfoSchema`** defines the fluent API contract:
+```java
+public interface LexemeInfoSchema {
+    LexemeInfoSchema type(Type type);
+    LexemeInfoSchema subtype(Subtype subtype);
+    LexemeInfoSchema customType(String customType);
+    LexemeInfoSchema source(Source source);
+    LexemeInfoSchema use(Use use);
+    LexemeInfoSchema inferiorLimit(List<String> inferiorLimit);
+    LexemeInfoSchema superiorLimit(List<String> superiorLimit);
+    LexemeInfoSchema parameters(List<String> parameters);
+    LexemeInfoSchema initialValue(Object initialValue);
+}
+```
+
+**`LexemeInfoBuilder`** implements this interface and provides `build()` → `LexemeInfo`.
+
+**`Publisher`** extends `LexemeInfoSchema`, enabling both `Declaration` and `Compound` to participate in the fluent configuration chain.
+
+---
+
+## 6. Semantic Information Model
+
+### 6.1 Type Classification Hierarchy
+
+```
+Type (enum)
+├── UNKNOWN
+├── SIMPLE          → Subtype: INT, REAL, BOOL, TIME, DATE, STRING, etc.
+├── ENUMERATE       → Subtype: INT (implicit), parameters = enum values
+├── SUBRANGE        → Subtype: base type (INT, UINT, etc.), inferior/superior limits
+├── ARRAY           → Subtype: CUSTOM, customType = element type, inferior/superior = bounds
+└── STRUCT          → Subtype: NONE, parameters = field names, initialValue = field map
+```
+
+### 6.2 Use Classification
+
+| Use Value | Applied To |
+|-----------|------------|
+| `VARIABLE` | Declared variables in VAR sections |
+| `FIELD` | Structure fields |
+| `TYPE` | Type declarations (TYPE ... END_TYPE) |
+| `MACRO` | Enumeration literals (WHITE, CENTROID, etc.) |
+| `LITERAL` | Numeric/string/time constants |
+| `FUNCTION` | Standard function blocks |
+| `RULE` | Rule block rules |
+| `OPTION` | Option block settings |
+
+### 6.3 Source Classification
+
+| Source Value | Block Context |
+|--------------|---------------|
+| `IN` | `VAR_INPUT` |
+| `OUT` | `VAR_OUTPUT` |
+| `INTERNAL` | `VAR` |
+| `FUZZIFY` | `FUZZIFY` block variables |
+| `DEFUZZIFY` | `DEFUZZIFY` block variables |
+| `NONE` | Type declarations, global constants |
+
+---
+
+## 7. Initialization System
+
+### 7.1 Architecture
+
+Based on `Initializers_Architecture.pdf` (Figure 2), the initialization system uses a **polymorphic hierarchy**:
+
+```
+Initialization (interface)
+├── Constant          → Simple literal: value = "0.5"
+├── ArrayInitialization → Repeated elements: List<RepeatedInitialization>
+│   └── RepeatedInitialization → count + Initialization
+└── Struct            → Field map: HashMap<String, String>
+```
+
+**Figure 2: Initialization Class Hierarchy** (from `doc/input/06_Initializers_Architecture_Diagram.pdf`)
+
+### 7.2 Initialization Resolution
+
+The parser constructs initialization objects during semantic actions:
+
+| Construct | Initialization Type | Example |
+|-----------|---------------------|---------|
+| `x : REAL := 1.5` | `Constant("1.5")` | Simple assignment |
+| `arr : ARRAY[1..3] OF INT := 2(5), 7` | `ArrayInitialization` | Repetition factor |
+| `s : STRUCT a:INT; b:REAL END_STRUCT := (a:=1, b:=2.0)` | `Struct` | Field-wise init |
+
+### 7.3 InitialValueResolver (Incomplete)
+
+`InitialValueResolver.java` provides default values for uninitialized variables but is marked **TODO** with known architectural coupling issues (parser depending on lexer internals).
+
+---
+
+## 8. Data Type Support
+
+### 8.1 Elementary Types (IEC 61131-7 Compliant)
+
+| Category | Types |
+|----------|-------|
+| **Boolean** | `BOOL` |
+| **Signed Integers** | `SINT` (8-bit), `INT` (16-bit), `DINT` (32-bit), `LINT` (64-bit) |
+| **Unsigned Integers** | `USINT`, `UINT`, `UDINT`, `ULINT` |
+| **Floating Point** | `REAL` (32-bit), `LREAL` (64-bit) |
+| **Time/Date** | `TIME`, `DATE`, `TIME_OF_DAY`, `DATE_AND_TIME` |
+| **Bit Strings** | `BYTE`, `WORD`, `DWORD`, `LWORD` |
+| **Strings** | `STRING`, `WSTRING` |
+
+### 8.2 User-Defined Types
+
+#### 8.2.1 Enumerated Types
+```fcl
+TYPE
+    Color : (RED, GREEN, BLUE);
+END_TYPE
+```
+- Symbol table entries for type, each enum value as `Use.MACRO`
+- Ordinal values assigned implicitly (0, 1, 2...)
+
+#### 8.2.2 Subrange Types
+```fcl
+TYPE
+    Percent : INT (0..100);
+END_TYPE
+```
+- Base type + `inferiorLimit`/`superiorLimit`
+- Can be used directly in `VAR` without prior `TYPE` declaration
+
+#### 8.2.3 Structured Types (STRUCT)
+```fcl
+TYPE
+    Motor : STRUCT
+        speed : REAL;
+        enabled : BOOL;
+    END_STRUCT;
+END_TYPE
+```
+- Nested structs supported
+- Field initialization with named syntax: `(speed := 10.0, enabled := TRUE)`
+- Partial initialization allowed (unspecified fields get defaults)
+
+#### 8.2.4 Array Types
+```fcl
+VAR
+    temperatures : ARRAY[1..10, 1..5] OF REAL := 50(0.0);
+END_VAR
+```
+- Multi-dimensional with per-dimension bounds
+- Repetition factors: `count(value)` syntax
+- Nested initializers for arrays of structs
+
+### 8.3 Type Compatibility and Resolution
+
+- **Forward references**: Types can be used before declaration (resolved in second pass or via `putIfAbsent`)
+- **Custom type resolution**: `subtype == CUSTOM` + `customType` name → lookup in symbol table
+- **Struct field access**: Mangled names (`TYPE#FIELD`) enable direct symbol table lookup
+
+---
+
+## 9. Error Handling and Diagnostics
+
+### 9.1 Diagnostics Hierarchy
+
+```
+Diagnostic (abstract)
+├── Error
+│   ├── IntegerOutOfRange
+│   ├── RealOutOfRange
+│   ├── OctalOutOfRange
+│   ├── HexadecimalOutOfRange
+│   ├── BinaryOutOfRange
+│   ├── NaturalOutOfRange
+│   ├── IntervalOutOfRange
+│   ├── IntervalConstructionError
+│   ├── TimeOfDayOutOfRange
+│   ├── DateAndTimeOutOfRange
+│   └── DateOutOfRange
+└── Warning
+    └── StringLengthWarning
+```
+
+Located in `utils.diagnostics.*`. Each diagnostic captures:
+- Source location (line, column)
+- Offending lexeme
+- Descriptive message
+
+### 9.2 DiagnosticsHandler
+
+Centralized collector (singleton-like) aggregating diagnostics from:
+- Lexer (semantic analyzers)
+- Parser (syntax errors via `yyerror`)
+- Future: Semantic analysis passes
+
+### 9.3 Lexer Error Recovery
+
+Invalid characters trigger `yyerror` but lexer continues in `YYINITIAL` state. Semantic analyzer failures return `YYerror` token, causing parser error recovery.
+
+---
+
+## 10. Build and Integration
+
+### 10.1 Generated Sources
+
+| Source | Generator | Output |
+|--------|-----------|--------|
+| `Lexer.flex` | JFlex | `lexer/Lexer.java` |
+| `Parser.y` | Bison | `parser/Parser.java` (with `SymbolKind` enum) |
+
+### 10.2 Compilation Flow
+
+```bash
+# Typical build steps
+jflex src/main/java/lexer/Lexer.flex
+bison -o src/main/java/parser/Parser.java src/main/java/parser/Parser.y
+javac -d build/classes src/main/java/**/*.java
+```
+
+### 10.3 Entry Point
+
+The compiler is invoked by instantiating:
+```java
+SymbolTable symbolTable = new SymbolTable();
+DiagnosticsHandler diagnostics = new DiagnosticsHandler();
+NameMangler nameMangler = new NameMangler();
+
+Lexer lexer = new Lexer(symbolTable, diagnostics);
+Parser parser = new Parser(lexer, symbolTable, nameMangler);
+
+parser.yyparse();  // Returns 0 on success, 1 on error
+```
+
+After parsing, `symbolTable` contains all declarations with full semantic attributes, and `diagnostics` contains all errors/warnings.
+
+---
+
+## Appendices
+
+### A. File Mapping: Source Code to Documentation
+
+| Documentation Section | Source Files |
+|----------------------|--------------|
+| Lexical Analysis | `lexer/Lexer.flex`, `lexer/LexicalAnalyzers.java`, `lexer/LexicalPreprocessors.java`, `lexer/transformers/*`, `lexer/semantics/*` |
+| Syntactic Analysis | `parser/Parser.y`, `parser/Parser.java`, `parser/publishers/*` |
+| Symbol Table | `utils/SymbolTable.java`, `utils/LexemeInfo.java`, `utils/builders/*` |
+| Type System | `utils/enums/*` |
+| Initialization | `parser/initializations/*`, `parser/InitialValueResolver.java` |
+| Diagnostics | `utils/diagnostics/*`, `utils/DiagnosticsHandler.java` |
+
+### B. UML Diagrams Reference
+
+| Figure | Source File | Description |
+|--------|-------------|-------------|
+| Figure 1 | (this document) | Monolithic Architecture Overview |
+| Figure 2 | `doc/input/06_Initializers_Architecture_Diagram.pdf` | Initialization Class Hierarchy |
+| Figure 3 | `doc/input/07_LexemeInfoSchema_BuilderPattern_Diagram.pdf` | Builder Pattern for LexemeInfo |
+
+### C. Symbol Table Entry Examples
+
+See `doc/input/01_Array_Variable_Analysis.md` through `doc/input/05_Subrange_Variable_Analysis.md` for detailed symbol table dumps of representative IEC 61131-7 constructs.
+
+---
+
+*Document Version: 1.0*  
+*Last Updated: 2026-09-19*  
+*Generated from source code analysis and input specifications in `/doc/input`*
