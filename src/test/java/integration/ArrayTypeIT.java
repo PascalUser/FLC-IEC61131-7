@@ -56,60 +56,67 @@ public class ArrayTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK\n";
 
         SymbolTable st = parse(sourceCode);
+        List<String> diffs;
 
         // Assert STRUCT type declaration
-        assertTrue(LexemeInfoComparator.compare(st, "COLOR_TYPE", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
                 .subtype(Subtype.NONE)
                 .use(Use.TYPE)
                 .source(Source.NONE)
                 .parameters(Arrays.asList("CLASSIFICATION", "GAMMA"))
                 .initialValue(createMap("CLASSIFICATION", "COLOR_TYPE#CLASSIFICATION", "GAMMA", "COLOR_TYPE#GAMMA"))
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
         // Assert STRUCT field classification (ENUMERATE)
-        assertTrue(LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION", new LexemeInfoBuilder()
                 .type(Type.ENUMERATE)
                 .subtype(Subtype.INT)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .parameters(Arrays.asList("WHITE", "GRAY", "BLACK"))
                 .initialValue("0")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
         // Assert ENUM MACRO constants
-        assertTrue(LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION#WHITE", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION#WHITE", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
                 .initialValue("0")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        assertTrue(LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION#GRAY", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION#GRAY", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
                 .initialValue("1")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        assertTrue(LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION#BLACK", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#CLASSIFICATION#BLACK", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
                 .initialValue("2")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
         // Assert STRUCT field gamma (REAL)
-        assertTrue(LexemeInfoComparator.compare(st, "COLOR_TYPE#GAMMA", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#GAMMA", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .initialValue("0.5")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
         // Assert ARRAY variable
         List<Object> expectedArrayInitialValue = Arrays.asList(
@@ -120,7 +127,7 @@ public class ArrayTypeIT extends ParserTestSupport {
                 Arrays.asList(2, createMap("CLASSIFICATION", "COLOR_TYPE#CLASSIFICATION#GRAY", "GAMMA", "COLOR_TYPE#GAMMA"))
         );
 
-        assertTrue(LexemeInfoComparator.compare(st, "PIXELS", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "PIXELS", new LexemeInfoBuilder()
                 .type(Type.ARRAY)
                 .subtype(Subtype.CUSTOM)
                 .customType("COLOR_TYPE")
@@ -129,7 +136,8 @@ public class ArrayTypeIT extends ParserTestSupport {
                 .inferiorLimit(Arrays.asList("0", "1", "3"))
                 .superiorLimit(Arrays.asList("1", "10", "4"))
                 .initialValue(expectedArrayInitialValue)
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     private static Map<String, Object> createMap(String k1, Object v1, String k2, Object v2) {

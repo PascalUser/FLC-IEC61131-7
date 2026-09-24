@@ -8,7 +8,9 @@ public final class NameMangler {
     }
 
     public String getCurrentScope() {
-        return prefix.substring(0, prefix.length() - 1);
+        int length = prefix.length();
+        if (length == 0) return "";
+        return prefix.substring(0, length - 1);
     }
 
     public String popScope() {

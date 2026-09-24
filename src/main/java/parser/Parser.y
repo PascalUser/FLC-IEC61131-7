@@ -2,6 +2,7 @@
 %define api.parser.class {Parser}
 %define api.package {parser}
 %define api.parser.public
+%define api.parser.final
 
 %code imports {
     import java.util.List;
@@ -11,10 +12,10 @@
     import utils.LexemeInfo;
     import utils.SymbolTable;
     import utils.enums.*;
-    import utils.builders.LexemeInfoBuilder;
 
-    import parser.initializations.*;
+    import parser.utils.*;
     import parser.internals.*;
+    import parser.initializations.*;
 }
 
 %code {
@@ -61,10 +62,6 @@
     date_type_name
     bit_string_type_name
     elementary_type_name
-
-%type <StructInitialization>
-    structure_initialization
-    structure_field_initialization_list
 
 %type <String>
     constant
@@ -454,6 +451,19 @@ boolean_spec_init:
 
 boolean_specification:
     BOOL
+    {
+        /**
+         * Loads the left identifiers type and subtype
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.BOOL)
+            .initialValue(
+                new BooleanInitialization(this.symbolTable)
+            );
+    }
 ;
 
 initialized_boolean:
@@ -488,8 +498,80 @@ custom_specification:
 
 initialized_custom:
     initialized_custom_with_constant
-    | initialized_custom_with_structure
     | initialized_custom_with_identifier
+    | initialized_custom_with_structure
+;
+
+initialized_custom_with_constant:
+    custom_type_name ASSIGN_OP constant
+    {
+        /**
+         * Adds to the context the left identifiers initial value and drops the search scope added
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().initialValue(new VariableInitialization($3));
+        ctx.searchScope().popScope();
+    }
+;
+
+initialized_custom_with_identifier:
+    custom_type_name ASSIGN_OP identifier_with_opt_mangling
+    {
+        /**
+         * Searches if the enumerated value is valid and in that cases loads the initial value and and drops the search
+         * scope added
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+
+        int octothorpeIdx = $3.indexOf('#');
+        String completeTypeName = (octothorpeIdx != -1)
+            ? $3 // Has already name mangling
+            : ctx.searchScope().getNameMangled($3);
+
+        if (this.symbolTable.get(completeTypeName) == null) {
+            // TODO: control de error. Enumerado literal inexistente
+        }
+        ctx.metadataBuilder().initialValue(new VariableInitialization(completeTypeName));
+        ctx.searchScope().popScope();
+    }
+;
+
+initialized_custom_with_structure:
+    custom_type_name ASSIGN_OP structure_initialization
+    {
+        /**
+         * Drops the search scope after reducing the assignment
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.searchScope().popScope();
+    }
+;
+
+custom_type_name:
+    IDENTIFIER
+    {
+        /**
+         * Builds the LexemeInfo associated to the identifier and appends the underlying scope to the search scope.
+         *
+         * If an identifier is used and it's subtype is custom, then it's hiding information. That's why we search for
+         * the underlying scope, so that we can look it up later.
+        **/
+
+        LexemeInfo metadata = this.symbolTable.get($1);
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.CUSTOM)
+            .customType($1)
+            .initialValue(metadata.initialValue);
+
+        String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, $1);
+        ctx.searchScope().addScope(underlyingScope);
+    }
 ;
 
 simple_spec_init:
@@ -507,7 +589,10 @@ simple_specification:
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
-            .subtype($1);
+            .subtype($1)
+            .initialValue(
+                Factory.createPrimitiveInitialization(this.symbolTable, $1)
+            );
     }
 ;
 
@@ -818,66 +903,109 @@ repeated_initial_element:
 ;
 
 structure_initialization:
-    '(' structure_field_initialization_list ')' { $$ = $2; }
+    struct_init_open_parenthesis structure_field_initialization_list ')'
 ;
+
+struct_init_open_parenthesis:
+    '('
+    {
+        /**
+         * Copies the initialization of the custom type to overwrite the fields later if it's the first time
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+
+        // If there are no nested fields it means that it's the first time
+        if (ctx.nestedFields().getCurrentScope() == "") {
+            LexemeInfo metadata = ctx.metadataBuilder().build();
+            String typeName = metadata.customType;
+            Initialization typeInitialValues = (Initialization) this.symbolTable.get(typeName).initialValue;
+
+            ctx.metadataBuilder().initialValue(typeInitialValues.copy());
+        }
+    }
+;
+
 
 structure_field_initialization_list:
     initialized_structure_field
-    {
-        /**
-         * Realizes that the custom type was a field actually. Then gets it's name out of the search scope and it's
-         * initial value from the LexemeInfo built.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-
-        String fieldName = ctx.searchScope().popScope();
-        StructInitialization initialization = new StructInitialization();
-        initialization.addFieldInitialization(fieldName, (Initialization) ctx.metadataBuilder().build().initialValue);
-        $$ = initialization;
-    }
     | structure_field_initialization_list ',' initialized_structure_field
-    {
-        ParsingContext ctx = this.contexts.current();
-        String fieldName = ctx.searchScope().popScope();
-        $1.addFieldInitialization(fieldName, (Initialization) ctx.metadataBuilder().build().initialValue);
-        $$ = $1;
-    }
 ;
 
 initialized_structure_field:
-    initialized_custom_with_constant
-    | initialized_custom_with_identifier
-    | initialized_custom_with_array
-    | initialized_custom_with_structure
+    initialized_field_with_constant
+    | initialized_field_with_identifier
+    | initialized_field_with_array
+    | initialized_field_with_structure
 ;
 
-initialized_custom_with_constant:
-    custom_type_name ASSIGN_OP constant
+initialized_field_with_constant:
+    nested_field ASSIGN_OP constant
     {
         /**
-         * Adds to the context the left identifiers initial value.
+         * Overwrites the field with a constant.
         **/
-
+        
         ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().initialValue(new VariableInitialization($3));
+        String completeFieldName = ctx.nestedFields().getCurrentScope();
+        
+        StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
+        if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
+            // TODO: control de error. el campo no existe
+        }
+        structValue.setFieldInitialization(completeFieldName, new VariableInitialization($3));
+        ctx.nestedFields().popScope();
     }
 ;
 
-initialized_custom_with_identifier:
-    custom_type_name ASSIGN_OP identifier_with_opt_mangling
+initialized_field_with_identifier:
+    nested_field ASSIGN_OP identifier_with_opt_mangling
+    {
+        /**
+         * Overwrites the field with an enumerated value.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        String completeFieldName = ctx.nestedFields().getCurrentScope();
+
+        StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
+        if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
+            // TODO: control de error. el campo no existe
+        }
+        // TODO: control de error, verificar que el enumerado es alcanzable
+        structValue.setFieldInitialization(completeFieldName, new VariableInitialization($3));
+        ctx.nestedFields().popScope();
+    }
+;
+
+initialized_field_with_array:
+    nested_field ASSIGN_OP array_initialization
+    {
+        /**
+         * Overwrites the field with an array initialization.
+        **/
+        ParsingContext ctx = this.contexts.current();
+        ctx.nestedFields().popScope();
+    }
+;
+
+initialized_field_with_structure:
+    nested_field ASSIGN_OP structure_initialization
     {
         ParsingContext ctx = this.contexts.current();
+        ctx.nestedFields().popScope();
+    }
+;
 
-        int octothorpeIdx = $3.indexOf('#');
-        String mangledIdentifier = (octothorpeIdx != -1)
-            ? $3
-            : ctx.searchScope().getNameMangled($3);
+nested_field:
+    IDENTIFIER
+    {
+        /**
+         * Needs to expand the nested scope to keep overwritting.
+        **/
 
-        if (this.symbolTable.get(mangledIdentifier) == null) {
-            // TODO: control de error. Enumerado literal inexistente
-        }
-        ctx.metadataBuilder().initialValue(new VariableInitialization(mangledIdentifier));
+        ParsingContext ctx = this.contexts.current();
+        ctx.nestedFields().addScope($1);
     }
 ;
 
@@ -889,65 +1017,6 @@ identifier_with_opt_mangling:
     | IDENTIFIER '#' IDENTIFIER
     {
         $$ = $1 + "#" + $3;
-    }
-;
-
-initialized_custom_with_array:
-    custom_type_name ASSIGN_OP array_initialization
-;
-
-initialized_custom_with_structure:
-    custom_type_name ASSIGN_OP structure_initialization
-    {
-        /**
-         * Builds the LexemeInfo and it's initialization with the the custom type associated and the structure
-         * initialization.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-
-        String structScope = ctx.searchScope().popScope();
-        LexemeInfo structMetadata = this.symbolTable.get(structScope);
-        Initialization typeInitialValues = (Initialization) ctx.metadataBuilder().build().initialValue;
-
-        StructInitialization initialization = new StructInitialization();
-        for (String field : structMetadata.parameters) {
-            String fieldInitialValue = $3.selectVariable(field).getVariableValue();
-            if (fieldInitialValue.isEmpty()) {
-                fieldInitialValue = typeInitialValues.selectVariable(field).getVariableValue();
-                continue;
-            }
-            initialization.addFieldInitialization(field, new VariableInitialization(fieldInitialValue));
-        }
-        ctx.metadataBuilder().initialValue(initialization);
-    }
-;
-
-custom_type_name:
-    IDENTIFIER
-    {
-        /**
-         * Builds the LexemeInfo associated to the identifier and appends the underlying scope to the search scope.
-         *
-         * If an identifier is used and it's subtype is custom, then it's hiding information. That's why we search for
-         * the underlying scope, so that we can look it up later.
-        **/
-
-        String underlyingScope = $1;
-        LexemeInfo underlyingMetadata = this.symbolTable.get($1);
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.CUSTOM)
-            .customType($1)
-            .initialValue(underlyingMetadata.initialValue);
-
-        while (underlyingMetadata.subtype == Subtype.CUSTOM) {
-            underlyingScope = underlyingMetadata.customType;
-            underlyingMetadata = this.symbolTable.get(underlyingScope);
-        }
-        ctx.searchScope().addScope(underlyingScope);
     }
 ;
 
@@ -1087,11 +1156,12 @@ structure_specification:
         for (String field : structParameters) {
             String fieldName = ctx.outerScopes().getNameMangled(field);
             LexemeInfo fieldMetadata = this.symbolTable.get(fieldName);
-            initialization.addFieldInitialization(field, (Initialization) fieldMetadata.initialValue);
+            initialization.setFieldInitialization(field, (Initialization) fieldMetadata.initialValue);
         }
 
         ctx.metadataBuilder()
             .type(Type.STRUCT)
+            .subtype(Subtype.NONE)
             .parameters(structParameters)
             .initialValue(initialization);
     }
@@ -1139,14 +1209,18 @@ field_name:
         ctx = new ParsingContext(this.symbolTable);
         ctx.declaredIdentifiers().add($1);
         ctx.metadataBuilder().use(Use.FIELD).source(Source.NONE);
+
+        // Copies the outer scope from before
         ctx.outerScopes().addScope(outerScopes);
 
+        this.contexts.add(ctx);
         $$ = $1;
     }
 ;
 
 structure_field_spec_init:
     custom_spec_init
+    | boolean_spec_init
     | simple_spec_init
     | enumerated_spec_init
     | subrange_spec_init

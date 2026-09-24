@@ -11,6 +11,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,17 +29,18 @@ public class SubrangeTypeIT extends ParserTestSupport {
     @Test
     public void Parse_WithSubrangeTypeDeclaration_PopulatesSymbolTableCorrectly() throws Exception {
         String sourceCode = "TYPE\n"
-                + "    Dia : INT (0..31);\n"
+                + "    Day : INT (0..31);\n"
                 + "END_TYPE\n"
                 + "FUNCTION_BLOCK main\n"
                 + "VAR\n"
-                + "    fecha_trabajo : DIA := 21;\n"
+                + "    work_day : DAY := 21;\n"
                 + "END_VAR\n"
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
+        List<String> diffs;
 
-        assertTrue(LexemeInfoComparator.compare(st, "DIA", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "DAY", new LexemeInfoBuilder()
                 .type(Type.SUBRANGE)
                 .subtype(Subtype.INT)
                 .use(Use.TYPE)
@@ -46,29 +48,31 @@ public class SubrangeTypeIT extends ParserTestSupport {
                 .inferiorLimit(Collections.singletonList("0"))
                 .superiorLimit(Collections.singletonList("31"))
                 .initialValue("0")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        assertTrue(LexemeInfoComparator.compare(st, "FECHA_TRABAJO", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "MAIN#WORK_DAY", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
-                .customType("DIA")
+                .customType("DAY")
                 .use(Use.VARIABLE)
                 .source(Source.INTERNAL)
                 .initialValue("21")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
     public void Parse_WithInlineSubrangeVariable_PopulatesSymbolTableCorrectly() throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + "VAR\n"
-                + "    Porcentaje : INT (0..100) := 50;\n"
+                + "    percentage : INT (0..100) := 50;\n"
                 + "END_VAR\n"
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
 
-        assertTrue(LexemeInfoComparator.compare(st, "PORCENTAJE", new LexemeInfoBuilder()
+        assertTrue(LexemeInfoComparator.compare(st, "MAIN#PERCENTAGE", new LexemeInfoBuilder()
                 .type(Type.SUBRANGE)
                 .subtype(Subtype.INT)
                 .use(Use.VARIABLE)

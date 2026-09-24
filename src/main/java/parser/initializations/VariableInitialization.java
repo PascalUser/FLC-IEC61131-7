@@ -16,4 +16,9 @@ public final class VariableInitialization implements Initialization {
     public String getVariableValue() {
         return value;
     }
+
+    @Override
+    public VariableInitialization copy() {
+        return new VariableInitialization(value);
+    }
 }

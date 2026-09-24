@@ -11,6 +11,8 @@ import utils.enums.Subtype;
 import utils.enums.Type;
 import utils.enums.Use;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -39,21 +41,24 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
+        List<String> diffs;
 
-        assertTrue(LexemeInfoComparator.compare(st, "POWER1", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "MAIN#POWER1", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.VARIABLE)
                 .source(source)
                 .initialValue("0.0")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        assertTrue(LexemeInfoComparator.compare(st, "POWER2", new LexemeInfoBuilder()
+        diffs = LexemeInfoComparator.compare(st, "MAIN#POWER2", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.VARIABLE)
                 .source(source)
                 .initialValue(".3e10")
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

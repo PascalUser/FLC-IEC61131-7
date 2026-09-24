@@ -14,6 +14,7 @@ public final class ParsingContext {
 
     private final NameMangler outerScopes;
     private final NameMangler searchScope;
+    private final NameMangler nestedFields;
 
     public ParsingContext(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -21,6 +22,7 @@ public final class ParsingContext {
         this.metadataBuilder = new LexemeInfoBuilder();
         this.outerScopes = new NameMangler();
         this.searchScope = new NameMangler();
+        this.nestedFields = new NameMangler();
     }
 
     public SymbolTable symbolTable() {
@@ -41,5 +43,9 @@ public final class ParsingContext {
 
     public NameMangler searchScope() {
         return searchScope;
+    }
+
+    public NameMangler nestedFields() {
+        return nestedFields;
     }
 }

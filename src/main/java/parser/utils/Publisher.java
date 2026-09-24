@@ -1,5 +1,6 @@
-package parser.internals;
+package parser.utils;
 
+import parser.internals.ParsingContext;
 import utils.LexemeInfo;
 
 public final class Publisher {
