@@ -2,7 +2,6 @@ package utils;
 
 import lexer.Lexer;
 import parser.Parser;
-import parser.utils.NameMangler;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -29,7 +28,7 @@ public abstract class ParserTestSupport {
         DiagnosticsHandler diagnosticHandler = new DiagnosticsHandler();
 
         Lexer lexer = new Lexer(reader, symbolTable, diagnosticHandler);
-        Parser parser = new Parser(lexer, symbolTable, new NameMangler());
+        Parser parser = new Parser(lexer, symbolTable);
 
         assertTrue(parser.parse(), "Parsing should succeed");
         assertFalse(diagnosticHandler.hasErrors());

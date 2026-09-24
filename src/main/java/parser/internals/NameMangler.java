@@ -1,10 +1,14 @@
-package parser.utils;
+package parser.internals;
 
 public final class NameMangler {
     private final StringBuilder prefix = new StringBuilder();
 
     public void addScope(final String scope) {
         prefix.append(scope).append('#');
+    }
+
+    public String getCurrentScope() {
+        return prefix.substring(0, prefix.length() - 1);
     }
 
     public String popScope() {

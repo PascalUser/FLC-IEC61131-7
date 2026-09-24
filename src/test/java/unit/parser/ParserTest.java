@@ -42,7 +42,6 @@ class ParserTest extends ParserTestSupport {
         }
     }
 
-    @Disabled("Parser not yet implemented")
     @ParameterizedTest
     @MethodSource("exampleFileProvider")
     void Parse_ForSyntacticallyValidPrograms_IsTrue(File exampleFile) {

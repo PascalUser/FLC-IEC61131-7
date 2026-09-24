@@ -20,5 +20,6 @@ public enum Use {
     RULE,
     TYPE,
     UNKNOWN,
-    VARIABLE, MACRO,
+    VARIABLE,
+    MACRO,
 }

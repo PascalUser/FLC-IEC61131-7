@@ -14,12 +14,18 @@
     import utils.builders.LexemeInfoBuilder;
 
     import parser.initializations.*;
-    import parser.publishers.*;
-    import parser.utils.NameMangler;
+    import parser.internals.*;
 }
 
-%parse-param { SymbolTable symbolTable }
-%parse-param { NameMangler nameMangler }
+%code {
+    private ContextHandler contexts;
+}
+
+%parse-param { SymbolTable symbolTable  }
+
+%code init {
+    this.contexts = new ContextHandler();
+}
 
 %token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
@@ -56,48 +62,9 @@
     bit_string_type_name
     elementary_type_name
 
-%type <LexemeInfoBuilder>
-    // spec_init: specification (right side) that could be initialized
-    var_spec_init
-    type_spec_init
-    custom_spec_init
-    simple_spec_init
-    enumerated_spec_init
-    subrange_spec_init
-    array_spec_init
-    string_spec_init
-    structure_field_spec_init
-    // initialized: initialized specification
-    initialized_custom
-    initialized_custom_with_constant
-    initialized_custom_with_identifier
-    initialized_custom_with_array
-    initialized_custom_with_structure
-    initialized_simple
-    initialized_enumerated
-    initialized_subrange
-    initialized_array
-    initialized_string
-    initialized_structure_field
-    initialized_structure
-    // specification: not initialized specification
-    custom_specification
-    simple_specification
-    enumerated_specification
-    subrange_specification
-    array_specification
-    string_specification
-    structure_specification
-    // other
-    range
-
-%type <Publisher>
-    var_init_decl
-    type_declaration
-
-%type <List<Publisher>>
-    var_init_decl_list
-    type_declaration_list
+%type <StructInitialization>
+    structure_initialization
+    structure_field_initialization_list
 
 %type <String>
     constant
@@ -106,13 +73,14 @@
     time_constant
     numeric_constant
     identifier_with_opt_mangling
-    type_name
-    // Structures
+    type_name_declaration
     structure_field_declaration
+    field_name
 
 %type <List<String>>
     identifier_list
-    enumerated_list
+    enumerated_values
+    enumerated_values_list
     structure_field_declaration_list
 
 %%
@@ -127,11 +95,32 @@ program:
 /* -------------------------------- FUNCTION_BLOCK -------------------------------------- */
 
 function_block_declaration:
-    FUNCTION_BLOCK IDENTIFIER
+    FUNCTION_BLOCK function_block_name
     opt_fb_io_var_declarations_list
     opt_other_var_declarations_list
     opt_function_block_body
     END_FUNCTION_BLOCK
+    {
+        /**
+         * Pops the function block context
+        **/
+
+        this.contexts.pop();
+    }
+;
+
+function_block_name:
+    IDENTIFIER
+    {
+        /**
+         * Builds a new context and adds the function block name to the outer scope
+        **/
+
+        ParsingContext ctx = new ParsingContext(this.symbolTable);
+        ctx.outerScopes().addScope($1);
+
+        this.contexts.add(ctx);
+    }
 ;
 
 opt_fb_io_var_declarations_list:
@@ -140,8 +129,7 @@ opt_fb_io_var_declarations_list:
 ;
 
 fb_io_var_declarations:
-    input_declarations
-    | output_declarations
+    io_var_decl var_retain_spec var_init_decl_list ';' END_VAR
 ;
 
 opt_other_var_declarations_list:
@@ -368,83 +356,102 @@ pragma:
 
 /* ------------------------------ IEC61131-3 Annex B ------------------------------------ */
 
-// TODO: Ver que hacer con el retain
-output_declarations:
-    VAR_OUTPUT var_retain_spec var_init_decl_list ';' END_VAR
-    { 
-        Compound variables = new Compound($3);
-        variables.source(Source.OUT).publish();
-    }
-;
+io_var_decl:
+    VAR_INPUT
+    {
+        /**
+         * Adds to the current context the source and use of the inner block declared identifiers
+        **/
 
-input_declarations:
-    VAR_INPUT var_retain_spec var_init_decl_list ';' END_VAR
-    { 
-        Compound variables = new Compound($3);
-        variables.source(Source.IN).publish();
+        ParsingContext ctx = contexts.current();
+        ctx.metadataBuilder().source(Source.IN).use(Use.VARIABLE);
+    }
+    | VAR_OUTPUT
+    {
+        /**
+         * Adds to the current context the source and use of the inner block declared identifiers
+        **/
+
+        ParsingContext ctx = contexts.current();
+        ctx.metadataBuilder().source(Source.OUT).use(Use.VARIABLE);
     }
 ;
 
 var_declarations:
-    VAR var_constant_spec var_init_decl_list ';' END_VAR
-    { 
-        Compound variables = new Compound($3);
-        variables.source(Source.INTERNAL).publish();
+    var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
+;
+
+var_id_decl:
+    VAR
+    {
+        /**
+         * Adds to the current context the source and use of the inner block declared identifiers
+        **/
+
+        ParsingContext ctx = contexts.current();
+        ctx.metadataBuilder().source(Source.INTERNAL).use(Use.VARIABLE);
     }
 ;
 
 var_retain_spec:
     /* empty */
     | RETAIN
+    {
+        // TODO: ctx with retain spec
+    }
     | NON_RETAIN
+    {
+        // TODO: ctx with non retain spec
+    }
 ;
 
 var_constant_spec:
     /* empty */
+    {
+        // TODO: ctx with non contant spec
+    }
     | CONSTANT
+    {
+        // TODO: ctx with contant spec
+    }
 ;
 
 var_init_decl_list:
     var_init_decl
-    {
-        List<Publisher> declarations = new ArrayList<>();
-        declarations.add($1);
-        $$ = declarations;
-    }
-    | var_init_decl_list ';' var_init_decl 
-    { 
-        $1.add($3);
-        $$ = $1;
-    }
+    | var_init_decl_list ';' var_init_decl
 ;
 
-// todo: quitar los null
 var_init_decl:
     identifier_list ':' var_spec_init
     {
-        $$ = new Declaration(this.symbolTable, $1, $3.use(Use.VARIABLE));
+        /**
+         * Publishes the variables into the symbol table using the loaded context
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        Publisher.publish(ctx);
+
+        ctx.declaredIdentifiers().clear();
     }
-    | fb_name_decl
-    {
-        $$ = null;
-    }
+    | identifier_list ':' standard_function_block_spec_init
 ;
 
-// todo: quitar los null
+// TODO: quitar los null
 var_spec_init:
-    custom_spec_init        { $$ = $1; }
-    | boolean_spec_init     { $$ = null; }
-    | simple_spec_init      { $$ = $1; }
-    | subrange_spec_init    { $$ = $1; }
-    | enumerated_spec_init  { $$ = $1; }
-    | array_spec_init       { $$ = $1; }
-    | string_spec_init      { $$ = $1; }
+    custom_spec_init
+    | boolean_spec_init
+    | simple_spec_init
+    | subrange_spec_init
+    | enumerated_spec_init
+    | array_spec_init
+    | string_spec_init
 ;
 
 boolean_spec_init:
     boolean_specification
     | initialized_boolean
 ;
+
 boolean_specification:
     BOOL
 ;
@@ -459,42 +466,63 @@ edge:
 ;
 
 custom_spec_init:
-    custom_specification { $$ = $1; }
-    | initialized_custom   { $$ = $1; }
+    custom_specification
+    | initialized_custom
 ;
 
 custom_specification:
     IDENTIFIER
     {
-        $$ = new LexemeInfoBuilder()
-                    .type(Type.SIMPLE)
-                    .subtype(Subtype.CUSTOM)
-                    .customType($1)
-                    .initialValue(this.symbolTable.get($1).initialValue);
+        /**
+         * Loads the left identifiers type, subtype and initialValue
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.CUSTOM)
+            .customType($1)
+            .initialValue(this.symbolTable.get($1).initialValue);
     }
 ;
 
 initialized_custom:
-    initialized_custom_with_constant     { $$ = $1.type(Type.SIMPLE); }
-    | initialized_custom_with_structure  { $$ = $1.type(Type.SIMPLE); }
-    | initialized_custom_with_identifier { $$ = $1.type(Type.SIMPLE); }
+    initialized_custom_with_constant
+    | initialized_custom_with_structure
+    | initialized_custom_with_identifier
 ;
 
 simple_spec_init:
-    simple_specification { $$ = $1; }
-    | initialized_simple  { $$ = $1; }
+    simple_specification
+    | initialized_simple
+;
 
 simple_specification:
     elementary_type_name
     {
-        $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1);
+        /**
+         * Loads the left identifiers type and subtype
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype($1);
     }
 ;
 
 initialized_simple:
     elementary_type_name ASSIGN_OP constant
     {
-        $$ = new LexemeInfoBuilder().type(Type.SIMPLE).subtype($1).initialValue($3);
+        /**
+         * Loads the left identifiers type, subtype and initialValue
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype($1)
+            .initialValue($3);
     }
 ;
 
@@ -562,7 +590,7 @@ numeric_constant:
     NUMERIC_LITERAL
     | number_prefix NUMERIC_LITERAL
     {
-        // todo: hacer conversion de esta constante en codigo
+        // TODO: hacer conversion de esta constante en codigo
         $$ = "";
     }
 ;
@@ -575,7 +603,7 @@ number_prefix:
 
 time_constant:
     date_type_name '#' TIME_LITERAL {
-        // todo: Accion semantica que verifica que prefix es del mismo tipo que time_literal
+        // TODO: accion semantica que verifica que prefix es del mismo tipo que time_literal
     }
 ;
 
@@ -589,26 +617,48 @@ bit_string_type_name:
 /* --------------------------------- Derived Types  ------------------------------------- */
 
 subrange_spec_init:
-    subrange_specification  { $$ = $1; }
-    | initialized_subrange  { $$ = $1; }
+    subrange_specification
+    | initialized_subrange
 ;
 
 subrange_specification:
-    integer_type_name '(' range ')' 
-    { 
-        $$ = $3.subtype($1);
+    subrange_type_decl '(' range ')'
+;
+
+subrange_type_decl:
+    integer_type_name
+    {
+        /**
+         * Loads the left identifiers subrange subtype
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().type(Type.SUBRANGE).subtype($1);
     }
 ;
 
 initialized_subrange:
-    subrange_specification ASSIGN_OP numeric_constant { $$ = $1.initialValue($3); }
+    subrange_specification ASSIGN_OP numeric_constant
+    {
+        /**
+         * Loads the left identifiers subrange initialization
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().initialValue($3);
+    }
 ;
 
 range:
     numeric_constant RANGE_OP numeric_constant
     {
-        // todo: hacer chequeo semantico de rangos
-        $$ = new LexemeInfoBuilder()
+        /**
+         * Loads the left identifiers subrange numeric range
+        **/
+
+        // TODO: hacer chequeo semantico de rangos
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
             .type(Type.SUBRANGE)
             .inferiorLimit(Collections.singletonList($1))
             .superiorLimit(Collections.singletonList($3))
@@ -617,52 +667,120 @@ range:
 ;
 
 enumerated_spec_init:
-    enumerated_specification { $$ = $1; }
-    | initialized_enumerated { $$ = $1; }
+    enumerated_specification
+    | initialized_enumerated
 ;
 
 enumerated_specification:
-    '(' enumerated_list')' {
-        $$ = new LexemeInfoBuilder()
+    '(' enumerated_values ')' {
+        /**
+         * Loads the enumerated metadata to the current context.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
             .type(Type.ENUMERATE)
+            .subtype(Subtype.INT)
             .parameters($2)
-            .initialValue($2.get(0));
+            .initialValue(
+                new VariableInitialization($2.get(0)
+            ));
     }
 ;
 
 initialized_enumerated:
     enumerated_specification ASSIGN_OP identifier_with_opt_mangling
     {
-        $$ = $1.initialValue($3);
+        /**
+         * Verifies that the initializer value is correct and loads it to the context.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+
+        if ($3.indexOf('#') != -1) {
+            // TODO: control de error. El enumerado anonimo no puede ser inicializado con un mangling
+        }
+        List<String> enumeratedValues = ctx.metadataBuilder().build().parameters;
+        Integer indexValue = enumeratedValues.indexOf($3);
+        if (indexValue == -1) {
+            // TODO: control de error. El enumerado anonimo no puede ser inicializado con un valor inexistente
+        }
+        // TODO: ver cómo verificar que el índice está en el léxico
+        ctx.metadataBuilder().initialValue(new VariableInitialization(indexValue.toString()));
     }
 ;
 
-enumerated_list:
+enumerated_values:
+    enumerated_values_list
+    {
+        /**
+         * Just drops the context built for the enumerated list.
+        **/
+
+        this.contexts.pop();
+    }
+;
+
+enumerated_values_list:
     IDENTIFIER
     {
-        List<String> enumerates = new ArrayList<String>();
-        enumerates.add($1);
-        $$ = enumerates;
+        /**
+         * Creates a new context with the data associated to the enums value list and then publish the identifier found
+         * to the symbol table.
+        **/
+
+        ParsingContext oldCtx = this.contexts.current();
+        String outerScopes = oldCtx.outerScopes().getCurrentScope();
+
+        ParsingContext ctx = new ParsingContext(this.symbolTable);
+        ctx.declaredIdentifiers().add($1);
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.NONE)
+            .use(Use.MACRO)
+            .source(Source.NONE)
+            .initialValue(
+                // TODO: ver interacción con lexer para la publicación de la constante
+                new VariableInitialization("0")
+            );
+        ctx.outerScopes().addScope(outerScopes);
+
+        Publisher.publish(ctx);
+        this.contexts.add(ctx);
+
+        List<String> enumeratedValues = new ArrayList<>();
+        enumeratedValues.add($1);
+
+        $$ = enumeratedValues;
     }
-    | enumerated_list ',' IDENTIFIER
+    | enumerated_values_list ',' IDENTIFIER
     {
+        // TODO: ver interacción con el lexer nuevamente
+        Integer newIndex = $1.size();
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.declaredIdentifiers().set(0, $3);
+        ctx.metadataBuilder().initialValue(new VariableInitialization(newIndex.toString()));
+
+        Publisher.publish(ctx);
+
         $1.add($3);
         $$ = $1;
     }
 ;
 
 array_spec_init:
-    array_specification { $$ = $1; }
-    | initialized_array { $$ = $1; }
+    array_specification
+    | initialized_array
 ;
 
 array_specification:
-    ARRAY '[' range_list ']' OF IDENTIFIER              { $$ = null; }
-    | ARRAY '[' range_list ']' OF non_generic_type_name { $$ = null; }
+    ARRAY '[' range_list ']' OF IDENTIFIER
+    | ARRAY '[' range_list ']' OF non_generic_type_name
 ;
 
 initialized_array:
-    array_specification ASSIGN_OP array_initialization { $$ = null; }
+    array_specification ASSIGN_OP array_initialization
 ;
 
 range_list:
@@ -690,7 +808,7 @@ array_initial_elements:
 
 array_initial_element:
     constant
-    | initialized_structure
+    | structure_initialization
     | identifier_with_opt_mangling
     | array_initialization
 ;
@@ -699,16 +817,32 @@ repeated_initial_element:
     numeric_constant '(' array_initial_element ')'
 ;
 
-initialized_structure:
-    '(' initialized_structure_field_list ')'
-    {
-
-    }
+structure_initialization:
+    '(' structure_field_initialization_list ')' { $$ = $2; }
 ;
 
-initialized_structure_field_list:
+structure_field_initialization_list:
     initialized_structure_field
-    | initialized_structure_field_list ',' initialized_structure_field
+    {
+        /**
+         * Realizes that the custom type was a field actually. Then gets it's name out of the search scope and it's
+         * initial value from the LexemeInfo built.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+
+        String fieldName = ctx.searchScope().popScope();
+        StructInitialization initialization = new StructInitialization();
+        initialization.addFieldInitialization(fieldName, (Initialization) ctx.metadataBuilder().build().initialValue);
+        $$ = initialization;
+    }
+    | structure_field_initialization_list ',' initialized_structure_field
+    {
+        ParsingContext ctx = this.contexts.current();
+        String fieldName = ctx.searchScope().popScope();
+        $1.addFieldInitialization(fieldName, (Initialization) ctx.metadataBuilder().build().initialValue);
+        $$ = $1;
+    }
 ;
 
 initialized_structure_field:
@@ -719,22 +853,31 @@ initialized_structure_field:
 ;
 
 initialized_custom_with_constant:
-    IDENTIFIER ASSIGN_OP constant
+    custom_type_name ASSIGN_OP constant
     {
-        $$ = new LexemeInfoBuilder()
-                .subtype(Subtype.CUSTOM)
-                .customType($1)
-                .initialValue($3);
+        /**
+         * Adds to the context the left identifiers initial value.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().initialValue(new VariableInitialization($3));
     }
 ;
 
 initialized_custom_with_identifier:
-    IDENTIFIER ASSIGN_OP identifier_with_opt_mangling
+    custom_type_name ASSIGN_OP identifier_with_opt_mangling
     {
-        $$ = new LexemeInfoBuilder()
-                .subtype(Subtype.CUSTOM)
-                .customType($1)
-                .initialValue($3);
+        ParsingContext ctx = this.contexts.current();
+
+        int octothorpeIdx = $3.indexOf('#');
+        String mangledIdentifier = (octothorpeIdx != -1)
+            ? $3
+            : ctx.searchScope().getNameMangled($3);
+
+        if (this.symbolTable.get(mangledIdentifier) == null) {
+            // TODO: control de error. Enumerado literal inexistente
+        }
+        ctx.metadataBuilder().initialValue(new VariableInitialization(mangledIdentifier));
     }
 ;
 
@@ -750,55 +893,103 @@ identifier_with_opt_mangling:
 ;
 
 initialized_custom_with_array:
-    IDENTIFIER ASSIGN_OP array_initialization { $$ = null; }
+    custom_type_name ASSIGN_OP array_initialization
 ;
 
 initialized_custom_with_structure:
-    IDENTIFIER ASSIGN_OP initialized_structure { $$ = null; }
+    custom_type_name ASSIGN_OP structure_initialization
+    {
+        /**
+         * Builds the LexemeInfo and it's initialization with the the custom type associated and the structure
+         * initialization.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+
+        String structScope = ctx.searchScope().popScope();
+        LexemeInfo structMetadata = this.symbolTable.get(structScope);
+        Initialization typeInitialValues = (Initialization) ctx.metadataBuilder().build().initialValue;
+
+        StructInitialization initialization = new StructInitialization();
+        for (String field : structMetadata.parameters) {
+            String fieldInitialValue = $3.selectVariable(field).getVariableValue();
+            if (fieldInitialValue.isEmpty()) {
+                fieldInitialValue = typeInitialValues.selectVariable(field).getVariableValue();
+                continue;
+            }
+            initialization.addFieldInitialization(field, new VariableInitialization(fieldInitialValue));
+        }
+        ctx.metadataBuilder().initialValue(initialization);
+    }
 ;
 
-// Todo: ver que hacer con las funciones de la biblioteca estandar
-fb_name_decl:
-    identifier_list ':' standard_function_block_name
-    | identifier_list ':' standard_function_block_name ASSIGN_OP initialized_structure
+custom_type_name:
+    IDENTIFIER
+    {
+        /**
+         * Builds the LexemeInfo associated to the identifier and appends the underlying scope to the search scope.
+         *
+         * If an identifier is used and it's subtype is custom, then it's hiding information. That's why we search for
+         * the underlying scope, so that we can look it up later.
+        **/
+
+        String underlyingScope = $1;
+        LexemeInfo underlyingMetadata = this.symbolTable.get($1);
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.CUSTOM)
+            .customType($1)
+            .initialValue(underlyingMetadata.initialValue);
+
+        while (underlyingMetadata.subtype == Subtype.CUSTOM) {
+            underlyingScope = underlyingMetadata.customType;
+            underlyingMetadata = this.symbolTable.get(underlyingScope);
+        }
+        ctx.searchScope().addScope(underlyingScope);
+    }
+;
+
+standard_function_block_spec_init:
+    standard_function_block_specification
+    | initialized_standard_function_block
+;
+
+initialized_standard_function_block:
+    standard_function_block_specification ASSIGN_OP structure_initialization
 ;
 
 identifier_list:
     IDENTIFIER
     {
-        // Left side identifers have a scope
-        String mangledIdentifier = this.nameMangler.getNameMangled($1);
-
-        List<String> identifiers = new ArrayList<String>();
-        identifiers.add(mangledIdentifier);
-
-        $$ = identifiers;
+        ParsingContext ctx = contexts.current();
+        ctx.declaredIdentifiers().clear();
+        ctx.declaredIdentifiers().add($1);
     }
     | identifier_list ',' IDENTIFIER
     {
-        // Left side identifers have a scope
-        String mangledIdentifier = this.nameMangler.getNameMangled($3);
-        $1.add(mangledIdentifier);
-        $$ = $1;
+        ParsingContext ctx = contexts.current();
+        ctx.declaredIdentifiers().add($3);
     }
 ;
 
-/* TODO: No hay informacion en el estandar de este tipo de funciones */
-standard_function_block_name:
+standard_function_block_specification:
+    // TODO: No hay informacion en el estandar de este tipo de funciones
     STD_FB_IDENTIFIER
 ;
 
 string_spec_init:
-    string_specification { $$ = $1; }
-    | initialized_string { $$ = $1; }
+    string_specification
+    | initialized_string
 
 string_specification:
-    type_string_specification                            { $$ = null; }
-    | type_string_specification '[' numeric_constant ']' { $$ = null; }
+    type_string_specification
+    | type_string_specification '[' numeric_constant ']'
 
 initialized_string:
-    type_string_specification  ASSIGN_OP string_constant                            { $$ = null; }
-    | type_string_specification '[' numeric_constant ']' ASSIGN_OP string_constant  { $$ = null; }
+    type_string_specification  ASSIGN_OP string_constant
+    | type_string_specification '[' numeric_constant ']' ASSIGN_OP string_constant
 ;
 
 type_string_specification:
@@ -814,78 +1005,95 @@ opt_data_type_declaration:
 ;
 
 data_type_declaration:
-    TYPE type_declaration_list END_TYPE
+    type_id_decl type_declaration_list END_TYPE
     {
-        Publisher declarations = new Compound($2);
-        declarations.source(Source.NONE);
-        declarations.publish();
+        /**
+         * After reducing the whole block, the type block context needs to popped
+        **/
+
+        this.contexts.pop();
+    }
+;
+
+type_id_decl:
+    TYPE
+    {
+        ParsingContext ctx = new ParsingContext(this.symbolTable);
+        ctx.metadataBuilder()
+            .use(Use.TYPE)
+            .source(Source.NONE);
+
+        this.contexts.add(ctx);
     }
 ;
 
 type_declaration_list:
     type_declaration ';'
-    {
-        List<Publisher> declarations = new ArrayList<>();
-        declarations.add($1);
-        $$ = declarations;
-    }
     | type_declaration_list type_declaration ';'
-    {
-        $1.add($2);
-        $$ = $1;
-    }
 ;
 
 type_declaration:
-    type_name ':' type_spec_init
+    type_name_declaration ':' type_spec_init
     {
-        this.nameMangler.popScope();
+        /**
+         * The type declaration is published after being reduced and it's outerScopes unappended.
+        **/
 
-        List<String> left_identifier = new ArrayList<>();
-        left_identifier.add($1);
+        ParsingContext ctx = this.contexts.current();
+        ctx.outerScopes().popScope();
+        Publisher.publish(ctx);
 
-        $$ = new Declaration(
-            this.symbolTable,
-            left_identifier,
-            $3.use(Use.TYPE)
-        );
+        ctx.declaredIdentifiers().clear();
     }
 ;
 
-type_name:
+type_name_declaration:
     IDENTIFIER
     {
-        this.nameMangler.addScope("$1");
-        $$ = $1;
+        /**
+         * Adds the identifier as the current scope so that everything declared inside this scope belongs to the outer
+         * scope.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.declaredIdentifiers().add($1);
+        ctx.outerScopes().addScope($1);
     }
 ;
 
 type_spec_init:
-    custom_spec_init          { $$ = $1; }
-    | simple_spec_init        { $$ = $1; }
-    | enumerated_spec_init    { $$ = $1; }
-    | subrange_spec_init      { $$ = $1; }
-    | array_spec_init         { $$ = $1; }
-    | structure_specification { $$ = $1; }
-    | string_spec_init        { $$ = $1; }
+    custom_spec_init
+    | simple_spec_init
+    | enumerated_spec_init
+    | subrange_spec_init
+    | array_spec_init
+    | structure_specification
+    | string_spec_init
 ;
 
 structure_specification:
     STRUCT structure_field_declaration_list END_STRUCT
     {
+        /**
+         * Builds the declaration of the structure and publishes it to the symbol table. For that to happen every field
+         * needs to be searched to get their initial values and appended to the structure initial value.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+
         List<String> structParameters = $2;
-        Struct structInitialValues = new Struct();
+        StructInitialization initialization = new StructInitialization();
 
         for (String field : structParameters) {
-            String fieldName = this.nameMangler.getNameMangled(field);
+            String fieldName = ctx.outerScopes().getNameMangled(field);
             LexemeInfo fieldMetadata = this.symbolTable.get(fieldName);
-            structInitialValues.add(field, (Initialization) fieldMetadata.initialValue);
+            initialization.addFieldInitialization(field, (Initialization) fieldMetadata.initialValue);
         }
 
-        $$ = new LexemeInfoBuilder()
+        ctx.metadataBuilder()
             .type(Type.STRUCT)
             .parameters(structParameters)
-            .initialValue(structInitialValues);
+            .initialValue(initialization);
     }
 ;
 
@@ -904,29 +1112,46 @@ structure_field_declaration_list:
 ;
 
 structure_field_declaration:
-    IDENTIFIER ':' structure_field_spec_init
+    field_name ':' structure_field_spec_init
     {
-        List<String> left_identifier = new ArrayList<>();
-        left_identifier.add(this.nameMangler.getNameMangled($1));
+        /**
+         * Publishes the field to the symbol table.
+        **/
 
-        // Builds the declaration of the structure field and publishes it
-        Declaration fieldDeclaration = new Declaration(
-            this.symbolTable,
-            left_identifier,
-            $3.use(Use.FIELD).source(Source.NONE)
-        );
+        ParsingContext ctx = this.contexts.current();
+        Publisher.publish(ctx);
+
+        this.contexts.pop();
+        $$ = $1;
+    }
+;
+
+field_name:
+    IDENTIFIER
+    {
+        /**
+         * Builds the new field context
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        String outerScopes = ctx.outerScopes().getCurrentScope();
+
+        ctx = new ParsingContext(this.symbolTable);
+        ctx.declaredIdentifiers().add($1);
+        ctx.metadataBuilder().use(Use.FIELD).source(Source.NONE);
+        ctx.outerScopes().addScope(outerScopes);
 
         $$ = $1;
     }
 ;
 
 structure_field_spec_init:
-    custom_spec_init        { $$ = $1; }
-    | simple_spec_init      { $$ = $1; }
-    | enumerated_spec_init  { $$ = $1; }
-    | subrange_spec_init    { $$ = $1; }
-    | array_spec_init       { $$ = $1; }
-    | string_spec_init      { $$ = $1; }
+    custom_spec_init
+    | simple_spec_init
+    | enumerated_spec_init
+    | subrange_spec_init
+    | array_spec_init
+    | string_spec_init
 ;
 
 %%
