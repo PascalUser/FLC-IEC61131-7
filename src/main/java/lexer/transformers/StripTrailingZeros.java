@@ -1,5 +1,5 @@
 package lexer.transformers;
-import lexer.utils.ExponentFinder;
+import lexer.transformers.utils.ExponentFinder;
 /**
  * Transformer that removes trailing zeros from numeric literals.
  * <p>

@@ -1,6 +1,9 @@
-package lexer;
+package lexer.internals;
 
 import lexer.semantics.*;
+import lexer.semantics.strings.*;
+import lexer.semantics.numbers.*;
+import lexer.semantics.numbers.bases.*;
 
 public final class LexicalAnalyzers  {
     // Time Literals

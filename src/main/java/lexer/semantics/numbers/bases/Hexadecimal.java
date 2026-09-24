@@ -1,4 +1,4 @@
-package lexer.semantics;
+package lexer.semantics.numbers.bases;
 
 import utils.diagnostics.Diagnostic;
 import utils.diagnostics.HexadecimalOutOfRange;

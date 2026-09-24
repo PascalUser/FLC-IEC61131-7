@@ -1,4 +1,4 @@
-package lexer.semantics;
+package lexer.semantics.numbers;
 import org.jspecify.annotations.NonNull;
 import utils.diagnostics.Diagnostic;
 import utils.diagnostics.IntegerOutOfRange;

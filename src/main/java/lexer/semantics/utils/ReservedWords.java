@@ -1,4 +1,4 @@
-package lexer.utils;
+package lexer.semantics.utils;
 
 import lexer.Lexer;
 

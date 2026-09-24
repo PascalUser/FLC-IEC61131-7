@@ -1,4 +1,4 @@
-package lexer.semantics;
+package lexer.semantics.strings;
 
 import utils.enums.Subtype;
 

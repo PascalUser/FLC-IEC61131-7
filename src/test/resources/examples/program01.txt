@@ -3,7 +3,11 @@
 TYPE
     color_type :
         STRUCT
-            brown: REAL; color_type::brown -> TYPE:simple | USE:variable | SUBTYPE: REAL
+            white: BOOL;
+        END_STRUCT;
+    color_type :
+        STRUCT
+            brown: REAL;
             light: REAL;
             dark:  REAL;
         END_STRUCT;

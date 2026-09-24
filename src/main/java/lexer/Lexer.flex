@@ -1,12 +1,16 @@
 package lexer;
 
 import parser.Parser;
-import utils.SymbolTable;
-import utils.DiagnosticsHandler;
-import org.jspecify.annotations.NonNull;
 
+import lexer.internals.*;
 import lexer.transformers.Transformer;
 import lexer.semantics.SemanticAnalyzer;
+
+import utils.SymbolTable;
+import utils.DiagnosticsHandler;
+import utils.diagnostics.SyntaxError;
+
+import org.jspecify.annotations.NonNull;
 %%
 
 %class Lexer
@@ -33,8 +37,7 @@ import lexer.semantics.SemanticAnalyzer;
     }
 
     public void yyerror(String msg) {
-        // TODO: Agregar al DiagnosticHandler un error generico.
-        System.err.println("Line " + (yyline + 1) + ": " + msg);
+        this.diagnosticsHandler.add(new SyntaxError(yyline + 1));
     }
 
     /**
@@ -46,7 +49,7 @@ import lexer.semantics.SemanticAnalyzer;
         String preprocessedLexeme = transformer.transform(yytext());
         SemanticAnalyzer.LexicalContext lexicalContext = new SemanticAnalyzer.LexicalContext(
                 preprocessedLexeme,
-                yyline,
+                yyline + 1,
                 this.symbolTable,
                 this.diagnosticsHandler
             );

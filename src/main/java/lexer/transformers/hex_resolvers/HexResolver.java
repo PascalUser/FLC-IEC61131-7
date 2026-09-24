@@ -1,5 +1,6 @@
-package lexer.transformers;
+package lexer.transformers.hex_resolvers;
 
+import lexer.transformers.Transformer;
 import org.jspecify.annotations.NonNull;
 
 public abstract class HexResolver extends Transformer {

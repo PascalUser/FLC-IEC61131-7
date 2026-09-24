@@ -1,5 +1,6 @@
-package lexer.semantics;
+package lexer.semantics.numbers;
 
+import lexer.semantics.SemanticAnalyzer;
 import parser.Parser;
 import utils.builders.LexemeInfoBuilder;
 import utils.diagnostics.Diagnostic;
@@ -30,7 +31,7 @@ public abstract class NumbersAnalyzer implements SemanticAnalyzer {
         public final Subtype subtype;
         public final Object value;
 
-        ParsedValue(String lexeme, Subtype subtype, Object value) {
+        public ParsedValue(String lexeme, Subtype subtype, Object value) {
             this.lexeme = lexeme;
             this.subtype = subtype;
             this.value = value;

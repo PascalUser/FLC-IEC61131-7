@@ -1,4 +1,4 @@
-package lexer.utils;
+package lexer.transformers.utils;
 
 public final class ExponentFinder {
 
@@ -9,7 +9,6 @@ public final class ExponentFinder {
         if (upper == -1) {
             return lower;
         }
-
         if (lower == -1) {
             return upper;
         }

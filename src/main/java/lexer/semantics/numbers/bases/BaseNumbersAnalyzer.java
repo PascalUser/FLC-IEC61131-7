@@ -1,4 +1,5 @@
-package lexer.semantics;
+package lexer.semantics.numbers.bases;
+import lexer.semantics.numbers.NumbersAnalyzer;
 import org.jspecify.annotations.NonNull;
 import utils.enums.Subtype;
 import java.math.BigInteger;

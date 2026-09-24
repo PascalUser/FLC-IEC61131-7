@@ -1,5 +1,6 @@
-package lexer.semantics;
+package lexer.semantics.strings;
 
+import lexer.semantics.SemanticAnalyzer;
 import parser.Parser;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.*;

@@ -28,8 +28,9 @@ import java.time.format.ResolverStyle;
  * @since 1.0
  */
 public final class DayTimes implements SemanticAnalyzer {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_TIME
-            .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_TIME.withResolverStyle(
+            ResolverStyle.STRICT
+    );
 
     @Override
     public Result analyze(LexicalContext ctx) {
