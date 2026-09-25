@@ -2,6 +2,7 @@ package lexer.semantics;
 
 import lexer.Lexer;
 import lexer.semantics.utils.ReservedWords;
+import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Subtype;
 import utils.enums.Type;
@@ -28,10 +29,10 @@ public final class Identifiers implements SemanticAnalyzer {
             if (!tokenNumber.equals(Lexer.BOOLEAN_LITERAL)){
                 return new Result(null, tokenNumber);
             }
-            ctx.symbolTable.putIfAbsent(lexeme, new LexemeInfoBuilder()
-                    .type(Type.SIMPLE)
+            LexemeInfoBuilder builder = new LexemeInfoBuilder();
+            Director.makeLiteral(builder);
+            ctx.symbolTable.putIfAbsent(lexeme, builder
                     .subtype(Subtype.BOOL)
-                    .use(Use.LITERAL)
                     .initialValue(Boolean.valueOf(lexeme))
                     .build()
             );

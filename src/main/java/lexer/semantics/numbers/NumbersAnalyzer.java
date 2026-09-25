@@ -2,6 +2,7 @@ package lexer.semantics.numbers;
 
 import lexer.semantics.SemanticAnalyzer;
 import parser.Parser;
+import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.diagnostics.Diagnostic;
 import utils.enums.Subtype;
@@ -54,14 +55,12 @@ public abstract class NumbersAnalyzer implements SemanticAnalyzer {
         }
 
         // The lexeme's metadata is built and published to the symbol table
-        ctx.symbolTable.putIfAbsent(
-                parsed.lexeme,
-                new LexemeInfoBuilder()
-                        .type(Type.SIMPLE)
-                        .subtype(parsed.subtype)
-                        .use(Use.LITERAL)
-                        .initialValue(parsed.value)
-                        .build()
+        LexemeInfoBuilder builder = new LexemeInfoBuilder();
+        Director.makeLiteral(builder);
+        ctx.symbolTable.putIfAbsent(lexeme, builder
+                .subtype(parsed.subtype)
+                .initialValue(parsed.value)
+                .build()
         );
         return new Result(parsed.lexeme, Parser.Lexer.NUMERIC_LITERAL);
     }

@@ -2,6 +2,7 @@ package lexer.semantics;
 
 import lexer.Lexer;
 import parser.Parser;
+import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.diagnostics.DateAndTimeOutOfRange;
 import utils.enums.Subtype;
@@ -46,11 +47,10 @@ public final class DateAndDayTimes implements SemanticAnalyzer {
             LocalTime time = DayTimes.parse(timePart);
             LocalDateTime dateTime = LocalDateTime.of(date, time);
 
-            ctx.symbolTable.putIfAbsent(lexeme,
-                    new LexemeInfoBuilder()
-                            .type(Type.SIMPLE)
+            LexemeInfoBuilder builder = new LexemeInfoBuilder();
+            Director.makeLiteral(builder);
+            ctx.symbolTable.putIfAbsent(lexeme, builder
                             .subtype(Subtype.DATE_AND_TIME)
-                            .use(Use.LITERAL)
                             .initialValue(dateTime)
                             .build()
             );

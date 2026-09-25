@@ -2,6 +2,7 @@ package lexer.semantics;
 
 import lexer.Lexer;
 import parser.Parser;
+import utils.builders.Director;
 import utils.diagnostics.IntervalConstructionError;
 import utils.diagnostics.IntervalOutOfRange;
 import utils.enums.Subtype;
@@ -97,14 +98,12 @@ public final class Intervals implements SemanticAnalyzer {
         long finalNanos = (long) (isNegative ? -totalNS : totalNS);
         Duration duration = Duration.ofNanos(finalNanos);
 
-        ctx.symbolTable.putIfAbsent(
-                lexeme,
-                new LexemeInfoBuilder()
-                        .type(Type.SIMPLE)
-                        .subtype(Subtype.TIME)
-                        .use(Use.LITERAL)
-                        .initialValue(duration)
-                        .build()
+        LexemeInfoBuilder builder = new LexemeInfoBuilder();
+        Director.makeLiteral(builder);
+        ctx.symbolTable.putIfAbsent(lexeme, builder
+                .subtype(Subtype.TIME)
+                .initialValue(duration)
+                .build()
         );
         return new Result(lexeme, Parser.Lexer.TIME_LITERAL);
     }

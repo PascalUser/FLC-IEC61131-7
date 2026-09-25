@@ -2,6 +2,7 @@ package lexer.semantics;
 
 import lexer.Lexer;
 import parser.Parser;
+import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.diagnostics.DateOutOfRange;
 import utils.enums.Subtype;
@@ -43,13 +44,12 @@ public final class Dates implements SemanticAnalyzer {
         try {
             LocalDate date = parse(lexeme);
 
-            ctx.symbolTable.putIfAbsent(lexeme,
-                    new LexemeInfoBuilder()
-                            .type(Type.SIMPLE)
-                            .subtype(Subtype.DATE)
-                            .use(Use.LITERAL)
-                            .initialValue(date)
-                            .build()
+            LexemeInfoBuilder builder = new LexemeInfoBuilder();
+            Director.makeLiteral(builder);
+            ctx.symbolTable.putIfAbsent(lexeme, builder
+                    .subtype(Subtype.DATE)
+                    .initialValue(date)
+                    .build()
             );
             return new Result(lexeme, Parser.Lexer.TIME_LITERAL);
 

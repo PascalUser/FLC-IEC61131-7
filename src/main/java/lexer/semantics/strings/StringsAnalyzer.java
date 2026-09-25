@@ -2,6 +2,7 @@ package lexer.semantics.strings;
 
 import lexer.semantics.SemanticAnalyzer;
 import parser.Parser;
+import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.*;
 import utils.diagnostics.StringLengthWarning;
@@ -27,17 +28,13 @@ public abstract class StringsAnalyzer implements SemanticAnalyzer {
             lexeme = lexeme.charAt(0) + canonicalContent + lexeme.charAt(lexeme.length() - 1);
         }
 
-        ctx.symbolTable.putIfAbsent(
-                lexeme,
-                new LexemeInfoBuilder()
-                        .type(Type.SIMPLE)
-                        .subtype(this.getSubtype())
-                        .use(Use.LITERAL)
-                        .source(Source.UNKNOWN)
-                        .initialValue(canonicalContent)
-                        .build()
+        LexemeInfoBuilder builder = new LexemeInfoBuilder();
+        Director.makeLiteral(builder);
+        ctx.symbolTable.putIfAbsent(lexeme, builder
+                .subtype(this.getSubtype())
+                .initialValue(canonicalContent)
+                .build()
         );
-
         return new Result(lexeme, Parser.Lexer.STRING_LITERAL);
     }
 }

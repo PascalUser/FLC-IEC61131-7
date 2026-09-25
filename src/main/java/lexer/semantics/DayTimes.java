@@ -1,6 +1,7 @@
 package lexer.semantics;
 
 import parser.Parser;
+import utils.builders.Director;
 import utils.diagnostics.TimeOfDayOutOfRange;
 import utils.enums.Subtype;
 import utils.enums.Type;
@@ -39,13 +40,12 @@ public final class DayTimes implements SemanticAnalyzer {
         try {
             LocalTime time = parse(lexeme);
 
-            ctx.symbolTable.putIfAbsent(lexeme,
-                    new LexemeInfoBuilder()
-                            .type(Type.SIMPLE)
-                            .subtype(Subtype.TIME_OF_DAY)
-                            .use(Use.LITERAL)
-                            .initialValue(time)
-                            .build()
+            LexemeInfoBuilder builder = new LexemeInfoBuilder();
+            Director.makeLiteral(builder);
+            ctx.symbolTable.putIfAbsent(lexeme, builder
+                    .subtype(Subtype.TIME_OF_DAY)
+                    .initialValue(time)
+                    .build()
             );
             return new Result(lexeme, Parser.Lexer.TIME_LITERAL);
 
