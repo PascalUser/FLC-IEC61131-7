@@ -4,8 +4,6 @@ import parser.Parser;
 import utils.builders.Director;
 import utils.diagnostics.TimeOfDayOutOfRange;
 import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
 import utils.builders.LexemeInfoBuilder;
 
 import java.time.LocalTime;

@@ -17,10 +17,6 @@ public final class Nothing extends Transformer {
         super(next);
     }
 
-    public Nothing() {
-        this(null);
-    }
-
     @Override
     public String transform(String lexeme) {
         return lexeme;

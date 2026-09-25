@@ -6,8 +6,6 @@ import utils.builders.Director;
 import utils.diagnostics.IntervalConstructionError;
 import utils.diagnostics.IntervalOutOfRange;
 import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
 import utils.builders.LexemeInfoBuilder;
 
 import java.time.Duration;

@@ -6,8 +6,6 @@ import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.diagnostics.Diagnostic;
 import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
 
 /**
  * Abstract base class for numeric literal semantic analyzers.

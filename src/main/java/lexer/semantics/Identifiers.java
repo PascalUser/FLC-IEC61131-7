@@ -5,8 +5,6 @@ import lexer.semantics.utils.ReservedWords;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
 
 /**
  * Semantic analyzer for identifiers and reserved words.
