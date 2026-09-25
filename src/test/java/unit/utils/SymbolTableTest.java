@@ -50,8 +50,8 @@ class SymbolTableTest {
                                 .subtype(Subtype.REAL)
                                 .use(Use.FIELD)
                                 .source(Source.OUT)
-                                .inferiorLimit(Collections.singletonList("0"))
-                                .superiorLimit(Collections.singletonList("10"))
+                                .inferiorLimits(Collections.singletonList("0"))
+                                .superiorLimits(Collections.singletonList("10"))
                                 .initialValue(3.14)
                                 .build()
                 ),

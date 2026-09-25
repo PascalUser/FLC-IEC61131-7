@@ -62,6 +62,7 @@
     date_type_name
     bit_string_type_name
     elementary_type_name
+    non_generic_type_name
 
 %type <String>
     constant
@@ -607,7 +608,7 @@ initialized_simple:
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
             .subtype($1)
-            .initialValue($3);
+            .initialValue(new VariableInitialization($3));
     }
 ;
 
@@ -708,6 +709,15 @@ subrange_spec_init:
 
 subrange_specification:
     subrange_type_decl '(' range ')'
+    {
+        ParsingContext ctx = this.contexts.current();
+        LexemeInfo metadata = ctx.metadataBuilder().build();
+        String ilimit = metadata.inferiorLimits.get(0);
+        String slimit = metadata.superiorLimits.get(0);
+
+        ctx.metadataBuilder()
+            .initialValue(new SubrangeInitialization(ilimit, slimit));
+    }
 ;
 
 subrange_type_decl:
@@ -741,13 +751,21 @@ range:
          * Loads the left identifiers subrange numeric range
         **/
 
-        // TODO: hacer chequeo semantico de rangos
         ParsingContext ctx = this.contexts.current();
+        LexemeInfo metadata = ctx.metadataBuilder().build();
+
+        if (metadata.inferiorLimits == null) {
+            metadata.inferiorLimits = new ArrayList<>();
+            metadata.superiorLimits = new ArrayList<>();
+        }
+
+        // TODO: hacer chequeo semantico de rangos
+        metadata.inferiorLimits.add($1);
+        metadata.superiorLimits.add($3);
+
         ctx.metadataBuilder()
-            .type(Type.SUBRANGE)
-            .inferiorLimit(Collections.singletonList($1))
-            .superiorLimit(Collections.singletonList($3))
-            .initialValue($1);
+            .inferiorLimits(metadata.inferiorLimits)
+            .superiorLimits(metadata.superiorLimits);
     }
 ;
 
@@ -768,8 +786,8 @@ enumerated_specification:
             .subtype(Subtype.INT)
             .parameters($2)
             .initialValue(
-                new VariableInitialization($2.get(0)
-            ));
+                new EnumeratedInitialization($2)
+            );
     }
 ;
 
@@ -791,7 +809,11 @@ initialized_enumerated:
             // TODO: control de error. El enumerado anonimo no puede ser inicializado con un valor inexistente
         }
         // TODO: ver cómo verificar que el índice está en el léxico
-        ctx.metadataBuilder().initialValue(new VariableInitialization(indexValue.toString()));
+        ctx.metadataBuilder().initialValue(
+            new VariableInitialization(
+                ctx.outerScopes().getNameMangled($3)
+            )
+        );
     }
 ;
 
@@ -826,7 +848,7 @@ enumerated_values_list:
             .source(Source.NONE)
             .initialValue(
                 // TODO: ver interacción con lexer para la publicación de la constante
-                new VariableInitialization("0")
+                new MacroInitialization(this.symbolTable, "0")
             );
         ctx.outerScopes().addScope(outerScopes);
 
@@ -845,7 +867,9 @@ enumerated_values_list:
 
         ParsingContext ctx = this.contexts.current();
         ctx.declaredIdentifiers().set(0, $3);
-        ctx.metadataBuilder().initialValue(new VariableInitialization(newIndex.toString()));
+        ctx.metadataBuilder().initialValue(
+            new MacroInitialization(this.symbolTable, newIndex.toString())
+        );
 
         Publisher.publish(ctx);
 
@@ -861,7 +885,35 @@ array_spec_init:
 
 array_specification:
     ARRAY '[' range_list ']' OF IDENTIFIER
+    {
+        LexemeInfo typeMetadata = this.symbolTable.get($6);
+        ParsingContext ctx = this.contexts.current();
+
+        int dimension= DimensionCalculator.calculate(ctx);
+        ctx.metadataBuilder()
+            .type(Type.ARRAY)
+            .subtype(Subtype.CUSTOM)
+            .customType($6)
+            .initialValue(
+                new RepeatedInitialization(dimension, (Initialization) typeMetadata.initialValue)
+            );
+
+        String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, $6);
+        ctx.searchScope().addScope(underlyingScope);
+    }
     | ARRAY '[' range_list ']' OF non_generic_type_name
+    {
+        ParsingContext ctx = this.contexts.current();
+        int dimension= DimensionCalculator.calculate(ctx);
+        Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $6);
+
+        ctx.metadataBuilder()
+            .type(Type.ARRAY)
+            .subtype($6)
+            .initialValue(
+                new RepeatedInitialization(dimension, defaultInit)
+            );
+    }
 ;
 
 initialized_array:
@@ -878,7 +930,36 @@ non_generic_type_name:
 ;
 
 array_initialization:
-    '[' array_initial_elements_list ']'
+    array_init_open_square_bracket array_initial_elements_list ']'
+    {
+        /**
+         * Drops the useless context generated at the end of the initialization list.
+        **/
+
+        this.contexts.pop();
+    }
+;
+
+array_init_open_square_bracket:
+    '['
+    {
+        /**
+         * Creates a new context so that it can be overwritten by the inner rules.
+        **/
+
+        ParsingContext oldCtx = this.contexts.current();
+        ParsingContext newCtx = new ParsingContext(this.symbolTable);
+
+        LexemeInfo oldCtxMetadata = oldCtx.metadataBuilder().build();
+
+        // Copies the valuable info of the current (old) context
+        newCtx.metadataBuilder()
+            .subtype(oldCtxMetadata.subtype)
+            .customType(oldCtxMetadata.customType);
+        newCtx.searchScope().addScope(oldCtx.searchScope().getCurrentScope());
+
+        this.contexts.add(newCtx);
+    }
 ;
 
 array_initial_elements_list:
@@ -887,19 +968,98 @@ array_initial_elements_list:
 ;
 
 array_initial_elements:
+    array_initial_element_routine
+    {
+        /**
+         * Retrieves the relevant information of the initialization and copies it into the current context
+         * (arrayContext)
+        **/
+
+        ParsingContext initContext = this.contexts.pop();
+        ParsingContext arrayContext = this.contexts.current();
+
+        int start = arrayContext.index();
+        arrayContext.incrementIndex(initContext.index());
+
+        LexemeInfo initMetadata = initContext.metadataBuilder().build();
+        LexemeInfo arrayMetadata = arrayContext.metadataBuilder().build();
+
+        RepeatedInitialization arrayInitialValue = (RepeatedInitialization) arrayMetadata.initialValue;
+        arrayInitialValue.addInterval(
+            start,
+            arrayContext.index() - 1,
+            (Initialization) initMetadata.initialValue
+        );
+
+        // Set the index to zero to avoid creating a new empty context
+        initContext.incrementIndex(-initContext.index());
+        this.contexts.add(initContext);
+    }
+;
+
+array_initial_element_routine:
     array_initial_element
     | repeated_initial_element
 ;
 
 array_initial_element:
     constant
-    | structure_initialization
+    {
+        /**
+         * Creates the initialization and adds the context counter by one
+        **/
+
+        ParsingContext initContext = this.contexts.current();
+        initContext.incrementIndex(1);
+        initContext.metadataBuilder().initialValue(new VariableInitialization($1));
+    }
     | identifier_with_opt_mangling
+    {
+        /**
+         * Creates the initialization and adds the context counter by one
+        **/
+
+        ParsingContext initContext = this.contexts.current();
+        initContext.incrementIndex(1);
+
+        // TODO: verificar enumerado como en la regla de initialized_custom_with_identifier
+        String completeEnumerateName = initContext.searchScope().getNameMangled($1);
+
+        initContext.metadataBuilder().initialValue(new VariableInitialization(completeEnumerateName));
+    }
+    | structure_initialization
+    {
+        /**
+         * Only adds the context counter by one because the initialization is created inside the rule.
+        **/
+
+        ParsingContext initContext = this.contexts.current();
+        initContext.incrementIndex(1);
+    }
     | array_initialization
+    {
+        /**
+         * Only adds the context counter by one because the initialization is created inside the rule.
+        **/
+
+        ParsingContext initContext = this.contexts.current();
+        initContext.incrementIndex(1);
+    }
 ;
 
 repeated_initial_element:
     numeric_constant '(' array_initial_element ')'
+    {
+        /**
+         * Repeats N times the inner initialization.
+        **/
+
+        // TODO: verificar que numeric_constant es aditivo
+        int multiplier = Integer.parseInt($1);
+
+        ParsingContext initContext = this.contexts.current();
+        initContext.incrementIndex(multiplier * initContext.index() - 1);
+    }
 ;
 
 structure_initialization:
@@ -973,7 +1133,9 @@ initialized_field_with_identifier:
             // TODO: control de error. el campo no existe
         }
         // TODO: control de error, verificar que el enumerado es alcanzable
-        structValue.setFieldInitialization(completeFieldName, new VariableInitialization($3));
+        String completeEnumeratedValue = ctx.searchScope().getNameMangled($3);
+
+        structValue.setFieldInitialization(completeFieldName, new VariableInitialization(completeEnumeratedValue));
         ctx.nestedFields().popScope();
     }
 ;

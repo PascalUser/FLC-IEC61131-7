@@ -1,5 +1,7 @@
 package integration;
 
+import parser.initializations.SubrangeInitialization;
+import parser.initializations.VariableInitialization;
 import utils.ParserTestSupport;
 import org.junit.jupiter.api.Test;
 import utils.LexemeInfoComparator;
@@ -45,9 +47,9 @@ public class SubrangeTypeIT extends ParserTestSupport {
                 .subtype(Subtype.INT)
                 .use(Use.TYPE)
                 .source(Source.NONE)
-                .inferiorLimit(Collections.singletonList("0"))
-                .superiorLimit(Collections.singletonList("31"))
-                .initialValue("0")
+                .inferiorLimits(Collections.singletonList("0"))
+                .superiorLimits(Collections.singletonList("31"))
+                .initialValue(new SubrangeInitialization("0", "31"))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
 
@@ -57,7 +59,7 @@ public class SubrangeTypeIT extends ParserTestSupport {
                 .customType("DAY")
                 .use(Use.VARIABLE)
                 .source(Source.INTERNAL)
-                .initialValue("21")
+                .initialValue(new VariableInitialization("21"))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
     }
@@ -77,8 +79,8 @@ public class SubrangeTypeIT extends ParserTestSupport {
                 .subtype(Subtype.INT)
                 .use(Use.VARIABLE)
                 .source(Source.INTERNAL)
-                .inferiorLimit(Collections.singletonList("0"))
-                .superiorLimit(Collections.singletonList("100"))
+                .inferiorLimits(Collections.singletonList("0"))
+                .superiorLimits(Collections.singletonList("100"))
                 .initialValue("50")
                 .build()).isEmpty());
     }

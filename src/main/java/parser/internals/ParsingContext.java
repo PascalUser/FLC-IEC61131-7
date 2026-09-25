@@ -16,6 +16,8 @@ public final class ParsingContext {
     private final NameMangler searchScope;
     private final NameMangler nestedFields;
 
+    private int index;
+
     public ParsingContext(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.declaredIdentifiers = new ArrayList<>();
@@ -23,6 +25,7 @@ public final class ParsingContext {
         this.outerScopes = new NameMangler();
         this.searchScope = new NameMangler();
         this.nestedFields = new NameMangler();
+        this.index = 0;
     }
 
     public SymbolTable symbolTable() {
@@ -47,5 +50,13 @@ public final class ParsingContext {
 
     public NameMangler nestedFields() {
         return nestedFields;
+    }
+
+    public int index() {
+        return index;
+    }
+
+    public void incrementIndex(int increment) {
+        this.index += increment;
     }
 }

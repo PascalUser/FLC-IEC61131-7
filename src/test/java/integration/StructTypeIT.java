@@ -246,7 +246,7 @@ public class StructTypeIT extends ParserTestSupport {
                 .subtype(Subtype.BOOL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
-                .initialValue("FALSE")
+                .initialValue(new BooleanInitialization(st))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
 

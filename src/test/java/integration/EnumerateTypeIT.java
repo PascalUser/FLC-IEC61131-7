@@ -1,5 +1,8 @@
 package integration;
 
+import parser.initializations.EnumeratedInitialization;
+import parser.initializations.MacroInitialization;
+import parser.initializations.VariableInitialization;
 import utils.ParserTestSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -52,7 +55,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .use(Use.TYPE)
                 .source(Source.NONE)
                 .parameters(Arrays.asList("CENTROID", "AVERAGE"))
-                .initialValue("CENTROID")
+                .initialValue(new EnumeratedInitialization(Arrays.asList("CENTROID", "AVERAGE")))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -63,7 +66,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .customType("METHODTYPE")
                 .use(Use.VARIABLE)
                 .source(expectedSource)
-                .initialValue("METHODTYPE#CENTROID")
+                .initialValue(new VariableInitialization("METHODTYPE#CENTROID"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -73,7 +76,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue("0")
+                .initialValue(new MacroInitialization(st, "0"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -83,7 +86,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue("1")
+                .initialValue(new MacroInitialization(st, "1"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -111,7 +114,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .use(Use.VARIABLE)
                 .source(expectedSource)
                 .parameters(Arrays.asList("CENTROID", "AVERAGE"))
-                .initialValue("0")
+                .initialValue(new VariableInitialization("MAIN#CENTROID"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -121,7 +124,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue("0")
+                .initialValue(new MacroInitialization(st, "0"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -131,7 +134,7 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue("1")
+                .initialValue(new MacroInitialization(st, "1"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());

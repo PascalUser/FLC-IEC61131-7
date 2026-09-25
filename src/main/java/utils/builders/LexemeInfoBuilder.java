@@ -66,14 +66,14 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
     }
 
     @Override
-    public LexemeInfoBuilder inferiorLimit(List<String> inferiorLimit) {
-        this.inferiorLimit = inferiorLimit;
+    public LexemeInfoBuilder inferiorLimits(List<String> inferiorLimits) {
+        this.inferiorLimit = inferiorLimits;
         return this;
     }
 
     @Override
-    public LexemeInfoBuilder superiorLimit(List<String> superiorLimit) {
-        this.superiorLimit = superiorLimit;
+    public LexemeInfoBuilder superiorLimits(List<String> superiorLimits) {
+        this.superiorLimit = superiorLimits;
         return this;
     }
 

@@ -216,7 +216,7 @@ identifier_list = [x, y]
 var_spec_init → simple_spec_init → initialized_simple
         │                            (INT, ASSIGN_OP, NUMERIC_LITERAL)
         ▼
-LexemeInfoBuilder{type=SIMPLE, subtype=INT, initialValue="10"}
+LexemeInfoBuilder{type=SIMPLE, subtype=INT, initialization="10"}
         │
         ▼
 Declaration(symbolTable, [x, y], builder).use(VARIABLE)
@@ -228,7 +228,7 @@ publish() → symbolTable.put("X", LexemeInfo(...))
 
 ### 4.4 Name Mangling
 
-`NameMangler` (in `parser.utils`) generates **qualified lexeme keys** for nested structures:
+`NameMangler` (in `parser.internals`) generates **qualified lexeme keys** for nested structures:
 - `COLOR_TYPE` (top-level type)
 - `COLOR_TYPE#CLASSIFICATION` (struct field)
 - `COLOR_TYPE#CLASSIFICATION#WHITE` (enum value)
@@ -272,7 +272,7 @@ Immutable DTO (data transfer object) with public final fields:
 | `inferiorLimit` | `List<String>` | Lower bounds (subrange/array) |
 | `superiorLimit` | `List<String>` | Upper bounds (subrange/array) |
 | `parameters` | `List<String>` | Struct fields / enum values / FB params |
-| `initialValue` | `Object` | Polymorphic: String, Constant, Struct, ArrayInitialization |
+| `initialization` | `Object` | Polymorphic: String, Constant, Struct, ArrayInitialization |
 
 ### 5.3 Builder Pattern: LexemeInfoSchema / LexemeInfoBuilder
 
@@ -287,7 +287,7 @@ public interface LexemeInfoSchema {
     LexemeInfoSchema inferiorLimit(List<String> inferiorLimit);
     LexemeInfoSchema superiorLimit(List<String> superiorLimit);
     LexemeInfoSchema parameters(List<String> parameters);
-    LexemeInfoSchema initialValue(Object initialValue);
+    LexemeInfoSchema initialization(Object initialization);
 }
 ```
 
@@ -308,7 +308,7 @@ Type (enum)
 ├── ENUMERATE       → Subtype: INT (implicit), parameters = enum values
 ├── SUBRANGE        → Subtype: base type (INT, UINT, etc.), inferior/superior limits
 ├── ARRAY           → Subtype: CUSTOM, customType = element type, inferior/superior = bounds
-└── STRUCT          → Subtype: NONE, parameters = field names, initialValue = field map
+└── STRUCT          → Subtype: NONE, parameters = field names, initialization = field map
 ```
 
 ### 6.2 Use Classification

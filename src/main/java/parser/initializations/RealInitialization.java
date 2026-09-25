@@ -1,28 +1,21 @@
 package parser.initializations;
 
 import utils.SymbolTable;
+import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
-import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
 
 public final class RealInitialization implements Initialization {
     private static String DEFAULT = null;
     private final SymbolTable symbolTable;
 
     public RealInitialization(SymbolTable symbolTable) {
-        this.symbolTable = symbolTable;
+        LexemeInfoBuilder builder = new LexemeInfoBuilder();
         if (DEFAULT == null) {
-            String defaultValue = "0.0";
-            this.symbolTable.putIfAbsent(defaultValue, new LexemeInfoBuilder()
-                .type(Type.SIMPLE)
-                .subtype(Subtype.REAL)
-                .use(Use.LITERAL)
-                .initialValue(0D)
-                .build()
-            );
+            String defaultValue = Director.makeDefaultReal(builder);
+            symbolTable.putIfAbsent(defaultValue, builder.build());
             DEFAULT = defaultValue;
         }
+        this.symbolTable = symbolTable;
     }
 
     @Override
@@ -38,5 +31,29 @@ public final class RealInitialization implements Initialization {
     @Override
     public RealInitialization copy() {
         return new RealInitialization(this.symbolTable);
+    }
+
+    /**
+     * Value-object equality: every {@code RealInitialization} represents the
+     * same "default real value" regardless of which {@link SymbolTable}
+     * instance it was built with, so {@code symbolTable} deliberately does
+     * not participate in equality (it's infrastructure, not state).
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        return o instanceof RealInitialization;
+    }
+
+    @Override
+    public int hashCode() {
+        return RealInitialization.class.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "RealInitialization{" + DEFAULT + "}";
     }
 }

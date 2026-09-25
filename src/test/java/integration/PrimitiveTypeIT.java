@@ -1,5 +1,7 @@
 package integration;
 
+import parser.initializations.RealInitialization;
+import parser.initializations.VariableInitialization;
 import utils.ParserTestSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -48,7 +50,7 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.VARIABLE)
                 .source(source)
-                .initialValue("0.0")
+                .initialValue(new RealInitialization(st))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
 
@@ -57,7 +59,7 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.VARIABLE)
                 .source(source)
-                .initialValue(".3e10")
+                .initialValue(new VariableInitialization(".3e10"))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
     }

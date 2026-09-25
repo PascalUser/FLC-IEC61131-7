@@ -1,7 +1,15 @@
 package parser.initializations;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
+/**
+ * Represents the initialization value of a {@code STRUCT} instance: a map
+ * from field name to that field's own {@link Initialization}. Nested structs
+ * are addressed with a compound key (e.g. {@code "RGB#GAMMA_R"} sets field
+ * {@code GAMMA_R} inside the nested struct stored under {@code "RGB"}).
+ */
 public final class StructInitialization implements Initialization {
     private final Map<String, Initialization> map = new HashMap<>();
     private String selectedVariable = null;
@@ -10,10 +18,10 @@ public final class StructInitialization implements Initialization {
         if (selectedVariable == null) {
             selectedVariable = fieldName;
         }
-        String key1 = fieldName;
+
         int octothorpeIdx = fieldName.indexOf('#');
         if (octothorpeIdx != -1) {
-            key1 = fieldName.substring(0, octothorpeIdx);
+            String key1 = fieldName.substring(0, octothorpeIdx);
             String key2 = fieldName.substring(octothorpeIdx + 1);
 
             if (!map.containsKey(key1)) {
@@ -23,6 +31,7 @@ public final class StructInitialization implements Initialization {
             StructInitialization structInit = (StructInitialization) map.get(key1);
             return structInit.setFieldInitialization(key2, initialization);
         }
+
         return map.put(fieldName, initialization);
     }
 
@@ -49,6 +58,7 @@ public final class StructInitialization implements Initialization {
             key1 = selectedVariable.substring(0, octothorpeIdx);
             key2 = selectedVariable.substring(octothorpeIdx + 1);
         }
+
         if (!map.containsKey(key1)) {
             return "";
         }
@@ -62,5 +72,35 @@ public final class StructInitialization implements Initialization {
             copy.setFieldInitialization(entry.getKey(), entry.getValue().copy());
         }
         return copy;
+    }
+
+    /**
+     * Structural equality based solely on the field map. {@code
+     * selectedVariable} is deliberately excluded: it's just a cursor used by
+     * {@link #getVariableValue()}, not part of the struct's value. Because
+     * {@link Map#equals(Object)} already compares entries deeply (calling
+     * {@code equals} on each {@link Initialization} value), nested structs
+     * are compared correctly with no extra logic here.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StructInitialization)) {
+            return false;
+        }
+        StructInitialization other = (StructInitialization) o;
+        return Objects.equals(this.map, other.map);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(map);
+    }
+
+    @Override
+    public String toString() {
+        return "StructInitialization" + map;
     }
 }

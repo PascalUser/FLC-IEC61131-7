@@ -11,8 +11,7 @@ import java.util.List;
 /**
  * Fluent interface for setting semantic attributes on a lexeme.
  * <p>
- * Defines the builder methods used by {@link LexemeInfoBuilder} and
- * publisher classes ({@link parser.publishers.Declaration}, {@link parser.publishers.Compound})
+ * Defines the builder methods used by {@link LexemeInfoBuilder}
  * to configure {@link LexemeInfo} properties.
  * </p>
  *
@@ -66,18 +65,18 @@ public interface LexemeInfoSchema {
     /**
      * Sets the lower bound for subrange types.
      *
-     * @param inferiorLimit the lower bound as a string
+     * @param inferiorLimits the lower bound as a string
      * @return this builder for chaining
      */
-    LexemeInfoSchema inferiorLimit(List<String> inferiorLimit);
+    LexemeInfoSchema inferiorLimits(List<String> inferiorLimits);
 
     /**
      * Sets the upper bound for subrange types.
      *
-     * @param superiorLimit the upper bound as a string
+     * @param superiorLimits the upper bound as a string
      * @return this builder for chaining
      */
-    LexemeInfoSchema superiorLimit(List<String> superiorLimit);
+    LexemeInfoSchema superiorLimits(List<String> superiorLimits);
 
     /**
      * Sets the parameter list for function blocks.
