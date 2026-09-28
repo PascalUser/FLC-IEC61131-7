@@ -53,7 +53,7 @@ public class LexerSymbolTableTest {
                 .type(Type.SIMPLE)
                 .subtype(expectedSubtype)
                 .use(Use.LITERAL)
-                .source(Source.UNKNOWN)
+                .source(Source.NONE)
                 .initialValue(expectedValue)
                 .build()).isEmpty());
     }

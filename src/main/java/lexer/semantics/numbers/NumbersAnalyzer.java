@@ -55,7 +55,7 @@ public abstract class NumbersAnalyzer implements SemanticAnalyzer {
         // The lexeme's metadata is built and published to the symbol table
         LexemeInfoBuilder builder = new LexemeInfoBuilder();
         Director.makeLiteral(builder);
-        ctx.symbolTable.putIfAbsent(lexeme, builder
+        ctx.symbolTable.putIfAbsent(parsed.lexeme, builder
                 .subtype(parsed.subtype)
                 .initialValue(parsed.value)
                 .build()
