@@ -33,7 +33,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | \[ "BROWN", "LIGHT" \] | Name of the variables the structure holds |
-| initialValue | \{ "BROWN":"COLOR\_TYPE\#BROWN", "LIGHT":"COLOR\_TYPE\#LIGHT"\} | Map that stores fields and their initial value\. |
+| initialization | \{ "BROWN":"COLOR\_TYPE\#BROWN", "LIGHT":"COLOR\_TYPE\#LIGHT"\} | Map that stores fields and their initial value\. |
 
 ### brown
 
@@ -50,7 +50,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
+| initialization | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
 
 ### light
 
@@ -67,7 +67,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
+| initialization | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
 
 ### color
 
@@ -84,7 +84,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | \{ "BROWN":"COLOR\_TYPE\#BROWN", "LIGHT":"COLOR\_TYPE\#LIGHT"\} | Map that stores fields and their initial value\. |
+| initialization | \{ "BROWN":"COLOR\_TYPE\#BROWN", "LIGHT":"COLOR\_TYPE\#LIGHT"\} | Map that stores fields and their initial value\. |
 
 ## Code Declaration \(IEC 61131\-7 / FCL\)
 
@@ -119,7 +119,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | \{ "BROWN":"COLOR\_TYPE\#BROWN", "LIGHT":"1\.0"\} | Map that stores fields and their initial value\. |
+| initialization | \{ "BROWN":"COLOR\_TYPE\#BROWN", "LIGHT":"1\.0"\} | Map that stores fields and their initial value\. |
 
 ## Code Declaration \(IEC 61131\-7 / FCL\)
 
@@ -161,7 +161,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | \[ "GAMMA\_R", "GAMMA\_G", "GAMMA\_B" \] | Name of the variables the structure holds |
-| initialValue | \{ "RGB\#GAMMA\_R":"RGB\_TYPE\#GAMMA\_R", "RGB\#GAMMA\_G":"RGB\_TYPE\#GAMMA\_G", "RGB\#GAMMA\_B":"RGB\_TYPE\#GAMMA\_B" \} | Map that stores fields and their initial value\. |
+| initialization | \{ "RGB\#GAMMA\_R":"RGB\_TYPE\#GAMMA\_R", "RGB\#GAMMA\_G":"RGB\_TYPE\#GAMMA\_G", "RGB\#GAMMA\_B":"RGB\_TYPE\#GAMMA\_B" \} | Map that stores fields and their initial value\. |
 
 ### gamma\_r
 
@@ -178,7 +178,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
+| initialization | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
 
 ### color\_type
 
@@ -195,7 +195,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | \{  "WHITE":"COLOR\_TYPE\#WHITE", "RGB\#GAMMA\_R":"RGB\_TYPE\#GAMMA\_R", "RGB\#GAMMA\_G":Constant\("3\.0"\), "RGB\#GAMMA\_B":"RGB\_TYPE:GAMMA\_B" \} | Map that stores fields and their initial value\. |
+| initialization | \{  "WHITE":"COLOR\_TYPE\#WHITE", "RGB\#GAMMA\_R":"RGB\_TYPE\#GAMMA\_R", "RGB\#GAMMA\_G":Constant\("3\.0"\), "RGB\#GAMMA\_B":"RGB\_TYPE:GAMMA\_B" \} | Map that stores fields and their initial value\. |
 
 ### color
 
@@ -212,5 +212,5 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | \{  "WHITE":Constant\("TRUE"\), "RGB\#GAMMA\_R":"Constant\(10\.2\)",  "RGB\#GAMMA\_G":Constant\("3\.0"\), "RGB\#GAMMA\_B":"RGB\_TYPE:GAMMA\_B" \} | Map that stores fields and their initial value\. |
+| initialization | \{  "WHITE":Constant\("TRUE"\), "RGB\#GAMMA\_R":"Constant\(10\.2\)",  "RGB\#GAMMA\_G":Constant\("3\.0"\), "RGB\#GAMMA\_B":"RGB\_TYPE:GAMMA\_B" \} | Map that stores fields and their initial value\. |
 

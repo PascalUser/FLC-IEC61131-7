@@ -24,7 +24,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
+| initialization | Real\(\) "0\.0" \(Initialization\) | Initial literal value assigned |
 
 power2
 
@@ -41,5 +41,5 @@ power2
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Real\(\) "0\.3e10" \(Initialization\) | Initial literal value assigned |
+| initialization | Real\(\) "0\.3e10" \(Initialization\) | Initial literal value assigned |
 

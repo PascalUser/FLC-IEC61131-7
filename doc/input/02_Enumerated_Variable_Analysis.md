@@ -29,7 +29,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("METHODTYPE\#CENTROID"\) | Initial literal value assigned |
+| initialization | Constant\("METHODTYPE\#CENTROID"\) | Initial literal value assigned |
 
 ### MethodType
 
@@ -46,7 +46,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | \["CENTROID", "AVERAGE"\] | Name of the values the enumerate holds |
-| initialValue | Enumerated\(\) "0" \(Initialization\) | Initial literal value assigned |
+| initialization | Enumerated\(\) "0" \(Initialization\) | Initial literal value assigned |
 
 ### CENTROID
 
@@ -63,7 +63,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("0"\) | Initial literal value assigned |
+| initialization | Constant\("0"\) | Initial literal value assigned |
 
 ### AVERAGE
 
@@ -80,7 +80,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("1"\) | Initial literal value assigned |
+| initialization | Constant\("1"\) | Initial literal value assigned |
 
 ## Code Declaration \(IEC 61131\-7 / FCL\)
 
@@ -107,7 +107,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | \["CENTROID", "AVERAGE"\] | Name of the values the enumerate holds |
-| initialValue | Constant\("0"\) | Initial literal value assigned |
+| initialization | Constant\("0"\) | Initial literal value assigned |
 
 ### CENTROID
 
@@ -124,7 +124,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("0"\) | Initial literal value assigned |
+| initialization | Constant\("0"\) | Initial literal value assigned |
 
 ### AVERAGE
 
@@ -141,5 +141,5 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("1"\) | Initial literal value assigned |
+| initialization | Constant\("1"\) | Initial literal value assigned |
 

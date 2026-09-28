@@ -39,7 +39,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | \[ "CLASSIFICATION", GAMMA" \] | Name of the variables the structure holds |
-| initialValue | \{  "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION",  "GAMMA":"COLOR\_TYPE\#GAMMA" \} | Map that stores fields and their initial value\. |
+| initialization | \{  "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION",  "GAMMA":"COLOR\_TYPE\#GAMMA" \} | Map that stores fields and their initial value\. |
 
 ### classification
 
@@ -56,7 +56,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | \["WHITE", "GRAY", "BLACK"\] | Name of the values the enumerate holds |
-| initialValue | Enumerated\(\) "0" \(Initialization\) | Initial literal value assigned |
+| initialization | Enumerated\(\) "0" \(Initialization\) | Initial literal value assigned |
 
 ### WHITE
 
@@ -73,7 +73,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("0"\) | Initial literal value assigned |
+| initialization | Constant\("0"\) | Initial literal value assigned |
 
 ### GRAY
 
@@ -90,7 +90,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("1"\) | Initial literal value assigned |
+| initialization | Constant\("1"\) | Initial literal value assigned |
 
 ### BLACK
 
@@ -107,7 +107,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("2"\) | Initial literal value assigned |
+| initialization | Constant\("2"\) | Initial literal value assigned |
 
 ### gamma
 
@@ -124,7 +124,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Real\("0\.5"\) | Initial literal value assigned |
+| initialization | Real\("0\.5"\) | Initial literal value assigned |
 
 ### pixels
 
@@ -141,5 +141,5 @@ END_VAR
 | inferiorLimit | \[ 0,   1,  3 \] | Lower bound constraints |
 | superiorLimit | \[ 1, 10 , 4 \] | Upper bound constraints |
 | parameters | null | Does not apply |
-| initialValue | \{     \{20,     \{     "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#WHITE",      "GAMMA":"1\.0"     \}\},     \{1,     \{      "CLASSIFICATION":"COLOR\_ TYPE\#CLASSIFICATION\#BLACK",      "GAMMA":"0\.0"     \}\},     \{10,     \{      "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#WHITE",      "GAMMA":"1\.0"     \}\},     \{8,     \{      "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#BLACK",      "GAMMA":"0\.0"     \}\},     \{2,     \{      "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#GRAY",      "GAMMA":"COLOR\_TYPE\#GAMMA"     \}\}, \} | Initial array values assigned during declaration\. |
+| initialization | \{     \{20,     \{     "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#WHITE",      "GAMMA":"1\.0"     \}\},     \{1,     \{      "CLASSIFICATION":"COLOR\_ TYPE\#CLASSIFICATION\#BLACK",      "GAMMA":"0\.0"     \}\},     \{10,     \{      "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#WHITE",      "GAMMA":"1\.0"     \}\},     \{8,     \{      "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#BLACK",      "GAMMA":"0\.0"     \}\},     \{2,     \{      "CLASSIFICATION":"COLOR\_TYPE\#CLASSIFICATION\#GRAY",      "GAMMA":"COLOR\_TYPE\#GAMMA"     \}\}, \} | Initial array values assigned during declaration\. |
 

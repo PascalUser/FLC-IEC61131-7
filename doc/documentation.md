@@ -41,7 +41,7 @@ The compiler implements the declaration and initialization subsets of IEC 61131-
 | Lexical Analyzer Generator | JFlex 1.8+ |
 | Parser Generator | GNU Bison 3.8.2 (Java skeleton) |
 | Target Language | Java 17+ |
-| Build System | Maven/Gradle (project dependent) |
+| Build System | Maven 3.8+ |
 
 ---
 
@@ -129,7 +129,7 @@ Each lexical rule in the JFlex specification follows a **two-phase pipeline**:
 
 #### 3.1.2 Transformer Chains (Decorator Pattern)
 
-Each literal category has a dedicated transformer chain:
+Each literal category has a dedicated transformer chain. All transformers extend the abstract `Transformer` base class implementing Chain of Responsibility.
 
 | Literal Type | Transformer Chain |
 |--------------|-------------------|
@@ -139,6 +139,24 @@ Each literal category has a dedicated transformer chain:
 | **REALS** | `UnderscoreRemover` → `StripTrailingZeros` → `StripLeadingZeros` |
 | **STRINGS/WSTRINGS** | `StringHexResolver`/`WStringHexResolver` → `StringEscapeResolver` |
 | **IDENTIFIERS** | `UpperCaseConverter` |
+
+##### 3.1.2.1 Hex Escape Resolvers
+
+`StringHexResolver` and `WStringHexResolver` extend `HexResolver` (in `lexer.transformers.hex_resolvers`) to process IEC 61131-7 hex escape sequences in string literals:
+
+- **STRING** (`$HH`): 2 hex digits per character → `StringHexResolver` (hexDigits = 2)
+- **WSTRING** (`$HHHH`): 4 hex digits per character → `WStringHexResolver` (hexDigits = 4)
+
+Both preserve `$$` as literal `$` and delegate to `StringEscapeResolver` for standard escapes (`$N`, `$R`, `$T`, `$L`, `$P`, `$'`).
+
+##### 3.1.2.2 Magnitude Transformers (Intervals Only)
+
+Interval literals (e.g., `T#1D_2H_3M_4S_5MS`) have magnitude components (days, hours, minutes, seconds, milliseconds) separated by underscores. The magnitude transformers handle leading/trailing zeros within each magnitude:
+
+- `OmitLeadingZeroMagnitudes` / `OmitTrailingZeroMagnitudes` — remove zeros at magnitude boundaries
+- `OmitLeadingZerosInMagnitudes` / `OmitTrailingZerosInMagnitudes` — remove zeros within each magnitude component
+
+This ensures `T#01D_02H` normalizes to `T#1D_2H` per IEC 61131-7.
 
 #### 3.1.3 Semantic Analyzers
 
@@ -345,27 +363,50 @@ Based on `Initializers_Architecture.pdf` (Figure 2), the initialization system u
 
 ```
 Initialization (interface)
-├── Constant          → Simple literal: value = "0.5"
-├── ArrayInitialization → Repeated elements: List<RepeatedInitialization>
-│   └── RepeatedInitialization → count + Initialization
-└── Struct            → Field map: HashMap<String, String>
+├── Constant              → Simple literal: value = "0.5"
+├── VariableInitialization → Reference to another variable/constant
+├── BooleanInitialization  → Default BOOL value (FALSE)
+├── EnumeratedInitialization → Enum value by ordinal/index
+├── MacroInitialization    → Enum literal (MACRO use)
+├── RealInitialization     → Default REAL value (0.0)
+├── SubrangeInitialization → Default value within bounds
+├── RepeatedInitialization → Array: disjoint intervals [start..end] with init
+└── StructInitialization   → Struct: field map (name → Initialization)
 ```
 
 **Figure 2: Initialization Class Hierarchy** (from `doc/input/06_Initializers_Architecture_Diagram.pdf`)
 
-### 7.2 Initialization Resolution
+### 7.2 Key Implementation Details
+
+**`RepeatedInitialization`** (replaces conceptual `ArrayInitialization`):
+- Stores disjoint, contiguous intervals partitioning `[0, dimension-1]`
+- Each interval: `[start, end]` + `Initialization` object
+- Supports repetition factors: `N(value)` expands to `N` contiguous indices
+- Overwrites intervals on re-initialization (later initializers take precedence)
+- `compact()` merges adjacent intervals with identical initialization
+
+**`StructInitialization`**:
+- Field map: `HashMap<String, Initialization>` keyed by field name
+- Supports partial initialization (unspecified fields retain type defaults)
+- Nested structs: field names mangled as `TYPE#FIELD#NESTED_FIELD`
+
+### 7.3 Initialization Resolution
 
 The parser constructs initialization objects during semantic actions:
 
 | Construct | Initialization Type | Example |
 |-----------|---------------------|---------|
-| `x : REAL := 1.5` | `Constant("1.5")` | Simple assignment |
-| `arr : ARRAY[1..3] OF INT := 2(5), 7` | `ArrayInitialization` | Repetition factor |
-| `s : STRUCT a:INT; b:REAL END_STRUCT := (a:=1, b:=2.0)` | `Struct` | Field-wise init |
+| `x : REAL := 1.5` | `VariableInitialization("1.5")` | Simple assignment |
+| `arr : ARRAY[1..3] OF INT := 2(5), 7` | `RepeatedInitialization` | Repetition factor |
+| `s : STRUCT a:INT; b:REAL END_STRUCT := (a:=1, b:=2.0)` | `StructInitialization` | Field-wise init |
+| `flag : BOOL` | `BooleanInitialization` | Default FALSE |
+| `color : Color := RED` | `EnumeratedInitialization` / `VariableInitialization` | Enum init |
 
-### 7.3 InitialValueResolver (Incomplete)
+### 7.3 Default Value Resolution
 
-`InitialValueResolver.java` provides default values for uninitialized variables but is marked **TODO** with known architectural coupling issues (parser depending on lexer internals).
+Default initializations are created inline via `Factory.createPrimitiveInitialization()` and type-specific initialization classes (`BooleanInitialization`, `RealInitialization`, etc.). Each initialization class registers its default value in the symbol table on first use (lazy initialization via `putIfAbsent`).
+
+No separate `InitialValueResolver` class exists; default logic is distributed across initialization type classes.
 
 ---
 
@@ -468,6 +509,33 @@ Centralized collector (singleton-like) aggregating diagnostics from:
 - Parser (syntax errors via `yyerror`)
 - Future: Semantic analysis passes
 
+**API:**
+
+| Method | Description |
+|--------|-------------|
+| `add(Diagnostic d)` | Register an error or warning |
+| `getErrors()` | List of all `Error` diagnostics |
+| `getWarnings()` | List of all `Warning` diagnostics |
+| `hasErrors()` | `true` if any fatal errors recorded |
+| `report()` | Print all diagnostics to stdout (formatted) |
+
+### 9.3 Diagnostic Structure
+
+Each diagnostic captures:
+- **Source location** — line number (column tracked in lexer)
+- **Offending lexeme** — the raw text that triggered the diagnostic
+- **Descriptive message** — human-readable explanation
+
+**Example error output:**
+```
+Line 15: INTEGER_OUT_OF_RANGE: Value '40000' exceeds INT range [-32768, 32767]
+Line 23: STRING_LENGTH_WARNING: String literal exceeds 255 characters (truncated)
+```
+
+### 9.4 Lexer Error Recovery
+
+Invalid characters trigger `yyerror` but lexer continues in `YYINITIAL` state. Semantic analyzer failures return `YYerror` token, causing parser error recovery.
+
 ### 9.3 Lexer Error Recovery
 
 Invalid characters trigger `yyerror` but lexer continues in `YYINITIAL` state. Semantic analyzer failures return `YYerror` token, causing parser error recovery.
@@ -486,10 +554,13 @@ Invalid characters trigger `yyerror` but lexer continues in `YYINITIAL` state. S
 ### 10.2 Compilation Flow
 
 ```bash
-# Typical build steps
-jflex src/main/java/lexer/Lexer.flex
-bison -o src/main/java/parser/Parser.java src/main/java/parser/Parser.y
-javac -d build/classes src/main/java/**/*.java
+# Maven build (generates sources, compiles, runs tests)
+mvn clean compile
+
+# Or manually:
+# jflex src/main/java/lexer/Lexer.flex
+# bison -o src/main/java/parser/Parser.java src/main/java/parser/Parser.y
+# mvn compile
 ```
 
 ### 10.3 Entry Point
@@ -517,10 +588,10 @@ After parsing, `symbolTable` contains all declarations with full semantic attrib
 | Documentation Section | Source Files |
 |----------------------|--------------|
 | Lexical Analysis | `lexer/Lexer.flex`, `lexer/LexicalAnalyzers.java`, `lexer/LexicalPreprocessors.java`, `lexer/transformers/*`, `lexer/semantics/*` |
-| Syntactic Analysis | `parser/Parser.y`, `parser/Parser.java`, `parser/publishers/*` |
+| Syntactic Analysis | `parser/Parser.y`, `parser/Parser.java`, `parser/internals/*`, `parser/utils/*` |
 | Symbol Table | `utils/SymbolTable.java`, `utils/LexemeInfo.java`, `utils/builders/*` |
 | Type System | `utils/enums/*` |
-| Initialization | `parser/initializations/*`, `parser/InitialValueResolver.java` |
+| Initialization | `parser/initializations/*` |
 | Diagnostics | `utils/diagnostics/*`, `utils/DiagnosticsHandler.java` |
 
 ### B. UML Diagrams Reference
@@ -530,6 +601,7 @@ After parsing, `symbolTable` contains all declarations with full semantic attrib
 | Figure 1 | (this document) | Monolithic Architecture Overview |
 | Figure 2 | `doc/input/06_Initializers_Architecture_Diagram.pdf` | Initialization Class Hierarchy |
 | Figure 3 | `doc/input/07_LexemeInfoSchema_BuilderPattern_Diagram.pdf` | Builder Pattern for LexemeInfo |
+| Figure 4 | `doc/architecture.md` | PlantUML diagrams (Class, Sequence, Package) |
 
 ### C. Symbol Table Entry Examples
 
@@ -537,6 +609,6 @@ See `doc/input/01_Array_Variable_Analysis.md` through `doc/input/05_Subrange_Var
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: 2026-09-19*  
+*Document Version: 1.1*  
+*Last Updated: 2026-09-28*  
 *Generated from source code analysis and input specifications in `/doc/input`*

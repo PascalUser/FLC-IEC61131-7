@@ -29,7 +29,7 @@ END_VAR
 | inferiorLimit | 0 | Lower bound constraint |
 | superiorLimit | 31 | Upper bound constraint |
 | parameters | null | Does not apply |
-| initialValue | Subrange\("0"\) \(Initialization\) | Initial literal value assigned |
+| initialization | Subrange\("0"\) \(Initialization\) | Initial literal value assigned |
 
 ### fecha\_trabajo
 
@@ -46,7 +46,7 @@ END_VAR
 | inferiorLimit | null | Does not apply |
 | superiorLimit | null | Does not apply |
 | parameters | null | Does not apply |
-| initialValue | Constant\("21"\) | Initial literal value assigned |
+| initialization | Constant\("21"\) | Initial literal value assigned |
 
 ## **Code Declaration \(IEC 61131\-7 / FCL\)**
 
@@ -75,5 +75,5 @@ END_VAR
 | inferiorLimit | 0 | Lower bound constraint |
 | superiorLimit | 100 | Upper bound constraint |
 | parameters | null | Does not apply |
-| initialValue | Constant\("50"\) | Initial literal value assigned |
+| initialization | Constant\("50"\) | Initial literal value assigned |
 
