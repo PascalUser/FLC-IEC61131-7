@@ -4,9 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Default initialization for enumerated types (IEC 61131-7).
+ * <p>
+ * Represents the first enumerated value (ordinal 0) as the default for
+ * uninitialized enum variables. The constructor receives the list of all
+ * enum values and selects the first one.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see Initialization
+ * @see MacroInitialization
+ */
 public class EnumeratedInitialization implements Initialization {
     private final String enumeratedValue;
 
+    /**
+     * Creates an enumerated default initialization.
+     *
+     * @param enumeratedValues list of all enum values; first element is used as default
+     */
     public EnumeratedInitialization(List<String> enumeratedValues) {
         this.enumeratedValue = enumeratedValues.get(0);
     }
@@ -29,11 +49,7 @@ public class EnumeratedInitialization implements Initialization {
     }
 
     /**
-     * Value-object equality based on the wrapped value. Unlike
-     * {@link EnumeratedInitialization} (which has no state of its own and is
-     * always "the default value"), a {@code EnumeratedInitialization}'s
-     * identity as a value *is* {@code ilimit} and {@code ulimit} — two instances
-     * are equal only when they hold the same valueS.
+     * Value-object equality based on the wrapped enumerated value.
      */
     @Override
     public boolean equals(Object o) {

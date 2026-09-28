@@ -7,10 +7,29 @@ import utils.builders.LexemeInfoBuilder;
 import utils.enums.*;
 import utils.diagnostics.StringLengthWarning;
 
+/**
+ * Abstract base analyzer for string literals (STRING and WSTRING).
+ * <p>
+ * Handles string content extraction, length validation (max 255 chars per IEC 61131-7),
+ * and warning generation for oversized literals. Subclasses define the specific subtype.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see Strings
+ * @see WStrings
+ */
 public abstract class StringsAnalyzer implements SemanticAnalyzer {
 
     private static final int MAX_STRING_LENGTH = 255;
 
+    /**
+     * Returns the string subtype (STRING or WSTRING).
+     *
+     * @return the subtype
+     */
     protected abstract Subtype getSubtype();
 
     @Override

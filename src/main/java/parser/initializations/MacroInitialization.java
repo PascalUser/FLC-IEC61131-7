@@ -7,10 +7,32 @@ import utils.enums.*;
 
 import java.util.Objects;
 
+/**
+ * Initialization for enumerated literal values (MACRO use, IEC 61131-7).
+ * <p>
+ * Represents an explicit enum value reference (e.g., {@code color := RED}).
+ * The ordinal value is registered in the symbol table as a literal with
+ * {@code Subtype.INT} for semantic analysis purposes.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see Initialization
+ * @see EnumeratedInitialization
+ * @see Director
+ */
 public class MacroInitialization implements Initialization {
     private final SymbolTable symbolTable;
     private final String replaceValue;
 
+    /**
+     * Creates a macro initialization for an enum literal.
+     *
+     * @param symbolTable  the symbol table for literal registration
+     * @param replaceValue the ordinal value as string (e.g., "0", "1", "2")
+     */
     public MacroInitialization(SymbolTable symbolTable, String replaceValue) {
         LexemeInfoBuilder builder = new LexemeInfoBuilder();
         Director.makeLiteral(builder);
@@ -39,11 +61,7 @@ public class MacroInitialization implements Initialization {
     }
 
     /**
-     * Value-object equality based on the wrapped value. Unlike
-     * {@link MacroInitialization} (which has no state of its own and is
-     * always "the default value"), a {@code MacroInitialization}'s
-     * identity as a value *is* {@code ilimit} and {@code ulimit} — two instances
-     * are equal only when they hold the same valueS.
+     * Value-object equality based on the wrapped ordinal value.
      */
     @Override
     public boolean equals(Object o) {

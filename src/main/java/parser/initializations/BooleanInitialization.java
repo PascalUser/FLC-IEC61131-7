@@ -5,10 +5,38 @@ import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.*;
 
+/**
+ * Default initialization for BOOL variables (IEC 61131-7).
+ * <p>
+ * Represents the default value {@code FALSE} for uninitialized boolean variables.
+ * The default value is lazily registered in the {@link SymbolTable} on first use
+ * via {@link Director#makeDefaultReal(LexemeInfoBuilder)} (which creates a
+ * {@code LexemeInfo} with {@code type=SIMPLE, subtype=BOOL, value="FALSE"}).
+ * </p>
+ * <p>
+ * All instances are considered equal regardless of the {@code SymbolTable}
+ * they were created with, as they represent the same semantic default.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see Initialization
+ * @see Director
+ */
 public class BooleanInitialization implements Initialization {
     private static String DEFAULT = null;
     private final SymbolTable symbolTable;
 
+    /**
+     * Creates a boolean default initialization.
+     * <p>
+     * Registers the default value in the symbol table if not already present.
+     * </p>
+     *
+     * @param symbolTable the symbol table for default value registration
+     */
     public BooleanInitialization(SymbolTable symbolTable) {
         LexemeInfoBuilder builder = new LexemeInfoBuilder();
         if (DEFAULT == null) {

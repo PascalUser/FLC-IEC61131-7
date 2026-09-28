@@ -92,6 +92,8 @@ program:
 
 /* -------------------------------- FUNCTION_BLOCK -------------------------------------- */
 
+/* Root: program = opt_data_type_declaration function_block_declaration */
+
 function_block_declaration:
     FUNCTION_BLOCK function_block_name
     opt_fb_io_var_declarations_list
@@ -146,6 +148,8 @@ opt_function_block_body:
     opt_option_block_list
 ;
 
+/* -------------------------------- Fuzzy Blocks ---------------------------------------- */
+
 opt_fuzzify_block_list:
     /* empty */
     | opt_fuzzify_block_list fuzzify_block
@@ -181,47 +185,57 @@ linguistic_term_list:
     | linguistic_term_list linguistic_term
 ;
 
+/* linguistic_term: TERM IDENTIFIER = (IDENTIFIER | membership_function) */
 linguistic_term:
     TERM IDENTIFIER ASSIGN_OP IDENTIFIER ';'
     | TERM IDENTIFIER ASSIGN_OP membership_function ';'
 ;
 
+/* membership_function: singleton | point_list */
 membership_function:
     singleton
     | point_list
 ;
 
+/* singleton: numeric_constant */
 singleton:
     numeric_constant
 ;
 
+/* point_list: one or more points */
 point_list:
     point
     | point_list point
 ;
 
+/* point: (numeric_constant, numeric_constant) | (IDENTIFIER, numeric_constant) */
 point:
     '(' numeric_constant ',' numeric_constant ')'
     | '(' IDENTIFIER ',' numeric_constant ')'
 ;
 
+/* defuzzification_method: METHOD ':' defuzz_method ';' */
 defuzzification_method:
     METHOD ':' defuzz_method ';'
 ;
 
+/* defuzz_method: COG | COGS | COA | LM | RM */
 defuzz_method:
     COG | COGS | COA | LM | RM
 ;
 
+/* default_value: DEFAULT ':=' default_val ';' */
 default_value:
     DEFAULT ASSIGN_OP default_val ';'
 ;
 
+/* default_val: numeric_constant | NC */
 default_val:
     numeric_constant
     | NC
 ;
 
+/* opt_range: optional RANGE '(' numeric_constant '..' numeric_constant ')' ';' */
 opt_range:
     /* empty */
     | RANGE '(' numeric_constant RANGE_OP numeric_constant ')' ';'
@@ -232,6 +246,7 @@ opt_rule_block_list:
     | opt_rule_block_list rule_block
 ;
 
+/* rule_block: RULEBLOCK IDENTIFIER operator_definition activation_method_opt accumulation_method rule_list END_RULEBLOCK */
 rule_block:
     RULEBLOCK IDENTIFIER
     operator_definition
@@ -241,6 +256,7 @@ rule_block:
     END_RULEBLOCK
 ;
 
+/* operator_definition: optional OR ':' or_type AND ':' and_type ';' */
 operator_definition:
     opt_operator_or operator_and_opt ';'
 ;
@@ -255,10 +271,12 @@ operator_and_opt:
     | AND ':' and_type
 ;
 
+/* or_type: MAX | ASUM | BSUM */
 or_type:
     MAX | ASUM | BSUM
 ;
 
+/* and_type: MIN | PROD | BDIF */
 and_type:
     MIN | PROD | BDIF
 ;
@@ -268,42 +286,51 @@ activation_method_opt:
     | activation_method
 ;
 
+/* activation_method: ACT ':' act_type ';' */
 activation_method:
     ACT ':' act_type ';'
 ;
 
+/* act_type: PROD | MIN */
 act_type:
     PROD | MIN
 ;
 
+/* accumulation_method: ACCU ':' accu_type ';' */
 accumulation_method:
     ACCU ':' accu_type ';'
 ;
 
+/* accu_type: MAX | BSUM | NSUM */
 accu_type:
     MAX | BSUM | NSUM
 ;
 
+/* rule_list: zero or more rules */
 rule_list:
     /* empty */
     | rule_list rule
 ;
 
+/* rule: RULE numeric_constant ':' IF condition THEN conclusion_list opt_weighting ';' */
 rule:
     RULE numeric_constant ':' IF condition THEN conclusion_list opt_weighting ';'
 ;
 
+/* opt_weighting: optional WITH (numeric_constant | IDENTIFIER) */
 opt_weighting:
     /* empty */
     | WITH numeric_constant
     | WITH IDENTIFIER
 ;
 
+/* condition: x condition_tail | IDENTIFIER condition_tail */
 condition:
     x condition_tail
     | IDENTIFIER condition_tail
 ;
 
+/* condition_tail: empty | AND IDENTIFIER condition_tail | OR IDENTIFIER condition_tail | AND x condition_tail | OR x condition_tail */
 condition_tail:
     /* empty */
     | AND IDENTIFIER condition_tail
@@ -312,6 +339,7 @@ condition_tail:
     | OR x condition_tail
 ;
 
+/* x: NOT x | NOT IDENTIFIER | subcondition | '(' condition ')' */
 x:
     NOT x
     | NOT IDENTIFIER
@@ -319,11 +347,13 @@ x:
     | '(' condition ')'
 ;
 
+/* subcondition: IDENTIFIER IS IDENTIFIER | IDENTIFIER IS NOT IDENTIFIER */
 subcondition:
     IDENTIFIER IS IDENTIFIER
     | IDENTIFIER IS NOT IDENTIFIER
 ;
 
+/* conclusion_list: IDENTIFIER IS IDENTIFIER | IDENTIFIER | comma-separated list */
 conclusion_list:
     IDENTIFIER IS IDENTIFIER
     | IDENTIFIER
@@ -342,11 +372,13 @@ option_block:
 
 /* ------------------------------------ Pragmas ----------------------------------------- */
 
+/* pragma_list: one or more pragmas */
 pragma_list:
     pragma
     | pragma_list pragma
 ;
 
+/* pragma: PRAGMA IDENTIFIER ';' | PRAGMA IDENTIFIER numeric_constant ';' */
 pragma:
     PRAGMA IDENTIFIER ';'
     | PRAGMA IDENTIFIER numeric_constant ';'
@@ -354,6 +386,9 @@ pragma:
 
 /* ------------------------------ IEC61131-3 Annex B ------------------------------------ */
 
+/* ------------------------------ Variable Declarations --------------------------------- */
+
+/* io_var_decl: VAR_INPUT | VAR_OUTPUT with source/use context setup */
 io_var_decl:
     VAR_INPUT
     {
@@ -375,10 +410,12 @@ io_var_decl:
     }
 ;
 
+/* var_declarations: var_id_decl var_constant_spec var_init_decl_list ';' END_VAR */
 var_declarations:
     var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
 ;
 
+/* var_id_decl: VAR with source=INTERNAL, use=VARIABLE */
 var_id_decl:
     VAR
     {
@@ -391,6 +428,7 @@ var_id_decl:
     }
 ;
 
+/* var_retain_spec: optional RETAIN | NON_RETAIN */
 var_retain_spec:
     /* empty */
     | RETAIN
@@ -403,22 +441,25 @@ var_retain_spec:
     }
 ;
 
+/* var_constant_spec: optional CONSTANT */
 var_constant_spec:
     /* empty */
     {
-        // TODO: ctx with non contant spec
+        // TODO: ctx with non constant spec
     }
     | CONSTANT
     {
-        // TODO: ctx with contant spec
+        // TODO: ctx with constant spec
     }
 ;
 
+/* var_init_decl_list: one or more variable initializations separated by ';' */
 var_init_decl_list:
     var_init_decl
     | var_init_decl_list ';' var_init_decl
 ;
 
+/* var_init_decl: identifier_list ':' var_spec_init [publish] | identifier_list ':' standard_function_block_spec_init */
 var_init_decl:
     identifier_list ':' var_spec_init
     {
@@ -434,7 +475,7 @@ var_init_decl:
     | identifier_list ':' standard_function_block_spec_init
 ;
 
-// TODO: quitar los null
+/* var_spec_init: all type specification alternatives */
 var_spec_init:
     custom_spec_init
     | boolean_spec_init
@@ -445,11 +486,13 @@ var_spec_init:
     | string_spec_init
 ;
 
+/* boolean_spec_init: boolean_specification | initialized_boolean */
 boolean_spec_init:
     boolean_specification
     | initialized_boolean
 ;
 
+/* boolean_specification: BOOL with default BooleanInitialization */
 boolean_specification:
     BOOL
     {
@@ -467,10 +510,12 @@ boolean_specification:
     }
 ;
 
+/* initialized_boolean: boolean_specification edge */
 initialized_boolean:
     boolean_specification edge
 ;
 
+/* edge: R_EDGE | F_EDGE */
 edge:
     R_EDGE
     | F_EDGE
@@ -520,7 +565,7 @@ initialized_custom_with_identifier:
     custom_type_name ASSIGN_OP identifier_with_opt_mangling
     {
         /**
-         * Searches if the enumerated value is valid and in that cases loads the initial value and and drops the search
+         * Searches if the enumerated value is valid and in that cases loads the initial value and drops the search
          * scope added
         **/
 
@@ -532,7 +577,7 @@ initialized_custom_with_identifier:
             : ctx.searchScope().getNameMangled($3);
 
         if (this.symbolTable.get(completeTypeName) == null) {
-            // TODO: control de error. Enumerado literal inexistente
+            // TODO: error control. Enumerated literal does not exist
         }
         ctx.metadataBuilder().initialValue(new VariableInitialization(completeTypeName));
         ctx.searchScope().popScope();
@@ -676,7 +721,7 @@ numeric_constant:
     NUMERIC_LITERAL
     | number_prefix NUMERIC_LITERAL
     {
-        // TODO: hacer conversion de esta constante en codigo
+        // TODO: convert this constant in code
         $$ = "";
     }
 ;
@@ -689,7 +734,7 @@ number_prefix:
 
 time_constant:
     date_type_name '#' TIME_LITERAL {
-        // TODO: accion semantica que verifica que prefix es del mismo tipo que time_literal
+        // TODO: semantic action to verify prefix matches time_literal type
     }
 ;
 
@@ -759,7 +804,7 @@ range:
             metadata.superiorLimits = new ArrayList<>();
         }
 
-        // TODO: hacer chequeo semantico de rangos
+        // TODO: semantic check of ranges
         metadata.inferiorLimits.add($1);
         metadata.superiorLimits.add($3);
 
@@ -801,14 +846,14 @@ initialized_enumerated:
         ParsingContext ctx = this.contexts.current();
 
         if ($3.indexOf('#') != -1) {
-            // TODO: control de error. El enumerado anonimo no puede ser inicializado con un mangling
+            // TODO: error control. Anonymous enum cannot be initialized with mangling
         }
         List<String> enumeratedValues = ctx.metadataBuilder().build().parameters;
         Integer indexValue = enumeratedValues.indexOf($3);
         if (indexValue == -1) {
-            // TODO: control de error. El enumerado anonimo no puede ser inicializado con un valor inexistente
+            // TODO: error control. Anonymous enum cannot be initialized with non-existent value
         }
-        // TODO: ver cómo verificar que el índice está en el léxico
+        // TODO: verify how to check index is in lexicon
         ctx.metadataBuilder().initialValue(
             new VariableInitialization(
                 ctx.outerScopes().getNameMangled($3)
@@ -847,7 +892,7 @@ enumerated_values_list:
             .use(Use.MACRO)
             .source(Source.NONE)
             .initialValue(
-                // TODO: ver interacción con lexer para la publicación de la constante
+                // TODO: verify interaction with lexer for constant publication
                 new MacroInitialization(this.symbolTable, "0")
             );
         ctx.outerScopes().addScope(outerScopes);
@@ -862,7 +907,7 @@ enumerated_values_list:
     }
     | enumerated_values_list ',' IDENTIFIER
     {
-        // TODO: ver interacción con el lexer nuevamente
+        // TODO: verify interaction with lexer again
         Integer newIndex = $1.size();
 
         ParsingContext ctx = this.contexts.current();
@@ -1022,7 +1067,7 @@ array_initial_element:
         ParsingContext initContext = this.contexts.current();
         initContext.incrementIndex(1);
 
-        // TODO: verificar enumerado como en la regla de initialized_custom_with_identifier
+        // TODO: verify enum as in initialized_custom_with_identifier rule
         String completeEnumerateName = initContext.searchScope().getNameMangled($1);
 
         initContext.metadataBuilder().initialValue(new VariableInitialization(completeEnumerateName));
@@ -1054,7 +1099,7 @@ repeated_initial_element:
          * Repeats N times the inner initialization.
         **/
 
-        // TODO: verificar que numeric_constant es aditivo
+        // TODO: verify that numeric_constant is additive
         int multiplier = Integer.parseInt($1);
 
         ParsingContext initContext = this.contexts.current();
@@ -1111,7 +1156,7 @@ initialized_field_with_constant:
         
         StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
         if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
-            // TODO: control de error. el campo no existe
+            // TODO: error control. field does not exist
         }
         structValue.setFieldInitialization(completeFieldName, new VariableInitialization($3));
         ctx.nestedFields().popScope();
@@ -1130,9 +1175,9 @@ initialized_field_with_identifier:
 
         StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
         if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
-            // TODO: control de error. el campo no existe
+            // TODO: error control. field does not exist
         }
-        // TODO: control de error, verificar que el enumerado es alcanzable
+        // TODO: error control, verify enum is reachable
         String completeEnumeratedValue = ctx.searchScope().getNameMangled($3);
 
         structValue.setFieldInitialization(completeFieldName, new VariableInitialization(completeEnumeratedValue));
@@ -1206,7 +1251,7 @@ identifier_list:
 ;
 
 standard_function_block_specification:
-    // TODO: No hay informacion en el estandar de este tipo de funciones
+    // TODO: No information in standard for this function type
     STD_FB_IDENTIFIER
 ;
 

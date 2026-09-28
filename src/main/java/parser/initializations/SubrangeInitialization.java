@@ -2,10 +2,29 @@ package parser.initializations;
 
 import java.util.Objects;
 
+/**
+ * Default initialization for SUBRANGE types (IEC 61131-7).
+ * <p>
+ * Represents the lower bound as the default value for uninitialized subrange
+ * variables. Stores both lower and upper bounds for validation purposes.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see Initialization
+ */
 public final class SubrangeInitialization implements Initialization {
     private final String ilimit;
     private final String slimit;
 
+    /**
+     * Creates a subrange default initialization.
+     *
+     * @param ilimit lower bound (inclusive)
+     * @param slimit upper bound (inclusive)
+     */
     public SubrangeInitialization(String ilimit, String slimit) {
         this.ilimit = ilimit;
         this.slimit = slimit;
@@ -27,11 +46,7 @@ public final class SubrangeInitialization implements Initialization {
     }
 
     /**
-     * Value-object equality based on the wrapped value. Unlike
-     * {@link SubrangeInitialization} (which has no state of its own and is
-     * always "the default value"), a {@code SubrangeInitialization}'s
-     * identity as a value *is* {@code ilimit} and {@code slimit} — two instances
-     * are equal only when they hold the same valueS.
+     * Value-object equality based on both bounds.
      */
     @Override
     public boolean equals(Object o) {

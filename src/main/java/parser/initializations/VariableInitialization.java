@@ -2,9 +2,27 @@ package parser.initializations;
 
 import java.util.Objects;
 
+/**
+ * Initialization for explicit variable/constant assignments (IEC 61131-7).
+ * <p>
+ * Represents a user-provided initial value (e.g., {@code x := 10}, {@code y := 3.14}).
+ * Wraps the literal value as a string for storage in the symbol table.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see Initialization
+ */
 public final class VariableInitialization implements Initialization {
     private final String value;
 
+    /**
+     * Creates a variable initialization with the given literal value.
+     *
+     * @param value the literal value as string (e.g., "10", "3.14", "TRUE")
+     */
     public VariableInitialization(final String value) {
         this.value = value;
     }
@@ -25,11 +43,7 @@ public final class VariableInitialization implements Initialization {
     }
 
     /**
-     * Value-object equality based on the wrapped value. Unlike
-     * {@link RealInitialization} (which has no state of its own and is
-     * always "the default value"), a {@code VariableInitialization}'s
-     * identity as a value *is* {@code value} — two instances are equal only
-     * when they hold the same value.
+     * Value-object equality based on the wrapped value.
      */
     @Override
     public boolean equals(Object o) {

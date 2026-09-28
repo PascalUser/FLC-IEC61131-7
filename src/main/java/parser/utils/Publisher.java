@@ -3,11 +3,38 @@ package parser.utils;
 import parser.internals.ParsingContext;
 import utils.LexemeInfo;
 
+/**
+ * Utility class for publishing declarations to the symbol table.
+ * <p>
+ * The {@code Publisher} pattern (implemented by {@link parser.utils.Declaration}
+ * and {@link parser.utils.Compound}) defers symbol table population until all
+ * semantic attributes are configured. This class provides a static convenience
+ * method for simple direct publishing from a {@link ParsingContext}.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ * @see parser.utils.Declaration
+ * @see parser.utils.Compound
+ * @see ParsingContext
+ */
 public final class Publisher {
+
+    private Publisher() {
+        // Utility class - not instantiable
+    }
+
     /**
-     * Creates the metadata associated to the left identifiers using the context and publishes it into the symbol
-     * table. Also, the variables names are transformed to be mangled with their outer scope.
-     **/
+     * Publishes all declared identifiers in the context to the symbol table.
+     * <p>
+     * Builds the {@link LexemeInfo} from the context's metadata builder,
+     * mangles each identifier with the outer scope, and stores in the symbol table.
+     * </p>
+     *
+     * @param ctx the parsing context containing identifiers and metadata
+     */
     public static void publish(ParsingContext ctx) {
         LexemeInfo metadata = ctx.metadataBuilder().build();
         for (String identifier : ctx.declaredIdentifiers()) {
