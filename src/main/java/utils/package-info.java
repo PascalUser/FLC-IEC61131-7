@@ -5,20 +5,21 @@
  * source of truth for all compilation phases. Key components:
  * </p>
  * <ul>
- *   <li>{@link SymbolTable} - HashMap-based storage for {@link LexemeInfo} entries</li>
- *   <li>{@link LexemeInfo} - immutable DTO with complete semantic attributes</li>
- *   <li>{@link DiagnosticsHandler} - centralized error/warning collection</li>
- *   <li>{@link builders.LexemeInfoBuilder} - fluent builder for LexemeInfo</li>
- *   <li>{@link enums.Type}, {@link Subtype}, {@link Use}, {@link Source} - classification enums</li>
+ *   <li>{@link utils.SymbolTable} - HashMap-based storage for {@link utils.LexemeInfo} entries</li>
+ *   <li>{@link utils.LexemeInfo} - immutable DTO with complete semantic attributes</li>
+ *   <li>{@link utils.DiagnosticsHandler} - centralized error/warning collection</li>
+ *   <li>{@link utils.builders.LexemeInfoBuilder} - fluent builder for LexemeInfo</li>
+ *   <li>{@link utils.enums.Type}, {@link utils.enums.Subtype}, {@link utils.enums.Use}, {@link utils.enums.Source} -
+ *   classification enums</li>
  * </ul>
  * <p>
  * All phases (lexer, parser, semantic) share a single SymbolTable instance,
  * ensuring data consistency and decoupling.
  * </p>
  *
- * @see SymbolTable
- * @see LexemeInfo
- * @see DiagnosticsHandler
+ * @see utils.SymbolTable
+ * @see utils.LexemeInfo
+ * @see utils.DiagnosticsHandler
  * @since 1.0
  */
 package utils;

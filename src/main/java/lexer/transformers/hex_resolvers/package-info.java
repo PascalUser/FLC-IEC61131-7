@@ -12,9 +12,9 @@
  * standard escapes to {@link lexer.transformers.StringEscapeResolver}.
  * </p>
  *
- * @see StringHexResolver
- * @see WStringHexResolver
- * @see HexResolver
+ * @see lexer.transformers.hex_resolvers.StringHexResolver
+ * @see lexer.transformers.hex_resolvers.WStringHexResolver
+ * @see lexer.transformers.hex_resolvers.HexResolver
  * @see lexer.transformers.StringEscapeResolver
  * @since 1.0
  */

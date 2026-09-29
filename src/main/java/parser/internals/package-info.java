@@ -4,16 +4,16 @@
  * Provides classes for managing parsing scope and name mangling:
  * </p>
  * <ul>
- *   <li>{@link ParsingContext} - holds state for a declaration scope
+ *   <li>{@link parser.internals.ParsingContext} - holds state for a declaration scope
  *       (identifiers, metadata builder, name manglers)</li>
- *   <li>{@link NameMangler} - generates qualified names for nested symbols
+ *   <li>{@link parser.internals.NameMangler} - generates qualified names for nested symbols
  *       (e.g., {@code TYPE#FIELD#VALUE})</li>
- *   <li>{@link ContextHandler} - stack of parsing contexts for nested scopes</li>
+ *   <li>{@link parser.internals.ContextHandler} - stack of parsing contexts for nested scopes</li>
  * </ul>
  *
- * @see ParsingContext
- * @see NameMangler
- * @see ContextHandler
+ * @see parser.internals.ParsingContext
+ * @see parser.internals.NameMangler
+ * @see parser.internals.ContextHandler
  * @since 1.0
  */
 package parser.internals;

@@ -1,7 +1,7 @@
 /**
  * Utility classes for lexical semantic analysis.
  * <p>
- * Contains {@link ReservedWords} - the keyword-to-token mapping table.
+ * Contains {@link lexer.semantics.utils.ReservedWords} - the keyword-to-token mapping table.
  * </p>
  *
  * @since 1.0
