@@ -1,16 +1,28 @@
+# Debugging YACC files
 *.output
 *.tab.c
 *.yy.c
+
+# File and folder for IDEA integration
 *.iml
-
-lib
 .idea
-out
 
+# Folders for libraries
+lib
+
+# Deprecated code made by Luca
 Luca.y
 LucaInfo.java
 
+# Folders that holds the application binaries
 target
+out
 
+# Folders for integration with SonnarQube
 .scannerwork
-javadoc
+
+# Python enviroment for generations scripts
+.venv
+
+# Generated thesis document
+Tesis.docx

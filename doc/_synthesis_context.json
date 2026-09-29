@@ -1,0 +1,507 @@
+{
+  "thesis_view": {
+    "modules": {
+      "parser": {
+        "module": "parser",
+        "mermaid_diagrams": [
+          {
+            "title": "Flujo principal",
+            "content": "flowchart TD\n    A[Lexer (JFlex)] -->|Tokens| B[Parser (Bison)]\n    B -->|Acciones semánticas| C[ContextHandler\\n(Pila de ParsingContext)]\n    C --> D[Publisher]\n    D --> E[SymbolTable]\n    C --> F[UnderlyingScopeSearcher]\n    C --> G[DimensionCalculator]\n    C --> H[Factory]\n    C --> I[Initialization hierarchy]"
+          }
+        ],
+        "class_tables": [
+          {
+            "type": "class_table",
+            "rows": [
+              {
+                "class": "`parser.Parser`",
+                "responsibility": "Analizador LALR(1) generado; coordina lexer, pila de contextos y tabla de símbolos",
+                "pattern": "—"
+              },
+              {
+                "class": "`parser.internals.ContextHandler`",
+                "responsibility": "Pila LIFO de `ParsingContext` para scopes anidados",
+                "pattern": "Stack"
+              },
+              {
+                "class": "`parser.internals.ParsingContext`",
+                "responsibility": "Estado por scope: identificadores, `LexemeInfoBuilder`, 3 `NameMangler`, índice de array",
+                "pattern": "Context Object"
+              },
+              {
+                "class": "`parser.internals.NameMangler`",
+                "responsibility": "Genera claves calificadas (`TYPE#FIELD#VALUE`) con separador `#`",
+                "pattern": "—"
+              },
+              {
+                "class": "`parser.utils.Publisher`",
+                "responsibility": "Publica identificadores declarados en la `SymbolTable` con metadatos completos",
+                "pattern": "Publisher"
+              },
+              {
+                "class": "`parser.utils.UnderlyingScopeSearcher`",
+                "responsibility": "Resuelve cadena de alias de tipo custom hasta la definición raíz",
+                "pattern": "—"
+              },
+              {
+                "class": "`parser.utils.DimensionCalculator`",
+                "responsibility": "Calcula dimensión total de arrays multi-dimensionales",
+                "pattern": "—"
+              },
+              {
+                "class": "`parser.utils.Factory`",
+                "responsibility": "Crea inicializaciones por defecto para tipos primitivos (solo `REAL` hoy)",
+                "pattern": "Factory Method"
+              }
+            ]
+          },
+          {
+            "type": "class_table",
+            "rows": [
+              {
+                "class": "`BooleanInitialization`",
+                "responsibility": "`BOOL` sin inicializar",
+                "pattern": "`FALSE`"
+              },
+              {
+                "class": "`RealInitialization`",
+                "responsibility": "`REAL`/`LREAL` sin inicializar",
+                "pattern": "`0.0`"
+              },
+              {
+                "class": "`SubrangeInitialization`",
+                "responsibility": "`SUBRANGE` sin inicializar",
+                "pattern": "Límite inferior"
+              },
+              {
+                "class": "`EnumeratedInitialization`",
+                "responsibility": "`ENUMERATE` sin inicializar",
+                "pattern": "Primer valor del enum"
+              },
+              {
+                "class": "`MacroInitialization`",
+                "responsibility": "Literal de enum explícito (`color := RED`)",
+                "pattern": "Ordinal como `INT`"
+              },
+              {
+                "class": "`VariableInitialization`",
+                "responsibility": "Asignación explícita (`x := 10`)",
+                "pattern": "Valor literal"
+              },
+              {
+                "class": "`StructInitialization`",
+                "responsibility": "Inicialización de `STRUCT` con campos nombrados",
+                "pattern": "Mapa `campo → Initialization`"
+              },
+              {
+                "class": "`RepeatedInitialization`",
+                "responsibility": "Arrays con factores de repetición (`10(0), 5(3.14)`)",
+                "pattern": "Lista de intervalos `[inicio..fin] → Initialization`"
+              }
+            ]
+          }
+        ],
+        "chart_references": [
+          {
+            "alt": "parser_grammar_stats",
+            "path": "assets/parser_grammar_stats.png",
+            "caption": "### Estadísticas de la gramática"
+          }
+        ],
+        "sections": {
+          "Flujo principal": "```mermaid\nflowchart TD\n    A[Lexer (JFlex)] -->|Tokens| B[Parser (Bison)]\n    B -->|Acciones semánticas| C[ContextHandler\\n(Pila de ParsingContext)]\n    C --> D[Publisher]\n    D --> E[SymbolTable]\n    C --> F[UnderlyingScopeSearcher]\n    C --> G[DimensionCalculator]\n    C --> H[Factory]\n    C --> I[Initialization hierarchy]\n```\n\n---",
+          "Clases principales": "| Clase | Responsabilidad | Patrón |\n|-------|-----------------|--------|\n| `parser.Parser` | Analizador LALR(1) generado; coordina lexer, pila de contextos y tabla de símbolos | — |\n| `parser.internals.ContextHandler` | Pila LIFO de `ParsingContext` para scopes anidados | Stack |\n| `parser.internals.ParsingContext` | Estado por scope: identificadores, `LexemeInfoBuilder`, 3 `NameMangler`, índice de array | Context Object |\n| `parser.internals.NameMangler` | Genera claves calificadas (`TYPE#FIELD#VALUE`) con separador `#` | — |\n| `parser.utils.Publisher` | Publica identificadores declarados en la `SymbolTable` con metadatos completos | Publisher |\n| `parser.utils.UnderlyingScopeSearcher` | Resuelve cadena de alias de tipo custom hasta la definición raíz | — |\n| `parser.utils.DimensionCalculator` | Calcula dimensión total de arrays multi-dimensionales | — |\n| `parser.utils.Factory` | Crea inicializaciones por defecto para tipos primitivos (solo `REAL` hoy) | Factory Method |\n\n---",
+          "Jerarquía de inicializaciones": "Todas implementan `parser.initializations.Initialization`:\n\n| Clase | Uso | Valor por defecto |\n|-------|-----|-------------------|\n| `BooleanInitialization` | `BOOL` sin inicializar | `FALSE` |\n| `RealInitialization` | `REAL`/`LREAL` sin inicializar | `0.0` |\n| `SubrangeInitialization` | `SUBRANGE` sin inicializar | Límite inferior |\n| `EnumeratedInitialization` | `ENUMERATE` sin inicializar | Primer valor del enum |\n| `MacroInitialization` | Literal de enum explícito (`color := RED`) | Ordinal como `INT` |\n| `VariableInitialization` | Asignación explícita (`x := 10`) | Valor literal |\n| `StructInitialization` | Inicialización de `STRUCT` con campos nombrados | Mapa `campo → Initialization` |\n| `RepeatedInitialization` | Arrays con factores de repetición (`10(0), 5(3.14)`) | Lista de intervalos `[inicio..fin] → Initialization` |\n\n---",
+          "Gráficos generados": "",
+          "Estadísticas de la gramática": "![parser_grammar_stats](assets/parser_grammar_stats.png)\n\n*Fuente: `src/main/java/parser/Parser.y` (tokens), `src/main/java/parser/Parser.java` (enum `SymbolKind` = 116 no-terminales), `parser/initializations/*.java` (8 tipos).*\n\n---",
+          "Cobertura de la gramática (IEC 61131-7)": "| Sección | Reglas clave | Estado |\n|---------|--------------|--------|\n| **Programa** | `program → opt_data_type_declaration function_block_declaration` | ✅ |\n| **Function Block** | `FUNCTION_BLOCK … END_FUNCTION_BLOCK` con secciones `VAR_INPUT`, `VAR_OUTPUT`, `VAR`, `VAR CONSTANT` | ✅ |\n| **Tipos de datos** | `TYPE … END_TYPE` con `STRUCT`, `ENUMERATE`, `SUBRANGE`, `ARRAY`, `STRING`/`WSTRING` | ✅ |\n| **Inicializaciones** | Simples, struct, array con repetición, enum, subrange, custom | ✅ |\n| **Bloques difusos** | `FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION` (reconocimiento sintáctico) | ✅ |\n| **Pragmas** | `PRAGMA identifier [numeric_constant]` | ✅ |\n\n---",
+          "Cómo probarlo": "```bash",
+          "Tests unitarios del parser (ejemplos FCL en src/test/resources/examples)": "./gradlew test --tests unit.parser.ParserTest",
+          "Tests de RepeatedInitialization": "./gradlew test --tests unit.parser.initializations.RepeatedInitializationTest\n```\n\nClase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table).\n\n---",
+          "Archivos fuente": "```\nsrc/main/java/parser/\n├── Parser.java                 # Generado por Bison (≈3000 líneas)\n├── Parser.y                    # Gramática Bison (1438 líneas)\n├── package-info.java\n├── internals/\n│   ├── ContextHandler.java     # Pila de contextos\n│   ├── ParsingContext.java     # Estado por scope\n│   └── NameMangler.java        # Mangling de nombres\n├── utils/\n│   ├── Publisher.java          # Publicación en SymbolTable\n│   ├── UnderlyingScopeSearcher.java\n│   ├── DimensionCalculator.java\n│   └── Factory.java\n└── initializations/\n    ├── Initialization.java          # Interfaz\n    ├── BooleanInitialization.java\n    ├── RealInitialization.java\n    ├── SubrangeInitialization.java\n    ├── EnumeratedInitialization.java\n    ├── MacroInitialization.java\n    ├── VariableInitialization.java\n    ├── StructInitialization.java\n    └── RepeatedInitialization.java\n```"
+        },
+        "file_trees": [],
+        "how_to_test": [],
+        "initialization_hierarchy": [
+          {
+            "class": "`BooleanInitialization`",
+            "use": "`BOOL` sin inicializar",
+            "default": "`FALSE`"
+          },
+          {
+            "class": "`RealInitialization`",
+            "use": "`REAL`/`LREAL` sin inicializar",
+            "default": "`0.0`"
+          },
+          {
+            "class": "`SubrangeInitialization`",
+            "use": "`SUBRANGE` sin inicializar",
+            "default": "Límite inferior"
+          },
+          {
+            "class": "`EnumeratedInitialization`",
+            "use": "`ENUMERATE` sin inicializar",
+            "default": "Primer valor del enum"
+          },
+          {
+            "class": "`MacroInitialization`",
+            "use": "Literal de enum explícito (`color := RED`)",
+            "default": "Ordinal como `INT`"
+          },
+          {
+            "class": "`VariableInitialization`",
+            "use": "Asignación explícita (`x := 10`)",
+            "default": "Valor literal"
+          },
+          {
+            "class": "`StructInitialization`",
+            "use": "Inicialización de `STRUCT` con campos nombrados",
+            "default": "Mapa `campo → Initialization`"
+          },
+          {
+            "class": "`RepeatedInitialization`",
+            "use": "Arrays con factores de repetición (`10(0), 5(3.14)`)",
+            "default": "Lista de intervalos `[inicio..fin] → Initialization`"
+          }
+        ],
+        "grammar_coverage": [
+          {
+            "section": "**Programa**",
+            "rules": "`program → opt_data_type_declaration function_block_declaration`",
+            "status": "✅"
+          },
+          {
+            "section": "**Function Block**",
+            "rules": "`FUNCTION_BLOCK … END_FUNCTION_BLOCK` con secciones `VAR_INPUT`, `VAR_OUTPUT`, `VAR`, `VAR CONSTANT`",
+            "status": "✅"
+          },
+          {
+            "section": "**Tipos de datos**",
+            "rules": "`TYPE … END_TYPE` con `STRUCT`, `ENUMERATE`, `SUBRANGE`, `ARRAY`, `STRING`/`WSTRING`",
+            "status": "✅"
+          },
+          {
+            "section": "**Inicializaciones**",
+            "rules": "Simples, struct, array con repetición, enum, subrange, custom",
+            "status": "✅"
+          },
+          {
+            "section": "**Bloques difusos**",
+            "rules": "`FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION` (reconocimiento sintáctico)",
+            "status": "✅"
+          },
+          {
+            "section": "**Pragmas**",
+            "rules": "`PRAGMA identifier [numeric_constant]`",
+            "status": "✅"
+          }
+        ]
+      },
+      "lexer": {
+        "module": "lexer",
+        "mermaid_diagrams": [
+          {
+            "title": "Flujo principal",
+            "content": "flowchart TD\n    A[Lexer.flex (JFlex)] --> B[Lexer.java (generado)]\n    B -->|yytext()| C[Transformer Chain\\n(LexicalPreprocessors)]\n    C -->|lexema normalizado| D[SemanticAnalyzer\\n(LexicalAnalyzers)]\n    D -->|LexemeInfo| E[SymbolTable]\n    D -->|Diagnósticos| F[DiagnosticsHandler]"
+          }
+        ],
+        "class_tables": [
+          {
+            "type": "class_table",
+            "rows": [
+              {
+                "class": "`lexer.Lexer`",
+                "responsibility": "Escáner JFlex; implementa `Parser.Lexer`; coordina preprocesadores y analizadores",
+                "pattern": "—"
+              },
+              {
+                "class": "`lexer.internals.LexicalPreprocessors`",
+                "responsibility": "Registry de cadenas `Transformer` por familia de lexema",
+                "pattern": "Chain of Responsibility + Registry"
+              },
+              {
+                "class": "`lexer.internals.LexicalAnalyzers`",
+                "responsibility": "Registry de `SemanticAnalyzer` por categoría léxica (14 total)",
+                "pattern": "Registry"
+              },
+              {
+                "class": "`lexer.transformers.Transformer`",
+                "responsibility": "Interfaz base para transformaciones atómicas de lexemas",
+                "pattern": "Chain of Responsibility"
+              },
+              {
+                "class": "`lexer.semantics.SemanticAnalyzer`",
+                "responsibility": "Analiza lexema normalizado, registra en SymbolTable, retorna token",
+                "pattern": "Template Method + Strategy"
+              },
+              {
+                "class": "`lexer.semantics.numbers.NumbersAnalyzer`",
+                "responsibility": "Base abstracta para numéricos decimales (`Naturals`, `Integers`, `Reals`)",
+                "pattern": "Template Method"
+              },
+              {
+                "class": "`lexer.semantics.numbers.bases.BaseNumbersAnalyzer`",
+                "responsibility": "Base para literales con base (`Binary`, `Octal`, `Hexadecimal`)",
+                "pattern": "Template Method"
+              }
+            ]
+          },
+          {
+            "type": "class_table",
+            "rows": [
+              {
+                "class": "`NATURALS`",
+                "responsibility": "`Naturals`",
+                "pattern": "`NUMERIC_LITERAL`"
+              },
+              {
+                "class": "`INTEGERS`",
+                "responsibility": "`Integers`",
+                "pattern": "`NUMERIC_LITERAL`"
+              },
+              {
+                "class": "`REALS`",
+                "responsibility": "`Reals`",
+                "pattern": "`NUMERIC_LITERAL`"
+              },
+              {
+                "class": "`BINARY`",
+                "responsibility": "`Binary`",
+                "pattern": "`NUMERIC_LITERAL`"
+              },
+              {
+                "class": "`OCTAL`",
+                "responsibility": "`Octal`",
+                "pattern": "`NUMERIC_LITERAL`"
+              },
+              {
+                "class": "`HEXADECIMAL`",
+                "responsibility": "`Hexadecimal`",
+                "pattern": "`NUMERIC_LITERAL`"
+              },
+              {
+                "class": "`INTERVALS`",
+                "responsibility": "`Intervals`",
+                "pattern": "`TIME_LITERAL`"
+              },
+              {
+                "class": "`DATES`",
+                "responsibility": "`Dates`",
+                "pattern": "`TIME_LITERAL`"
+              },
+              {
+                "class": "`DAYTIMES`",
+                "responsibility": "`DayTimes`",
+                "pattern": "`TIME_LITERAL`"
+              },
+              {
+                "class": "`DATE_AND_TIMES`",
+                "responsibility": "`DateAndDayTimes`",
+                "pattern": "`TIME_LITERAL`"
+              },
+              {
+                "class": "`STRINGS`",
+                "responsibility": "`Strings`",
+                "pattern": "`STRING_LITERAL`"
+              },
+              {
+                "class": "`WSTRINGS`",
+                "responsibility": "`WStrings`",
+                "pattern": "`STRING_LITERAL`"
+              },
+              {
+                "class": "`IDENTIFIERS`",
+                "responsibility": "`Identifiers`",
+                "pattern": "Palabra clave o `IDENTIFIER`"
+              }
+            ]
+          }
+        ],
+        "chart_references": [
+          {
+            "alt": "Longitud de la cadena de Transformer por tipo de lexema",
+            "path": "../assets/transformer_chain_lengths.png",
+            "caption": "### Longitud de la cadena de Transformer por tipo de lexema"
+          },
+          {
+            "alt": "Diagnósticos por severidad",
+            "path": "../assets/diagnostics_error_vs_warning.png",
+            "caption": "### Diagnósticos por severidad"
+          }
+        ],
+        "sections": {
+          "Flujo principal": "```mermaid\nflowchart TD\n    A[Lexer.flex (JFlex)] --> B[Lexer.java (generado)]\n    B -->|yytext()| C[Transformer Chain\\n(LexicalPreprocessors)]\n    C -->|lexema normalizado| D[SemanticAnalyzer\\n(LexicalAnalyzers)]\n    D -->|LexemeInfo| E[SymbolTable]\n    D -->|Diagnósticos| F[DiagnosticsHandler]\n```\n\n---",
+          "Clases principales": "| Clase | Responsabilidad | Patrón |\n|-------|-----------------|--------|\n| `lexer.Lexer` | Escáner JFlex; implementa `Parser.Lexer`; coordina preprocesadores y analizadores | — |\n| `lexer.internals.LexicalPreprocessors` | Registry de cadenas `Transformer` por familia de lexema | Chain of Responsibility + Registry |\n| `lexer.internals.LexicalAnalyzers` | Registry de `SemanticAnalyzer` por categoría léxica (14 total) | Registry |\n| `lexer.transformers.Transformer` | Interfaz base para transformaciones atómicas de lexemas | Chain of Responsibility |\n| `lexer.semantics.SemanticAnalyzer` | Analiza lexema normalizado, registra en SymbolTable, retorna token | Template Method + Strategy |\n| `lexer.semantics.numbers.NumbersAnalyzer` | Base abstracta para numéricos decimales (`Naturals`, `Integers`, `Reals`) | Template Method |\n| `lexer.semantics.numbers.bases.BaseNumbersAnalyzer` | Base para literales con base (`Binary`, `Octal`, `Hexadecimal`) | Template Method |\n\n---",
+          "Cadena de transformadores por familia de lexema": "Cada categoría de literal tiene su propia cadena de `Transformer` (en `LexicalPreprocessors`):\n\n| Categoría | Transformadores (en orden) |\n|-----------|----------------------------|\n| `INTERVALS` | `UnderscoreRemover` → `UpperCaseConverter` → `OmitLeadingZeroMagnitudes` → `OmitTrailingZeroMagnitudes` → `OmitLeadingZerosInMagnitudes` → `OmitTrailingZerosInMagnitudes` |\n| `REALS` | `UnderscoreRemover` → `StripTrailingZeros` → `StripLeadingZeros` |\n| `NATURALS`, `INTEGERS` | `UnderscoreRemover` → `StripLeadingZeros` |\n| `BINARY`, `OCTAL`, `HEXADECIMAL` | `UnderscoreRemover` → `StripBaseNumberLeadingZeros` |\n| `STRINGS` | `StringHexResolver` → `StringEscapeResolver` |\n| `WSTRINGS` | `WStringHexResolver` (4 dígitos) → `StringEscapeResolver` |\n| `IDENTIFIERS` | `UpperCaseConverter` |\n| `DATES`, `DAYTIMES`, `DATE_AND_TIMES` | *(ninguno — `Nothing`)* |\n\nEl patrón **Chain of Responsibility** permite componer transformaciones atómicas y reutilizables. Cada `Transformer` decide si modifica el lexema y si delega al siguiente eslabón vía `giveToNext()`.\n\n---",
+          "Analizadores semánticos (14 categorías)": "Registrados en `LexicalAnalyzers`:\n\n| Categoría | Clase analizador | Token de retorno |\n|-----------|------------------|------------------|\n| `NATURALS` | `Naturals` | `NUMERIC_LITERAL` |\n| `INTEGERS` | `Integers` | `NUMERIC_LITERAL` |\n| `REALS` | `Reals` | `NUMERIC_LITERAL` |\n| `BINARY` | `Binary` | `NUMERIC_LITERAL` |\n| `OCTAL` | `Octal` | `NUMERIC_LITERAL` |\n| `HEXADECIMAL` | `Hexadecimal` | `NUMERIC_LITERAL` |\n| `INTERVALS` | `Intervals` | `TIME_LITERAL` |\n| `DATES` | `Dates` | `TIME_LITERAL` |\n| `DAYTIMES` | `DayTimes` | `TIME_LITERAL` |\n| `DATE_AND_TIMES` | `DateAndDayTimes` | `TIME_LITERAL` |\n| `STRINGS` | `Strings` | `STRING_LITERAL` |\n| `WSTRINGS` | `WStrings` | `STRING_LITERAL` |\n| `IDENTIFIERS` | `Identifiers` | Palabra clave o `IDENTIFIER` |\n\nCada `SemanticAnalyzer` implementa:\n- `analyze(LexicalContext)` → `Result(lexema, token)`\n- `parse(lexema)`: interpreta y determina subtipo más chico (ej. `255` → `USINT`, `256` → `UINT`)\n- `fallback(lexema)`: valor de reemplazo si excede rango (ej. `> ULINT_MAX` → `18446744073709551615` + `NaturalOutOfRange`)\n- `createDiagnostic(line, lexema)`: diagnóstico concreto\n\n---",
+          "Diagnósticos: error vs. warning": "| Severidad | Diagnósticos |\n|-----------|--------------|\n| **Error** (6) | `DateOutOfRange`, `IntervalConstructionError`, `IntervalOutOfRange`, `TimeOfDayOutOfRange`, `DateAndTimeOutOfRange`, `SyntaxError` |\n| **Warning** (7) | `StringLengthWarning`, `HexadecimalOutOfRange`, `RealOutOfRange`, `NaturalOutOfRange`, `BinaryOutOfRange`, `OctalOutOfRange`, `IntegerOutOfRange` |\n\n- **Error (fatal)**: detiene la compilación. No hay valor de reemplazo semánticamente razonable (literales temporales mal formados).\n- **Warning (no fatal)**: se reporta y se sigue con valor de reemplazo bien definido (desbordamientos numéricos).\n\n---",
+          "Punto de integración único": "`Lexer.processAndSaveYylval(Transformer, SemanticAnalyzer)` es el punto único por el que pasa todo lexema no trivial:\n\n```java\npublic int processAndSaveYylval(@NonNull Transformer transformer, @NonNull SemanticAnalyzer analyzer) {\n    String preprocessedLexeme = transformer.transform(yytext());\n    SemanticAnalyzer.LexicalContext lexicalContext = new SemanticAnalyzer.LexicalContext(\n            preprocessedLexeme, yyline + 1, this.symbolTable, this.diagnosticsHandler);\n    SemanticAnalyzer.Result result = analyzer.analyze(lexicalContext);\n    this.yylval = result.lexeme;\n    return result.token;\n}\n```\n\n1. **Transforma** el lexema crudo (`yytext()`) con la cadena de `Transformer` correspondiente\n2. **Analiza semánticamente** con el `SemanticAnalyzer` registrado\n3. **Registra** `LexemeInfo` en `SymbolTable` (vía `putIfAbsent`)\n4. **Retorna** token al parser; guarda lexema normalizado en `yylval`\n\n---",
+          "Gráficos generados": "",
+          "Longitud de la cadena de Transformer por tipo de lexema": "![Longitud de la cadena de Transformer por tipo de lexema](../assets/transformer_chain_lengths.png)\n\n*Los literales de intervalo (`INTERVALS`) requieren más normalización: remoción de guiones bajos, conversión a mayúsculas, y 4 pasos de eliminación de ceros no significativos.*",
+          "Diagnósticos por severidad": "![Diagnósticos por severidad](../assets/diagnostics_error_vs_warning.png)\n\n*Desbordamientos numéricos son `Warning`; literales temporales inválidos son `Error`.*\n\n---",
+          "Archivos fuente": "```\nsrc/main/java/lexer/\n├── Lexer.java                    # Generado por JFlex (≈970 líneas)\n├── Lexer.flex                    # Especificación JFlex (fuente)\n├── package-info.java\n├── internals/\n│   ├── LexicalPreprocessors.java # Registry de Transformer chains\n│   ├── LexicalAnalyzers.java     # Registry de SemanticAnalyzers\n│   └── package-info.java\n├── transformers/\n│   ├── Transformer.java          # Interfaz base (Chain of Responsibility)\n│   ├── UnderscoreRemover.java\n│   ├── UpperCaseConverter.java\n│   ├── StripLeadingZeros.java\n│   ├── StripTrailingZeros.java\n│   ├── StripBaseNumberLeadingZeros.java\n│   ├── OmitLeadingZeroMagnitudes.java\n│   ├── OmitTrailingZeroMagnitudes.java\n│   ├── OmitLeadingZerosInMagnitudes.java\n│   ├── OmitTrailingZerosInMagnitudes.java\n│   ├── StringEscapeResolver.java\n│   ├── StringHexResolver.java\n│   ├── WStringHexResolver.java\n│   ├── Nothing.java              # No-op transformer\n│   ├── hex_resolvers/\n│   │   ├── HexResolver.java\n│   │   ├── StringHexResolver.java\n│   │   └── WStringHexResolver.java\n│   └── utils/\n│       └── ExponentFinder.java\n└── semantics/\n    ├── SemanticAnalyzer.java     # Base abstracta + LexicalContext + Result\n    ├── Identifiers.java\n    ├── Intervals.java\n    ├── Dates.java\n    ├── DayTimes.java\n    ├── DateAndDayTimes.java\n    ├── strings/\n    │   ├── Strings.java\n    │   ├── WStrings.java\n    │   └── StringsAnalyzer.java\n    └── numbers/\n        ├── NumbersAnalyzer.java  # Template Method para decimales\n        ├── Naturals.java\n        ├── Integers.java\n        ├── Reals.java\n        └── bases/\n            ├── BaseNumbersAnalyzer.java  # Template Method para bases\n            ├── Binary.java\n            ├── Octal.java\n            └── Hexadecimal.java\n```\n\n---",
+          "Cómo probarlo": "```bash",
+          "Tests unitarios del lexer (ejemplos FCL en src/test/resources/examples)": "./gradlew test --tests unit.lexer.LexerTest",
+          "Tests de transformadores": "./gradlew test --tests unit.lexer.transformers.*",
+          "Tests de analizadores semánticos": "./gradlew test --tests unit.lexer.semantics.*\n```\n\nClase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table + diagnostics handler).\n\n---",
+          "Referencias": "- **Especificación JFlex**: `src/main/java/lexer/Lexer.flex`\n- **Chain of Responsibility (Transformers)**: `transformers/package-info.java`\n- **Template Method + Strategy (NumbersAnalyzer)**: `semantics/numbers/NumbersAnalyzer.java`\n- **Registry de analizadores**: `internals/LexicalAnalyzers.java`\n- **Capítulo tesis — Análisis léxico**: `doc/thesis/04-analisis-lexico.md`"
+        },
+        "file_trees": [],
+        "how_to_test": [],
+        "initialization_hierarchy": [],
+        "grammar_coverage": []
+      },
+      "utils": {
+        "module": "utils",
+        "mermaid_diagrams": [
+          {
+            "title": "Arquitectura",
+            "content": "flowchart TD\n    A[Lexer] -->|Tokens + Diagnósticos| B[SymbolTable]\n    C[Parser] -->|Publica LexemeInfo| B\n    C -->|Reporta errores| D[DiagnosticsHandler]\n    B --> E[LexemeInfo\\n(DTO inmutable)]\n    F[LexemeInfoBuilder] -->|Construye| E\n    G[Director] -->|Recetas| F\n    H[Type/Subtype/Use/Source] -->|Clasifican| E"
+          },
+          {
+            "title": "Clases principales\n\n| Clase | Responsabilidad | Patrón |\n|-------|-----------------|--------|\n| `SymbolTable` | Almacén `HashMap<String, LexemeInfo>` para tabla de símbolos | Repository |\n| `LexemeInfo` | DTO inmutable con atributos semánticos completos | Value Object |\n| `DiagnosticsHandler` | Recolecta y gestiona errores/warnings ordenados | Collector |\n| `LexemeInfoBuilder` | API fluida para construir `LexemeInfo` | Builder |\n| `Director` | Recetas predefinidas (literales, defaults) | Director (Builder) |\n| `Type` / `Subtype` / `Use` / `Source` | Enums de clasificación semántica | — |\n| `LucaInfo` | Metadatos legacy para variables difusas (@deprecated) | — |\n\n---\n\n## Tabla de símbolos (`SymbolTable`)\n\nAlmacén centralizado `Map<String, LexemeInfo>` compartido por **lexer**, **parser** y **fases semánticas**.\n\n```java\npublic final class SymbolTable {\n    private final Map<String, LexemeInfo> table = new HashMap<>();\n\n    public LexemeInfo get(String lexeme) { return table.get(lexeme); }\n    public LexemeInfo put(String lexeme, LexemeInfo info) { return table.put(lexeme, info); }\n    public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) { return table.putIfAbsent(lexeme, info); }\n    public int size() { return table.size(); }\n}\n```\n\n- **Clave**: nombre mangled del identificador (ej. `VAR#IN#temperature`)\n- **Valor**: `LexemeInfo` completo con tipo, subtipo, uso, fuente, límites, parámetros e inicialización\n- **Thread-safety**: no es thread-safe; acceso secuencial durante compilación\n\n---\n\n## LexemeInfo (DTO semántico)\n\nRepresentación completa de un símbolo en la tabla. **Inmutable** con `equals`/`hashCode`/`toString` explícitos.\n\n```java\npublic final class LexemeInfo {\n    public Type type;                 // SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT\n    public Subtype subtype;           // INT, REAL, BOOL, CUSTOM, DATE, TIME, STRING, etc.\n    public String customType;         // Nombre si subtype == CUSTOM\n    public Use use;                   // VARIABLE, LITERAL, FUNCTION, RULE, TYPE, FIELD, MACRO, OPTION\n    public Source source;             // IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE\n    public List<String> inferiorLimits;   // Límite inferior (subrange/array)\n    public List<String> superiorLimits;   // Límite superior (subrange/array)\n    public List<String> parameters;       // Parámetros de function block\n    public Object initialValue;           // Valor inicial (Literal, Initialization, etc.)\n}\n```\n\n**Diseño intencional**:\n- Campos públicos por diseño (DTO ligero, sin getters/setters)\n- `equals`/`hashCode` manuales (no reflexión) → consistencia garantizada al añadir/quitar campos\n- `SuppressFBWarnings` para `EI_EXPOSE_REP2` (colecciones expuestas) — aceptado por simplicidad\n\n---\n\n## Builder Pattern (`LexemeInfoBuilder` + `Director`)\n\n### LexemeInfoBuilder\nAPI fluida implementando `LexemeInfoSchema`:\n\n```java\nLexemeInfo info = new LexemeInfoBuilder()\n    .type(Type.SIMPLE)\n    .subtype(Subtype.REAL)\n    .use(Use.VARIABLE)\n    .source(Source.IN)\n    .initialValue(0.0)\n    .build();\n```\n\n### Director\nRecetas estáticas para consistencia en acciones semánticas del parser:\n\n```java\n// Literal genérico: type=SIMPLE, use=LITERAL, source=NONE\nDirector.makeLiteral(builder);\n\n// REAL por defecto: + subtype=REAL, initialValue=0.0 → retorna \"0.0\"\nDirector.makeDefaultReal(builder);\n\n// BOOL por defecto: + subtype=BOOL, initialValue=false → retorna \"FALSE\"\nDirector.makeDefaultBoolean(builder);\n```\n\n> **Integración con parser**: `parser.utils.Publisher` (y sus subclases `Declaration`, `Compound`) implementan `LexemeInfoSchema`, permitiendo encadenar configuración antes de `publish()`.\n\n---\n\n## Enums de clasificación\n\n| Enum | Valores | Uso |\n|------|---------|-----|\n| **Type** | `UNKNOWN`, `SIMPLE`, `ENUMERATE`, `SUBRANGE`, `ARRAY`, `STRUCT` | Clasificación general del símbolo |\n| **Subtype** | `BOOL`, `INT`, `REAL`, `LREAL`, `SINT`..`ULINT`, `BYTE`..`LWORD`, `DATE`, `TIME`, `DATE_AND_TIME`, `TIME_OF_DAY`, `STRING`, `WSTRING`, `CUSTOM`, `UNKNOWN` | Tipo elemental IEC 61131-7 |\n| **Use** | `VARIABLE`, `LITERAL`, `FUNCTION`, `RULE`, `TYPE`, `FIELD`, `MACRO`, `OPTION`, `UNKNOWN` | Contexto de uso del identificador |\n| **Source** | `IN`, `OUT`, `INTERNAL`, `FUZZIFY`, `DEFUZZIFY`, `NONE`, `UNKNOWN` | Bloque de declaración en Function Block |\n\n---\n\n## Sistema de diagnósticos (`DiagnosticsHandler` + jerarquía)",
+            "content": "classDiagram\n    Diagnostic <|-- Error\n    Diagnostic <|-- Warning\n    Error <|-- IntegerOutOfRange\n    Error <|-- RealOutOfRange\n    Error <|-- BinaryOutOfRange\n    Error <|-- OctalOutOfRange\n    Error <|-- HexadecimalOutOfRange\n    Error <|-- DateOutOfRange\n    Error <|-- TimeOfDayOutOfRange\n    Error <|-- DateAndTimeOutOfRange\n    Error <|-- IntervalOutOfRange\n    Error <|-- IntervalConstructionError\n    Error <|-- NaturalOutOfRange\n    Error <|-- StringLengthWarning\n    Warning <|-- StringLengthWarning\n    Diagnostic <|-- SyntaxError"
+          }
+        ],
+        "class_tables": [
+          {
+            "type": "class_table",
+            "rows": [
+              {
+                "class": "`SymbolTable`",
+                "responsibility": "Almacén `HashMap<String, LexemeInfo>` para tabla de símbolos",
+                "pattern": "Repository"
+              },
+              {
+                "class": "`LexemeInfo`",
+                "responsibility": "DTO inmutable con atributos semánticos completos",
+                "pattern": "Value Object"
+              },
+              {
+                "class": "`DiagnosticsHandler`",
+                "responsibility": "Recolecta y gestiona errores/warnings ordenados",
+                "pattern": "Collector"
+              },
+              {
+                "class": "`LexemeInfoBuilder`",
+                "responsibility": "API fluida para construir `LexemeInfo`",
+                "pattern": "Builder"
+              },
+              {
+                "class": "`Director`",
+                "responsibility": "Recetas predefinidas (literales, defaults)",
+                "pattern": "Director (Builder)"
+              },
+              {
+                "class": "`Type` / `Subtype` / `Use` / `Source`",
+                "responsibility": "Enums de clasificación semántica",
+                "pattern": "—"
+              },
+              {
+                "class": "`LucaInfo`",
+                "responsibility": "Metadatos legacy para variables difusas (@deprecated)",
+                "pattern": "—"
+              }
+            ]
+          }
+        ],
+        "chart_references": [],
+        "sections": {
+          "Arquitectura": "```mermaid\nflowchart TD\n    A[Lexer] -->|Tokens + Diagnósticos| B[SymbolTable]\n    C[Parser] -->|Publica LexemeInfo| B\n    C -->|Reporta errores| D[DiagnosticsHandler]\n    B --> E[LexemeInfo\\n(DTO inmutable)]\n    F[LexemeInfoBuilder] -->|Construye| E\n    G[Director] -->|Recetas| F\n    H[Type/Subtype/Use/Source] -->|Clasifican| E\n```\n\n---",
+          "Clases principales": "| Clase | Responsabilidad | Patrón |\n|-------|-----------------|--------|\n| `SymbolTable` | Almacén `HashMap<String, LexemeInfo>` para tabla de símbolos | Repository |\n| `LexemeInfo` | DTO inmutable con atributos semánticos completos | Value Object |\n| `DiagnosticsHandler` | Recolecta y gestiona errores/warnings ordenados | Collector |\n| `LexemeInfoBuilder` | API fluida para construir `LexemeInfo` | Builder |\n| `Director` | Recetas predefinidas (literales, defaults) | Director (Builder) |\n| `Type` / `Subtype` / `Use` / `Source` | Enums de clasificación semántica | — |\n| `LucaInfo` | Metadatos legacy para variables difusas (@deprecated) | — |\n\n---",
+          "Tabla de símbolos (`SymbolTable`)": "Almacén centralizado `Map<String, LexemeInfo>` compartido por **lexer**, **parser** y **fases semánticas**.\n\n```java\npublic final class SymbolTable {\n    private final Map<String, LexemeInfo> table = new HashMap<>();\n\n    public LexemeInfo get(String lexeme) { return table.get(lexeme); }\n    public LexemeInfo put(String lexeme, LexemeInfo info) { return table.put(lexeme, info); }\n    public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) { return table.putIfAbsent(lexeme, info); }\n    public int size() { return table.size(); }\n}\n```\n\n- **Clave**: nombre mangled del identificador (ej. `VAR#IN#temperature`)\n- **Valor**: `LexemeInfo` completo con tipo, subtipo, uso, fuente, límites, parámetros e inicialización\n- **Thread-safety**: no es thread-safe; acceso secuencial durante compilación\n\n---",
+          "LexemeInfo (DTO semántico)": "Representación completa de un símbolo en la tabla. **Inmutable** con `equals`/`hashCode`/`toString` explícitos.\n\n```java\npublic final class LexemeInfo {\n    public Type type;                 // SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT\n    public Subtype subtype;           // INT, REAL, BOOL, CUSTOM, DATE, TIME, STRING, etc.\n    public String customType;         // Nombre si subtype == CUSTOM\n    public Use use;                   // VARIABLE, LITERAL, FUNCTION, RULE, TYPE, FIELD, MACRO, OPTION\n    public Source source;             // IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE\n    public List<String> inferiorLimits;   // Límite inferior (subrange/array)\n    public List<String> superiorLimits;   // Límite superior (subrange/array)\n    public List<String> parameters;       // Parámetros de function block\n    public Object initialValue;           // Valor inicial (Literal, Initialization, etc.)\n}\n```\n\n**Diseño intencional**:\n- Campos públicos por diseño (DTO ligero, sin getters/setters)\n- `equals`/`hashCode` manuales (no reflexión) → consistencia garantizada al añadir/quitar campos\n- `SuppressFBWarnings` para `EI_EXPOSE_REP2` (colecciones expuestas) — aceptado por simplicidad\n\n---",
+          "Builder Pattern (`LexemeInfoBuilder` + `Director`)": "",
+          "LexemeInfoBuilder": "API fluida implementando `LexemeInfoSchema`:\n\n```java\nLexemeInfo info = new LexemeInfoBuilder()\n    .type(Type.SIMPLE)\n    .subtype(Subtype.REAL)\n    .use(Use.VARIABLE)\n    .source(Source.IN)\n    .initialValue(0.0)\n    .build();\n```",
+          "Director": "Recetas estáticas para consistencia en acciones semánticas del parser:\n\n```java\n// Literal genérico: type=SIMPLE, use=LITERAL, source=NONE\nDirector.makeLiteral(builder);\n\n// REAL por defecto: + subtype=REAL, initialValue=0.0 → retorna \"0.0\"\nDirector.makeDefaultReal(builder);\n\n// BOOL por defecto: + subtype=BOOL, initialValue=false → retorna \"FALSE\"\nDirector.makeDefaultBoolean(builder);\n```\n\n> **Integración con parser**: `parser.utils.Publisher` (y sus subclases `Declaration`, `Compound`) implementan `LexemeInfoSchema`, permitiendo encadenar configuración antes de `publish()`.\n\n---",
+          "Enums de clasificación": "| Enum | Valores | Uso |\n|------|---------|-----|\n| **Type** | `UNKNOWN`, `SIMPLE`, `ENUMERATE`, `SUBRANGE`, `ARRAY`, `STRUCT` | Clasificación general del símbolo |\n| **Subtype** | `BOOL`, `INT`, `REAL`, `LREAL`, `SINT`..`ULINT`, `BYTE`..`LWORD`, `DATE`, `TIME`, `DATE_AND_TIME`, `TIME_OF_DAY`, `STRING`, `WSTRING`, `CUSTOM`, `UNKNOWN` | Tipo elemental IEC 61131-7 |\n| **Use** | `VARIABLE`, `LITERAL`, `FUNCTION`, `RULE`, `TYPE`, `FIELD`, `MACRO`, `OPTION`, `UNKNOWN` | Contexto de uso del identificador |\n| **Source** | `IN`, `OUT`, `INTERNAL`, `FUZZIFY`, `DEFUZZIFY`, `NONE`, `UNKNOWN` | Bloque de declaración en Function Block |\n\n---",
+          "Sistema de diagnósticos (`DiagnosticsHandler` + jerarquía)": "```mermaid\nclassDiagram\n    Diagnostic <|-- Error\n    Diagnostic <|-- Warning\n    Error <|-- IntegerOutOfRange\n    Error <|-- RealOutOfRange\n    Error <|-- BinaryOutOfRange\n    Error <|-- OctalOutOfRange\n    Error <|-- HexadecimalOutOfRange\n    Error <|-- DateOutOfRange\n    Error <|-- TimeOfDayOutOfRange\n    Error <|-- DateAndTimeOutOfRange\n    Error <|-- IntervalOutOfRange\n    Error <|-- IntervalConstructionError\n    Error <|-- NaturalOutOfRange\n    Error <|-- StringLengthWarning\n    Warning <|-- StringLengthWarning\n    Diagnostic <|-- SyntaxError\n```",
+          "Flujo": "1. **Lexer/Parser/Semánticas** crean instancias concretas (`IntegerOutOfRange(line)`, `StringLengthWarning(line)`, etc.)\n2. `DiagnosticsHandler.add(diagnostic)` → acumula en orden de inserción\n3. `hasErrors()` indica si hay errores fatales (`fatalForCompilation() == true`)\n4. `getDiagnostics()` → lista inmodificable para reporte final",
+          "Clases base": "```java\nabstract class Diagnostic {          // línea + getMessage() → \"Line N\"\n    abstract boolean fatalForCompilation();\n}\nabstract class Error extends Diagnostic {        // fatal = true, prefijo \"ERROR: \"\n}\nabstract class Warning extends Diagnostic {      // fatal = false, prefijo \"WARNING: \"\n}\nclass SyntaxError extends Diagnostic {           // errores léxicos, fatal = true\n}\n```\n\n---",
+          "LucaInfo (@deprecated)": "Clase legada para metadatos de variables difusas (token number, role, fuzz type, etc.). **No usada en la tabla de símbolos actual**; mantener solo por compatibilidad histórica.\n\n---",
+          "Archivos fuente": "```\nsrc/main/java/utils/\n├── package-info.java              # Documentación del módulo (Repository pattern)\n├── SymbolTable.java               # Repositorio central HashMap\n├── LexemeInfo.java                # DTO semántico inmutable\n├── DiagnosticsHandler.java        # Recolector de errores/warnings\n├── LucaInfo.java                  # @deprecated Metadatos legacy\n├── builders/\n│   ├── package-info.java          # Builder + Director pattern\n│   ├── LexemeInfoSchema.java      # Interfaz fluida (contract)\n│   ├── LexemeInfoBuilder.java     # Implementación concreta\n│   └── Director.java              # Recetas: makeLiteral, makeDefaultReal, makeDefaultBoolean\n├── enums/\n│   ├── package-info.java\n│   ├── Type.java                  // SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT\n│   ├── Subtype.java               // 24 subtipos IEC 61131-7\n│   ├── Use.java                   // 9 contextos de uso\n│   └── Source.java                // 7 bloques de origen\n└── diagnostics/\n    ├── package-info.java          # Jerarquía Error/Warning\n    ├── Diagnostic.java            // Base abstracta (línea + mensaje)\n    ├── Error.java                 // Base errores (fatal)\n    ├── Warning.java               // Base warnings (no fatal)\n    ├── SyntaxError.java           // Errores léxicos\n    ├── IntegerOutOfRange.java\n    ├── RealOutOfRange.java\n    ├── BinaryOutOfRange.java\n    ├── OctalOutOfRange.java\n    ├── HexadecimalOutOfRange.java\n    ├── DateOutOfRange.java\n    ├── TimeOfDayOutOfRange.java\n    ├── DateAndTimeOutOfRange.java\n    ├── IntervalOutOfRange.java\n    ├── IntervalConstructionError.java\n    ├── NaturalOutOfRange.java\n    └── StringLengthWarning.java   // Warning (no fatal)\n```\n\n---",
+          "Cómo probarlo": "```bash",
+          "Tests unitarios de SymbolTable": "./gradlew test --tests unit.utils.SymbolTableTest",
+          "Tests de diagnósticos (ver src/test/java/unit/utils/)": "./gradlew test --tests unit.utils.*\n```\n\nClase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table + diagnostics handler).\n\n---",
+          "Referencias": "- **Patrón Repository**: `utils/package-info.java:4-17`\n- **Value Object semantics**: `LexemeInfo.java:18-32`\n- **Builder + Director**: `builders/package-info.java`, `Director.java`\n- **Diagnósticos jerárquicos**: `diagnostics/package-info.java`"
+        },
+        "file_trees": [],
+        "how_to_test": [],
+        "initialization_hierarchy": [],
+        "grammar_coverage": []
+      }
+    },
+    "module_chapter_mapping": {
+      "utils": [
+        "03-architecture"
+      ],
+      "parser": [
+        "05-syntactic-analysis"
+      ],
+      "lexer": [
+        "04-lexical-analysis"
+      ]
+    }
+  },
+  "readme_view": {
+    "pipeline_mermaid": "flowchart LR\n    SRC[Source .fcl] --> LEX[Lexer\nJFlex]\n    LEX -- tokens --> PAR[Parser\nBison LALR1]\n    PAR -- publishes --> ST[(SymbolTable)]\n    PAR -- reports --> DIAG[DiagnosticsHandler]",
+    "key_classes": [
+      {
+        "module": "utils",
+        "class": "`SymbolTable`",
+        "responsibility": "Almacén `HashMap<String, LexemeInfo>` para tabla de símbolos"
+      },
+      {
+        "module": "utils",
+        "class": "`LexemeInfo`",
+        "responsibility": "DTO inmutable con atributos semánticos completos"
+      },
+      {
+        "module": "utils",
+        "class": "`DiagnosticsHandler`",
+        "responsibility": "Recolecta y gestiona errores/warnings ordenados"
+      },
+      {
+        "module": "utils",
+        "class": "`LexemeInfoBuilder`",
+        "responsibility": "API fluida para construir `LexemeInfo`"
+      },
+      {
+        "module": "utils",
+        "class": "`Director`",
+        "responsibility": "Recetas predefinidas (literales, defaults)"
+      },
+      {
+        "module": "utils",
+        "class": "`Type` / `Subtype` / `Use` / `Source`",
+        "responsibility": "Enums de clasificación semántica"
+      },
+      {
+        "module": "utils",
+        "class": "`LucaInfo`",
+        "responsibility": "Metadatos legacy para variables difusas (@deprecated)"
+      },
+      {
+        "module": "parser",
+        "class": "`parser.Parser`",
+        "responsibility": "Analizador LALR(1) generado; coordina lexer, pila de contextos y tabla de símbol..."
+      },
+      {
+        "module": "parser",
+        "class": "`parser.internals.ContextHandler`",
+        "responsibility": "Pila LIFO de `ParsingContext` para scopes anidados"
+      },
+      {
+        "module": "parser",
+        "class": "`parser.internals.ParsingContext`",
+        "responsibility": "Estado por scope: identificadores, `LexemeInfoBuilder`, 3 `NameMangler`, índice ..."
+      }
+    ],
+    "modules": [
+      "parser",
+      "lexer",
+      "utils"
+    ]
+  },
+  "generated_at": "2026-09-29T11:47:22.963655"
+}
