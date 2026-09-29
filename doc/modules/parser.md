@@ -1,6 +1,6 @@
 # Módulo `parser`
 
-Analizador sintáctico (LALR(1)) generado con **GNU Bison 3.8.2** a partir de `src/main/java/parser/Parser.y`. Reconoce la gramática completa de declaración IEC 61131-7 (FCL) y construye la tabla de símbolos mediante acciones semánticas diferidas.
+Analizador sintáctico (LALR(1)) generado con **GNU Bison 3.8.2** a partir de `src/main/java/parser/Parser.y` (1437 líneas). Reconoce la gramática completa de declaración IEC 61131-7 (FCL) y construye la tabla de símbolos mediante acciones semánticas diferidas.
 
 ---
 
@@ -58,7 +58,7 @@ Todas implementan `parser.initializations.Initialization`:
 
 ![parser_grammar_stats](assets/parser_grammar_stats.png)
 
-*Fuente: `src/main/java/parser/Parser.y` (tokens), `src/main/java/parser/Parser.java` (enum `SymbolKind` = 116 no-terminales), `parser/initializations/*.java` (8 tipos).*
+*Fuente: `src/main/java/parser/Parser.y` (1437 líneas, tokens), `src/main/java/parser/Parser.java` (enum `SymbolKind` = 137 no-terminales incluyendo `$accept`), `parser/initializations/*.java` (8 tipos).*
 
 ---
 
@@ -69,7 +69,9 @@ Todas implementan `parser.initializations.Initialization`:
 | **Programa** | `program → opt_data_type_declaration function_block_declaration` | ✅ |
 | **Function Block** | `FUNCTION_BLOCK … END_FUNCTION_BLOCK` con secciones `VAR_INPUT`, `VAR_OUTPUT`, `VAR`, `VAR CONSTANT` | ✅ |
 | **Tipos de datos** | `TYPE … END_TYPE` con `STRUCT`, `ENUMERATE`, `SUBRANGE`, `ARRAY`, `STRING`/`WSTRING` | ✅ |
-| **Inicializaciones** | Simples, struct, array con repetición, enum, subrange, custom | ✅ |
+| **Inicializaciones** | Simples, struct, array con repetición (`N(valor)`), enum, subrange, custom | ✅ |
+| **Arrays multidimensionales** | `ARRAY [l1..u1, l2..u2] OF type` con límites enteros | ✅ |
+| **Inicialización de arrays** | `[ val1, val2, N(val), ... ]` con factores de repetición e intervalos | ✅ |
 | **Bloques difusos** | `FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION` (reconocimiento sintáctico) | ✅ |
 | **Pragmas** | `PRAGMA identifier [numeric_constant]` | ✅ |
 
@@ -79,10 +81,13 @@ Todas implementan `parser.initializations.Initialization`:
 
 ```bash
 # Tests unitarios del parser (ejemplos FCL en src/test/resources/examples)
-./gradlew test --tests unit.parser.ParserTest
+mvn test -Dtest=ParserTest
 
-# Tests de RepeatedInitialization
-./gradlew test --tests unit.parser.initializations.RepeatedInitializationTest
+# Tests unitarios de RepeatedInitialization
+mvn test -Dtest=RepeatedInitializationTest
+
+# Tests de integración de arrays con inicialización repetida
+mvn test -Dtest=ArrayTypeIT
 ```
 
 Clase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table).
@@ -94,7 +99,7 @@ Clase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol t
 ```
 src/main/java/parser/
 ├── Parser.java                 # Generado por Bison (≈3000 líneas)
-├── Parser.y                    # Gramática Bison (1438 líneas)
+├── Parser.y                    # Gramática Bison (1437 líneas)
 ├── package-info.java
 ├── internals/
 │   ├── ContextHandler.java     # Pila de contextos
@@ -115,4 +120,16 @@ src/main/java/parser/
     ├── VariableInitialization.java
     ├── StructInitialization.java
     └── RepeatedInitialization.java
+```
+
+### Tests
+
+```
+src/test/java/
+├── unit/parser/
+│   ├── ParserTest.java                          # Tests paramétricos (4 ejemplos FCL)
+│   └── initializations/
+│       └── RepeatedInitializationTest.java      # 8 tests unitarios
+└── integration/
+    └── ArrayTypeIT.java                         # Test de integración array multidimensional
 ```

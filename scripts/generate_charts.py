@@ -42,7 +42,7 @@ def chart_enum_sizes():
     """
     data = {
         "Type": 6,       # UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT
-        "Subtype": 24,   # BOOL..WSTRING in Subtype.java
+        "Subtype": 24,   # BOOL, BYTE, CUSTOM, DATE, DATE_AND_TIME, DINT, DWORD, INT, LINT, LREAL, LWORD, REAL, SINT, STRING, TIME, TIME_OF_DAY, UDINT, UINT, ULINT, UNKNOWN, USINT, WORD, NONE, WSTRING
         "Use": 9,        # FIELD, FUNCTION, LITERAL, OPTION, RULE, TYPE, UNKNOWN, VARIABLE, MACRO
         "Source": 7,     # DEFUZZIFY, FUZZIFY, IN, INTERNAL, NONE, OUT, UNKNOWN
     }

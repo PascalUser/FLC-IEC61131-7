@@ -1,6 +1,6 @@
 # Módulo `lexer`
 
-Analizador léxico generado con **JFlex 1.8.2** a partir de `src/main/java/lexer/Lexer.flex`. Reconoce tokens de FCL (IEC 61131-7) y delega la normalización y análisis semántico a cadenas de transformadores y analizadores especializados.
+Analizador léxico generado con **JFlex 1.9.1** a partir de `src/main/java/lexer/Lexer.flex`. Reconoce tokens de FCL (IEC 61131-7) y delega la normalización y análisis semántico a cadenas de transformadores y analizadores especializados.
 
 ---
 
@@ -28,6 +28,9 @@ flowchart TD
 | `lexer.semantics.SemanticAnalyzer` | Analiza lexema normalizado, registra en SymbolTable, retorna token | Template Method + Strategy |
 | `lexer.semantics.numbers.NumbersAnalyzer` | Base abstracta para numéricos decimales (`Naturals`, `Integers`, `Reals`) | Template Method |
 | `lexer.semantics.numbers.bases.BaseNumbersAnalyzer` | Base para literales con base (`Binary`, `Octal`, `Hexadecimal`) | Template Method |
+| `lexer.semantics.strings.StringsAnalyzer` | Base abstracta para cadenas (`Strings`, `WStrings`) | Template Method |
+| `lexer.semantics.utils.ReservedWords` | Tabla de palabras reservadas IEC 61131-7 → tokens | Lookup Table |
+| `lexer.transformers.utils.ExponentFinder` | Utilidad para detectar notación científica en reales | — |
 
 ---
 
@@ -170,7 +173,7 @@ src/main/java/lexer/
     ├── strings/
     │   ├── Strings.java
     │   ├── WStrings.java
-    │   └── StringsAnalyzer.java
+    │   └── StringsAnalyzer.java  # Base Template Method para cadenas
     └── numbers/
         ├── NumbersAnalyzer.java  # Template Method para decimales
         ├── Naturals.java
@@ -189,13 +192,13 @@ src/main/java/lexer/
 
 ```bash
 # Tests unitarios del lexer (ejemplos FCL en src/test/resources/examples)
-./gradlew test --tests unit.lexer.LexerTest
+mvn test -Dtest="*Lexer*"
 
 # Tests de transformadores
-./gradlew test --tests unit.lexer.transformers.*
+mvn test -Dtest="unit.lexer.transformers.*"
 
 # Tests de analizadores semánticos
-./gradlew test --tests unit.lexer.semantics.*
+mvn test -Dtest="unit.lexer.semantics.*"
 ```
 
 Clase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table + diagnostics handler).
@@ -207,5 +210,7 @@ Clase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol t
 - **Especificación JFlex**: `src/main/java/lexer/Lexer.flex`
 - **Chain of Responsibility (Transformers)**: `transformers/package-info.java`
 - **Template Method + Strategy (NumbersAnalyzer)**: `semantics/numbers/NumbersAnalyzer.java`
+- **Template Method (StringsAnalyzer)**: `semantics/strings/StringsAnalyzer.java`
 - **Registry de analizadores**: `internals/LexicalAnalyzers.java`
+- **Palabras reservadas**: `semantics/utils/ReservedWords.java`
 - **Capítulo tesis — Análisis léxico**: `doc/thesis/04-analisis-lexico.md`

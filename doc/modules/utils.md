@@ -140,8 +140,13 @@ classDiagram
     Error <|-- IntervalOutOfRange
     Error <|-- IntervalConstructionError
     Error <|-- NaturalOutOfRange
-    Error <|-- StringLengthWarning
     Warning <|-- StringLengthWarning
+    Warning <|-- HexadecimalOutOfRange
+    Warning <|-- RealOutOfRange
+    Warning <|-- NaturalOutOfRange
+    Warning <|-- BinaryOutOfRange
+    Warning <|-- OctalOutOfRange
+    Warning <|-- IntegerOutOfRange
     Diagnostic <|-- SyntaxError
 ```
 
