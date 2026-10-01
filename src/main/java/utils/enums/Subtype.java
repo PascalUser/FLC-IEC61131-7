@@ -38,5 +38,6 @@ public enum Subtype {
     UNKNOWN,
     USINT,
     WORD,
-    NONE, WSTRING
+    NONE,
+    WSTRING
 }
