@@ -486,41 +486,6 @@ var_spec_init:
     | string_spec_init
 ;
 
-/* boolean_spec_init: boolean_specification | initialized_boolean */
-boolean_spec_init:
-    boolean_specification
-    | initialized_boolean
-;
-
-/* boolean_specification: BOOL with default BooleanInitialization */
-boolean_specification:
-    BOOL
-    {
-        /**
-         * Loads the left identifiers type and subtype
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.BOOL)
-            .initialValue(
-                new BooleanInitialization(this.symbolTable)
-            );
-    }
-;
-
-/* initialized_boolean: boolean_specification edge */
-initialized_boolean:
-    boolean_specification edge
-;
-
-/* edge: R_EDGE | F_EDGE */
-edge:
-    R_EDGE
-    | F_EDGE
-;
-
 custom_spec_init:
     custom_specification
     | initialized_custom
@@ -620,6 +585,49 @@ custom_type_name:
     }
 ;
 
+/* boolean_spec_init: boolean_specification | initialized_boolean */
+boolean_spec_init:
+    boolean_specification
+    | initialized_boolean
+;
+
+/* boolean_specification: BOOL with default BooleanInitialization */
+boolean_specification:
+    BOOL
+    {
+        /**
+         * Loads the left identifiers type and subtype
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.BOOL)
+            .initialValue(
+                new BooleanInitialization(this.symbolTable)
+            );
+    }
+;
+
+/* initialized_boolean: boolean_specification edge */
+initialized_boolean:
+    boolean_specification edge
+    | boolean_specification ASSIGN_OP boolean_constant
+    {
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .initialValue(
+                new VariableInitialization($3)
+            );
+    }
+;
+
+/* edge: R_EDGE | F_EDGE */
+edge:
+    R_EDGE
+    | F_EDGE
+;
+
 simple_spec_init:
     simple_specification
     | initialized_simple
@@ -643,7 +651,7 @@ simple_specification:
 ;
 
 initialized_simple:
-    elementary_type_name ASSIGN_OP constant
+    simple_specification ASSIGN_OP constant
     {
         /**
          * Loads the left identifiers type, subtype and initialValue
@@ -651,9 +659,8 @@ initialized_simple:
 
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype($1)
-            .initialValue(new VariableInitialization($3));
+            .initialValue(new VariableInitialization($3)
+        );
     }
 ;
 

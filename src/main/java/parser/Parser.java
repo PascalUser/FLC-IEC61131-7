@@ -227,17 +227,17 @@ public final class Parser
     S_var_init_decl_list(147),     /* var_init_decl_list  */
     S_var_init_decl(148),          /* var_init_decl  */
     S_var_spec_init(149),          /* var_spec_init  */
-    S_boolean_spec_init(150),      /* boolean_spec_init  */
-    S_boolean_specification(151),  /* boolean_specification  */
-    S_initialized_boolean(152),    /* initialized_boolean  */
-    S_edge(153),                   /* edge  */
-    S_custom_spec_init(154),       /* custom_spec_init  */
-    S_custom_specification(155),   /* custom_specification  */
-    S_initialized_custom(156),     /* initialized_custom  */
-    S_initialized_custom_with_constant(157), /* initialized_custom_with_constant  */
-    S_initialized_custom_with_identifier(158), /* initialized_custom_with_identifier  */
-    S_initialized_custom_with_structure(159), /* initialized_custom_with_structure  */
-    S_custom_type_name(160),       /* custom_type_name  */
+    S_custom_spec_init(150),       /* custom_spec_init  */
+    S_custom_specification(151),   /* custom_specification  */
+    S_initialized_custom(152),     /* initialized_custom  */
+    S_initialized_custom_with_constant(153), /* initialized_custom_with_constant  */
+    S_initialized_custom_with_identifier(154), /* initialized_custom_with_identifier  */
+    S_initialized_custom_with_structure(155), /* initialized_custom_with_structure  */
+    S_custom_type_name(156),       /* custom_type_name  */
+    S_boolean_spec_init(157),      /* boolean_spec_init  */
+    S_boolean_specification(158),  /* boolean_specification  */
+    S_initialized_boolean(159),    /* initialized_boolean  */
+    S_edge(160),                   /* edge  */
     S_simple_spec_init(161),       /* simple_spec_init  */
     S_simple_specification(162),   /* simple_specification  */
     S_initialized_simple(163),     /* initialized_simple  */
@@ -466,10 +466,6 @@ public final class Parser
       SymbolKind.S_var_init_decl_list,
       SymbolKind.S_var_init_decl,
       SymbolKind.S_var_spec_init,
-      SymbolKind.S_boolean_spec_init,
-      SymbolKind.S_boolean_specification,
-      SymbolKind.S_initialized_boolean,
-      SymbolKind.S_edge,
       SymbolKind.S_custom_spec_init,
       SymbolKind.S_custom_specification,
       SymbolKind.S_initialized_custom,
@@ -477,6 +473,10 @@ public final class Parser
       SymbolKind.S_initialized_custom_with_identifier,
       SymbolKind.S_initialized_custom_with_structure,
       SymbolKind.S_custom_type_name,
+      SymbolKind.S_boolean_spec_init,
+      SymbolKind.S_boolean_specification,
+      SymbolKind.S_initialized_boolean,
+      SymbolKind.S_edge,
       SymbolKind.S_simple_spec_init,
       SymbolKind.S_simple_specification,
       SymbolKind.S_initialized_simple,
@@ -625,12 +625,12 @@ public final class Parser
   "opt_option_block_list", "option_block", "pragma_list", "pragma",
   "io_var_decl", "var_declarations", "var_id_decl", "var_retain_spec",
   "var_constant_spec", "var_init_decl_list", "var_init_decl",
-  "var_spec_init", "boolean_spec_init", "boolean_specification",
-  "initialized_boolean", "edge", "custom_spec_init",
-  "custom_specification", "initialized_custom",
-  "initialized_custom_with_constant", "initialized_custom_with_identifier",
+  "var_spec_init", "custom_spec_init", "custom_specification",
+  "initialized_custom", "initialized_custom_with_constant",
+  "initialized_custom_with_identifier",
   "initialized_custom_with_structure", "custom_type_name",
-  "simple_spec_init", "simple_specification", "initialized_simple",
+  "boolean_spec_init", "boolean_specification", "initialized_boolean",
+  "edge", "simple_spec_init", "simple_specification", "initialized_simple",
   "elementary_type_name", "numeric_type_name", "integer_type_name",
   "signed_integer_type_name", "unsigned_integer_type_name",
   "real_type_name", "date_type_name", "constant", "string_constant",
@@ -1053,7 +1053,7 @@ this.symbolTable = symbolTable;
       {
           case 3: /* function_block_declaration: FUNCTION_BLOCK function_block_name opt_fb_io_var_declarations_list opt_other_var_declarations_list opt_function_block_body END_FUNCTION_BLOCK  */
   if (yyn == 3)
-    /* "src/main/java/parser/Parser.y":101  */
+    /* "src/main/java/parser/Parser.y":103  */
     {
         /**
          * Pops the function block context
@@ -1066,7 +1066,7 @@ this.symbolTable = symbolTable;
 
   case 4: /* function_block_name: IDENTIFIER  */
   if (yyn == 4)
-    /* "src/main/java/parser/Parser.y":112  */
+    /* "src/main/java/parser/Parser.y":114  */
     {
         /**
          * Builds a new context and adds the function block name to the outer scope
@@ -1082,7 +1082,7 @@ this.symbolTable = symbolTable;
 
   case 95: /* io_var_decl: VAR_INPUT  */
   if (yyn == 95)
-    /* "src/main/java/parser/Parser.y":359  */
+    /* "src/main/java/parser/Parser.y":394  */
     {
         /**
          * Adds to the current context the source and use of the inner block declared identifiers
@@ -1096,7 +1096,7 @@ this.symbolTable = symbolTable;
 
   case 96: /* io_var_decl: VAR_OUTPUT  */
   if (yyn == 96)
-    /* "src/main/java/parser/Parser.y":368  */
+    /* "src/main/java/parser/Parser.y":403  */
     {
         /**
          * Adds to the current context the source and use of the inner block declared identifiers
@@ -1110,7 +1110,7 @@ this.symbolTable = symbolTable;
 
   case 98: /* var_id_decl: VAR  */
   if (yyn == 98)
-    /* "src/main/java/parser/Parser.y":384  */
+    /* "src/main/java/parser/Parser.y":421  */
     {
         /**
          * Adds to the current context the source and use of the inner block declared identifiers
@@ -1124,7 +1124,7 @@ this.symbolTable = symbolTable;
 
   case 100: /* var_retain_spec: RETAIN  */
   if (yyn == 100)
-    /* "src/main/java/parser/Parser.y":397  */
+    /* "src/main/java/parser/Parser.y":435  */
     {
         // TODO: ctx with retain spec
     };
@@ -1133,7 +1133,7 @@ this.symbolTable = symbolTable;
 
   case 101: /* var_retain_spec: NON_RETAIN  */
   if (yyn == 101)
-    /* "src/main/java/parser/Parser.y":401  */
+    /* "src/main/java/parser/Parser.y":439  */
     {
         // TODO: ctx with non retain spec
     };
@@ -1142,25 +1142,25 @@ this.symbolTable = symbolTable;
 
   case 102: /* var_constant_spec: %empty  */
   if (yyn == 102)
-    /* "src/main/java/parser/Parser.y":408  */
+    /* "src/main/java/parser/Parser.y":447  */
     {
-        // TODO: ctx with non contant spec
+        // TODO: ctx with non constant spec
     };
   break;
 
 
   case 103: /* var_constant_spec: CONSTANT  */
   if (yyn == 103)
-    /* "src/main/java/parser/Parser.y":412  */
+    /* "src/main/java/parser/Parser.y":451  */
     {
-        // TODO: ctx with contant spec
+        // TODO: ctx with constant spec
     };
   break;
 
 
   case 106: /* var_init_decl: identifier_list ':' var_spec_init  */
   if (yyn == 106)
-    /* "src/main/java/parser/Parser.y":424  */
+    /* "src/main/java/parser/Parser.y":465  */
     {
         /**
          * Publishes the variables into the symbol table using the loaded context
@@ -1174,28 +1174,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 117: /* boolean_specification: BOOL  */
+  case 117: /* custom_specification: IDENTIFIER  */
   if (yyn == 117)
-    /* "src/main/java/parser/Parser.y":455  */
-    {
-        /**
-         * Loads the left identifiers type and subtype
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.BOOL)
-            .initialValue(
-                new BooleanInitialization(this.symbolTable)
-            );
-    };
-  break;
-
-
-  case 123: /* custom_specification: IDENTIFIER  */
-  if (yyn == 123)
-    /* "src/main/java/parser/Parser.y":486  */
+    /* "src/main/java/parser/Parser.y":496  */
     {
         /**
          * Loads the left identifiers type, subtype and initialValue
@@ -1211,9 +1192,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 127: /* initialized_custom_with_constant: custom_type_name ASSIGN_OP constant  */
-  if (yyn == 127)
-    /* "src/main/java/parser/Parser.y":508  */
+  case 121: /* initialized_custom_with_constant: custom_type_name ASSIGN_OP constant  */
+  if (yyn == 121)
+    /* "src/main/java/parser/Parser.y":518  */
     {
         /**
          * Adds to the context the left identifiers initial value and drops the search scope added
@@ -1226,12 +1207,12 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 128: /* initialized_custom_with_identifier: custom_type_name ASSIGN_OP identifier_with_opt_mangling  */
-  if (yyn == 128)
-    /* "src/main/java/parser/Parser.y":521  */
+  case 122: /* initialized_custom_with_identifier: custom_type_name ASSIGN_OP identifier_with_opt_mangling  */
+  if (yyn == 122)
+    /* "src/main/java/parser/Parser.y":531  */
     {
         /**
-         * Searches if the enumerated value is valid and in that cases loads the initial value and and drops the search
+         * Searches if the enumerated value is valid and in that cases loads the initial value and drops the search
          * scope added
         **/
 
@@ -1243,7 +1224,7 @@ this.symbolTable = symbolTable;
             : ctx.searchScope().getNameMangled(((String)(yystack.valueAt (0))));
 
         if (this.symbolTable.get(completeTypeName) == null) {
-            // TODO: control de error. Enumerado literal inexistente
+            // TODO: error control. Enumerated literal does not exist
         }
         ctx.metadataBuilder().initialValue(new VariableInitialization(completeTypeName));
         ctx.searchScope().popScope();
@@ -1251,9 +1232,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 129: /* initialized_custom_with_structure: custom_type_name ASSIGN_OP structure_initialization  */
-  if (yyn == 129)
-    /* "src/main/java/parser/Parser.y":544  */
+  case 123: /* initialized_custom_with_structure: custom_type_name ASSIGN_OP structure_initialization  */
+  if (yyn == 123)
+    /* "src/main/java/parser/Parser.y":554  */
     {
         /**
          * Drops the search scope after reducing the assignment
@@ -1265,9 +1246,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 130: /* custom_type_name: IDENTIFIER  */
-  if (yyn == 130)
-    /* "src/main/java/parser/Parser.y":556  */
+  case 124: /* custom_type_name: IDENTIFIER  */
+  if (yyn == 124)
+    /* "src/main/java/parser/Parser.y":566  */
     {
         /**
          * Builds the LexemeInfo associated to the identifier and appends the underlying scope to the search scope.
@@ -1291,9 +1272,41 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 133: /* simple_specification: elementary_type_name  */
-  if (yyn == 133)
-    /* "src/main/java/parser/Parser.y":585  */
+  case 127: /* boolean_specification: BOOL  */
+  if (yyn == 127)
+    /* "src/main/java/parser/Parser.y":597  */
+    {
+        /**
+         * Loads the left identifiers type and subtype
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .subtype(Subtype.BOOL)
+            .initialValue(
+                new BooleanInitialization(this.symbolTable)
+            );
+    };
+  break;
+
+
+  case 129: /* initialized_boolean: boolean_specification ASSIGN_OP boolean_constant  */
+  if (yyn == 129)
+    /* "src/main/java/parser/Parser.y":616  */
+    {
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder()
+            .initialValue(
+                new VariableInitialization(((String)(yystack.valueAt (0))))
+            );
+    };
+  break;
+
+
+  case 134: /* simple_specification: elementary_type_name  */
+  if (yyn == 134)
+    /* "src/main/java/parser/Parser.y":638  */
     {
         /**
          * Loads the left identifiers type and subtype
@@ -1310,9 +1323,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 134: /* initialized_simple: elementary_type_name ASSIGN_OP constant  */
-  if (yyn == 134)
-    /* "src/main/java/parser/Parser.y":602  */
+  case 135: /* initialized_simple: simple_specification ASSIGN_OP constant  */
+  if (yyn == 135)
+    /* "src/main/java/parser/Parser.y":655  */
     {
         /**
          * Loads the left identifiers type, subtype and initialValue
@@ -1320,252 +1333,251 @@ this.symbolTable = symbolTable;
 
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(((Subtype)(yystack.valueAt (2))))
-            .initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
+            .initialValue(new VariableInitialization(((String)(yystack.valueAt (0))))
+        );
     };
   break;
 
 
-  case 135: /* elementary_type_name: numeric_type_name  */
-  if (yyn == 135)
-    /* "src/main/java/parser/Parser.y":618  */
-                                    { yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 136: /* elementary_type_name: date_type_name  */
+  case 136: /* elementary_type_name: numeric_type_name  */
   if (yyn == 136)
-    /* "src/main/java/parser/Parser.y":619  */
+    /* "src/main/java/parser/Parser.y":670  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
-  case 137: /* elementary_type_name: bit_string_type_name  */
+  case 137: /* elementary_type_name: date_type_name  */
   if (yyn == 137)
-    /* "src/main/java/parser/Parser.y":620  */
+    /* "src/main/java/parser/Parser.y":671  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
-  case 138: /* numeric_type_name: integer_type_name  */
+  case 138: /* elementary_type_name: bit_string_type_name  */
   if (yyn == 138)
-    /* "src/main/java/parser/Parser.y":624  */
+    /* "src/main/java/parser/Parser.y":672  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
-  case 139: /* numeric_type_name: real_type_name  */
+  case 139: /* numeric_type_name: integer_type_name  */
   if (yyn == 139)
-    /* "src/main/java/parser/Parser.y":625  */
+    /* "src/main/java/parser/Parser.y":676  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
-  case 140: /* integer_type_name: signed_integer_type_name  */
+  case 140: /* numeric_type_name: real_type_name  */
   if (yyn == 140)
-    /* "src/main/java/parser/Parser.y":629  */
+    /* "src/main/java/parser/Parser.y":677  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
-  case 141: /* integer_type_name: unsigned_integer_type_name  */
+  case 141: /* integer_type_name: signed_integer_type_name  */
   if (yyn == 141)
-    /* "src/main/java/parser/Parser.y":630  */
+    /* "src/main/java/parser/Parser.y":681  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
-  case 142: /* signed_integer_type_name: SINT  */
+  case 142: /* integer_type_name: unsigned_integer_type_name  */
   if (yyn == 142)
-    /* "src/main/java/parser/Parser.y":634  */
+    /* "src/main/java/parser/Parser.y":682  */
+                                    { yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 143: /* signed_integer_type_name: SINT  */
+  if (yyn == 143)
+    /* "src/main/java/parser/Parser.y":686  */
            { yyval = Subtype.SINT; };
   break;
 
 
-  case 143: /* signed_integer_type_name: INT  */
-  if (yyn == 143)
-    /* "src/main/java/parser/Parser.y":635  */
+  case 144: /* signed_integer_type_name: INT  */
+  if (yyn == 144)
+    /* "src/main/java/parser/Parser.y":687  */
            { yyval = Subtype.INT;  };
   break;
 
 
-  case 144: /* signed_integer_type_name: DINT  */
-  if (yyn == 144)
-    /* "src/main/java/parser/Parser.y":636  */
+  case 145: /* signed_integer_type_name: DINT  */
+  if (yyn == 145)
+    /* "src/main/java/parser/Parser.y":688  */
            { yyval = Subtype.DINT; };
   break;
 
 
-  case 145: /* signed_integer_type_name: LINT  */
-  if (yyn == 145)
-    /* "src/main/java/parser/Parser.y":637  */
+  case 146: /* signed_integer_type_name: LINT  */
+  if (yyn == 146)
+    /* "src/main/java/parser/Parser.y":689  */
            { yyval = Subtype.LINT; };
   break;
 
 
-  case 146: /* unsigned_integer_type_name: USINT  */
-  if (yyn == 146)
-    /* "src/main/java/parser/Parser.y":641  */
+  case 147: /* unsigned_integer_type_name: USINT  */
+  if (yyn == 147)
+    /* "src/main/java/parser/Parser.y":693  */
             { yyval = Subtype.USINT; };
   break;
 
 
-  case 147: /* unsigned_integer_type_name: UINT  */
-  if (yyn == 147)
-    /* "src/main/java/parser/Parser.y":642  */
+  case 148: /* unsigned_integer_type_name: UINT  */
+  if (yyn == 148)
+    /* "src/main/java/parser/Parser.y":694  */
             { yyval = Subtype.UINT;  };
   break;
 
 
-  case 148: /* unsigned_integer_type_name: UDINT  */
-  if (yyn == 148)
-    /* "src/main/java/parser/Parser.y":643  */
+  case 149: /* unsigned_integer_type_name: UDINT  */
+  if (yyn == 149)
+    /* "src/main/java/parser/Parser.y":695  */
             { yyval = Subtype.UDINT; };
   break;
 
 
-  case 149: /* unsigned_integer_type_name: ULINT  */
-  if (yyn == 149)
-    /* "src/main/java/parser/Parser.y":644  */
+  case 150: /* unsigned_integer_type_name: ULINT  */
+  if (yyn == 150)
+    /* "src/main/java/parser/Parser.y":696  */
             { yyval = Subtype.ULINT; };
   break;
 
 
-  case 150: /* real_type_name: REAL  */
-  if (yyn == 150)
-    /* "src/main/java/parser/Parser.y":648  */
+  case 151: /* real_type_name: REAL  */
+  if (yyn == 151)
+    /* "src/main/java/parser/Parser.y":700  */
             { yyval = Subtype.REAL;  };
   break;
 
 
-  case 151: /* real_type_name: LREAL  */
-  if (yyn == 151)
-    /* "src/main/java/parser/Parser.y":649  */
+  case 152: /* real_type_name: LREAL  */
+  if (yyn == 152)
+    /* "src/main/java/parser/Parser.y":701  */
             { yyval = Subtype.LREAL; };
   break;
 
 
-  case 152: /* date_type_name: TIME  */
-  if (yyn == 152)
-    /* "src/main/java/parser/Parser.y":653  */
+  case 153: /* date_type_name: TIME  */
+  if (yyn == 153)
+    /* "src/main/java/parser/Parser.y":705  */
                     { yyval = Subtype.TIME;          };
   break;
 
 
-  case 153: /* date_type_name: DATE  */
-  if (yyn == 153)
-    /* "src/main/java/parser/Parser.y":654  */
+  case 154: /* date_type_name: DATE  */
+  if (yyn == 154)
+    /* "src/main/java/parser/Parser.y":706  */
                     { yyval = Subtype.DATE;          };
   break;
 
 
-  case 154: /* date_type_name: TIME_OF_DAY  */
-  if (yyn == 154)
-    /* "src/main/java/parser/Parser.y":655  */
+  case 155: /* date_type_name: TIME_OF_DAY  */
+  if (yyn == 155)
+    /* "src/main/java/parser/Parser.y":707  */
                     { yyval = Subtype.TIME_OF_DAY;   };
   break;
 
 
-  case 155: /* date_type_name: DATE_AND_TIME  */
-  if (yyn == 155)
-    /* "src/main/java/parser/Parser.y":656  */
+  case 156: /* date_type_name: DATE_AND_TIME  */
+  if (yyn == 156)
+    /* "src/main/java/parser/Parser.y":708  */
                     { yyval = Subtype.DATE_AND_TIME; };
   break;
 
 
-  case 156: /* constant: string_constant  */
-  if (yyn == 156)
-    /* "src/main/java/parser/Parser.y":662  */
-                       { yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 157: /* constant: boolean_constant  */
+  case 157: /* constant: string_constant  */
   if (yyn == 157)
-    /* "src/main/java/parser/Parser.y":663  */
+    /* "src/main/java/parser/Parser.y":714  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
-  case 158: /* constant: time_constant  */
+  case 158: /* constant: boolean_constant  */
   if (yyn == 158)
-    /* "src/main/java/parser/Parser.y":664  */
+    /* "src/main/java/parser/Parser.y":715  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
-  case 159: /* constant: numeric_constant  */
+  case 159: /* constant: time_constant  */
   if (yyn == 159)
-    /* "src/main/java/parser/Parser.y":665  */
+    /* "src/main/java/parser/Parser.y":716  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
-  case 160: /* string_constant: STRING_LITERAL  */
+  case 160: /* constant: numeric_constant  */
   if (yyn == 160)
-    /* "src/main/java/parser/Parser.y":669  */
+    /* "src/main/java/parser/Parser.y":717  */
+                       { yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 161: /* string_constant: STRING_LITERAL  */
+  if (yyn == 161)
+    /* "src/main/java/parser/Parser.y":721  */
                    { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
-  case 161: /* boolean_constant: BOOLEAN_LITERAL  */
-  if (yyn == 161)
-    /* "src/main/java/parser/Parser.y":673  */
+  case 162: /* boolean_constant: BOOLEAN_LITERAL  */
+  if (yyn == 162)
+    /* "src/main/java/parser/Parser.y":725  */
                     { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
-  case 163: /* numeric_constant: number_prefix NUMERIC_LITERAL  */
-  if (yyn == 163)
-    /* "src/main/java/parser/Parser.y":678  */
+  case 164: /* numeric_constant: number_prefix NUMERIC_LITERAL  */
+  if (yyn == 164)
+    /* "src/main/java/parser/Parser.y":730  */
     {
-        // TODO: hacer conversion de esta constante en codigo
+        // TODO: convert this constant in code
         yyval = "";
     };
   break;
 
 
-  case 167: /* time_constant: date_type_name '#' TIME_LITERAL  */
-  if (yyn == 167)
-    /* "src/main/java/parser/Parser.y":691  */
+  case 168: /* time_constant: date_type_name '#' TIME_LITERAL  */
+  if (yyn == 168)
+    /* "src/main/java/parser/Parser.y":743  */
                                     {
-        // TODO: accion semantica que verifica que prefix es del mismo tipo que time_literal
+        // TODO: semantic action to verify prefix matches time_literal type
     };
   break;
 
 
-  case 168: /* bit_string_type_name: BYTE  */
-  if (yyn == 168)
-    /* "src/main/java/parser/Parser.y":697  */
+  case 169: /* bit_string_type_name: BYTE  */
+  if (yyn == 169)
+    /* "src/main/java/parser/Parser.y":749  */
             { yyval = Subtype.BYTE;  };
   break;
 
 
-  case 169: /* bit_string_type_name: WORD  */
-  if (yyn == 169)
-    /* "src/main/java/parser/Parser.y":698  */
+  case 170: /* bit_string_type_name: WORD  */
+  if (yyn == 170)
+    /* "src/main/java/parser/Parser.y":750  */
             { yyval = Subtype.WORD;  };
   break;
 
 
-  case 170: /* bit_string_type_name: DWORD  */
-  if (yyn == 170)
-    /* "src/main/java/parser/Parser.y":699  */
+  case 171: /* bit_string_type_name: DWORD  */
+  if (yyn == 171)
+    /* "src/main/java/parser/Parser.y":751  */
             { yyval = Subtype.DWORD; };
   break;
 
 
-  case 171: /* bit_string_type_name: LWORD  */
-  if (yyn == 171)
-    /* "src/main/java/parser/Parser.y":700  */
+  case 172: /* bit_string_type_name: LWORD  */
+  if (yyn == 172)
+    /* "src/main/java/parser/Parser.y":752  */
             { yyval = Subtype.LWORD; };
   break;
 
 
-  case 174: /* subrange_specification: subrange_type_decl '(' range ')'  */
-  if (yyn == 174)
-    /* "src/main/java/parser/Parser.y":712  */
+  case 175: /* subrange_specification: subrange_type_decl '(' range ')'  */
+  if (yyn == 175)
+    /* "src/main/java/parser/Parser.y":764  */
     {
         ParsingContext ctx = this.contexts.current();
         LexemeInfo metadata = ctx.metadataBuilder().build();
@@ -1578,9 +1590,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 175: /* subrange_type_decl: integer_type_name  */
-  if (yyn == 175)
-    /* "src/main/java/parser/Parser.y":725  */
+  case 176: /* subrange_type_decl: integer_type_name  */
+  if (yyn == 176)
+    /* "src/main/java/parser/Parser.y":777  */
     {
         /**
          * Loads the left identifiers subrange subtype
@@ -1592,9 +1604,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 176: /* initialized_subrange: subrange_specification ASSIGN_OP numeric_constant  */
-  if (yyn == 176)
-    /* "src/main/java/parser/Parser.y":737  */
+  case 177: /* initialized_subrange: subrange_specification ASSIGN_OP numeric_constant  */
+  if (yyn == 177)
+    /* "src/main/java/parser/Parser.y":789  */
     {
         /**
          * Loads the left identifiers subrange initialization
@@ -1606,9 +1618,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 177: /* range: numeric_constant RANGE_OP numeric_constant  */
-  if (yyn == 177)
-    /* "src/main/java/parser/Parser.y":749  */
+  case 178: /* range: numeric_constant RANGE_OP numeric_constant  */
+  if (yyn == 178)
+    /* "src/main/java/parser/Parser.y":801  */
     {
         /**
          * Loads the left identifiers subrange numeric range
@@ -1622,7 +1634,7 @@ this.symbolTable = symbolTable;
             metadata.superiorLimits = new ArrayList<>();
         }
 
-        // TODO: hacer chequeo semantico de rangos
+        // TODO: semantic check of ranges
         metadata.inferiorLimits.add(((String)(yystack.valueAt (2))));
         metadata.superiorLimits.add(((String)(yystack.valueAt (0))));
 
@@ -1633,9 +1645,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 180: /* enumerated_specification: '(' enumerated_values ')'  */
-  if (yyn == 180)
-    /* "src/main/java/parser/Parser.y":778  */
+  case 181: /* enumerated_specification: '(' enumerated_values ')'  */
+  if (yyn == 181)
+    /* "src/main/java/parser/Parser.y":830  */
                               {
         /**
          * Loads the enumerated metadata to the current context.
@@ -1653,9 +1665,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 181: /* initialized_enumerated: enumerated_specification ASSIGN_OP identifier_with_opt_mangling  */
-  if (yyn == 181)
-    /* "src/main/java/parser/Parser.y":796  */
+  case 182: /* initialized_enumerated: enumerated_specification ASSIGN_OP identifier_with_opt_mangling  */
+  if (yyn == 182)
+    /* "src/main/java/parser/Parser.y":848  */
     {
         /**
          * Verifies that the initializer value is correct and loads it to the context.
@@ -1664,14 +1676,14 @@ this.symbolTable = symbolTable;
         ParsingContext ctx = this.contexts.current();
 
         if (((String)(yystack.valueAt (0))).indexOf('#') != -1) {
-            // TODO: control de error. El enumerado anonimo no puede ser inicializado con un mangling
+            // TODO: error control. Anonymous enum cannot be initialized with mangling
         }
         List<String> enumeratedValues = ctx.metadataBuilder().build().parameters;
         Integer indexValue = enumeratedValues.indexOf(((String)(yystack.valueAt (0))));
         if (indexValue == -1) {
-            // TODO: control de error. El enumerado anonimo no puede ser inicializado con un valor inexistente
+            // TODO: error control. Anonymous enum cannot be initialized with non-existent value
         }
-        // TODO: ver cómo verificar que el índice está en el léxico
+        // TODO: verify how to check index is in lexicon
         ctx.metadataBuilder().initialValue(
             new VariableInitialization(
                 ctx.outerScopes().getNameMangled(((String)(yystack.valueAt (0))))
@@ -1681,9 +1693,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 182: /* enumerated_values: enumerated_values_list  */
-  if (yyn == 182)
-    /* "src/main/java/parser/Parser.y":822  */
+  case 183: /* enumerated_values: enumerated_values_list  */
+  if (yyn == 183)
+    /* "src/main/java/parser/Parser.y":874  */
     {
         /**
          * Just drops the context built for the enumerated list.
@@ -1694,9 +1706,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 183: /* enumerated_values_list: IDENTIFIER  */
-  if (yyn == 183)
-    /* "src/main/java/parser/Parser.y":833  */
+  case 184: /* enumerated_values_list: IDENTIFIER  */
+  if (yyn == 184)
+    /* "src/main/java/parser/Parser.y":885  */
     {
         /**
          * Creates a new context with the data associated to the enums value list and then publish the identifier found
@@ -1714,7 +1726,7 @@ this.symbolTable = symbolTable;
             .use(Use.MACRO)
             .source(Source.NONE)
             .initialValue(
-                // TODO: ver interacción con lexer para la publicación de la constante
+                // TODO: verify interaction with lexer for constant publication
                 new MacroInitialization(this.symbolTable, "0")
             );
         ctx.outerScopes().addScope(outerScopes);
@@ -1730,11 +1742,11 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 184: /* enumerated_values_list: enumerated_values_list ',' IDENTIFIER  */
-  if (yyn == 184)
-    /* "src/main/java/parser/Parser.y":864  */
+  case 185: /* enumerated_values_list: enumerated_values_list ',' IDENTIFIER  */
+  if (yyn == 185)
+    /* "src/main/java/parser/Parser.y":916  */
     {
-        // TODO: ver interacción con el lexer nuevamente
+        // TODO: verify interaction with lexer again
         Integer newIndex = ((List<String>)(yystack.valueAt (2))).size();
 
         ParsingContext ctx = this.contexts.current();
@@ -1751,9 +1763,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 187: /* array_specification: ARRAY '[' range_list ']' OF IDENTIFIER  */
-  if (yyn == 187)
-    /* "src/main/java/parser/Parser.y":888  */
+  case 188: /* array_specification: ARRAY '[' range_list ']' OF IDENTIFIER  */
+  if (yyn == 188)
+    /* "src/main/java/parser/Parser.y":940  */
     {
         LexemeInfo typeMetadata = this.symbolTable.get(((String)(yystack.valueAt (0))));
         ParsingContext ctx = this.contexts.current();
@@ -1773,9 +1785,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 188: /* array_specification: ARRAY '[' range_list ']' OF non_generic_type_name  */
-  if (yyn == 188)
-    /* "src/main/java/parser/Parser.y":905  */
+  case 189: /* array_specification: ARRAY '[' range_list ']' OF non_generic_type_name  */
+  if (yyn == 189)
+    /* "src/main/java/parser/Parser.y":957  */
     {
         ParsingContext ctx = this.contexts.current();
         int dimension= DimensionCalculator.calculate(ctx);
@@ -1791,9 +1803,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 193: /* array_initialization: array_init_open_square_bracket array_initial_elements_list ']'  */
-  if (yyn == 193)
-    /* "src/main/java/parser/Parser.y":934  */
+  case 194: /* array_initialization: array_init_open_square_bracket array_initial_elements_list ']'  */
+  if (yyn == 194)
+    /* "src/main/java/parser/Parser.y":986  */
     {
         /**
          * Drops the useless context generated at the end of the initialization list.
@@ -1804,9 +1816,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 194: /* array_init_open_square_bracket: '['  */
-  if (yyn == 194)
-    /* "src/main/java/parser/Parser.y":945  */
+  case 195: /* array_init_open_square_bracket: '['  */
+  if (yyn == 195)
+    /* "src/main/java/parser/Parser.y":997  */
     {
         /**
          * Creates a new context so that it can be overwritten by the inner rules.
@@ -1828,9 +1840,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 197: /* array_initial_elements: array_initial_element_routine  */
-  if (yyn == 197)
-    /* "src/main/java/parser/Parser.y":972  */
+  case 198: /* array_initial_elements: array_initial_element_routine  */
+  if (yyn == 198)
+    /* "src/main/java/parser/Parser.y":1024  */
     {
         /**
          * Retrieves the relevant information of the initialization and copies it into the current context
@@ -1860,9 +1872,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 200: /* array_initial_element: constant  */
-  if (yyn == 200)
-    /* "src/main/java/parser/Parser.y":1007  */
+  case 201: /* array_initial_element: constant  */
+  if (yyn == 201)
+    /* "src/main/java/parser/Parser.y":1059  */
     {
         /**
          * Creates the initialization and adds the context counter by one
@@ -1875,9 +1887,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 201: /* array_initial_element: identifier_with_opt_mangling  */
-  if (yyn == 201)
-    /* "src/main/java/parser/Parser.y":1017  */
+  case 202: /* array_initial_element: identifier_with_opt_mangling  */
+  if (yyn == 202)
+    /* "src/main/java/parser/Parser.y":1069  */
     {
         /**
          * Creates the initialization and adds the context counter by one
@@ -1886,7 +1898,7 @@ this.symbolTable = symbolTable;
         ParsingContext initContext = this.contexts.current();
         initContext.incrementIndex(1);
 
-        // TODO: verificar enumerado como en la regla de initialized_custom_with_identifier
+        // TODO: verify enum as in initialized_custom_with_identifier rule
         String completeEnumerateName = initContext.searchScope().getNameMangled(((String)(yystack.valueAt (0))));
 
         initContext.metadataBuilder().initialValue(new VariableInitialization(completeEnumerateName));
@@ -1894,23 +1906,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 202: /* array_initial_element: structure_initialization  */
-  if (yyn == 202)
-    /* "src/main/java/parser/Parser.y":1031  */
-    {
-        /**
-         * Only adds the context counter by one because the initialization is created inside the rule.
-        **/
-
-        ParsingContext initContext = this.contexts.current();
-        initContext.incrementIndex(1);
-    };
-  break;
-
-
-  case 203: /* array_initial_element: array_initialization  */
+  case 203: /* array_initial_element: structure_initialization  */
   if (yyn == 203)
-    /* "src/main/java/parser/Parser.y":1040  */
+    /* "src/main/java/parser/Parser.y":1083  */
     {
         /**
          * Only adds the context counter by one because the initialization is created inside the rule.
@@ -1922,15 +1920,29 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 204: /* repeated_initial_element: numeric_constant '(' array_initial_element ')'  */
+  case 204: /* array_initial_element: array_initialization  */
   if (yyn == 204)
-    /* "src/main/java/parser/Parser.y":1052  */
+    /* "src/main/java/parser/Parser.y":1092  */
+    {
+        /**
+         * Only adds the context counter by one because the initialization is created inside the rule.
+        **/
+
+        ParsingContext initContext = this.contexts.current();
+        initContext.incrementIndex(1);
+    };
+  break;
+
+
+  case 205: /* repeated_initial_element: numeric_constant '(' array_initial_element ')'  */
+  if (yyn == 205)
+    /* "src/main/java/parser/Parser.y":1104  */
     {
         /**
          * Repeats N times the inner initialization.
         **/
 
-        // TODO: verificar que numeric_constant es aditivo
+        // TODO: verify that numeric_constant is additive
         int multiplier = Integer.parseInt(((String)(yystack.valueAt (3))));
 
         ParsingContext initContext = this.contexts.current();
@@ -1939,9 +1951,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 206: /* struct_init_open_parenthesis: '('  */
-  if (yyn == 206)
-    /* "src/main/java/parser/Parser.y":1071  */
+  case 207: /* struct_init_open_parenthesis: '('  */
+  if (yyn == 207)
+    /* "src/main/java/parser/Parser.y":1123  */
     {
         /**
          * Copies the initialization of the custom type to overwrite the fields later if it's the first time
@@ -1961,9 +1973,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 213: /* initialized_field_with_constant: nested_field ASSIGN_OP constant  */
-  if (yyn == 213)
-    /* "src/main/java/parser/Parser.y":1104  */
+  case 214: /* initialized_field_with_constant: nested_field ASSIGN_OP constant  */
+  if (yyn == 214)
+    /* "src/main/java/parser/Parser.y":1156  */
     {
         /**
          * Overwrites the field with a constant.
@@ -1974,7 +1986,7 @@ this.symbolTable = symbolTable;
         
         StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
         if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
-            // TODO: control de error. el campo no existe
+            // TODO: error control. field does not exist
         }
         structValue.setFieldInitialization(completeFieldName, new VariableInitialization(((String)(yystack.valueAt (0)))));
         ctx.nestedFields().popScope();
@@ -1982,9 +1994,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 214: /* initialized_field_with_identifier: nested_field ASSIGN_OP identifier_with_opt_mangling  */
-  if (yyn == 214)
-    /* "src/main/java/parser/Parser.y":1123  */
+  case 215: /* initialized_field_with_identifier: nested_field ASSIGN_OP identifier_with_opt_mangling  */
+  if (yyn == 215)
+    /* "src/main/java/parser/Parser.y":1175  */
     {
         /**
          * Overwrites the field with an enumerated value.
@@ -1995,9 +2007,9 @@ this.symbolTable = symbolTable;
 
         StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
         if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
-            // TODO: control de error. el campo no existe
+            // TODO: error control. field does not exist
         }
-        // TODO: control de error, verificar que el enumerado es alcanzable
+        // TODO: error control, verify enum is reachable
         String completeEnumeratedValue = ctx.searchScope().getNameMangled(((String)(yystack.valueAt (0))));
 
         structValue.setFieldInitialization(completeFieldName, new VariableInitialization(completeEnumeratedValue));
@@ -2006,9 +2018,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 215: /* initialized_field_with_array: nested_field ASSIGN_OP array_initialization  */
-  if (yyn == 215)
-    /* "src/main/java/parser/Parser.y":1145  */
+  case 216: /* initialized_field_with_array: nested_field ASSIGN_OP array_initialization  */
+  if (yyn == 216)
+    /* "src/main/java/parser/Parser.y":1197  */
     {
         /**
          * Overwrites the field with an array initialization.
@@ -2019,9 +2031,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 216: /* initialized_field_with_structure: nested_field ASSIGN_OP structure_initialization  */
-  if (yyn == 216)
-    /* "src/main/java/parser/Parser.y":1156  */
+  case 217: /* initialized_field_with_structure: nested_field ASSIGN_OP structure_initialization  */
+  if (yyn == 217)
+    /* "src/main/java/parser/Parser.y":1208  */
     {
         ParsingContext ctx = this.contexts.current();
         ctx.nestedFields().popScope();
@@ -2029,9 +2041,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 217: /* nested_field: IDENTIFIER  */
-  if (yyn == 217)
-    /* "src/main/java/parser/Parser.y":1164  */
+  case 218: /* nested_field: IDENTIFIER  */
+  if (yyn == 218)
+    /* "src/main/java/parser/Parser.y":1216  */
     {
         /**
          * Needs to expand the nested scope to keep overwritting.
@@ -2043,27 +2055,27 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 218: /* identifier_with_opt_mangling: IDENTIFIER  */
-  if (yyn == 218)
-    /* "src/main/java/parser/Parser.y":1176  */
+  case 219: /* identifier_with_opt_mangling: IDENTIFIER  */
+  if (yyn == 219)
+    /* "src/main/java/parser/Parser.y":1228  */
     {
         yyval = ((String)(yystack.valueAt (0)));
     };
   break;
 
 
-  case 219: /* identifier_with_opt_mangling: IDENTIFIER '#' IDENTIFIER  */
-  if (yyn == 219)
-    /* "src/main/java/parser/Parser.y":1180  */
+  case 220: /* identifier_with_opt_mangling: IDENTIFIER '#' IDENTIFIER  */
+  if (yyn == 220)
+    /* "src/main/java/parser/Parser.y":1232  */
     {
         yyval = ((String)(yystack.valueAt (2))) + "#" + ((String)(yystack.valueAt (0)));
     };
   break;
 
 
-  case 223: /* identifier_list: IDENTIFIER  */
-  if (yyn == 223)
-    /* "src/main/java/parser/Parser.y":1196  */
+  case 224: /* identifier_list: IDENTIFIER  */
+  if (yyn == 224)
+    /* "src/main/java/parser/Parser.y":1248  */
     {
         ParsingContext ctx = contexts.current();
         ctx.declaredIdentifiers().clear();
@@ -2072,9 +2084,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 224: /* identifier_list: identifier_list ',' IDENTIFIER  */
-  if (yyn == 224)
-    /* "src/main/java/parser/Parser.y":1202  */
+  case 225: /* identifier_list: identifier_list ',' IDENTIFIER  */
+  if (yyn == 225)
+    /* "src/main/java/parser/Parser.y":1254  */
     {
         ParsingContext ctx = contexts.current();
         ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
@@ -2082,9 +2094,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 236: /* data_type_declaration: type_id_decl type_declaration_list END_TYPE  */
-  if (yyn == 236)
-    /* "src/main/java/parser/Parser.y":1240  */
+  case 237: /* data_type_declaration: type_id_decl type_declaration_list END_TYPE  */
+  if (yyn == 237)
+    /* "src/main/java/parser/Parser.y":1292  */
     {
         /**
          * After reducing the whole block, the type block context needs to popped
@@ -2095,9 +2107,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 237: /* type_id_decl: TYPE  */
-  if (yyn == 237)
-    /* "src/main/java/parser/Parser.y":1251  */
+  case 238: /* type_id_decl: TYPE  */
+  if (yyn == 238)
+    /* "src/main/java/parser/Parser.y":1303  */
     {
         ParsingContext ctx = new ParsingContext(this.symbolTable);
         ctx.metadataBuilder()
@@ -2109,9 +2121,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 240: /* type_declaration: type_name_declaration ':' type_spec_init  */
-  if (yyn == 240)
-    /* "src/main/java/parser/Parser.y":1268  */
+  case 241: /* type_declaration: type_name_declaration ':' type_spec_init  */
+  if (yyn == 241)
+    /* "src/main/java/parser/Parser.y":1320  */
     {
         /**
          * The type declaration is published after being reduced and it's outerScopes unappended.
@@ -2126,9 +2138,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 241: /* type_name_declaration: IDENTIFIER  */
-  if (yyn == 241)
-    /* "src/main/java/parser/Parser.y":1283  */
+  case 242: /* type_name_declaration: IDENTIFIER  */
+  if (yyn == 242)
+    /* "src/main/java/parser/Parser.y":1335  */
     {
         /**
          * Adds the identifier as the current scope so that everything declared inside this scope belongs to the outer
@@ -2142,9 +2154,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 249: /* structure_specification: STRUCT structure_field_declaration_list END_STRUCT  */
-  if (yyn == 249)
-    /* "src/main/java/parser/Parser.y":1307  */
+  case 250: /* structure_specification: STRUCT structure_field_declaration_list END_STRUCT  */
+  if (yyn == 250)
+    /* "src/main/java/parser/Parser.y":1359  */
     {
         /**
          * Builds the declaration of the structure and publishes it to the symbol table. For that to happen every field
@@ -2171,9 +2183,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 250: /* structure_field_declaration_list: structure_field_declaration ';'  */
-  if (yyn == 250)
-    /* "src/main/java/parser/Parser.y":1334  */
+  case 251: /* structure_field_declaration_list: structure_field_declaration ';'  */
+  if (yyn == 251)
+    /* "src/main/java/parser/Parser.y":1386  */
     {
         List<String> structParameters = new ArrayList<>();
         structParameters.add(((String)(yystack.valueAt (1))));
@@ -2182,9 +2194,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 251: /* structure_field_declaration_list: structure_field_declaration_list structure_field_declaration ';'  */
-  if (yyn == 251)
-    /* "src/main/java/parser/Parser.y":1340  */
+  case 252: /* structure_field_declaration_list: structure_field_declaration_list structure_field_declaration ';'  */
+  if (yyn == 252)
+    /* "src/main/java/parser/Parser.y":1392  */
     {
         ((List<String>)(yystack.valueAt (2))).add(((String)(yystack.valueAt (1))));
         yyval = ((List<String>)(yystack.valueAt (2)));
@@ -2192,9 +2204,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 252: /* structure_field_declaration: field_name ':' structure_field_spec_init  */
-  if (yyn == 252)
-    /* "src/main/java/parser/Parser.y":1348  */
+  case 253: /* structure_field_declaration: field_name ':' structure_field_spec_init  */
+  if (yyn == 253)
+    /* "src/main/java/parser/Parser.y":1400  */
     {
         /**
          * Publishes the field to the symbol table.
@@ -2209,9 +2221,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 253: /* field_name: IDENTIFIER  */
-  if (yyn == 253)
-    /* "src/main/java/parser/Parser.y":1363  */
+  case 254: /* field_name: IDENTIFIER  */
+  if (yyn == 254)
+    /* "src/main/java/parser/Parser.y":1415  */
     {
         /**
          * Builds the new field context
@@ -2234,7 +2246,7 @@ this.symbolTable = symbolTable;
 
 
 
-/* "src/main/java/parser/Parser.java":2238  */
+/* "src/main/java/parser/Parser.java":2250  */
 
         default: break;
       }
@@ -2587,8 +2599,8 @@ this.symbolTable = symbolTable;
     return yyvalue == yytable_ninf_;
   }
 
-  private static final short yypact_ninf_ = -328;
-  private static final short yytable_ninf_ = -176;
+  private static final short yypact_ninf_ = -331;
+  private static final short yytable_ninf_ = -177;
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
@@ -2597,46 +2609,47 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-      28,  -328,    39,    45,  -328,    11,  -328,    49,  -328,  -328,
-      23,    -8,    19,  -328,  -328,  -328,    13,  -328,    77,    24,
-    -328,    86,    88,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-    -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-    -328,  -328,  -328,    55,   118,  -328,  -328,  -328,  -328,  -328,
-    -328,   146,  -328,  -328,  -328,   150,  -328,    42,  -328,  -328,
-    -328,  -328,  -328,  -328,   156,    91,  -328,  -328,   157,  -328,
-    -328,   158,  -328,  -328,  -328,  -328,   -22,  -328,  -328,  -328,
-    -328,  -328,   149,   114,  -328,    26,   122,   119,   441,  -328,
-     121,   123,   319,   418,   441,   441,   167,   124,   133,   441,
-    -328,  -328,   204,   207,  -328,   159,  -328,  -328,   174,  -328,
-     134,  -328,   283,  -328,   130,   132,   176,   145,   136,   137,
-     135,  -328,   186,   141,  -328,  -328,  -328,   142,  -328,  -328,
-    -328,  -328,  -328,  -328,   189,  -328,  -328,  -328,   147,  -328,
-    -328,  -328,   177,  -328,   169,  -328,   190,  -328,   225,  -328,
-     174,  -328,   179,  -328,    33,  -328,  -328,  -328,   131,  -328,
-    -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,   441,
-    -328,  -328,   441,   196,  -328,   215,   184,  -328,   111,  -328,
-    -328,  -328,  -328,  -328,   221,  -328,  -328,   183,  -328,   -52,
-    -328,  -328,  -328,  -328,  -328,  -328,   224,   258,   232,  -328,
-     264,   193,    -6,   235,   247,  -328,  -328,  -328,  -328,  -328,
-     399,  -328,  -328,   189,  -328,   177,   177,   177,  -328,   133,
-     249,    84,  -328,   274,   251,  -328,   281,    48,  -328,  -328,
-    -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-    -328,   252,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-    -328,  -328,   209,  -328,  -328,   253,  -328,  -328,   217,   258,
-     271,   256,  -328,  -328,   219,  -328,   -14,   441,   298,   258,
-     239,   304,   301,   288,    20,  -328,  -328,   250,   357,   254,
-    -328,   248,  -328,  -328,   290,   263,   321,   144,   275,   312,
-    -328,   276,   285,    96,  -328,  -328,  -328,   279,   284,  -328,
-    -328,   441,    83,   295,   356,  -328,  -328,  -328,  -328,    82,
-     286,  -328,    37,  -328,  -328,   287,   441,   441,   289,  -328,
-    -328,  -328,  -328,  -328,   291,   210,  -328,  -328,  -328,   293,
-      64,    89,  -328,  -328,  -328,  -328,  -328,   300,   315,   294,
-    -328,  -328,   322,  -328,  -328,  -328,  -328,  -328,   323,  -328,
-     441,  -328,  -328,  -328,  -328,  -328,  -328,   317,   351,   -10,
-      -3,    97,   -10,   381,   171,  -328,   347,  -328,     9,     0,
-       1,  -328,   324,   365,  -328,   366,  -328,    97,   171,    97,
-     171,  -328,   384,    -2,  -328,  -328,  -328,  -328,  -328,   369,
-     378,   370,   330,  -328,  -328,  -328,   389,  -328,   373,  -328
+      53,  -331,    93,    71,  -331,    59,  -331,    61,  -331,  -331,
+      30,    29,    27,  -331,  -331,  -331,    38,  -331,    78,    45,
+    -331,    84,    85,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+    -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+    -331,  -331,  -331,    56,   119,  -331,  -331,  -331,  -331,  -331,
+    -331,   132,  -331,   145,  -331,  -331,  -331,   107,  -331,  -331,
+    -331,  -331,  -331,  -331,   156,   117,  -331,  -331,   158,  -331,
+    -331,   159,  -331,  -331,  -331,  -331,   -21,  -331,  -331,  -331,
+    -331,  -331,   149,   115,  -331,    24,   123,   120,   441,  -331,
+     122,   124,   294,   418,   441,   441,   168,   125,   133,   441,
+    -331,  -331,   205,   208,  -331,   160,  -331,  -331,   175,  -331,
+     135,  -331,   258,  -331,   131,   134,   178,   142,   136,   140,
+     137,  -331,   184,   143,  -331,  -331,  -331,   144,  -331,  -331,
+    -331,  -331,  -331,  -331,   188,  -331,  -331,  -331,   147,  -331,
+    -331,  -331,   179,  -331,   146,  -331,   192,  -331,   226,  -331,
+     175,  -331,   163,  -331,   -34,  -331,  -331,  -331,  -331,    -8,
+    -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,   441,
+    -331,  -331,   441,   194,  -331,   217,   186,  -331,   111,  -331,
+    -331,  -331,  -331,  -331,   223,  -331,  -331,   185,  -331,    28,
+    -331,  -331,  -331,  -331,  -331,  -331,   227,   255,   230,  -331,
+     263,   193,    25,   233,   222,   196,  -331,  -331,  -331,  -331,
+    -331,   374,  -331,  -331,   188,  -331,   179,   179,   179,  -331,
+     133,   236,    89,  -331,   271,   259,  -331,   290,    48,  -331,
+    -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+    -331,  -331,   261,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+    -331,  -331,  -331,  -331,   221,  -331,  -331,   264,  -331,  -331,
+     228,   255,   282,   265,  -331,  -331,   229,  -331,   -13,   441,
+     298,   255,   238,   314,   311,   297,    23,  -331,  -331,   260,
+     332,   262,  -331,   257,  -331,  -331,   299,   274,   329,    87,
+     289,   323,  -331,   292,   266,   393,  -331,  -331,  -331,   267,
+     295,  -331,  -331,   441,   151,   304,   340,  -331,  -331,  -331,
+    -331,    39,   296,  -331,    76,  -331,  -331,   268,   441,   441,
+     291,  -331,  -331,  -331,  -331,  -331,   301,    97,  -331,  -331,
+    -331,   302,    81,    88,  -331,  -331,  -331,  -331,  -331,   300,
+     303,   305,  -331,  -331,   307,  -331,  -331,  -331,  -331,  -331,
+     313,  -331,   441,  -331,  -331,  -331,  -331,  -331,  -331,   310,
+     361,    -7,    -4,     6,    -7,   366,   171,  -331,   357,  -331,
+      -1,     0,     1,  -331,   312,   369,  -331,   375,  -331,     6,
+     171,     6,   171,  -331,   394,    -2,  -331,  -331,  -331,  -331,
+    -331,   376,   353,   378,   316,  -331,  -331,  -331,   407,  -331,
+     399,  -331
     };
   }
 
@@ -2648,46 +2661,47 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-     234,   237,     0,     0,   235,     0,     1,     0,     2,   241,
-       0,     0,     0,     4,     5,   236,     0,   238,     0,     8,
-     239,     0,   123,   232,   233,   168,   169,   170,   171,   152,
-     154,   153,   155,   142,   143,   144,   145,   146,   147,   148,
-     149,   150,   151,     0,     0,   242,   121,   122,   124,   125,
-     126,     0,   243,   131,   132,   133,   135,   138,   140,   141,
-     139,   136,   137,   245,   172,     0,   173,   244,   178,   179,
-     246,   185,   186,   248,   226,   227,   228,   240,   247,    95,
-      96,     6,    12,    99,   253,     0,     0,     0,     0,   183,
-       0,   182,     0,     0,     0,     0,     0,     0,     0,     0,
-      98,     9,     0,    15,    10,   102,   100,   101,     0,   249,
-       0,   250,     0,   162,     0,     0,     0,     0,     0,   190,
-       0,   180,     0,   218,   160,   161,   206,     0,   127,   156,
-     157,   159,   158,   129,     0,   128,   134,   176,     0,   181,
-     194,   189,     0,   230,     0,     3,     0,    13,    42,   103,
-       0,   223,     0,   104,     0,   251,   117,   255,   115,   116,
-     254,   256,   258,   257,   259,   260,   252,   164,   165,     0,
-     163,   166,     0,     0,   184,     0,     0,   217,     0,   207,
-     209,   210,   211,   212,     0,   174,   200,   159,   203,     0,
-     195,   197,   198,   199,   202,   201,   229,     0,     0,    16,
-      88,     0,     0,     0,     0,   119,   120,   118,   177,   191,
-       0,   219,   167,     0,   205,     0,     0,     0,   193,     0,
-       0,     0,    20,    40,     0,    43,    11,     0,     7,   105,
-     224,   225,   106,   109,   108,   110,   111,   112,   113,   107,
-     221,   220,   114,   187,   192,   138,   188,   208,   213,   215,
-     216,   214,     0,   196,   231,     0,    14,    21,     0,    18,
-      46,     0,    89,    97,     0,   204,     0,     0,     0,    19,
-       0,    56,    48,     0,     0,    91,   222,     0,     0,     0,
-      24,    25,    27,    26,     0,     0,     0,     0,     0,     0,
-      57,     0,     0,     0,    90,    92,    22,     0,     0,    23,
-      28,     0,     0,     0,     0,    50,    51,    52,    47,     0,
-       0,    65,     0,    45,    93,     0,     0,     0,     0,    32,
-      33,    34,    35,    36,     0,     0,    17,    60,    59,     0,
-       0,     0,    53,    54,    55,    49,    94,     0,     0,     0,
-      31,    39,     0,    38,    58,    62,    63,    64,     0,    44,
-       0,    66,    30,    29,    41,    37,    61,     0,     0,     0,
-       0,    73,     0,     0,    73,    80,    79,    78,     0,     0,
-       0,    72,     0,     0,    71,     0,    82,    73,    73,    73,
-      73,    81,    85,    68,    83,    74,    76,    75,    77,     0,
-       0,     0,     0,    84,    70,    69,    87,    67,     0,    86
+     235,   238,     0,     0,   236,     0,     1,     0,     2,   242,
+       0,     0,     0,     4,     5,   237,     0,   239,     0,     8,
+     240,     0,   117,   233,   234,   169,   170,   171,   172,   153,
+     155,   154,   156,   143,   144,   145,   146,   147,   148,   149,
+     150,   151,   152,     0,     0,   243,   115,   116,   118,   119,
+     120,     0,   244,   132,   133,   134,   136,   139,   141,   142,
+     140,   137,   138,   246,   173,     0,   174,   245,   179,   180,
+     247,   186,   187,   249,   227,   228,   229,   241,   248,    95,
+      96,     6,    12,    99,   254,     0,     0,     0,     0,   184,
+       0,   183,     0,     0,     0,     0,     0,     0,     0,     0,
+      98,     9,     0,    15,    10,   102,   100,   101,     0,   250,
+       0,   251,     0,   163,     0,     0,     0,     0,     0,   191,
+       0,   181,     0,   219,   161,   162,   207,     0,   121,   157,
+     158,   160,   159,   123,     0,   122,   135,   177,     0,   182,
+     195,   190,     0,   231,     0,     3,     0,    13,    42,   103,
+       0,   224,     0,   104,     0,   252,   127,   255,   256,   125,
+     126,   257,   259,   258,   260,   261,   253,   165,   166,     0,
+     164,   167,     0,     0,   185,     0,     0,   218,     0,   208,
+     210,   211,   212,   213,     0,   175,   201,   160,   204,     0,
+     196,   198,   199,   200,   203,   202,   230,     0,     0,    16,
+      88,     0,     0,     0,     0,     0,   130,   131,   128,   178,
+     192,     0,   220,   168,     0,   206,     0,     0,     0,   194,
+       0,     0,     0,    20,    40,     0,    43,    11,     0,     7,
+     105,   225,   226,   106,   108,   109,   110,   111,   112,   113,
+     107,   222,   221,   114,   129,   188,   193,   139,   189,   209,
+     214,   216,   217,   215,     0,   197,   232,     0,    14,    21,
+       0,    18,    46,     0,    89,    97,     0,   205,     0,     0,
+       0,    19,     0,    56,    48,     0,     0,    91,   223,     0,
+       0,     0,    24,    25,    27,    26,     0,     0,     0,     0,
+       0,     0,    57,     0,     0,     0,    90,    92,    22,     0,
+       0,    23,    28,     0,     0,     0,     0,    50,    51,    52,
+      47,     0,     0,    65,     0,    45,    93,     0,     0,     0,
+       0,    32,    33,    34,    35,    36,     0,     0,    17,    60,
+      59,     0,     0,     0,    53,    54,    55,    49,    94,     0,
+       0,     0,    31,    39,     0,    38,    58,    62,    63,    64,
+       0,    44,     0,    66,    30,    29,    41,    37,    61,     0,
+       0,     0,     0,    73,     0,     0,    73,    80,    79,    78,
+       0,     0,     0,    72,     0,     0,    71,     0,    82,    73,
+      73,    73,    73,    81,    85,    68,    83,    74,    76,    75,
+      77,     0,     0,     0,     0,    84,    70,    69,    87,    67,
+       0,    86
     };
   }
 
@@ -2697,20 +2711,20 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-    -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-    -328,  -328,  -328,  -328,   164,  -198,  -328,  -328,  -328,   143,
-    -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-    -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,  -328,
-      63,  -289,  -327,  -328,  -328,  -328,  -328,  -328,   152,  -328,
-    -328,  -328,  -328,  -328,   296,  -176,  -328,   234,  -328,  -328,
-    -328,   -99,  -328,  -328,  -328,  -328,  -328,  -328,   -98,  -328,
-    -328,   237,  -328,   -17,  -328,  -328,   -16,   -15,   -83,   -94,
-    -328,   -88,  -328,  -328,   -13,   -95,  -328,  -328,  -328,   349,
-     -93,  -328,  -328,  -328,  -328,   -92,  -328,  -328,   273,  -328,
-     -82,  -328,  -328,   242,  -328,   292,  -328,   -84,  -328,  -328,
-     255,  -328,  -328,  -328,  -328,  -328,   -80,  -328,  -328,  -328,
-    -328,   -91,  -328,  -328,  -328,  -328,  -328,  -328,  -328,   477,
-    -328,  -328,  -328,  -328,   415,  -328,  -328
+    -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+    -331,  -331,  -331,  -331,   197,  -199,  -331,  -331,  -331,   176,
+    -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+    -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,  -331,
+      96,  -291,  -330,  -331,  -331,  -331,  -331,  -331,   198,  -331,
+    -331,  -331,  -331,  -331,   325,  -176,  -331,  -100,  -331,  -331,
+    -331,  -331,  -331,  -331,   272,  -331,  -331,  -331,   -97,  -331,
+    -331,   250,  -331,   -17,  -331,  -331,   -16,   -15,   -84,   -85,
+     317,   -88,  -331,  -331,   -14,   -96,  -331,  -331,  -331,   367,
+     -94,  -331,  -331,  -331,  -331,   -93,  -331,  -331,   315,  -331,
+     -80,  -331,  -331,   288,  -331,   283,  -331,   -87,  -331,  -331,
+     293,  -331,  -331,  -331,  -331,  -331,   -82,  -331,  -331,  -331,
+    -331,   -92,  -331,  -331,  -331,  -331,  -331,  -331,  -331,   467,
+    -331,  -331,  -331,  -331,   423,  -331,  -331
     };
   }
 
@@ -2721,18 +2735,18 @@ this.symbolTable = symbolTable;
     return new short[]
     {
        0,     2,     8,    14,    19,    81,    82,   101,   102,   103,
-     147,   148,   199,   268,   221,   222,   279,   280,   281,   282,
-     286,   324,   304,   342,   259,   200,   225,   271,   272,   292,
-     308,   335,   289,   290,   329,   311,   348,   331,   351,   392,
-     363,   371,   364,   365,   383,   226,   262,   274,   275,    83,
-     104,   105,   108,   150,   152,   153,   232,   157,   158,   159,
-     207,    45,    46,    47,    48,    49,    50,    51,    52,    53,
+     147,   148,   199,   270,   222,   223,   281,   282,   283,   284,
+     288,   326,   306,   344,   261,   200,   226,   273,   274,   294,
+     310,   337,   291,   292,   331,   313,   350,   333,   353,   394,
+     365,   373,   366,   367,   385,   227,   264,   276,   277,    83,
+     104,   105,   108,   150,   152,   153,   233,    45,    46,    47,
+      48,    49,    50,    51,   158,   159,   160,   208,    52,    53,
       54,    55,    56,   114,    58,    59,   115,   127,   186,   129,
      130,   131,   117,   132,   118,    63,    64,    65,    66,   119,
-      67,    68,    69,    90,    91,    70,    71,    72,   120,   246,
+      67,    68,    69,    90,    91,    70,    71,    72,   120,   248,
      188,   142,   189,   190,   191,   192,   193,   194,   134,   178,
-     179,   180,   181,   182,   183,   184,   195,   239,   240,   154,
-     241,    73,    74,    75,    76,     3,     4,     5,    10,    11,
+     179,   180,   181,   182,   183,   184,   195,   240,   241,   154,
+     242,    73,    74,    75,    76,     3,     4,     5,    10,    11,
       12,    77,    78,    85,    86,    87,   166
     };
   }
@@ -2745,59 +2759,59 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-     116,    57,    60,    61,   143,    62,   137,   116,   133,   128,
-     136,   144,   135,   160,   161,   141,   139,   162,   360,   163,
-     164,   165,   390,   257,    98,   360,   229,    15,   360,   360,
-     277,     1,   109,   367,   361,   217,   294,   375,   151,     6,
-     218,   366,   378,   380,   377,   379,   228,    25,    26,    27,
-      28,   229,     7,   376,   187,     9,    33,    34,    35,    36,
-      37,    38,    39,    40,    41,    42,   113,     9,   273,    99,
-      84,   257,   278,    79,   332,   374,   362,    17,   333,   334,
-      80,   208,    21,   362,   116,   391,   362,   362,   385,   386,
-     387,   388,   151,    13,   256,    57,    60,    61,    20,    62,
-     263,   220,   345,   349,   346,   234,   235,   347,    18,   236,
-     350,   237,   238,   242,   319,   320,   321,   322,   323,   327,
-     203,    22,   204,   328,   368,   254,   369,   370,  -175,   187,
-      84,   250,   248,   249,  -130,   251,    23,    24,    25,    26,
-      27,    28,    29,    30,    31,    32,    88,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    42,    25,    26,    27,
-      28,    43,    89,    44,   106,   107,    33,    34,    35,    36,
-      37,    38,    39,    40,    41,    42,   113,    95,   283,   284,
-     276,   314,   305,   306,   307,   205,   206,    57,    60,    61,
-     298,    62,    92,   245,    60,    61,    93,    62,   213,   214,
-     369,   370,    94,    96,    97,   315,   100,   111,   112,   121,
-     122,   123,   145,   318,   124,   140,   146,   149,   151,   155,
-     167,   123,   168,   169,   172,   170,   171,   173,   337,   338,
-     174,   175,   176,   177,   197,   185,   198,   343,    25,    26,
-      27,    28,    29,    30,    31,    32,   341,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    42,   113,   124,   211,
-     125,   196,   357,   126,   202,   210,   212,   215,   140,   216,
-     219,    25,    26,    27,    28,   220,   223,   224,   227,   230,
-      33,    34,    35,    36,    37,    38,    39,    40,    41,    42,
-     113,    22,   231,   255,   258,   260,   261,   265,   264,   266,
-     156,   270,   395,   267,   273,   126,    23,    24,    25,    26,
-      27,    28,    29,    30,    31,    32,   285,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    42,    22,   287,   288,
-     291,    43,   293,    44,   278,   296,   156,   301,   310,   299,
-     303,   325,    23,    24,    25,    26,    27,    28,    29,    30,
-      31,    32,   302,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    42,   123,   309,   312,   316,    43,   326,    44,
-     313,   317,   336,   359,   368,   330,   340,   339,   344,   354,
-      25,    26,    27,    28,    29,    30,    31,    32,   352,    33,
+     116,    57,    60,    61,    62,   133,   137,   116,   128,   136,
+     135,   144,   157,   143,   139,   161,   162,   141,   163,   164,
+     165,   362,   392,   259,   362,    98,   230,   377,   362,   362,
+     109,   279,   369,   370,    15,   371,   372,   363,   205,   296,
+     368,   380,   382,   378,   379,   381,   206,   207,    25,    26,
+      27,    28,   230,   203,   187,   204,     1,    33,    34,    35,
+      36,    37,    38,    39,    40,    41,    42,   113,    84,   151,
+      99,   275,   259,   280,     9,   376,   329,   229,     7,   364,
+     330,   209,   364,    21,   116,   393,   364,   364,   387,   388,
+     389,   390,   151,     6,    79,    57,    60,    61,    62,   258,
+     265,    80,   351,     9,   234,    13,   221,   236,   237,   352,
+     238,   239,   243,   334,    17,   218,    18,   335,   336,   347,
+     219,   348,    22,    20,   349,   307,   308,   309,    84,   252,
+     187,  -124,   250,   343,   253,   256,   251,    23,    24,    25,
+      26,    27,    28,    29,    30,    31,    32,    88,    33,    34,
+      35,    36,    37,    38,    39,    40,    41,    42,    25,    26,
+      27,    28,    43,    89,    44,   106,   107,    33,    34,    35,
+      36,    37,    38,    39,    40,    41,    42,   113,    92,   278,
+     285,   286,   321,   322,   323,   324,   325,    57,    60,    61,
+      62,    93,   300,  -176,   247,    60,    61,    62,   214,   215,
+     371,   372,    94,    95,    96,    97,   100,   317,   111,   112,
+     121,   122,   123,   145,   124,   320,   140,   146,   149,   151,
+     155,   167,   170,   123,   168,   169,   171,   172,   174,   173,
+     339,   340,   177,   175,   176,   185,   197,   198,   196,   345,
+      25,    26,    27,    28,    29,    30,    31,    32,   202,    33,
       34,    35,    36,    37,    38,    39,    40,    41,    42,   113,
-     124,   297,   125,   353,   373,   126,   358,   355,   356,   382,
-     384,   389,   381,   393,   396,   397,   398,   399,    25,    26,
-      27,    28,   394,   269,   300,   372,   295,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    42,   113,   233,    25,
-      26,    27,    28,   243,   138,   209,   201,   244,    33,    34,
-      35,    36,    37,    38,    39,    40,    41,    42,   113,   253,
-      25,    26,    27,    28,    29,    30,    31,    32,   247,    33,
-      34,    35,    36,    37,    38,    39,    40,    41,    42,    25,
-      26,    27,    28,    29,    30,    31,    32,    16,    33,    34,
+     124,   212,   125,   211,   359,   126,    22,   232,   213,   216,
+     140,   217,   221,   220,   224,   156,   225,   231,   228,   125,
+     257,    23,    24,    25,    26,    27,    28,    29,    30,    31,
+      32,   260,    33,    34,    35,    36,    37,    38,    39,    40,
+      41,    42,    22,   262,   397,   263,    43,   266,    44,   267,
+     268,   156,   272,   275,   269,   126,   287,    23,    24,    25,
+      26,    27,    28,    29,    30,    31,    32,   289,    33,    34,
+      35,    36,    37,    38,    39,    40,    41,    42,   123,   290,
+     293,   295,    43,   280,    44,   298,   303,   301,   305,   312,
+     327,   315,   328,   338,   318,    25,    26,    27,    28,    29,
+      30,    31,    32,   304,    33,    34,    35,    36,    37,    38,
+      39,    40,    41,    42,   113,   124,   299,   125,   311,   341,
+     126,   314,   319,   361,   370,   332,   342,   346,   354,   375,
+     356,   355,   357,    25,    26,    27,    28,   396,   358,   360,
+     383,   399,    33,    34,    35,    36,    37,    38,    39,    40,
+      41,    42,   113,   384,    25,    26,    27,    28,   245,   386,
+     395,   391,   398,    33,    34,    35,    36,    37,    38,    39,
+      40,    41,    42,   113,   400,    25,    26,    27,    28,    29,
+      30,    31,    32,   401,    33,    34,    35,    36,    37,    38,
+      39,    40,    41,    42,    25,    26,    27,    28,   271,   302,
+     374,   246,   138,    33,    34,    35,    36,    37,    38,    39,
+      40,    41,    42,   113,   297,   201,   235,    16,   316,    25,
+      26,    27,    28,    29,    30,    31,    32,   210,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,   113,   124,
-     110,   125,    25,    26,    27,    28,     0,     0,   252,     0,
+     254,   125,    25,    26,    27,    28,   255,   249,   110,     0,
        0,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-      42,   113
+      42,   113,   244
     };
   }
 
@@ -2806,59 +2820,59 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new short[]
     {
-      88,    18,    18,    18,    98,    18,    94,    95,    92,    92,
-      93,    99,    92,   112,   112,    97,    96,   112,    28,   112,
-     112,   112,    24,   221,    46,    28,   202,     4,    28,    28,
-      44,     3,     6,   360,    44,    87,    16,    28,    44,     0,
-      92,    44,   369,   370,    44,    44,    52,    61,    62,    63,
-      64,   227,     7,    44,   142,    44,    70,    71,    72,    73,
-      74,    75,    76,    77,    78,    79,    80,    44,    48,    91,
-      44,   269,    86,    49,    37,   364,    86,    85,    41,    42,
-      56,   169,     5,    86,   172,    87,    86,    86,   377,   378,
-     379,   380,    44,    44,    10,   112,   112,   112,    85,   112,
-      52,    17,    38,    14,    40,   204,   204,    43,    89,   204,
-      21,   204,   204,   204,    31,    32,    33,    34,    35,    37,
-      87,    44,    89,    41,    27,   219,    29,    30,    86,   217,
-      44,   215,   215,   215,    46,   215,    59,    60,    61,    62,
-      63,    64,    65,    66,    67,    68,    91,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    61,    62,    63,
-      64,    84,    44,    86,    50,    51,    70,    71,    72,    73,
-      74,    75,    76,    77,    78,    79,    80,    86,   266,   267,
-     264,    85,    38,    39,    40,    54,    55,   204,   204,   204,
-     278,   204,    46,   210,   210,   210,    46,   210,    87,    88,
-      29,    30,    46,    46,    46,   293,    57,    85,    89,    88,
-      87,    44,     8,   301,    81,    91,     9,    58,    44,    85,
-      90,    44,    90,    47,    87,    80,    90,    92,   316,   317,
-      44,    90,    90,    44,    44,    88,    11,   325,    61,    62,
-      63,    64,    65,    66,    67,    68,    36,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    80,    81,    44,
-      83,    92,   350,    86,    85,    69,    82,    46,    91,    86,
-      46,    61,    62,    63,    64,    17,    44,    13,    85,    44,
-      70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
-      80,    44,    45,    44,    20,    44,    15,    88,    46,    46,
-      53,    30,   390,    86,    48,    86,    59,    60,    61,    62,
-      63,    64,    65,    66,    67,    68,    18,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    44,    89,    25,
-      29,    84,    44,    86,    86,    85,    53,    47,    26,    85,
-      19,    46,    59,    60,    61,    62,    63,    64,    65,    66,
-      67,    68,    89,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    44,    89,    89,    87,    84,    12,    86,
-      85,    87,    85,    22,    27,    89,    85,    88,    85,    85,
-      61,    62,    63,    64,    65,    66,    67,    68,    88,    70,
+      88,    18,    18,    18,    18,    92,    94,    95,    92,    93,
+      92,    99,   112,    98,    96,   112,   112,    97,   112,   112,
+     112,    28,    24,   222,    28,    46,   202,    28,    28,    28,
+       6,    44,   362,    27,     4,    29,    30,    44,    46,    16,
+      44,   371,   372,    44,    44,    44,    54,    55,    61,    62,
+      63,    64,   228,    87,   142,    89,     3,    70,    71,    72,
+      73,    74,    75,    76,    77,    78,    79,    80,    44,    44,
+      91,    48,   271,    86,    44,   366,    37,    52,     7,    86,
+      41,   169,    86,     5,   172,    87,    86,    86,   379,   380,
+     381,   382,    44,     0,    49,   112,   112,   112,   112,    10,
+      52,    56,    14,    44,   204,    44,    17,   204,   204,    21,
+     204,   204,   204,    37,    85,    87,    89,    41,    42,    38,
+      92,    40,    44,    85,    43,    38,    39,    40,    44,   216,
+     218,    46,   216,    36,   216,   220,   216,    59,    60,    61,
+      62,    63,    64,    65,    66,    67,    68,    91,    70,    71,
+      72,    73,    74,    75,    76,    77,    78,    79,    61,    62,
+      63,    64,    84,    44,    86,    50,    51,    70,    71,    72,
+      73,    74,    75,    76,    77,    78,    79,    80,    46,   266,
+     268,   269,    31,    32,    33,    34,    35,   204,   204,   204,
+     204,    46,   280,    86,   211,   211,   211,   211,    87,    88,
+      29,    30,    46,    86,    46,    46,    57,   295,    85,    89,
+      88,    87,    44,     8,    81,   303,    91,     9,    58,    44,
+      85,    90,    80,    44,    90,    47,    90,    87,    44,    92,
+     318,   319,    44,    90,    90,    88,    44,    11,    92,   327,
+      61,    62,    63,    64,    65,    66,    67,    68,    85,    70,
       71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-      81,    44,    83,    88,    23,    86,    89,    85,    85,    44,
-      44,    27,    88,    44,    44,    85,    27,    44,    61,    62,
-      63,    64,    44,   259,   281,   362,   274,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    80,   204,    61,
-      62,    63,    64,    44,    95,   172,   150,   210,    70,    71,
-      72,    73,    74,    75,    76,    77,    78,    79,    80,   217,
-      61,    62,    63,    64,    65,    66,    67,    68,   213,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    61,
-      62,    63,    64,    65,    66,    67,    68,    10,    70,    71,
+      81,    44,    83,    69,   352,    86,    44,    45,    82,    46,
+      91,    86,    17,    46,    44,    53,    13,    44,    85,    83,
+      44,    59,    60,    61,    62,    63,    64,    65,    66,    67,
+      68,    20,    70,    71,    72,    73,    74,    75,    76,    77,
+      78,    79,    44,    44,   392,    15,    84,    46,    86,    88,
+      46,    53,    30,    48,    86,    86,    18,    59,    60,    61,
+      62,    63,    64,    65,    66,    67,    68,    89,    70,    71,
+      72,    73,    74,    75,    76,    77,    78,    79,    44,    25,
+      29,    44,    84,    86,    86,    85,    47,    85,    19,    26,
+      46,    85,    12,    85,    87,    61,    62,    63,    64,    65,
+      66,    67,    68,    89,    70,    71,    72,    73,    74,    75,
+      76,    77,    78,    79,    80,    81,    44,    83,    89,    88,
+      86,    89,    87,    22,    27,    89,    85,    85,    88,    23,
+      85,    88,    85,    61,    62,    63,    64,    44,    85,    89,
+      88,    85,    70,    71,    72,    73,    74,    75,    76,    77,
+      78,    79,    80,    44,    61,    62,    63,    64,    44,    44,
+      44,    27,    44,    70,    71,    72,    73,    74,    75,    76,
+      77,    78,    79,    80,    27,    61,    62,    63,    64,    65,
+      66,    67,    68,    44,    70,    71,    72,    73,    74,    75,
+      76,    77,    78,    79,    61,    62,    63,    64,   261,   283,
+     364,   211,    95,    70,    71,    72,    73,    74,    75,    76,
+      77,    78,    79,    80,   276,   150,   204,    10,    85,    61,
+      62,    63,    64,    65,    66,    67,    68,   172,    70,    71,
       72,    73,    74,    75,    76,    77,    78,    79,    80,    81,
-      85,    83,    61,    62,    63,    64,    -1,    -1,   216,    -1,
+     217,    83,    61,    62,    63,    64,   218,   214,    85,    -1,
       -1,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,    80
+      79,    80,   205
     };
   }
 
@@ -2873,8 +2887,8 @@ private static final short[] yycheck_ = yycheck_init();
      221,   222,   223,    44,    96,     4,   222,    85,    89,    97,
       85,     5,    44,    59,    60,    61,    62,    63,    64,    65,
       66,    67,    68,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    84,    86,   154,   155,   156,   157,   158,
-     159,   160,   161,   162,   163,   164,   165,   166,   167,   168,
+      77,    78,    79,    84,    86,   150,   151,   152,   153,   154,
+     155,   156,   161,   162,   163,   164,   165,   166,   167,   168,
      169,   170,   177,   178,   179,   180,   181,   183,   184,   185,
      188,   189,   190,   214,   215,   216,   217,   224,   225,    49,
       56,    98,    99,   142,    44,   226,   227,   228,    91,    44,
@@ -2884,31 +2898,32 @@ private static final short[] yycheck_ = yycheck_init();
      191,    88,    87,    44,    81,    83,    86,   170,   171,   172,
      173,   174,   176,   200,   201,   209,   171,   174,   182,   209,
       91,   193,   194,   172,   174,     8,     9,   103,   104,    58,
-     146,    44,   147,   148,   212,    85,    53,   150,   151,   152,
-     154,   161,   178,   183,   188,   214,   229,    90,    90,    47,
+     146,    44,   147,   148,   212,    85,    53,   150,   157,   158,
+     159,   161,   178,   183,   188,   214,   229,    90,    90,    47,
       80,    90,    87,    92,    44,    90,    90,    44,   202,   203,
      204,   205,   206,   207,   208,    88,   171,   174,   193,   195,
      196,   197,   198,   199,   200,   209,    92,    44,    11,   105,
-     118,   147,    85,    87,    89,    54,    55,   153,   174,   191,
-      69,    44,    82,    87,    88,    46,    86,    87,    92,    46,
-      17,   107,   108,    44,    13,   119,   138,    85,    52,   148,
-      44,    45,   149,   150,   154,   161,   178,   183,   188,   210,
-     211,   213,   214,    44,   164,   166,   192,   203,   171,   193,
-     200,   209,   198,   196,   172,    44,    10,   108,    20,   117,
-      44,    15,   139,    52,    46,    88,    46,    86,   106,   107,
-      30,   120,   121,    48,   140,   141,   200,    44,    86,   109,
-     110,   111,   112,   174,   174,    18,   113,    89,    25,   125,
-     126,    29,   122,    44,    16,   141,    85,    44,   174,    85,
-     112,    47,    89,    19,   115,    38,    39,    40,   123,    89,
-      26,   128,    89,    85,    85,   174,    87,    87,   174,    31,
-      32,    33,    34,    35,   114,    46,    12,    37,    41,   127,
-      89,   130,    37,    41,    42,   124,    85,   174,   174,    88,
-      85,    36,   116,   174,    85,    38,    40,    43,   129,    14,
-      21,   131,    88,    88,    85,    85,    85,   174,    89,    22,
-      28,    44,    86,   133,   135,   136,    44,   135,    27,    29,
-      30,   134,   133,    23,   134,    28,    44,    44,   135,    44,
-     135,    88,    44,   137,    44,   134,   134,   134,   134,    27,
-      24,    87,   132,    44,    44,   174,    44,    85,    27,    44
+     118,   147,    85,    87,    89,    46,    54,    55,   160,   174,
+     191,    69,    44,    82,    87,    88,    46,    86,    87,    92,
+      46,    17,   107,   108,    44,    13,   119,   138,    85,    52,
+     148,    44,    45,   149,   150,   157,   161,   178,   183,   188,
+     210,   211,   213,   214,   173,    44,   164,   166,   192,   203,
+     171,   193,   200,   209,   198,   196,   172,    44,    10,   108,
+      20,   117,    44,    15,   139,    52,    46,    88,    46,    86,
+     106,   107,    30,   120,   121,    48,   140,   141,   200,    44,
+      86,   109,   110,   111,   112,   174,   174,    18,   113,    89,
+      25,   125,   126,    29,   122,    44,    16,   141,    85,    44,
+     174,    85,   112,    47,    89,    19,   115,    38,    39,    40,
+     123,    89,    26,   128,    89,    85,    85,   174,    87,    87,
+     174,    31,    32,    33,    34,    35,   114,    46,    12,    37,
+      41,   127,    89,   130,    37,    41,    42,   124,    85,   174,
+     174,    88,    85,    36,   116,   174,    85,    38,    40,    43,
+     129,    14,    21,   131,    88,    88,    85,    85,    85,   174,
+      89,    22,    28,    44,    86,   133,   135,   136,    44,   135,
+      27,    29,    30,   134,   133,    23,   134,    28,    44,    44,
+     135,    44,   135,    88,    44,   137,    44,   134,   134,   134,
+     134,    27,    24,    87,   132,    44,    44,   174,    44,    85,
+      27,    44
     };
   }
 
@@ -2929,22 +2944,22 @@ private static final short[] yycheck_ = yycheck_init();
      135,   135,   136,   136,   137,   137,   137,   137,   138,   138,
      139,   140,   140,   141,   141,   142,   142,   143,   144,   145,
      145,   145,   146,   146,   147,   147,   148,   148,   149,   149,
-     149,   149,   149,   149,   149,   150,   150,   151,   152,   153,
-     153,   154,   154,   155,   156,   156,   156,   157,   158,   159,
-     160,   161,   161,   162,   163,   164,   164,   164,   165,   165,
-     166,   166,   167,   167,   167,   167,   168,   168,   168,   168,
-     169,   169,   170,   170,   170,   170,   171,   171,   171,   171,
-     172,   173,   174,   174,   175,   175,   175,   176,   177,   177,
-     177,   177,   178,   178,   179,   180,   181,   182,   183,   183,
-     184,   185,   186,   187,   187,   188,   188,   189,   189,   190,
-     191,   191,   192,   193,   194,   195,   195,   196,   197,   197,
-     198,   198,   198,   198,   199,   200,   201,   202,   202,   203,
-     203,   203,   203,   204,   205,   206,   207,   208,   209,   209,
-     210,   210,   211,   212,   212,   213,   214,   214,   215,   215,
-     216,   216,   217,   217,   218,   218,   219,   220,   221,   221,
-     222,   223,   224,   224,   224,   224,   224,   224,   224,   225,
-     226,   226,   227,   228,   229,   229,   229,   229,   229,   229,
-     229
+     149,   149,   149,   149,   149,   150,   150,   151,   152,   152,
+     152,   153,   154,   155,   156,   157,   157,   158,   159,   159,
+     160,   160,   161,   161,   162,   163,   164,   164,   164,   165,
+     165,   166,   166,   167,   167,   167,   167,   168,   168,   168,
+     168,   169,   169,   170,   170,   170,   170,   171,   171,   171,
+     171,   172,   173,   174,   174,   175,   175,   175,   176,   177,
+     177,   177,   177,   178,   178,   179,   180,   181,   182,   183,
+     183,   184,   185,   186,   187,   187,   188,   188,   189,   189,
+     190,   191,   191,   192,   193,   194,   195,   195,   196,   197,
+     197,   198,   198,   198,   198,   199,   200,   201,   202,   202,
+     203,   203,   203,   203,   204,   205,   206,   207,   208,   209,
+     209,   210,   210,   211,   212,   212,   213,   214,   214,   215,
+     215,   216,   216,   217,   217,   218,   218,   219,   220,   221,
+     221,   222,   223,   224,   224,   224,   224,   224,   224,   224,
+     225,   226,   226,   227,   228,   229,   229,   229,   229,   229,
+     229,   229
     };
   }
 
@@ -2965,22 +2980,22 @@ private static final short[] yycheck_ = yycheck_init();
        1,     3,     3,     4,     3,     1,     5,     3,     0,     2,
        3,     1,     2,     3,     4,     1,     1,     5,     1,     0,
        1,     1,     0,     1,     1,     3,     3,     3,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     2,     1,
-       1,     1,     1,     1,     1,     1,     1,     3,     3,     3,
-       1,     1,     1,     1,     3,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     3,     3,     3,     1,     1,     1,     1,     2,     3,
+       1,     1,     1,     1,     1,     3,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     2,     2,     2,     2,     3,     1,     1,
-       1,     1,     1,     1,     4,     1,     3,     3,     1,     1,
-       3,     3,     1,     1,     3,     1,     1,     6,     6,     3,
-       1,     3,     1,     3,     1,     1,     3,     1,     1,     1,
-       1,     1,     1,     1,     4,     3,     1,     1,     3,     1,
-       1,     1,     1,     3,     3,     3,     3,     1,     1,     3,
-       1,     1,     3,     1,     3,     1,     1,     1,     1,     4,
-       3,     6,     1,     1,     0,     1,     3,     1,     2,     3,
-       3,     1,     1,     1,     1,     1,     1,     1,     1,     3,
-       2,     3,     3,     1,     1,     1,     1,     1,     1,     1,
-       1
+       1,     1,     1,     1,     2,     2,     2,     2,     3,     1,
+       1,     1,     1,     1,     1,     4,     1,     3,     3,     1,
+       1,     3,     3,     1,     1,     3,     1,     1,     6,     6,
+       3,     1,     3,     1,     3,     1,     1,     3,     1,     1,
+       1,     1,     1,     1,     1,     4,     3,     1,     1,     3,
+       1,     1,     1,     1,     3,     3,     3,     3,     1,     1,
+       3,     1,     1,     3,     1,     3,     1,     1,     1,     1,
+       4,     3,     6,     1,     1,     0,     1,     3,     1,     2,
+       3,     3,     1,     1,     1,     1,     1,     1,     1,     1,
+       3,     2,     3,     3,     1,     1,     1,     1,     1,     1,
+       1,     1
     };
   }
 
@@ -3043,7 +3058,7 @@ private static final short[] yycheck_ = yycheck_init();
   }
 
 
-  private static final int YYLAST_ = 521;
+  private static final int YYLAST_ = 522;
   private static final int YYEMPTY_ = -2;
   private static final int YYFINAL_ = 6;
   private static final int YYNTOKENS_ = 93;
@@ -3053,7 +3068,7 @@ private static final short[] yycheck_ = yycheck_init();
 
     private ContextHandler contexts;
 
-/* "src/main/java/parser/Parser.java":3057  */
+/* "src/main/java/parser/Parser.java":3072  */
 
 }
-/* "src/main/java/parser/Parser.y":1393  */
+/* "src/main/java/parser/Parser.y":1445  */
