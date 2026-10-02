@@ -26,3 +26,8 @@ out
 
 # Generated thesis document
 Tesis.docx
+
+# Node stack
+node_modules
+package.json
+package-lock.json

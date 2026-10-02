@@ -1,19 +1,21 @@
+# Compilador FLC para IEC 61131-7
+
+## Diseño, implementación y validación de un compilador para Fuzzy Control Language
+
 ---
-title: "Diseño e implementación de un compilador para el lenguaje IEC 61131-7 (FCL)"
-author: ["Matias Ortiz", "Victoriano Etcheverría"]
-date: "2026"
+
+**Autor:** Matías Ortiz  
+**Director:** Victoriano Etcheverría  
+**Institución:** Universidad Nacional de Córdoba  
+**Facultad:** Facultad de Ciencias Exactas, Físicas y Naturales  
+**Carrera:** Ingeniería en Computación  
+
+**Fecha:** Octubre 2026  
+
 ---
 
-\newpage
+## Resumen
 
-**TODO (completar con datos institucionales antes de entregar):**
+Esta tesis presenta el diseño, implementación y validación de un compilador para el lenguaje Fuzzy Control Language (FCL) definido en la norma IEC 61131-7. El compilador implementa análisis léxico (JFlex), análisis sintáctico LALR(1) (GNU Bison), y una tabla de símbolos semánticamente rica con resolución de nombres jerárquica mediante *name mangling*. La arquitectura modular prioriza la **mantenibilidad** como atributo de calidad principal, siguiendo un ciclo de vida iterativo con una única entrega final.
 
-- Universidad / Facultad
-- Carrera
-- Director/a de tesis
-- Fecha de defensa
-
-> Esta portada se genera con pandoc a partir del YAML de arriba. Si la
-> cátedra exige un formato de carátula específico, reemplazar este
-> capítulo por una página fija y pasar `doc/thesis/reference.docx` con el
-> estilo institucional (ver `scripts/build_thesis.sh`).
+**Palabras clave:** compilador, FCL, IEC 61131-7, análisis léxico, análisis sintáctico, tabla de símbolos, mantenibilidad, JFlex, Bison.

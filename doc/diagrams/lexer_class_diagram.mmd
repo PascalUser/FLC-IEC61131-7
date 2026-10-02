@@ -1,0 +1,53 @@
+classDiagram
+    namespace lexer {
+        class Lexer {
+            +processAndSaveYylval()
+        }
+        class LexicalPreprocessors {
+            +INTERVALS: Transformer
+            +REALS: Transformer
+            +IDENTIFIERS: Transformer
+        }
+        class LexicalAnalyzers {
+            +analyzers: Map
+        }
+    }
+    namespace lexer.transformers {
+        class Transformer {
+            +transform()
+            +giveToNext()
+        }
+        Transformer <|-- UnderscoreRemover
+        Transformer <|-- UpperCaseConverter
+        Transformer <|-- StripLeadingZeros
+        Transformer <|-- StripTrailingZeros
+        Transformer <|-- StringEscapeResolver
+        Transformer <|-- Nothing
+    }
+    namespace lexer.semantics {
+        class SemanticAnalyzer {
+            +analyze()
+        }
+        class NumbersAnalyzer {
+            +parse()
+            +fallback()
+            +createDiagnostic()
+        }
+        SemanticAnalyzer <|-- NumbersAnalyzer
+        NumbersAnalyzer <|-- Naturals
+        NumbersAnalyzer <|-- Integers
+        NumbersAnalyzer <|-- Reals
+        class BaseNumbersAnalyzer
+        NumbersAnalyzer <|-- BaseNumbersAnalyzer
+        BaseNumbersAnalyzer <|-- Binary
+        BaseNumbersAnalyzer <|-- Octal
+        BaseNumbersAnalyzer <|-- Hexadecimal
+        SemanticAnalyzer <|-- Intervals
+        SemanticAnalyzer <|-- Identifiers
+        SemanticAnalyzer <|-- Strings
+        SemanticAnalyzer <|-- Dates
+    }
+    Lexer --> LexicalPreprocessors : uses
+    Lexer --> LexicalAnalyzers : uses
+    LexicalPreprocessors --> Transformer : manages
+    LexicalAnalyzers --> SemanticAnalyzer : manages

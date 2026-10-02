@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Parser as Parser (Bison)
+    participant CH as ContextHandler
+    participant PC as ParsingContext
+    participant NM as NameMangler
+    participant Builder as LexemeInfoBuilder
+    participant Pub as Publisher
+    participant ST as SymbolTable
+
+    Parser->>CH: pushContext()
+    CH->>PC: new ParsingContext()
+    CH->>NM: new NameMangler() x3
+    CH->>Builder: new LexemeInfoBuilder()
+
+    loop Grammar reductions
+        Parser->>Builder: configure attributes
+        Parser->>PC: addDeclaredIdentifier()
+    end
+
+    Parser->>Pub: publish(ParsingContext)
+    Pub->>PC: build() LexemeInfo
+    loop For each identifier
+        Pub->>NM: getNameMangled(identifier)
+        Pub->>ST: put(mangledName, LexemeInfo)
+    end
+
+    Parser->>CH: popContext()

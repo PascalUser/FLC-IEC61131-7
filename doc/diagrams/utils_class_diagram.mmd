@@ -1,0 +1,63 @@
+classDiagram
+    namespace utils {
+        class SymbolTable {
+            +table: Map<String, LexemeInfo>
+            +get()
+            +put()
+            +putIfAbsent()
+        }
+        class LexemeInfo {
+            +type: Type
+        +subtype: Subtype
+        +customType: String
+        +use: Use
+        +source: Source
+        +inferiorLimits: List<String>
+        +superiorLimits: List<String>
+        +parameters: List<String>
+        +initialValue: Object
+        }
+        class DiagnosticsHandler {
+        +diagnostics: List<Diagnostic>
+        +add()
+        +hasErrors()
+        +getDiagnostics()
+        }
+    }
+    namespace utils.builders {
+        class LexemeInfoSchema {
+            +type()
+            +subtype()
+            +use()
+            +source()
+            +initialValue()
+            +build()
+        }
+        class LexemeInfoBuilder {
+            +implements LexemeInfoSchema
+            +build()
+        }
+        class Director {
+            +makeLiteral()
+            +makeDefaultReal()
+            +makeDefaultBoolean()
+        }
+    }
+    namespace utils.enums {
+        class Type { SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
+        class Subtype { 24 values }
+        class Use { 9 values }
+        class Source { 7 values }
+    }
+    namespace utils.diagnostics {
+        class Diagnostic
+        class Error
+        class Warning
+        Diagnostic <|-- Error
+    Diagnostic <|-- Warning
+    }
+    LexemeInfoBuilder ..|> LexemeInfoSchema
+    Director --> LexemeInfoBuilder
+    Publisher ..|> LexemeInfoSchema
+    SymbolTable --> LexemeInfo
+    DiagnosticsHandler --> Diagnostic

@@ -1,0 +1,10 @@
+flowchart LR
+    lexer[lexer]
+    parser[parser]
+    utils[utils]
+    lexer -->|tokens| parser
+    parser -->|SymbolTable| utils
+    parser -->|LexemeInfo| utils
+    parser -->|DiagnosticsHandler| utils
+    lexer -->|SymbolTable| utils
+    lexer -->|DiagnosticsHandler| utils

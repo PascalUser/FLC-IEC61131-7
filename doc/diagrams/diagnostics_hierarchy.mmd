@@ -1,0 +1,32 @@
+classDiagram
+    class Diagnostic {
+        +line: int
+        +getMessage()
+        +fatalForCompilation()
+    }
+    class Error {
+        +fatalForCompilation() = true
+    }
+    class Warning {
+        +fatalForCompilation() = false
+    }
+    class SyntaxError {
+        +fatalForCompilation() = true
+    }
+    Diagnostic <|-- Error
+    Diagnostic <|-- Warning
+    Diagnostic <|-- SyntaxError
+
+    Error <|-- DateOutOfRange
+    Error <|-- IntervalConstructionError
+    Error <|-- IntervalOutOfRange
+    Error <|-- TimeOfDayOutOfRange
+    Error <|-- DateAndTimeOutOfRange
+
+    Warning <|-- StringLengthWarning
+    Warning <|-- HexadecimalOutOfRange
+    Warning <|-- RealOutOfRange
+    Warning <|-- NaturalOutOfRange
+    Warning <|-- BinaryOutOfRange
+    Warning <|-- OctalOutOfRange
+    Warning <|-- IntegerOutOfRange

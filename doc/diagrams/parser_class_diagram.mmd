@@ -1,0 +1,65 @@
+classDiagram
+    namespace parser {
+        class Parser {
+            +parse()
+        }
+    }
+    namespace parser.internals {
+        class ContextHandler {
+            +stack: List~ParsingContext~
+            +push()
+            +pop()
+            +current()
+        }
+        class ParsingContext {
+            +declaredIdentifiers: List
+            +metadataBuilder: LexemeInfoBuilder
+            +outerScopes: NameMangler
+            +searchScope: NameMangler
+            +nestedFields: NameMangler
+        }
+        class NameMangler {
+            +prefix: StringBuilder
+            +addScope()
+            +popScope()
+            +getNameMangled()
+        }
+    }
+    namespace parser.utils {
+        class Publisher {
+            +publish(ParsingContext)
+        }
+        class Declaration {
+            +publish()
+        }
+        class Factory {
+            +createDefault()
+        }
+        class DimensionCalculator {
+            +calculate()
+        }
+        class UnderlyingScopeSearcher {
+            +search()
+        }
+    }
+    namespace parser.initializations {
+        class Initialization {
+            +selectVariable()
+            +getVariableValue()
+            +copy()
+        }
+        Initialization <|-- VariableInitialization
+        Initialization <|-- BooleanInitialization
+        Initialization <|-- RealInitialization
+        Initialization <|-- EnumeratedInitialization
+        Initialization <|-- MacroInitialization
+        Initialization <|-- SubrangeInitialization
+        Initialization <|-- StructInitialization
+        Initialization <|-- RepeatedInitialization
+    }
+    Parser --> ContextHandler : uses
+    ContextHandler --> ParsingContext : manages
+    ParsingContext --> NameMangler : uses
+    ParsingContext --> LexemeInfoBuilder : uses
+    Publisher --> SymbolTable : publishes
+    Publisher --> ParsingContext : reads

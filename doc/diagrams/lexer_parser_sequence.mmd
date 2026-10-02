@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant JFlex as Lexer.flex
+    participant Lexer as Lexer.java
+    participant Transformer as Transformer Chain
+    participant Analyzer as SemanticAnalyzer
+    participant ST as SymbolTable
+    participant Diag as DiagnosticsHandler
+    participant Parser as Parser (Bison)
+
+    JFlex->>Lexer: yytext()
+    Lexer->>Transformer: transform(yytext())
+    loop Chain of Responsibility
+        Transformer->>Transformer: giveToNext()
+    end
+    Transformer-->>Lexer: normalized lexeme
+    Lexer->>Analyzer: analyze(LexicalContext)
+    Analyzer->>ST: putIfAbsent(lexeme, LexemeInfo)
+    Analyzer->>Diag: add(Diagnostic) if needed
+    Analyzer-->>Lexer: Result(token, lexeme)
+    Lexer-->>Parser: token + yylval
+    Parser->>ST: Publisher.publish(ctx)

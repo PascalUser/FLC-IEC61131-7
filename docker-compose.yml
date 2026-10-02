@@ -1,0 +1,8 @@
+services:
+  docs:
+    build: .
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    entrypoint: ["tail"]
+    command: ["-f", "/dev/null"]

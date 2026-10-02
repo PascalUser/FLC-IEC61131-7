@@ -26,10 +26,8 @@ mvn test
 
 ```mermaid
 flowchart LR
-    SRC[Source .fcl] --> LEX[Lexer
-JFlex]
-    LEX -- tokens --> PAR[Parser
-Bison LALR1]
+    SRC[Source .fcl] --> LEX[Lexer \nJFlex]
+    LEX -- tokens --> PAR[Parser \nBison \nLALR1]
     PAR -- publishes --> ST[(SymbolTable)]
     PAR -- reports --> DIAG[DiagnosticsHandler]
 ```
@@ -37,20 +35,19 @@ Bison LALR1]
 El analizador sintáctico orquesta la compilación: invoca al lexer, ejecuta las acciones semánticas de la gramática y publica el resultado en una `SymbolTable` compartida. Cada lexema resuelto queda representado como un `LexemeInfo` (tipo, subtipo, uso, fuente, límites, parámetros e inicialización), construido incrementalmente con `LexemeInfoBuilder` y publicado atómicamente por `parser.utils.Publisher`.
 
 Documentación técnica completa: [`doc/modules/parser.md`](doc/modules/parser.md), [`doc/modules/utils.md`](doc/modules/utils.md).
-Tesis del proyecto (capítulos en Markdown, compilable a `.docx`): [`doc/thesis/`](doc/thesis/).
 
 ## Estructura del repositorio
 
-| Carpeta | Contenido |
-|---|---|
-| `src/main/java/lexer/` | `Lexer.flex`/`Lexer.java` (generado), `transformers/` (Chain of Responsibility de normalización léxica), `semantics/` (analizadores semánticos por familia de literal: números, fechas, strings, identificadores, intervalos) |
-| `src/main/java/parser/` | `Parser.y`/`Parser.java` (generado), `internals/` (contexto de parseo: `ContextHandler`, `ParsingContext`, `NameMangler`), `initializations/` (jerarquía polimórfica de inicializaciones: `BooleanInitialization`, `RealInitialization`, `StructInitialization`, `RepeatedInitialization`, etc.), `utils/` (`Publisher`, `Factory`, `UnderlyingScopeSearcher`, `DimensionCalculator`) |
-| `src/main/java/utils/` | `SymbolTable` (Repository pattern), `LexemeInfo` (DTO inmutable), `builders/` (`LexemeInfoBuilder`, `Director`), `enums/` (`Type`, `Subtype`, `Use`, `Source`), `diagnostics/` (jerarquía `Error`/`Warning`/`SyntaxError`), `LucaInfo` (@deprecated) |
-| `src/test/java/` | Tests unitarios por componente (`unit/lexer/`, `unit/parser/`, `unit/utils/`) e integración por tipo derivado (`integration/`) |
-| `src/test/resources/examples/` | Programas FCL de ejemplo usados por `ParserTest` |
-| `doc/` | Documentación técnica modular (`doc/modules/parser.md`, `doc/modules/utils.md`), capítulos de tesis (`doc/thesis/`) y gráficos generados por código (`doc/assets/`) |
-| `scripts/` | `generate_charts.py` (gráficos a partir de datos reales del código) y `build_thesis.sh` (compila `doc/thesis/*.md` a `.docx` con pandoc) |
-| `.opencode/` | Agentes de [OpenCode](https://opencode.ai) para mantener documentación, gráficos y tesis (ver `doc/HARNESS.md`) |
+| Carpeta                        | Contenido                                                                                                                                                                                                                                                                                                                                                                             |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `src/main/java/lexer/`         | `Lexer.flex`/`Lexer.java` (generado), `transformers/` (Chain of Responsibility de normalización léxica), `semantics/` (analizadores semánticos por familia de literal: números, fechas, strings, identificadores, intervalos)                                                                                                                                                         |
+| `src/main/java/parser/`        | `Parser.y`/`Parser.java` (generado), `internals/` (contexto de parseo: `ContextHandler`, `ParsingContext`, `NameMangler`), `initializations/` (jerarquía polimórfica de inicializaciones: `BooleanInitialization`, `RealInitialization`, `StructInitialization`, `RepeatedInitialization`, etc.), `utils/` (`Publisher`, `Factory`, `UnderlyingScopeSearcher`, `DimensionCalculator`) |
+| `src/main/java/utils/`         | `SymbolTable` (Repository pattern), `LexemeInfo` (DTO inmutable), `builders/` (`LexemeInfoBuilder`, `Director`), `enums/` (`Type`, `Subtype`, `Use`, `Source`), `diagnostics/` (jerarquía `Error`/`Warning`/`SyntaxError`), `LucaInfo` (@deprecated)                                                                                                                                  |
+| `src/test/java/`               | Tests unitarios por componente (`unit/lexer/`, `unit/parser/`, `unit/utils/`) e integración por tipo derivado (`integration/`)                                                                                                                                                                                                                                                        |
+| `src/test/resources/examples/` | Programas FCL de ejemplo usados por `ParserTest`                                                                                                                                                                                                                                                                                                                                      |
+| `doc/`                         | Documentación técnica modular (`doc/modules/parser.md`, `doc/modules/utils.md`), capítulos de tesis (`doc/thesis/`) y gráficos generados por código (`doc/assets/`)                                                                                                                                                                                                                   |
+| `scripts/`                     | `generate_charts.py` (gráficos a partir de datos reales del código) y `build_thesis.sh` (compila `doc/thesis/*.md` a `.docx` con pandoc)                                                                                                                                                                                                                                              |
+| `.opencode/`                   | Agentes de [OpenCode](https://opencode.ai) para mantener documentación, gráficos y tesis (ver `doc/HARNESS.md`)                                                                                                                                                                                                                                                                       |
 
 ## Documentación asistida por agentes (OpenCode)
 

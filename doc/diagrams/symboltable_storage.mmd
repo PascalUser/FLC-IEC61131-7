@@ -1,0 +1,25 @@
+classDiagram
+    class SymbolTable {
+        +table: Map<String, LexemeInfo>
+        +get()
+        +put()
+        +putIfAbsent()
+    }
+    class LexemeInfo {
+        +type: Type
+        +subtype: Subtype
+        +customType: String
+        +use: Use
+        +source: Source
+        +inferiorLimits: List<String>
+        +superiorLimits: List<String>
+        +parameters: List<String>
+        +initialValue: Object
+    }
+    SymbolTable --> "0..*" LexemeInfo : contains
+
+    note for LexemeInfo "SIMPLE\ntype=SIMPLE, subtype=INT/REAL/BOOL\nuse=VARIABLE/LITERAL\ninitialValue=literal"
+    note for LexemeInfo "ARRAY\ntype=ARRAY, subtype=element type\ninferiorLimits=[0], superiorLimits=[9]\ninitialValue=RepeatedInitialization"
+    note for LexemeInfo "STRUCT\ntype=STRUCT, customType=MyStruct\nparameters=[field1, field2]\ninitialValue=StructInitialization"
+    note for LexemeInfo "ENUMERATE\ntype=ENUMERATE, subtype=INT\nparameters=[A, B, C]\nuse=MACRO for each value"
+    note for LexemeInfo "SUBRANGE\ntype=SUBRANGE\ninferiorLimits=[0], superiorLimits=[100]\ninitialValue=SubrangeInitialization"

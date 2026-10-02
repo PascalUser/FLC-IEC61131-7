@@ -1,0 +1,153 @@
+{
+  "enum_sizes": {
+    "Type": 8,
+    "Source": 7,
+    "Use": 9,
+    "Subtype": 21
+  },
+  "transformer_chains": {
+    "DATE_AND_TIMES": 0,
+    "DAYTIMES": 0,
+    "DATES": 0,
+    "INTERVALS": 6,
+    "NATURALS": 2,
+    "INTEGERS": 2,
+    "BINARY": 2,
+    "OCTAL": 2,
+    "HEXADECIMAL": 2,
+    "REALS": 3,
+    "STRINGS": 2,
+    "WSTRINGS": 2,
+    "IDENTIFIERS": 1
+  },
+  "diagnostics": {
+    "errors": 5,
+    "warnings": 7
+  },
+  "grammar_stats": {
+    "tokens": 4,
+    "nonterminals": 231,
+    "init_types": 8
+  },
+  "symboltable_distribution": {
+    "SIMPLE": 10,
+    "ARRAY": 3,
+    "STRUCT": 5,
+    "ENUMERATE": 2,
+    "SUBRANGE": 2,
+    "UNKNOWN": 1
+  },
+  "field_population": {
+    "SIMPLE": {
+      "type": 1,
+      "subtype": 1,
+      "customType": 0,
+      "use": 1,
+      "source": 1,
+      "inferiorLimits": 0,
+      "superiorLimits": 0,
+      "parameters": 0,
+      "initialValue": 1
+    },
+    "ARRAY": {
+      "type": 1,
+      "subtype": 1,
+      "customType": 0,
+      "use": 1,
+      "source": 1,
+      "inferiorLimits": 1,
+      "superiorLimits": 1,
+      "parameters": 0,
+      "initialValue": 1
+    },
+    "STRUCT": {
+      "type": 1,
+      "subtype": 1,
+      "customType": 0,
+      "use": 1,
+      "source": 1,
+      "inferiorLimits": 0,
+      "superiorLimits": 0,
+      "parameters": 1,
+      "initialValue": 1
+    },
+    "ENUMERATE": {
+      "type": 1,
+      "subtype": 1,
+      "customType": 0,
+      "use": 1,
+      "source": 1,
+      "inferiorLimits": 0,
+      "superiorLimits": 0,
+      "parameters": 1,
+      "initialValue": 1
+    },
+    "SUBRANGE": {
+      "type": 1,
+      "subtype": 1,
+      "customType": 0,
+      "use": 1,
+      "source": 1,
+      "inferiorLimits": 1,
+      "superiorLimits": 1,
+      "parameters": 0,
+      "initialValue": 1
+    }
+  },
+  "cyclomatic_complexity": {
+    "lexer": {
+      "avg_cyclomatic": 5.3,
+      "total_complexity": 299,
+      "estimated_methods": 56
+    },
+    "parser": {
+      "avg_cyclomatic": 5.9,
+      "total_complexity": 413,
+      "estimated_methods": 70
+    },
+    "utils": {
+      "avg_cyclomatic": 2.2,
+      "total_complexity": 92,
+      "estimated_methods": 42
+    }
+  },
+  "loc": {
+    "lexer": {
+      "loc": 1933,
+      "files": 21
+    },
+    "parser": {
+      "loc": 3818,
+      "files": 17
+    },
+    "utils": {
+      "loc": 970,
+      "files": 27
+    }
+  },
+  "test_coverage": {
+    "overall": 85,
+    "packages": {
+      "lexer": 90,
+      "parser": 80,
+      "utils": 95
+    }
+  },
+  "coupling": {
+    "lexer": {
+      "afferent": 0,
+      "efferent": 2,
+      "instability": 1.0
+    },
+    "parser": {
+      "afferent": 1,
+      "efferent": 1,
+      "instability": 0.5
+    },
+    "utils": {
+      "afferent": 2,
+      "efferent": 0,
+      "instability": 0.0
+    }
+  }
+}
