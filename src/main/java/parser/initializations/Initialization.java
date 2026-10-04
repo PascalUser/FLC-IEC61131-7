@@ -6,7 +6,7 @@ package parser.initializations;
  * The initialization hierarchy supports all IEC 61131-7 initialization forms:
  * </p>
  * <ul>
- *   <li>{@link Constant} — simple literal values</li>
+ * <!-- TODO: {@code Constant} class no longer exists; simple literal values are covered by {@link VariableInitialization}. Verify intended documentation. -->
  *   <li>{@link VariableInitialization} — explicit user assignments</li>
  *   <li>{@link BooleanInitialization} — default BOOL (FALSE)</li>
  *   <li>{@link RealInitialization} — default REAL (0.0)</li>

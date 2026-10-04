@@ -33,6 +33,12 @@ fi
 echo "Rendering Mermaid diagrams to PNG..."
 python3 "$ROOT_DIR/scripts/render_mermaid.py"
 
+# Prepare assets directory for pandoc (flat structure matching relative paths in markdown)
+ASSETS_BUILD_DIR="/tmp/build/assets"
+rm -rf "$ASSETS_BUILD_DIR"
+mkdir -p "$ASSETS_BUILD_DIR/rendered_diagrams"
+cp -r "$ROOT_DIR/doc/assets/"* "$ASSETS_BUILD_DIR/" 2>/dev/null || true
+
 CHAPTERS=("$THESIS_DIR"/*.md)
 if [[ ${#CHAPTERS[@]} -eq 0 ]]; then
   echo "ERROR: no .md chapters in $THESIS_DIR" >&2
@@ -52,7 +58,7 @@ echo "Compiling thesis with pandoc..."
 pandoc "${CHAPTERS[@]}" \
   --from=markdown-raw_tex \
   --to=docx \
-  --resource-path="$ROOT_DIR:$ROOT_DIR/doc/assets/rendered_diagrams" \
+  --resource-path="$ROOT_DIR:$ASSETS_BUILD_DIR" \
   --toc --toc-depth=2 \
   --number-sections \
   "${REF_DOC_ARG[@]}" \

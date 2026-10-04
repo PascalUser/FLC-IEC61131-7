@@ -96,13 +96,13 @@
   },
   "cyclomatic_complexity": {
     "lexer": {
-      "avg_cyclomatic": 5.3,
-      "total_complexity": 299,
+      "avg_cyclomatic": 5.4,
+      "total_complexity": 300,
       "estimated_methods": 56
     },
     "parser": {
-      "avg_cyclomatic": 5.9,
-      "total_complexity": 413,
+      "avg_cyclomatic": 6.0,
+      "total_complexity": 417,
       "estimated_methods": 70
     },
     "utils": {
@@ -113,15 +113,15 @@
   },
   "loc": {
     "lexer": {
-      "loc": 1933,
+      "loc": 1922,
       "files": 21
     },
     "parser": {
-      "loc": 3818,
+      "loc": 3825,
       "files": 17
     },
     "utils": {
-      "loc": 970,
+      "loc": 971,
       "files": 27
     }
   },

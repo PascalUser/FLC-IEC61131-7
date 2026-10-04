@@ -31,9 +31,9 @@ El patrón **Chain of Responsibility** permite componer transformaciones atómic
 
 `lexer.semantics.numbers.NumbersAnalyzer` es la clase base abstracta (patrón *Template Method* + *Strategy*) para `Naturals`, `Integers` y `Reals`, y para los literales con base (`Binary`, `Octal`, `Hexadecimal`, vía `BaseNumbersAnalyzer`). Cada subclase implementa:
 
-- `parse(lexeme)`: intenta interpretar el lexema y determinar el subtipo más chico que lo puede representar (por ejemplo, `255` es `USINT`, pero `256` ya es `UINT`).
-- `fallback(lexeme)`: valor de reemplazo cuando el lexema excede el rango representable (por ejemplo, un literal más grande que `ULINT_MAX` se trunca a `18446744073709551615` con un `NaturalOutOfRange`).
-- `createDiagnostic(line, lexeme)`: el diagnóstico concreto a reportar.
+* `parse(lexeme)`: intenta interpretar el lexema y determinar el subtipo más chico que lo puede representar (por ejemplo, `255` es `USINT`, pero `256` ya es `UINT`).
+* `fallback(lexeme)`: valor de reemplazo cuando el lexema excede el rango representable (por ejemplo, un literal más grande que `ULINT_MAX` se trunca a `18446744073709551615` con un `NaturalOutOfRange`).
+* `createDiagnostic(line, lexeme)`: el diagnóstico concreto a reportar.
 
 Los analizadores se registran en `lexer.internals.LexicalAnalyzers` y cubren 14 categorías léxicas: 3 de fecha/hora, 1 de intervalos, 7 numéricas (3 decimales + 4 con base), 2 de cadenas, y 1 de identificadores.
 
@@ -48,8 +48,8 @@ El compilador distingue diagnósticos fatales (`Error`, detienen la compilación
 | **Error** (6)   | `DateOutOfRange`, `IntervalConstructionError`, `IntervalOutOfRange`, `TimeOfDayOutOfRange`, `DateAndTimeOutOfRange`, `SyntaxError`                |
 | **Warning** (7) | `StringLengthWarning`, `HexadecimalOutOfRange`, `RealOutOfRange`, `NaturalOutOfRange`, `BinaryOutOfRange`, `OctalOutOfRange`, `IntegerOutOfRange` |
 
-- **Error (fatal)**: detiene la compilación. No hay valor de reemplazo semánticamente razonable (literales temporales mal formados).
-- **Warning (no fatal)**: se reporta y se sigue con valor de reemplazo bien definido (desbordamientos numéricos).
+* **Error (fatal)**: detiene la compilación. No hay valor de reemplazo semánticamente razonable (literales temporales mal formados).
+* **Warning (no fatal)**: se reporta y se sigue con valor de reemplazo bien definido (desbordamientos numéricos).
 
 ![Diagnósticos: error vs. warning](../assets/rendered_diagrams/diagram_0d36130f.png)
 

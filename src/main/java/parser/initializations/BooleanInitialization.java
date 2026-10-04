@@ -3,6 +3,7 @@ package parser.initializations;
 import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
+import utils.builders.LexemeInfoSchema;
 import utils.enums.*;
 
 /**
@@ -10,7 +11,7 @@ import utils.enums.*;
  * <p>
  * Represents the default value {@code FALSE} for uninitialized boolean variables.
  * The default value is lazily registered in the {@link SymbolTable} on first use
- * via {@link Director#makeDefaultReal(LexemeInfoBuilder)} (which creates a
+ * via {@link Director#makeDefaultReal(LexemeInfoSchema)} (which creates a
  * {@code LexemeInfo} with {@code type=SIMPLE, subtype=BOOL, value="FALSE"}).
  * </p>
  * <p>

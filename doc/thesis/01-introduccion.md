@@ -24,10 +24,10 @@ A pesar de su relevancia industrial, no existen compiladores de referencia abier
 
 El compilador implementa:
 
-- **Análisis léxico:** 14 categorías léxicas con cadenas de transformadores dedicadas (6 transformadores para INTERVALS, 3 para REALS, 2 para NATURALS/INTEGERS/BINARY/OCTAL/HEXADECIMAL/STRINGS/WSTRINGS, 1 para IDENTIFIERS/DATES/DAYTIMES/DATE_AND_TIMES).
-- **Análisis sintáctico:** Gramática Bison de 1445 líneas, 231 no-terminales, 4 tokens principales, 8 tipos de inicialización. Soporta bloques principales IEC 61131-7: `FUNCTION_BLOCK`, `FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION`, declaraciones `VAR_INPUT`, `VAR_OUTPUT`, `VAR`, `TYPE`, `END_TYPE`.
-- **Tabla de símbolos:** 5 tipos de entrada (`Type` enum: SIMPLE, ARRAY, STRUCT, ENUMERATE, SUBRANGE), 24 subtipos primitivos (`Subtype`), 9 contextos de uso (`Use`), 7 fuentes de declaración (`Source`). Población diferida mediante patrón Publisher.
-- **Diagnósticos:** 5 errores fatales (rangos temporales, construcción de intervalos) y 7 warnings (rangos numéricos, longitud de cadenas), jerarquía `Diagnostic → Error/Warning/SyntaxError`.
+* **Análisis léxico:** 14 categorías léxicas con cadenas de transformadores dedicadas (6 transformadores para INTERVALS, 3 para REALS, 2 para NATURALS/INTEGERS/BINARY/OCTAL/HEXADECIMAL/STRINGS/WSTRINGS, 1 para IDENTIFIERS/DATES/DAYTIMES/DATE_AND_TIMES).
+* **Análisis sintáctico:** Gramática Bison de 1445 líneas, 231 no-terminales, 4 tokens principales, 8 tipos de inicialización. Soporta bloques principales IEC 61131-7: `FUNCTION_BLOCK`, `FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION`, declaraciones `VAR_INPUT`, `VAR_OUTPUT`, `VAR`, `TYPE`, `END_TYPE`.
+* **Tabla de símbolos:** 5 tipos de entrada (`Type` enum: SIMPLE, ARRAY, STRUCT, ENUMERATE, SUBRANGE), 24 subtipos primitivos (`Subtype`), 9 contextos de uso (`Use`), 7 fuentes de declaración (`Source`). Población diferida mediante patrón Publisher.
+* **Diagnósticos:** 5 errores fatales (rangos temporales, construcción de intervalos) y 7 warnings (rangos numéricos, longitud de cadenas), jerarquía `Diagnostic → Error/Warning/SyntaxError`.
 
 Fuera de alcance: generación de código objetivo, optimización, enlace, ejecución en PLC, y partes de IEC 61131-3 no relacionadas con el Anexo B (lenguajes IL, ST, LD, FBD, SFC).
 

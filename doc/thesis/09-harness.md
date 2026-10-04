@@ -51,19 +51,19 @@ Cambio de código
 |----------------------------------------|-----------------------------------------------------------------------------------------------------|
 | `scripts/extract_stats.py`             | Gráficos estadísticos (pie/bar/histograma) + métricas (CYCLO, LOC, COVERAGE, coupling) → PNG + JSON |
 | `scripts/generate_diagrams.py`         | Diagramas relacionales (class, sequence, flow, package, object) → `.mmd`                            |
-| `scripts/render_mermaid.py`            | Renderiza ```mermaid``` en capítulos tesis → PNG en `../assets/rendered_diagrams/`                  |
+| `scripts/render_mermaid.py`            | Renderiza `mermaid` en capítulos tesis → PNG en `../assets/rendered_diagrams/`                      |
 | `scripts/synthesize_thesis_context.py` | Lee modules + stats + diagrams → `doc/_synthesis_context.json` (single source of truth)             |
 | `scripts/build_thesis.sh`              | Concatena capítulos + pandoc (markdown-raw_tex) → `Tesis.docx`                                      |
 | `scripts/validate_docs.py`             | Valida markdown (sin imágenes markdown, sin paréntesis en headings, PNGs existen, mermaid válido)   |
 
 ## Flujo mermaid → PNG en tesis
 
-1. `thesis-writer` escribe capítulos con bloques ```mermaid``` (contenido desde `thesis_view.diagrams` en síntesis)
+1. `thesis-writer` escribe capítulos con bloques `mermaid` (contenido desde `thesis_view.diagrams` en síntesis)
 2. `build_thesis.sh` ejecuta `render_mermaid.py`:
-   - Busca bloques ```mermaid``` en `doc/thesis/*.md`
-   - Extrae contenido, renderiza con `npx mmdc` (config puppeteer: `--no-sandbox --disable-setuid-sandbox`)
-   - Guarda PNG en `../assets/rendered_diagrams/diagram_<hash>.png`
-   - Reemplaza bloque ```mermaid``` por `![Caption](../assets/rendered_diagrams/diagram_<hash>.png)`
+   * Busca bloques `mermaid` en `doc/thesis/*.md`
+   * Extrae contenido, renderiza con `npx mmdc` (config puppeteer: `--no-sandbox --disable-setuid-sandbox`)
+   * Guarda PNG en `../assets/rendered_diagrams/diagram_<hash>.png`
+   * Reemplaza bloque `mermaid` por `![Caption](../assets/rendered_diagrams/diagram_<hash>.png)`
 3. `pandoc` compila con `--resource-path="$ROOT_DIR:$ROOT_DIR/doc/assets:$ROOT_DIR/doc/assets/rendered_diagrams"`
 
 ## Agents y validación
@@ -77,7 +77,7 @@ Cada agente que genera markdown **debe** ejecutar `python3 scripts/validate_docs
 | No brackets en headings   | `grep '^#.*\[\]' doc/` = vacío                     |
 | No braces en headings     | `grep '^#.*{}' doc/` = vacío                       |
 | PNG refs existen          | Todo `assets/*.png` referenciado existe            |
-| Mermaid válido            | Todos bloques ```mermaid``` parsean                |
+| Mermaid válido            | Todos bloques `mermaid` parsean                    |
 | No LucaInfo refs          | `grep -r LucaInfo doc/` = vacío                    |
 | Heading hierarchy         | No saltos de nivel                                 |
 
@@ -112,6 +112,7 @@ python run_all_agents.py
 ## Extensibilidad
 
 Para agregar un agente nuevo:
+
 1. Crear `.opencode/agents/nuevo-agente.md` con prompt
 2. Añadir a `opencode.json` bajo `agent`
 3. Añadir comando bajo `command` si necesario

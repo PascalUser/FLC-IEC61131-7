@@ -36,7 +36,7 @@ Cada entrada en la `SymbolTable` es un `LexemeInfo` completo. Los campos relevan
 | Type      | Subtype                     | Campos relevantes                                                                          | Ejemplo `initialValue`              |
 |-----------|-----------------------------|--------------------------------------------------------------------------------------------|-------------------------------------|
 | SIMPLE    | INT, REAL, BOOL, TIME, etc. | subtype, initialValue                                                                      | `10`, `0.0`, `FALSE`                |
-| ENUMERATE | INT                         | parameters=[A,B,C], use=MACRO para cada valor                                              | Cada valor publicado por separado   |
+| ENUMERATE | INT                         | parameters=\[A,B,C], use=MACRO para cada valor                                             | Cada valor publicado por separado   |
 | SUBRANGE  | INT, etc.                   | inferiorLimits, superiorLimits                                                             | `0..100`                            |
 | ARRAY     | element type                | inferiorLimits, superiorLimits, initialValue=RepeatedInitialization                        | `ARRAY[0..9] OF INT := 5(0), 3(10)` |
 | STRUCT    | CUSTOM                      | parameters=nombres de campo, initialValue=StructInitialization (mapa campo→Initialization) | `STRUCT(a:=10, b:=20)`              |

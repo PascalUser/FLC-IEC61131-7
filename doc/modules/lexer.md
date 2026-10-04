@@ -3,194 +3,90 @@
 Módulo de análisis léxico: generado con **JFlex 1.8.2** a partir de `src/main/java/lexer/Lexer.flex`. Implementa el escáner léxico completo para el estándar **IEC 61131-7** (Function Blocks de Lógica Difusa) y el **Anexo B de IEC 61131-3** (literales numéricos, temporales, cadenas, identificadores y palabras reservadas).
 
 El lexer sigue una arquitectura de dos fases:
+
 1. **Preprocesamiento** — Cadenas de transformadores (Chain of Responsibility) que normalizan el léxico crudo
 2. **Análisis semántico** — Validadores por categoría que verifican rangos, construyen metadatos y poblan la tabla de símbolos
 
 ## Diagrama de paquetes
 
+Dependencias entre paquetes del proyecto, generado por `scripts/generate_diagrams.py` a partir de los imports reales:
+
 ```mermaid
 flowchart LR
-    subgraph Lexer
-        LF[Lexer.flex]
-        LJ[Lexer.java]
-        LI[internals/*]
-        LT[transformers/*]
-        LTH[transformers/hex_resolvers/*]
-        LTU[transformers/utils/*]
-        LS[semantics/*]
-        LSN[semantics/numbers/*]
-        LSB[semantics/numbers/bases/*]
-        LSS[semantics/strings/*]
-        LSU[semantics/utils/*]
-    end
-    subgraph Parser
-        P1[Parser.y]
-    end
-    subgraph Utils
-        U1[SymbolTable]
-        U2[LexemeInfo]
-        U3[DiagnosticsHandler]
-        U4[builders/*]
-        U5[enums/*]
-        U6[diagnostics/*]
-    end
-
-    LF --> LJ
-    LI --> LJ
-    LT --> LJ
-    LTH --> LT
-    LTU --> LT
-    LS --> LJ
-    LSN --> LS
-    LSB --> LSN
-    LSS --> LS
-    LSU --> LS
-    LJ --> P1
-    LJ <--> U1
-    LJ --> U3
-    LS --> U1
-    LS --> U3
-    LS --> U4
-    LS --> U5
-    LS --> U6
+    lexer[lexer]
+    parser[parser]
+    utils[utils]
+    lexer -->|tokens| parser
+    parser -->|SymbolTable| utils
+    parser -->|LexemeInfo| utils
+    parser -->|DiagnosticsHandler| utils
+    lexer -->|SymbolTable| utils
+    lexer -->|DiagnosticsHandler| utils
 ```
 
 ## Diagrama de clases
+
+Generado por `scripts/generate_diagrams.py lexer` en `doc/diagrams/lexer_class_diagram.mmd`:
 
 ```mermaid
 classDiagram
     namespace lexer {
         class Lexer {
-            +processAndSaveYylval(Transformer, SemanticAnalyzer) int
-            +getLVal() Object
-            +yyerror(String)
+            +processAndSaveYylval()
         }
         class LexicalPreprocessors {
-            +DATE_AND_TIMES: Transformer
-            +DAYTIMES: Transformer
-            +DATES: Transformer
             +INTERVALS: Transformer
-            +NATURALS: Transformer
-            +INTEGERS: Transformer
             +REALS: Transformer
-            +BINARY: Transformer
-            +OCTAL: Transformer
-            +HEXADECIMAL: Transformer
-            +STRINGS: Transformer
-            +WSTRINGS: Transformer
             +IDENTIFIERS: Transformer
         }
         class LexicalAnalyzers {
-            +DATE_AND_TIMES: SemanticAnalyzer
-            +DAYTIMES: SemanticAnalyzer
-            +DATES: SemanticAnalyzer
-            +INTERVALS: SemanticAnalyzer
-            +NATURALS: SemanticAnalyzer
-            +INTEGERS: SemanticAnalyzer
-            +REALS: SemanticAnalyzer
-            +BINARY: SemanticAnalyzer
-            +OCTAL: SemanticAnalyzer
-            +HEXADECIMAL: SemanticAnalyzer
-            +STRINGS: SemanticAnalyzer
-            +WSTRINGS: SemanticAnalyzer
-            +IDENTIFIERS: SemanticAnalyzer
+            +analyzers: Map
         }
     }
     namespace lexer_transformers {
         class Transformer {
-            <<abstract>>
-            +transform(String) String
-            #giveToNext(String) String
+            +transform()
+            +giveToNext()
         }
         class UnderscoreRemover
         class UpperCaseConverter
         class StripLeadingZeros
         class StripTrailingZeros
-        class OmitLeadingZeroMagnitudes
-        class OmitTrailingZeroMagnitudes
-        class OmitLeadingZerosInMagnitudes
-        class OmitTrailingZerosInMagnitudes
-        class StripBaseNumberLeadingZeros
         class StringEscapeResolver
         class Nothing
     }
-    namespace lexer_transformers_hex_resolvers {
-        class HexResolver {
-            <<abstract>>
-        }
-        class StringHexResolver
-        class WStringHexResolver
-    }
     namespace lexer_semantics {
         class SemanticAnalyzer {
-            <<interface>>
-            +analyze(LexicalContext) Result
+            +analyze()
         }
-        class Result {
-            +lexeme: String
-            +token: int
-        }
-        class LexicalContext {
-            +preprocessedLexeme: String
-            +line: int
-            +symbolTable: SymbolTable
-            +diagnosticsHandler: DiagnosticsHandler
-        }
-        class Intervals
-        class Identifiers
-        class Dates
-        class DayTimes
-        class DateAndDayTimes
-    }
-    namespace lexer_semantics_numbers {
         class NumbersAnalyzer {
-            <<abstract>>
-            +analyze(LexicalContext) Result
-            #parse(String) ParsedValue
-            #fallback(String) ParsedValue
-            #createDiagnostic(int, String) Diagnostic
-        }
-        class ParsedValue {
-            +lexeme: String
-            +subtype: Subtype
-            +value: Object
+            +parse()
+            +fallback()
+            +createDiagnostic()
         }
         class Naturals
         class Integers
         class Reals
-        class BaseNumbersAnalyzer {
-            <<abstract>>
-        }
+        class BaseNumbersAnalyzer
         class Binary
         class Octal
         class Hexadecimal
-    }
-    namespace lexer_semantics_strings {
-        class StringsAnalyzer {
-            <<abstract>>
-            +analyze(LexicalContext) Result
-        }
+        class Intervals
+        class Identifiers
         class Strings
-        class WStrings
+        class Dates
     }
+    Lexer --> LexicalPreprocessors : uses
+    Lexer --> LexicalAnalyzers : uses
+    LexicalPreprocessors --> Transformer : manages
+    LexicalAnalyzers --> SemanticAnalyzer : manages
     Transformer <|-- UnderscoreRemover
     Transformer <|-- UpperCaseConverter
     Transformer <|-- StripLeadingZeros
     Transformer <|-- StripTrailingZeros
-    Transformer <|-- OmitLeadingZeroMagnitudes
-    Transformer <|-- OmitTrailingZeroMagnitudes
-    Transformer <|-- OmitLeadingZerosInMagnitudes
-    Transformer <|-- OmitTrailingZerosInMagnitudes
-    Transformer <|-- StripBaseNumberLeadingZeros
     Transformer <|-- StringEscapeResolver
     Transformer <|-- Nothing
-    HexResolver <|-- StringHexResolver
-    HexResolver <|-- WStringHexResolver
-    SemanticAnalyzer <|-- Intervals
-    SemanticAnalyzer <|-- Identifiers
-    SemanticAnalyzer <|-- Dates
-    SemanticAnalyzer <|-- DayTimes
-    SemanticAnalyzer <|-- DateAndDayTimes
+    SemanticAnalyzer <|-- NumbersAnalyzer
     NumbersAnalyzer <|-- Naturals
     NumbersAnalyzer <|-- Integers
     NumbersAnalyzer <|-- Reals
@@ -198,14 +94,10 @@ classDiagram
     BaseNumbersAnalyzer <|-- Binary
     BaseNumbersAnalyzer <|-- Octal
     BaseNumbersAnalyzer <|-- Hexadecimal
-    SemanticAnalyzer <|-- NumbersAnalyzer
-    StringsAnalyzer <|-- Strings
-    StringsAnalyzer <|-- WStrings
-    SemanticAnalyzer <|-- StringsAnalyzer
-    Lexer --> LexicalPreprocessors : uses
-    Lexer --> LexicalAnalyzers : uses
-    LexicalPreprocessors --> Transformer : manages chains
-    LexicalAnalyzers --> SemanticAnalyzer : manages instances
+    SemanticAnalyzer <|-- Intervals
+    SemanticAnalyzer <|-- Identifiers
+    SemanticAnalyzer <|-- Strings
+    SemanticAnalyzer <|-- Dates
 ```
 
 ## Tabla de clases
@@ -271,6 +163,7 @@ Chart: `assets/transformer_chain_lengths.png` — longitud de cada cadena de tra
 ### Literales numéricos — NumbersAnalyzer
 
 Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **Template Method**:
+
 1. `parse(lexeme)` → `ParsedValue(lexeme, Subtype, value)` — subclase define parseo y rango
 2. Si `subtype == UNKNOWN` → `createDiagnostic()` + `fallback()` para valor corregido
 3. Construye `LexemeInfo` via `Director.makeLiteral()` y publica en `SymbolTable`
@@ -278,14 +171,14 @@ Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **T
 
 **Subtipos determinados por rango de valor:**
 
-| Analizador | Rango válido | Subtipos posibles | Fallback |
-|------------|--------------|-------------------|----------|
-| `Naturals` | 0 .. 4,294,967,295 | `USINT`..`ULINT` | 0 (USINT) |
-| `Integers` | -2,147,483,648 .. 2,147,483,647 | `SINT`..`DINT` | 0 (SINT) |
-| `Reals` | IEEE 754 binary32/64 | `REAL`, `LREAL` | 0.0 (REAL) |
-| `Binary` | 0 .. 65,535 (2#0 .. 2#1111111111111111) | `USINT`..`UINT` | 0 (USINT) |
-| `Octal` | 0 .. 65,535 (8#0 .. 8#177777) | `USINT`..`UINT` | 0 (USINT) |
-| `Hexadecimal` | 0 .. 65,535 (16#0 .. 16#FFFF) | `USINT`..`UINT` | 0 (USINT) |
+| Analizador    | Rango válido                            | Subtipos posibles | Fallback   |
+|---------------|-----------------------------------------|-------------------|------------|
+| `Naturals`    | 0 .. 4,294,967,295                      | `USINT`..`ULINT`  | 0 (USINT)  |
+| `Integers`    | -2,147,483,648 .. 2,147,483,647         | `SINT`..`DINT`    | 0 (SINT)   |
+| `Reals`       | IEEE 754 binary32/64                    | `REAL`, `LREAL`   | 0.0 (REAL) |
+| `Binary`      | 0 .. 65,535 (2#0 .. 2#1111111111111111) | `USINT`..`UINT`   | 0 (USINT)  |
+| `Octal`       | 0 .. 65,535 (8#0 .. 8#177777)           | `USINT`..`UINT`   | 0 (USINT)  |
+| `Hexadecimal` | 0 .. 65,535 (16#0 .. 16#FFFF)           | `USINT`..`UINT`   | 0 (USINT)  |
 
 ### Literales temporales
 
@@ -297,11 +190,12 @@ Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **T
 | `DateAndDayTimes` | `DT#YYYY-MM-DD-HH:MM:SS[.mmm]` | Combinación DATE + TOD válida                                                                                        | `LocalDateTime`           |
 
 **Diagnósticos de error (fatal):**
-- `IntervalConstructionError` — magnitud no-mayor excede límite natural
-- `IntervalOutOfRange` — duración total excede Long.MAX_VALUE
-- `DateOutOfRange` — fecha inválida
-- `TimeOfDayOutOfRange` — hora inválida
-- `DateAndTimeOutOfRange` — fecha/hora inválida
+
+* `IntervalConstructionError` — magnitud no-mayor excede límite natural
+* `IntervalOutOfRange` — duración total excede Long.MAX_VALUE
+* `DateOutOfRange` — fecha inválida
+* `TimeOfDayOutOfRange` — hora inválida
+* `DateAndTimeOutOfRange` — fecha/hora inválida
 
 ### Literales de cadena — StringsAnalyzer
 
@@ -311,18 +205,22 @@ Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **T
 | `WStrings` | `WSTRING` | 16,383 chars | `$XXXX` (4 dígitos) | `String`         |
 
 **Diagnósticos de warning (no fatal):**
-- `StringLengthWarning` — longitud excede máximo permitido
+
+* `StringLengthWarning` — longitud excede máximo permitido
 
 Escapes estándar soportados: `$L` (LF), `$N` (LF), `$P` (FF), `$R` (CR), `$T` (TAB), `$$` ($), `$'` ('), `$"` (").
 
 ### Identificadores y palabras reservadas
 
 `Identifiers` delega en `ReservedWords.isReserved(lexeme)`:
-- Si es reservada (excepto `TRUE`/`FALSE`) → retorna token directo (ej. `VAR`, `IF`, `THEN`)
-- Si es `TRUE`/`FALSE` → publica `LexemeInfo(subtype=BOOL, initialValue=Boolean)` + `BOOLEAN_LITERAL`
-- Sino → publica `LexemeInfo` vacía + `IDENTIFIER`
+
+* Si es reservada (excepto `TRUE`/`FALSE`) → retorna token directo (ej. `VAR`, `IF`, `THEN`)
+* Si es `TRUE`/`FALSE` → publica `LexemeInfo(subtype=BOOL, initialValue=Boolean)` + `BOOLEAN_LITERAL`
+* Sino → publica `LexemeInfo` vacía + `IDENTIFIER`
 
 ## Flujo Lexer → Parser → SymbolTable
+
+Secuencia generada por `scripts/generate_diagrams.py lexer` en `doc/diagrams/lexer_parser_sequence.mmd`:
 
 ```mermaid
 sequenceDiagram
@@ -333,8 +231,6 @@ sequenceDiagram
     participant ST as SymbolTable
     participant Diag as DiagnosticsHandler
     participant Parser as Parser (Bison)
-    participant Publisher as Publisher
-    participant Ctx as ParsingContext
 
     JFlex->>Lexer: yytext()
     Lexer->>Transformer: transform(yytext())
@@ -347,9 +243,7 @@ sequenceDiagram
     Analyzer->>Diag: add(Diagnostic) if needed
     Analyzer-->>Lexer: Result(token, lexeme)
     Lexer-->>Parser: token + yylval
-    Parser->>Ctx: Acciones semánticas (builder, scopes)
-    Parser->>Publisher: publish(ctx) en var_init_decl, type_declaration, structure_field_declaration
-    Publisher->>ST: put(name, LexemeInfo)
+    Parser->>ST: Publisher.publish(ctx)
 ```
 
 ## Expresiones regulares clave — Lexer.flex
@@ -396,21 +290,23 @@ DOUBLE_BYTE_STRING      = \"({COMMON_CHARACTER}|\'|\$\"|\${HEX_DIGIT}{4})*\"
 ## Tests
 
 Tests unitarios en `src/test/java/unit/lexer/`:
-- `LexerTokenizationTest.java` — tokenización correcta de todos los tipos de literal
-- `LexerSymbolTableTest.java` — población de SymbolTable con LexemeInfo correcto
-- `LexerDiagnosticHandlerTest.java` — generación de warnings/errors para valores fuera de rango
-- `transformers/OmitLeadingZeroMagnitudesTest.java`, `OmitTrailingZeroMagnitudesTest.java` — normalización de magnitudes internas
-- `transformers/OmitLeadingZerosInMagnitudesTest.java`, `OmitTrailingZerosInMagnitudesTest.java` — normalización de magnitudes internas
-- `transformers/StringEscapeResolverTest.java`, `StringHexResolverTest.java`, `WStringHexResolverTest.java` — resolución de escapes en cadenas
+
+* `LexerTokenizationTest.java` — tokenización correcta de todos los tipos de literal
+* `LexerSymbolTableTest.java` — población de SymbolTable con LexemeInfo correcto
+* `LexerDiagnosticHandlerTest.java` — generación de warnings/errors para valores fuera de rango
+* `transformers/OmitLeadingZeroMagnitudesTest.java`, `OmitTrailingZeroMagnitudesTest.java` — normalización de magnitudes internas
+* `transformers/OmitLeadingZerosInMagnitudesTest.java`, `OmitTrailingZerosInMagnitudesTest.java` — normalización de magnitudes internas
+* `transformers/StringEscapeResolverTest.java`, `StringHexResolverTest.java`, `WStringHexResolverTest.java` — resolución de escapes en cadenas
 
 Ejecución:
+
 ```bash
 mvn test -Dtest='Lexer*Test,unit.lexer.transformers.**'
 ```
 
 Chart: `assets/test_coverage.png` — cobertura JaCoCo por módulo; lexer limitado por código generado JFlex.
 
-Cobertura actual: **~90%** (JaCoCo — limitado por código generado JFlex).
+Cobertura actual: **90%** (JaCoCo — fuente: `doc/stats.json`, clave `test_coverage.packages.lexer`).
 
 ## Archivos fuente
 
@@ -481,6 +377,7 @@ src/main/java/lexer/
 |------------------------|------------------------------------------|----------------------------------------------------|
 | Clases lexer           | `doc/diagrams/lexer_class_diagram.mmd`   | Estructura completa preprocesadores + analizadores |
 | Secuencia Lexer↔Parser | `doc/diagrams/lexer_parser_sequence.mmd` | Flujo de tokens y publicación                      |
+| Dependencias paquetes  | `doc/diagrams/package_dependencies.mmd`  | Acoplamiento lexer → parser → utils                |
 
 ## Capítulos de tesis que consumen este módulo
 

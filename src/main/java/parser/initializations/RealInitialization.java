@@ -3,13 +3,14 @@ package parser.initializations;
 import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
+import utils.builders.LexemeInfoSchema;
 
 /**
  * Default initialization for REAL/LREAL variables (IEC 61131-7).
  * <p>
  * Represents the default value {@code 0.0} for uninitialized real variables.
  * The default value is lazily registered in the {@link SymbolTable} on first use
- * via {@link Director#makeDefaultReal(LexemeInfoBuilder)}.
+ * via {@link Director#makeDefaultReal(LexemeInfoSchema)}.
  * </p>
  * <p>
  * All instances are considered equal regardless of the {@code SymbolTable}

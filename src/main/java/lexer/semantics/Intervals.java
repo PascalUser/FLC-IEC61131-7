@@ -17,13 +17,12 @@ import java.time.Duration;
  * the lexical format and preprocesses the lexeme (removes underscores, leading/trailing zeros).
  * </p>
  * <p>
- * IEC 61131-3 Restrictions:
+ * IEC 61131-3 Restrictions:</p>
  * <ul>
  *   <li>Only the highest-order non-zero magnitude may exceed its natural limit</li>
  *   <li>Magnitude limits: hours (≤23), minutes (≤59), seconds (≤59), milliseconds (≤999)</li>
  *   <li>Total duration must fit in signed 64-bit Long (in nanoseconds)</li>
  * </ul>
- * </p>
  * Stores {@link Duration} as initialValue (nanoseconds precision).
  *
  * @author Matias Ortiz

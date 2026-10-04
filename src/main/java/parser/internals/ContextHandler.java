@@ -40,7 +40,7 @@ public final class ContextHandler {
      * Pops and returns the top parsing context.
      *
      * @return the removed context
-     * @throws EmptyStackException if the stack is empty
+     * @throws java.util.EmptyStackException if the stack is empty
      */
     public ParsingContext pop() {
         return contextStack.pop();
@@ -50,7 +50,7 @@ public final class ContextHandler {
      * Returns the current (top) parsing context without removing it.
      *
      * @return the current context
-     * @throws EmptyStackException if the stack is empty
+     * @throws java.util.EmptyStackException if the stack is empty
      */
     public ParsingContext current() {
         return contextStack.lastElement();

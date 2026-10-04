@@ -8,14 +8,12 @@ import lexer.transformers.Transformer;
  * STRING hex escapes use 2 hex digits per character: {@code $HH}.
  * Extends {@link HexResolver} with {@code hexDigits = 2}.
  * </p>
- * <p>
- * Examples:
+ * <p>Examples:</p>
  * <ul>
  *   <li>{@code $41} → 'A'</li>
  *   <li>{@code $0A} → newline</li>
  *   <li>{@code $$} → literal '$' (preserved for {@link lexer.transformers.StringEscapeResolver})</li>
  * </ul>
- * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría

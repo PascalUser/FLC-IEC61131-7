@@ -163,7 +163,7 @@ def validate_mermaid_class_diagram(content, filepath):
                 in_class_diagram = True
                 mermaid_start_line = 1
         else:
-            # For markdown files, detect mermaid blocks
+            # For Markdown files, detect mermaid blocks
             if stripped.startswith('```mermaid'):
                 in_class_diagram = False
                 mermaid_start_line = i
@@ -235,7 +235,7 @@ def validate_mermaid_flowchart(content, filepath):
                 in_flowchart = True
                 mermaid_start_line = 1
         else:
-            # For markdown files, detect mermaid blocks
+            # For Markdown files, detect mermaid blocks
             if stripped.startswith('```mermaid'):
                 in_flowchart = False
                 mermaid_start_line = i
@@ -257,7 +257,7 @@ def validate_mermaid_flowchart(content, filepath):
             
         # Check for node labels with literal newlines inside quoted strings
         # Pattern: ["text\ntext"] - should use <br>
-        quoted_bracket_matches = list(re.finditer(r'\["([^"]*)"\]', stripped))
+        quoted_bracket_matches = list(re.finditer(r'\["([^"]*)"]', stripped))
         for match in quoted_bracket_matches:
             label = match.group(1)
             if '\n' in label:
@@ -265,7 +265,7 @@ def validate_mermaid_flowchart(content, filepath):
             
         # Check for node labels with parentheses that are not quoted
         # Pattern: A[Label (with parens)] - should be A["Label (with parens)"]
-        bracket_matches = list(re.finditer(r'\[([^\]]*)\]', stripped))
+        bracket_matches = list(re.finditer(r'\[([^]]*)]', stripped))
         for match in bracket_matches:
             label = match.group(1)
             # Check if label contains parentheses and is not already quoted
@@ -286,9 +286,9 @@ def validate_thesis_image_paths(content, filepath):
         
     lines = content.split('\n')
     for i, line in enumerate(lines, 1):
-        # Check for markdown image syntax with doc/assets/ (should be ../assets/)
+        # Check for Markdown image syntax with doc/assets/ (should be ../assets/)
         # Pattern: ![...](doc/assets/...)
-        if re.search(r'!\[.*\]\(doc/assets/', line):
+        if re.search(r'!\[.*]\(doc/assets/', line):
             violations.append(f"  Line {i}: Thesis image path uses 'doc/assets/' - should use '../assets/': {line.strip()[:100]}")
             
     return violations
@@ -311,7 +311,7 @@ def validate_mermaid_relationships(content, filepath):
                 in_class_diagram = True
                 mermaid_start_line = 1
         else:
-            # For markdown files, detect mermaid blocks
+            # For Markdown files, detect mermaid blocks
             if stripped.startswith('```mermaid'):
                 in_class_diagram = False
                 mermaid_start_line = i
@@ -348,8 +348,8 @@ def validate_mermaid_relationships(content, filepath):
     return violations
 
 
-def validate_markdown_tables(content, filepath):
-    """Validate markdown tables are well-formed"""
+def validate_markdown_tables(content):
+    """Validate Markdown tables are well-formed"""
     violations = []
     lines = content.split('\n')
     in_table = False
@@ -397,7 +397,7 @@ def validate_markdown_tables(content, filepath):
     return violations
 
 
-def validate_mermaid_with_mmdc(content, filepath):
+def validate_mermaid_with_mmdc(content):
     """Validate mermaid syntax by attempting to render with mmdc (comprehensive check)"""
     violations = []
     # Extract mermaid blocks
@@ -453,7 +453,8 @@ def validate_mermaid_with_mmdc(content, filepath):
         except subprocess.TimeoutExpired:
             violations.append(f"  Lines {start_line}-{end_line}: Mermaid validation timeout")
         except Exception as e:
-            # If mmdc not available, skip this check
+            # If mmdc not available or something else fails, skip but warn
+            print(f"Failed to validate with mmdc: {e}")
             pass
             
     return violations
@@ -507,7 +508,7 @@ def validate_file(filepath):
     all_violations.extend(validate_mermaid_blocks(content, filepath))
     all_violations.extend(validate_no_lucainfo(content))
     all_violations.extend(validate_heading_order(content))
-    all_violations.extend(validate_markdown_tables(content, filepath))
+    all_violations.extend(validate_markdown_tables(content))
     
     return all_violations
 

@@ -4,24 +4,21 @@ package lexer.transformers;
  * Transformer that removes leading zeros from numeric magnitudes in interval literals.
  * <p>
  * This transformer processes IEC 61131-7 interval literals (e.g., {@code 0001d0002h0003m})
- * and removes leading zeros from each numeric magnitude while preserving:
+ * and removes leading zeros from each numeric magnitude while preserving:</p>
  * <ul>
  *   <li>All magnitude components (including zero-valued ones)</li>
  *   <li>Unit suffixes ({@code d}, {@code h}, {@code m}, {@code s}, {@code ms})</li>
  *   <li>Decimal points and fractional digits (zeros after decimal are preserved)</li>
  *   <li>Negative signs (leading zeros removed after the sign)</li>
  * </ul>
- * </p>
- * <p>
- * Examples:
+ * <p>Examples:</p>
  * <pre>
- * "0001d0002h"        -> "1d2h"
- * "0000d0001h"        -> "0d1h"       (zero magnitudes preserved)
- * "001.5d"            -> "1.5d"       (decimal zeros preserved)
- * "-001d002h"         -> "-1d2h"      (negative sign handled)
- * "0000d"             -> "0d"         (all-zero magnitude becomes single zero)
+ * "0001d0002h"        -&gt; "1d2h"
+ * "0000d0001h"        -&gt; "0d1h"       (zero magnitudes preserved)
+ * "001.5d"            -&gt; "1.5d"       (decimal zeros preserved)
+ * "-001d002h"         -&gt; "-1d2h"      (negative sign handled)
+ * "0000d"             -&gt; "0d"         (all-zero magnitude becomes single zero)
  * </pre>
- * </p>
  *
  * @author Matias Ortiz
  * @version 1.0

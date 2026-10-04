@@ -1,5 +1,6 @@
 package utils.builders;
 
+import utils.LexemeInfo;
 import utils.enums.Source;
 import utils.enums.Subtype;
 import utils.enums.Type;

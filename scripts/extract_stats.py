@@ -57,7 +57,7 @@ def extract_enum_sizes():
         # Count enum constants (lines with = or just identifiers before , or ;)
         import re
         # Find enum body
-        match = re.search(r'enum\s+\w+\s*\{(.+?)\}', content, re.DOTALL)
+        match = re.search(r'enum\s+\w+\s*\{(.+?)}', content, re.DOTALL)
         if match:
             body = match.group(1)
             # Strip comments before counting constants

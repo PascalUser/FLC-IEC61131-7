@@ -2,17 +2,17 @@
 
 ## Diseño, implementación y validación de un compilador para Fuzzy Control Language
 
----
+***
 
-**Autor:** Matías Ortiz  
-**Director:** Victoriano Etcheverría  
-**Institución:** Universidad Nacional de Córdoba  
-**Facultad:** Facultad de Ciencias Exactas, Físicas y Naturales  
-**Carrera:** Ingeniería en Computación  
+**Autor:** Matías Ortiz\
+**Director:** Victoriano Etcheverría\
+**Institución:** Universidad Nacional de Córdoba\
+**Facultad:** Facultad de Ciencias Exactas, Físicas y Naturales\
+**Carrera:** Ingeniería en Computación
 
-**Fecha:** Octubre 2026  
+**Fecha:** Octubre 2026
 
----
+***
 
 ## Resumen
 

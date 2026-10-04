@@ -6,8 +6,7 @@ import utils.LexemeInfo;
 /**
  * Utility class for publishing declarations to the symbol table.
  * <p>
- * The {@code Publisher} pattern (implemented by {@link parser.utils.Declaration}
- * and {@link parser.utils.Compound}) defers symbol table population until all
+ * The {@code Publisher} pattern defers symbol table population until all
  * semantic attributes are configured. This class provides a static convenience
  * method for simple direct publishing from a {@link ParsingContext}.
  * </p>
@@ -16,8 +15,7 @@ import utils.LexemeInfo;
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
- * @see parser.utils.Declaration
- * @see parser.utils.Compound
+ * <!-- TODO: Previously referenced parser.utils.Declaration and parser.utils.Compound, which no longer exist in the source tree. -->
  * @see ParsingContext
  */
 public final class Publisher {

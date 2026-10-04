@@ -402,6 +402,8 @@ public final class Lexer implements Parser.Lexer {
    * Creates a new scanner
    *
    * @param   in  the java.io.Reader to read input from.
+   * @param   symbolTable the symbol table used to register declarations
+   * @param   diagnosticsHandler the handler for reporting diagnostics
    */
   public Lexer(java.io.Reader in, SymbolTable symbolTable, DiagnosticsHandler diagnosticsHandler) {
       this.symbolTable = symbolTable;

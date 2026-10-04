@@ -5,7 +5,7 @@ import org.jspecify.annotations.NonNull;
 /**
  * Transformer that resolves IEC 61131-7 string escape sequences.
  * <p>
- * IEC 61131-7 defines the following escape sequences in string literals:
+ * IEC 61131-7 defines the following escape sequences in string literals:</p>
  * <ul>
  *   <li>{@code $$} → {@code $}</li>
  *   <li>{@code $'} → {@code '}</li>
@@ -15,7 +15,6 @@ import org.jspecify.annotations.NonNull;
  *   <li>{@code $P}, {@code $p} → form feed ({@code \f})</li>
  *   <li>{@code $T}, {@code $t} → tab ({@code \t})</li>
  * </ul>
- * </p>
  * <p>
  * Unrecognized escape sequences (e.g., {@code $X}) preserve the {@code $}
  * and continue processing.

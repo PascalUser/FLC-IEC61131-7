@@ -11,8 +11,7 @@ import lexer.semantics.numbers.bases.*;
  * Maps each token category to its {@link SemanticAnalyzer} implementation.
  * Analyzers perform validation, range checking, and symbol table registration.
  * </p>
- * <p>
- * Analyzers:
+ * <p>Analyzers:</p>
  * <ul>
  *   <li>{@code DATE_AND_TIMES}: {@link lexer.semantics.DateAndDayTimes}</li>
  *   <li>{@code DAYTIMES}: {@link lexer.semantics.DayTimes}</li>
@@ -28,7 +27,6 @@ import lexer.semantics.numbers.bases.*;
  *   <li>{@code WSTRINGS}: {@link lexer.semantics.strings.WStrings}</li>
  *   <li>{@code IDENTIFIERS}: {@link lexer.semantics.Identifiers}</li>
  * </ul>
- * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría

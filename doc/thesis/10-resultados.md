@@ -4,12 +4,12 @@
 
 A partir de la gramática (`Parser.y`) y el lexer (`Lexer.flex`), el compilador reconoce:
 
-- Los cuatro tipos derivados de IEC 61131-3 Anexo B: enumerado, subrango, arreglo y estructura, incluyendo estructuras anidadas y arreglos multidimensionales de estructuras con inicializadores parciales y factores de repetición (`N(valor)`).
-- Los 24 subtipos elementales listados en `Subtype.java`: booleano, enteros con/sin signo (8/16/32/64 bits), reales (32/64 bits), temporales (`TIME`, `DATE`, `TIME_OF_DAY`, `DATE_AND_TIME`), cadenas de bits (`BYTE`/`WORD`/`DWORD`/`LWORD`) y cadenas de caracteres (`STRING`/`WSTRING`).
-- Bloques `FUZZIFY`/`DEFUZZIFY` (términos lingüísticos como *singleton* o lista de puntos, métodos de defuzzificación `COG`/`COGS`/`COA`/`LM`/`RM`) y `RULEBLOCK` (operadores `AND`/`OR`/`ACT`/`ACCU`, condiciones con `IS`/`NOT`, conclusiones múltiples con peso opcional `WITH`), a nivel sintáctico.
-- Bloques `OPTION` con pragmas.
-- 116 no-terminales en la gramática (contados en `SymbolKind` enum).
-- 8 tipos de inicialización soportados (Boolean, Real, Enumerated, Macro, Variable, Subrange, Struct, Repeated).
+* Los cuatro tipos derivados de IEC 61131-3 Anexo B: enumerado, subrango, arreglo y estructura, incluyendo estructuras anidadas y arreglos multidimensionales de estructuras con inicializadores parciales y factores de repetición (`N(valor)`).
+* Los 24 subtipos elementales listados en `Subtype.java`: booleano, enteros con/sin signo (8/16/32/64 bits), reales (32/64 bits), temporales (`TIME`, `DATE`, `TIME_OF_DAY`, `DATE_AND_TIME`), cadenas de bits (`BYTE`/`WORD`/`DWORD`/`LWORD`) y cadenas de caracteres (`STRING`/`WSTRING`).
+* Bloques `FUZZIFY`/`DEFUZZIFY` (términos lingüísticos como *singleton* o lista de puntos, métodos de defuzzificación `COG`/`COGS`/`COA`/`LM`/`RM`) y `RULEBLOCK` (operadores `AND`/`OR`/`ACT`/`ACCU`, condiciones con `IS`/`NOT`, conclusiones múltiples con peso opcional `WITH`), a nivel sintáctico.
+* Bloques `OPTION` con pragmas.
+* 116 no-terminales en la gramática (contados en `SymbolKind` enum).
+* 8 tipos de inicialización soportados (Boolean, Real, Enumerated, Macro, Variable, Subrange, Struct, Repeated).
 
 ## Gráficos estadísticos
 
@@ -84,7 +84,7 @@ A partir de la gramática (`Parser.y`) y el lexer (`Lexer.flex`), el compilador 
 | **Cobertura JaCoCo**                      | 90% (instr.) / 87% (ramas) | > 80%    |
 | **Acoplamiento aferente (utils)**         | 2                          | —        |
 | **Acoplamiento eferente (utils)**         | 0                          | 0        |
-| **Inestabilidad (utils)**                 | 0.0                        | ~0       |
+| **Inestabilidad (utils)**                 | 0.0                        | \~0      |
 | **Líneas por método promedio**            | 12                         | < 20     |
 
 ## Tests de integración — Cobertura por tipo derivado
@@ -124,9 +124,10 @@ La arquitectura soporta extensibilidad natural hacia el estándar completo IEC 6
 ## Trabajo pendiente — marcado explícitamente en el código
 
 El propio código fuente documenta, vía comentarios `// TODO:`, las verificaciones semánticas que quedan fuera del alcance de esta versión:
-- Control de errores sobre enumerados literales inexistentes (`initialized_custom_with_identifier`, `initialized_enumerated`)
-- Chequeo semántico de rangos de subrango (`range`)
-- Conversión de constantes con prefijo de tipo (`numeric_constant`)
-- Verificación de compatibilidad de tipo entre un prefijo temporal y su literal (`time_constant`)
+
+* Control de errores sobre enumerados literales inexistentes (`initialized_custom_with_identifier`, `initialized_enumerated`)
+* Chequeo semántico de rangos de subrango (`range`)
+* Conversión de constantes con prefijo de tipo (`numeric_constant`)
+* Verificación de compatibilidad de tipo entre un prefijo temporal y su literal (`time_constant`)
 
 Estas quedan propuestas como trabajo futuro en el Capítulo 11.

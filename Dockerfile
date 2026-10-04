@@ -49,4 +49,8 @@ ENV PUPPETEER_EXECUTABLE_PATH=/opt/puppeteer/cache/chrome-headless-shell/linux-1
 ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
 
 WORKDIR /workspace
+
+# Copy assets (charts and rendered diagrams) for thesis build
+COPY doc/ /workspace/doc/
+
 ENTRYPOINT ["bash"]

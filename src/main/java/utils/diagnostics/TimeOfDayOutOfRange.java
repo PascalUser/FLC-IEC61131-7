@@ -3,7 +3,7 @@ package utils.diagnostics;
 /**
  * Error for TIME_OF_DAY literals with invalid time components.
  * <p>
- * Examples: 25:00:00 (hour > 23), 12:60:00 (minute > 59), 12:30:60 (second > 59).
+ * Examples: {@code 25:00:00} (hour &gt; 23), {@code 12:60:00} (minute &gt; 59), {@code 12:30:60} (second &gt; 59).
  * </p>
  *
  * @author Matias Ortiz

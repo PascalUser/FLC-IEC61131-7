@@ -132,6 +132,7 @@ classDiagram
 ## Gramática soportada — resumen
 
 ### Bloques principales IEC 61131-7
+
 ```
 program → opt_data_type_declaration function_block_declaration
 
@@ -148,6 +149,7 @@ opt_function_block_body → opt_fuzzify_block_list
 ```
 
 ### Fuzzify / Defuzzify
+
 ```
 fuzzify_block → FUZZIFY IDENTIFIER linguistic_term_list END_FUZZIFY
 linguistic_term → TERM IDENTIFIER := (IDENTIFIER | membership_function) ';'
@@ -166,6 +168,7 @@ defuzz_method → COG | COGS | COA | LM | RM
 ```
 
 ### Rule Block
+
 ```
 rule_block → RULEBLOCK IDENTIFIER
     operator_definition
@@ -188,6 +191,7 @@ conclusion_list → IDENTIFIER [IS IDENTIFIER] (',' IDENTIFIER [IS IDENTIFIER])*
 ```
 
 ### Declaraciones de variables — Anexo B IEC 61131-3
+
 ```
 var_declarations → var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
 var_id_decl → VAR { source=INTERNAL, use=VARIABLE }
@@ -200,6 +204,7 @@ var_spec_init → custom_spec_init | boolean_spec_init | simple_spec_init
 ```
 
 ### Tipos de datos
+
 ```
 simple_specification → elementary_type_name  { subtype ∈ {SINT..ULINT, REAL, LREAL, TIME, DATE, ...} }
 custom_specification → IDENTIFIER  { subtype=CUSTOM, customType=IDENTIFIER }
@@ -212,6 +217,7 @@ string_specification → STRING | WSTRING [ '[' numeric_constant ']' ]
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -229,6 +235,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -378,9 +385,9 @@ sequenceDiagram
 | Variable inicializada | `initialized_simple/custom/boolean`    | `FB#varName`         | initialValue=VariableInitialization(literal)                                                 |
 | Array                 | `var_init_decl` (array_spec_init)      | `FB#arrName`         | type=ARRAY, subtype=elementType, initialValue=RepeatedInitialization(dimension, defaultInit) |
 | Array inicializado    | `initialized_array`                    | `FB#arrName`         | initialValue=RepeatedInitialization con intervalos                                           |
-| Struct                | `structure_specification` (END_STRUCT) | `TypeName`           | type=STRUCT, parameters=[field1..], initialValue=StructInitialization                        |
+| Struct                | `structure_specification` (END_STRUCT) | `TypeName`           | type=STRUCT, parameters=\[field1..], initialValue=StructInitialization                       |
 | Campo struct          | `structure_field_declaration`          | `TypeName#fieldName` | use=FIELD, type/subtype del campo                                                            |
-| Enum (tipo)           | `enumerated_specification`             | `FB#enumName`        | type=ENUMERATE, subtype=INT, parameters=[A,B,C]                                              |
+| Enum (tipo)           | `enumerated_specification`             | `FB#enumName`        | type=ENUMERATE, subtype=INT, parameters=\[A,B,C]                                             |
 | Enum valor (macro)    | `enumerated_values_list`               | `TypeName#VALUE`     | use=MACRO, initialValue=MacroInitialization(index)                                           |
 | Subrange              | `subrange_specification`               | `FB#varName`         | type=SUBRANGE, inferiorLimits/superiorLimits                                                 |
 | Tipo declarado        | `type_declaration`                     | `TypeName`           | use=TYPE, type/subtype/parameters/initialValue según spec                                    |
@@ -389,17 +396,19 @@ sequenceDiagram
 
 Tests de integración en `src/test/java/unit/parser/ParserTest.java`:
 
-- **Parse_ForSyntacticallyValidPrograms_IsTrue** — parameterized test que recorre `src/test/resources/examples/*.fcl` y verifica `parse() == true` sin errores de diagnóstico
+* **Parse_ForSyntacticallyValidPrograms_IsTrue** — parameterized test que recorre `src/test/resources/examples/*.fcl` y verifica `parse() == true` sin errores de diagnóstico
 
 Base de soporte en `src/test/java/utils/ParserTestSupport.java`:
-- `parse(Reader)` / `parse(String)` — crea `SymbolTable`, `DiagnosticsHandler`, `Lexer`, `Parser`; aserta éxito y ausencia de errores; retorna `SymbolTable` poblado para aserciones posteriores
+
+* `parse(Reader)` / `parse(String)` — crea `SymbolTable`, `DiagnosticsHandler`, `Lexer`, `Parser`; aserta éxito y ausencia de errores; retorna `SymbolTable` poblado para aserciones posteriores
 
 Ejecución:
+
 ```bash
 mvn test -Dtest=ParserTest
 ```
 
-Cobertura actual: **~85%** (JaCoCo — limitado por código generado Bison).
+Cobertura actual: **\~63%** (JaCoCo — limitado por código generado Bison; `parser/internals` 89.7%, `parser/utils` 54.5%, `parser/initializations` 44.8%).
 
 ## Archivos fuente
 
@@ -407,7 +416,7 @@ Cobertura actual: **~85%** (JaCoCo — limitado por código generado Bison).
 src/main/java/parser/
 ├── package-info.java
 ├── Parser.java            (generado desde Parser.y — 3000+ líneas)
-├── Parser.y               (gramática Bison — 1445 líneas)
+├── Parser.y               (gramática Bison — 1444 líneas)
 ├── internals/
 │   ├── package-info.java
 │   ├── ContextHandler.java

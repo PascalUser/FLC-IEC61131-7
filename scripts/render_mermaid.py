@@ -94,7 +94,7 @@ def process_chapter(chapter_path):
             print(f"  Rendering: {img_name}")
             if not render_mermaid(mermaid_code, RENDERED_DIR / img_name):
                 return match.group(0)
-        return f"![{caption}](doc/assets/rendered_diagrams/{img_name})"
+        return f"![{caption}](../assets/rendered_diagrams/{img_name})"
 
     new_content = re.sub(r"```mermaid\n(.*?)\n```", replace_mermaid, content, flags=re.DOTALL)
     if new_content != content:

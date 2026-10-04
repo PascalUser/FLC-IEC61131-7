@@ -861,6 +861,7 @@ public final class Parser
      * to the next token and prepares to return the semantic value
      * of the token.
      * @return the token identifier corresponding to the next token.
+     * @throws java.io.IOException if an I/O error occurs while reading input
      */
     int yylex() throws java.io.IOException;
 
@@ -890,6 +891,7 @@ public final class Parser
   /**
    * Instantiates the Bison-generated parser.
    * @param yylexer The scanner that will supply tokens to the parser.
+   * @param symbolTable the symbol table used to register declarations
    */
   public Parser(Lexer yylexer, SymbolTable symbolTable)
   {
@@ -911,6 +913,8 @@ this.symbolTable = symbolTable;
 
   /**
    * The number of syntax errors so far.
+   *
+   * @return the number of syntax errors encountered so far
    */
   public final int getNumberOfErrors() { return yynerrs; }
 
@@ -1021,6 +1025,8 @@ this.symbolTable = symbolTable;
    * Whether error recovery is being done.  In this state, the parser
    * reads token until it reaches a known state, and then restarts normal
    * operation.
+   *
+   * @return whether the parser is currently in error recovery mode
    */
   public final boolean recovering ()
   {
@@ -2268,6 +2274,7 @@ this.symbolTable = symbolTable;
    *
    * @return <tt>true</tt> if the parsing succeeds.  Note that this does not
    *          imply that there were no syntax errors.
+   * @throws java.io.IOException if an I/O error occurs while reading input
    */
   public boolean parse() throws java.io.IOException
 
@@ -2520,6 +2527,8 @@ this.symbolTable = symbolTable;
 
     /**
      * The symbol kind of the lookahead token.
+     *
+     * @return the symbol kind of the lookahead token
      */
     public final SymbolKind getToken() {
       return yytoken;

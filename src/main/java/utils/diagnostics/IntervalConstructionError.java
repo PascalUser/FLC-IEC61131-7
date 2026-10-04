@@ -5,7 +5,7 @@ package utils.diagnostics;
  * while a major magnitude is present.
  * <p>
  * IEC 61131-3 Rule: Only the highest-order non-zero magnitude may exceed its natural limit.
- * Examples: 1d_25h (days present -> hours must be <24), 2h_65m (hours present -> minutes must be <60).
+ * Examples: {@code 1d_25h} (days present -&gt; hours must be &lt;24), {@code 2h_65m} (hours present -&gt; minutes must be &lt;60).
  * </p>
  *
  * @author Matias Ortiz

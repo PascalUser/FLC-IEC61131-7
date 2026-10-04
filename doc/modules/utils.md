@@ -42,10 +42,11 @@ flowchart LR
 classDiagram
     namespace utils {
         class SymbolTable {
-            +table: Map~String, LexemeInfo~
+            -table: Map~String, LexemeInfo~
             +get()
             +put()
             +putIfAbsent()
+            +size()
         }
         class LexemeInfo {
             +type: Type
@@ -99,57 +100,63 @@ classDiagram
     Diagnostic <|-- Warning
     LexemeInfoBuilder ..|> LexemeInfoSchema
     Director --> LexemeInfoBuilder
-    Publisher ..|> LexemeInfoSchema
     SymbolTable --> LexemeInfo
     DiagnosticsHandler --> Diagnostic
 ```
 
 ## Tabla de clases
 
-| Clase                              | Responsabilidad                                                                                                   | Patrón              |
-|------------------------------------|-------------------------------------------------------------------------------------------------------------------|---------------------|
-| `utils.SymbolTable`                | Almacena y recupera `LexemeInfo` por nombre de lexema                                                             | Repository          |
-| `utils.LexemeInfo`                 | DTO inmutable con atributos semánticos completos (tipo, subtipo, uso, fuente, límites, parámetros, valor inicial) | Value Object        |
-| `utils.DiagnosticsHandler`         | Recolecta y gestiona diagnósticos (errores/warnings) en orden de inserción                                        | Collector           |
-| `utils.builders.LexemeInfoSchema`  | Contrato fluido para configurar atributos de `LexemeInfo`                                                         | Builder (interface) |
-| `utils.builders.LexemeInfoBuilder` | Implementación concreta del builder con `build()`                                                                 | Builder             |
-| `utils.builders.Director`          | Recetas predefinidas para literales y valores por defecto                                                         | Director            |
-| `utils.enums.Type`                 | Clasificación general: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                        | Enum                |
-| `utils.enums.Subtype`              | Tipos primitivos IEC 61131-7 (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE                                          | Enum                |
-| `utils.enums.Use`                  | Contexto de uso: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, UNKNOWN                           | Enum                |
-| `utils.enums.Source`               | Bloque de declaración: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE, UNKNOWN                                       | Enum                |
-| `utils.diagnostics.Diagnostic`     | Base abstracta con número de línea y `fatalForCompilation()`                                                      | Template Method     |
-| `utils.diagnostics.Error`          | Diagnóstico fatal (`fatalForCompilation() = true`)                                                                | Herencia            |
-| `utils.diagnostics.Warning`        | Diagnóstico no fatal (`fatalForCompilation() = false`)                                                            | Herencia            |
-| `utils.diagnostics.SyntaxError`    | Errores léxicos/sintácticos                                                                                       | Herencia            |
+| Clase                              | Responsabilidad                                                                                         | Patrón              |
+|------------------------------------|---------------------------------------------------------------------------------------------------------|---------------------|
+| `utils.SymbolTable`                | Almacena y recupera `LexemeInfo` por nombre de lexema                                                   | Repository          |
+| `utils.LexemeInfo`                 | DTO con atributos semánticos completos (tipo, subtipo, uso, fuente, límites, parámetros, valor inicial) | Value Object        |
+| `utils.DiagnosticsHandler`         | Recolecta y gestiona diagnósticos (errores/warnings) en orden de inserción                              | Collector           |
+| `utils.builders.LexemeInfoSchema`  | Contrato fluido para configurar atributos de `LexemeInfo`                                               | Builder (interface) |
+| `utils.builders.LexemeInfoBuilder` | Implementación concreta del builder con `build()`                                                       | Builder             |
+| `utils.builders.Director`          | Recetas predefinidas para literales y valores por defecto                                               | Director            |
+| `utils.enums.Type`                 | Clasificación general: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                              | Enum                |
+| `utils.enums.Subtype`              | Tipos primitivos IEC 61131-7 (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE                                | Enum                |
+| `utils.enums.Use`                  | Contexto de uso: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, UNKNOWN                 | Enum                |
+| `utils.enums.Source`               | Bloque de declaración: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE, UNKNOWN                             | Enum                |
+| `utils.diagnostics.Diagnostic`     | Base abstracta con número de línea y `fatalForCompilation()`                                            | Template Method     |
+| `utils.diagnostics.Error`          | Diagnóstico fatal (`fatalForCompilation() = true`)                                                      | Herencia            |
+| `utils.diagnostics.Warning`        | Diagnóstico no fatal (`fatalForCompilation() = false`)                                                  | Herencia            |
+| `utils.diagnostics.SyntaxError`    | Errores léxicos/sintácticos                                                                             | Herencia            |
 
 ## Gráficos estadísticos
 
 ### Distribución de constantes en enums — utils
+
 Chart: `assets/enum_sizes.png` — Distribución de constantes en enums semánticos
 *Fuente: `src/main/java/utils/enums/*.java`*
 
 ### Distribución de tipos en SymbolTable
+
 Chart: `assets/symboltable_type_distribution.png` — Distribución de entradas SymbolTable por Type
 *Fuente: diseño del sistema de tipos en `utils/LexemeInfo.java` y `utils/enums/Type.java`*
 
 ### Población de campos de LexemeInfo por tipo
+
 Chart: `assets/lexemeinfo_field_population.png` — Población de campos LexemeInfo por tipo de símbolo
 *Fuente: `src/main/java/utils/LexemeInfo.java`*
 
 ### Complejidad ciclomática por paquete
+
 Chart: `assets/cyclomatic_complexity.png` — Complejidad ciclomática promedio por paquete
 *Fuente: `utils` avg CYCLO 2.2 (42 métodos estimados)*
 
 ### Líneas de código por módulo
+
 Chart: `assets/loc_per_module.png` — Líneas de código por módulo
 *Fuente: `utils` 970 LOC en 27 archivos*
 
 ### Cobertura de tests por paquete
+
 Chart: `assets/test_coverage.png` — Cobertura de tests por paquete
 *Fuente: JaCoCo — `utils` 95% coverage*
 
 ### Acoplamiento de paquetes
+
 Chart: `assets/package_coupling.png` — Acoplamiento aferente/eferente entre paquetes
 *Fuente: análisis de imports — `utils` afferent=2, efferent=0, instability=0.0*
 
@@ -158,10 +165,11 @@ Chart: `assets/package_coupling.png` — Acoplamiento aferente/eferente entre pa
 ```mermaid
 classDiagram
     class SymbolTable {
-        +table: Map~String, LexemeInfo~
+        -table: Map~String, LexemeInfo~
         +get()
         +put()
         +putIfAbsent()
+        +size()
     }
     class LexemeInfo {
         +type: Type
@@ -224,14 +232,14 @@ classDiagram
 
 Tests unitarios en `src/test/java/unit/utils/SymbolTableTest.java`:
 
-- `PutAndGet_StoresAndRetrievesLexemeInfo` — verifica `put`/`get` básico
-- `Put_WithVariousLexemeInfo_StoresCorrectly` — parámetros con 5 combinaciones de Type/Subtype/Use/Source
-- `Get_ForNonExistentKey_ReturnsNull` — comportamiento para clave inexistente
-- `Put_OverwritesExistingKey_ReturnsOldValue` — sobrescritura y retorno del valor anterior
-- `PutIfAbsent_Behavior` — 3 casos: clave ausente, clave existente (no sobrescribe), clave existente con distinto valor
-- `PutIfAbsent_NullValue_StoresNull` — admite valores null
-- `Size_ReturnsEntryCount` — tamaño con 0, 1 y 2 entradas iniciales
-- `Size_AfterPutIfAbsent_IncrementsOnlyForNewKeys` — size incrementa solo en inserciones nuevas
+* `PutAndGet_StoresAndRetrievesLexemeInfo` — verifica `put`/`get` básico
+* `Put_WithVariousLexemeInfo_StoresCorrectly` — parámetros con 5 combinaciones de Type/Subtype/Use/Source
+* `Get_ForNonExistentKey_ReturnsNull` — comportamiento para clave inexistente
+* `Put_OverwritesExistingKey_ReturnsOldValue` — sobrescritura y retorno del valor anterior
+* `PutIfAbsent_Behavior` — 3 casos: clave ausente, clave existente (no sobrescribe), clave existente con distinto valor
+* `PutIfAbsent_NullValue_StoresNull` — admite valores null
+* `Size_ReturnsEntryCount` — tamaño con 0, 1 y 2 entradas iniciales
+* `Size_AfterPutIfAbsent_IncrementsOnlyForNewKeys` — size incrementa solo en inserciones nuevas
 
 Ejecución:
 

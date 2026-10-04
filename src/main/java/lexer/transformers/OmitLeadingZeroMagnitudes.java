@@ -7,15 +7,13 @@ package lexer.transformers;
  * at the start of an interval literal until it encounters the first non-zero magnitude.
  * If all magnitudes are zero, it returns {@code 0ms}.
  * </p>
- * <p>
- * Examples:
+ * <p>Examples:</p>
  * <pre>
- * "0000d0001h"        -> "1h"
- * "0000d0000h0001m"   -> "1m"
- * "0000d0000h0000m0001s" -> "1s"
- * "0000d"             -> "0ms"
+ * "0000d0001h"        -&gt; "1h"
+ * "0000d0000h0001m"   -&gt; "1m"
+ * "0000d0000h0000m0001s" -&gt; "1s"
+ * "0000d"             -&gt; "0ms"
  * </pre>
- * </p>
  *
  * @author Matias Ortiz
  * @version 1.0

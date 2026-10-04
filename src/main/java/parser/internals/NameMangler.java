@@ -8,15 +8,13 @@ package parser.internals;
  * generates globally unique keys by prefixing identifiers with their enclosing
  * scopes using {@code #} as a separator (not valid in IEC identifiers).
  * </p>
- * <p>
- * Example mangled names:
+ * <p>Example mangled names:</p>
  * <ul>
  *   <li>{@code COLOR_TYPE} (top-level type)</li>
  *   <li>{@code COLOR_TYPE#CLASSIFICATION} (struct field)</li>
  *   <li>{@code COLOR_TYPE#CLASSIFICATION#WHITE} (enum value)</li>
  *   <li>{@code PIXELS} (array variable)</li>
  * </ul>
- * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría

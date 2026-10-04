@@ -4,17 +4,7 @@
 
 La gramática (`src/main/java/parser/Parser.y`) reconoce dos grandes bloques: la declaración de tipos (`TYPE ... END_TYPE`, no terminal `data_type_declaration`) y la declaración de un `FUNCTION_BLOCK` completo, con sus variables, bloques de fuzzificación/defuzzificación y bloque de reglas.
 
-```mermaid
-flowchart TD
-    A["Lexer (JFlex)"] -->|Tokens| B["Parser (Bison)"]
-    B -->|Acciones semánticas| C["ContextHandler<br>(Pila de ParsingContext)"]
-    C --> D[Publisher]
-    D --> E[SymbolTable]
-    C --> F[UnderlyingScopeSearcher]
-    C --> G[DimensionCalculator]
-    C --> H[Factory]
-    C --> I[Initialization hierarchy]
-```
+![Gramática](../assets/rendered_diagrams/diagram_847a06d9.png)
 
 **Figura 6.1** — Flujo principal del parser (generado a partir de `Parser.y`).
 
@@ -46,29 +36,37 @@ Todas las formas de inicializar un valor implementan la interfaz `parser.initial
 ## Parser internals
 
 ### ContextHandler
+
 Mantiene una pila LIFO de `ParsingContext` para scopes anidados.
 
 ### ParsingContext
+
 Estado por scope: identificadores, `LexemeInfoBuilder`, 3 `NameMangler` independientes (`outerScopes`, `searchScope`, `nestedFields`), índice de array.
 
 ### NameMangler
+
 Genera claves calificadas (`TYPE#FIELD#VALUE`) con separador `#`. Tres instancias por contexto: `outerScopes`, `searchScope`, `nestedFields`.
 
 ### Publisher
+
 Publica identificadores declarados en la `SymbolTable` con nombre mangled.
 
 ### Factory
+
 Crea inicializaciones por defecto para tipos primitivos (solo `REAL` hoy).
 
 ### UnderlyingScopeSearcher
+
 Resuelve cadena de alias de tipo custom hasta la definición raíz.
 
 ### DimensionCalculator
+
 Calcula dimensión total de arrays multi-dimensionales.
 
 ## Gramática soportada — resumen
 
 ### Bloques principales IEC 61131-7
+
 ```
 program → opt_data_type_declaration function_block_declaration
 
@@ -85,6 +83,7 @@ opt_function_block_body → opt_fuzzify_block_list
 ```
 
 ### Fuzzify / Defuzzify
+
 ```
 fuzzify_block → FUZZIFY IDENTIFIER linguistic_term_list END_FUZZIFY
 linguistic_term → TERM IDENTIFIER := (IDENTIFIER | membership_function) ';'
@@ -103,6 +102,7 @@ defuzz_method → COG | COGS | COA | LM | RM
 ```
 
 ### Rule Block
+
 ```
 rule_block → RULEBLOCK IDENTIFIER
     operator_definition
@@ -125,6 +125,7 @@ conclusion_list → IDENTIFIER [IS IDENTIFIER] (',' IDENTIFIER [IS IDENTIFIER])*
 ```
 
 ### Declaraciones de variables — Anexo B IEC 61131-3
+
 ```
 var_declarations → var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
 var_id_decl → VAR { source=INTERNAL, use=VARIABLE }
@@ -137,6 +138,7 @@ var_spec_init → custom_spec_init | boolean_spec_init | simple_spec_init
 ```
 
 ### Tipos de datos
+
 ```
 simple_specification → elementary_type_name  { subtype ∈ {SINT..ULINT, REAL, LREAL, TIME, DATE, ...} }
 custom_specification → IDENTIFIER  { subtype=CUSTOM, customType=IDENTIFIER }
@@ -149,6 +151,7 @@ string_specification → STRING | WSTRING [ '[' numeric_constant ']' ]
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -165,6 +168,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -173,6 +177,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -189,6 +194,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -197,6 +203,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -213,6 +220,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -221,6 +229,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -237,6 +246,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -245,6 +255,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -261,6 +272,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -269,6 +281,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -285,6 +298,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -293,6 +307,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -309,6 +324,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -317,6 +333,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
@@ -333,6 +350,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
 ### Declaración de tipos de datos
+
 ```
 data_type_declaration → type_id_decl type_declaration_list END_TYPE
 type_id_decl → TYPE { use=TYPE }
@@ -341,6 +359,7 @@ type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | 
 ```
 
 ### Inicializaciones
+
 ```
 initialized_simple → simple_specification ':=' constant
 initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)

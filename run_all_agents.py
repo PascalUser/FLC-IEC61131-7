@@ -57,7 +57,7 @@ def main():
     
     # 3. Module documentation (requires opencode)
     for pkg in ["utils", "parser", "lexer"]:
-        try_opencode(["docs-update", pkg], f"Module docs: {pkg}")
+        try_opencode(["/docs-update", pkg], f"Module docs: {pkg}")
     
     # 4. Synthesis
     run(["python3", "scripts/synthesize_thesis_context.py"], "Synthesis")
@@ -66,10 +66,10 @@ def main():
     run(["bash", "scripts/build_thesis.sh"], "Thesis build")
     
     # 6. README (via opencode if available)
-    try_opencode(["readme-update"], "README update")
+    try_opencode(["/readme-update"], "README update")
     
     # 7. Javadoc fix
-    try_opencode(["javadoc-fix"], "Javadoc fix")
+    try_opencode(["/javadoc-fix"], "Javadoc fix")
     
     # 8. Validation
     run(["python3", "scripts/validate_docs.py"], "Validation")

@@ -8,14 +8,12 @@ import lexer.transformers.Transformer;
  * WSTRING hex escapes use 4 hex digits per character: {@code $HHHH}.
  * Extends {@link HexResolver} with {@code hexDigits = 4}.
  * </p>
- * <p>
- * Examples:
+ * <p>Examples:</p>
  * <ul>
  *   <li>{@code $0041} → 'A'</li>
  *   <li>{@code $000A} → newline</li>
  *   <li>{@code $$} → literal '$' (preserved for {@link lexer.transformers.StringEscapeResolver})</li>
  * </ul>
- * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría

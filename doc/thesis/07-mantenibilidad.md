@@ -20,17 +20,17 @@ La **mantenibilidad** fue el atributo de calidad principal que guió las decisio
 
 ## Métricas de código
 
-| Métrica                              | Valor  | Umbral objetivo |
-|--------------------------------------|--------|-----------------|
-| **LOC** (líneas de código)           | ~9,700 | —               |
-| **Complejidad ciclomática promedio** | 2.2    | < 10            |
-| **Complejidad ciclomática máxima**   | 18     | < 20            |
-| **Profundidad de herencia máxima**   | 3      | < 5             |
-| **Acoplamiento aferente (utils)**    | 2      | —               |
-| **Acoplamiento eferente (utils)**    | 0      | 0               |
-| **Inestabilidad (utils)**            | 0.0    | ~0              |
-| **Cobertura de tests (JaCoCo)**      | 85%    | > 80%           |
-| **Líneas por método promedio**       | 12     | < 20            |
+| Métrica                              | Valor   | Umbral objetivo |
+|--------------------------------------|---------|-----------------|
+| **LOC** (líneas de código)           | \~9,700 | —               |
+| **Complejidad ciclomática promedio** | 2.2     | < 10            |
+| **Complejidad ciclomática máxima**   | 18      | < 20            |
+| **Profundidad de herencia máxima**   | 3       | < 5             |
+| **Acoplamiento aferente (utils)**    | 2       | —               |
+| **Acoplamiento eferente (utils)**    | 0       | 0               |
+| **Inestabilidad (utils)**            | 0.0     | \~0             |
+| **Cobertura de tests (JaCoCo)**      | 85%     | > 80%           |
+| **Líneas por método promedio**       | 12      | < 20            |
 
 ## Estrategia de testing
 
@@ -87,11 +87,12 @@ El proyecto mantiene Javadoc completo en todas las APIs públicas:
 ```
 
 **Reglas:**
-- Todas las clases/interfaces/métodos/campos `public`/`protected` tienen Javadoc
-- `@param`, `@return`, `@throws` obligatorios en métodos públicos
-- `@link`/`@see` para referencias cruzadas verificables
-- `@since` para adiciones, `@deprecated` con alternativa para removidos
-- `mvn javadoc:javadoc` debe compilar sin warnings
+
+* Todas las clases/interfaces/métodos/campos `public`/`protected` tienen Javadoc
+* `@param`, `@return`, `@throws` obligatorios en métodos públicos
+* `@link`/`@see` para referencias cruzadas verificables
+* `@since` para adiciones, `@deprecated` con alternativa para removidos
+* `mvn javadoc:javadoc` debe compilar sin warnings
 
 ## Mantenibilidad evolutiva
 

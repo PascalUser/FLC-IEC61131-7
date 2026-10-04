@@ -8,16 +8,14 @@ package lexer.transformers;
  * are zeros, the decimal point is also removed (e.g., {@code 1.00s} becomes {@code 1s}).
  * Integer trailing zeros are strictly preserved (e.g., {@code 100s} remains {@code 100s}).
  * </p>
- * <p>
- * Examples:
+ * <p>Examples:</p>
  * <pre>
- * "1.500s"         -> "1.5s"
- * "1.000s"         -> "1s"
- * "0.050ms"        -> "0.05ms"
- * "100s"           -> "100s"       (integer trailing zeros preserved)
- * "-1.50h"         -> "-1.5h"
+ * "1.500s"         -&gt; "1.5s"
+ * "1.000s"         -&gt; "1s"
+ * "0.050ms"        -&gt; "0.05ms"
+ * "100s"           -&gt; "100s"       (integer trailing zeros preserved)
+ * "-1.50h"         -&gt; "-1.5h"
  * </pre>
- * </p>
 
  * @author Matias Ortiz
  * @version 1.0

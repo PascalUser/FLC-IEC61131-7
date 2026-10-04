@@ -10,8 +10,7 @@ import lexer.transformers.hex_resolvers.*;
  * to raw lexemes before semantic analysis. Each category has a dedicated chain
  * composed of atomic transformers.
  * </p>
- * <p>
- * Chains:
+ * <p>Chains:</p>
  * <ul>
  *   <li>{@code DATE_AND_TIMES}, {@code DAYTIMES}, {@code DATES}: no preprocessing</li>
  *   <li>{@code INTERVALS}: underscore removal → uppercase → magnitude zero stripping</li>
@@ -22,7 +21,6 @@ import lexer.transformers.hex_resolvers.*;
  *   <li>{@code WSTRINGS}: hex escape resolution (4 digits) → standard escape resolution</li>
  *   <li>{@code IDENTIFIERS}: uppercase conversion</li>
  * </ul>
- * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría
