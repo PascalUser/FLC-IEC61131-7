@@ -13,7 +13,6 @@ Those steps will be skipped with a warning. Run them manually on the host:
 """
 import subprocess
 import sys
-import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -22,7 +21,7 @@ def run(cmd, desc):
     print(f"\n{'='*60}")
     print(f"🔄 {desc}")
     print(f"   $ {' '.join(str(c) for c in cmd)}")
-    result = subprocess.run([str(c) for c in cmd], cwd=ROOT)
+    result = subprocess.run([str(c) for c in cmd], cwd=str(ROOT))
     if result.returncode != 0:
         print(f"❌ Failed: {desc}")
         sys.exit(1)
@@ -30,21 +29,24 @@ def run(cmd, desc):
 
 def try_opencode(cmd, desc):
     """Try to run opencode command, skip gracefully if not available"""
-    if not shutil.which("opencode"):
-        print(f"\n{'='*60}")
-        print(f"⚠️  SKIP: {desc} (opencode not available in container)")
-        print(f"   Run manually on host: opencode run {' '.join(cmd)}")
-        return False
-    
     print(f"\n{'='*60}")
     print(f"🔄 {desc}")
-    print(f"   $ opencode run {' '.join(cmd)}")
-    result = subprocess.run(["opencode", "run"] + [str(c) for c in cmd], cwd=ROOT)
-    if result.returncode != 0:
-        print(f"❌ Failed: {desc}")
+    print(f"   $ opencode run {' '.join(str(c) for c in cmd)}")
+    
+    try:
+        # Intentamos ejecutar el comando directamente
+        result = subprocess.run(["opencode", "run"] + [str(c) for c in cmd], cwd=str(ROOT))
+        if result.returncode != 0:
+            print(f"❌ Failed: {desc}")
+            return False
+        print(f"✅ Done: {desc}")
+        return True
+        
+    except FileNotFoundError:
+        # Si 'opencode' no está instalado/disponible, subprocess lanza FileNotFoundError
+        print(f"⚠️  SKIP: {desc} (opencode not available in container)")
+        print(f"   Run manually on host: opencode run {' '.join(str(c) for c in cmd)}")
         return False
-    print(f"✅ Done: {desc}")
-    return True
 
 def main():
     # 1. Statistical charts (PNGs)

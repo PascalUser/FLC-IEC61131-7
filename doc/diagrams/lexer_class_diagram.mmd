@@ -12,19 +12,19 @@ classDiagram
             +analyzers: Map
         }
     }
-    namespace lexer.transformers {
+    namespace lexer_transformers {
         class Transformer {
             +transform()
             +giveToNext()
         }
-        Transformer <|-- UnderscoreRemover
-        Transformer <|-- UpperCaseConverter
-        Transformer <|-- StripLeadingZeros
-        Transformer <|-- StripTrailingZeros
-        Transformer <|-- StringEscapeResolver
-        Transformer <|-- Nothing
+        class UnderscoreRemover
+        class UpperCaseConverter
+        class StripLeadingZeros
+        class StripTrailingZeros
+        class StringEscapeResolver
+        class Nothing
     }
-    namespace lexer.semantics {
+    namespace lexer_semantics {
         class SemanticAnalyzer {
             +analyze()
         }
@@ -33,21 +33,37 @@ classDiagram
             +fallback()
             +createDiagnostic()
         }
-        SemanticAnalyzer <|-- NumbersAnalyzer
-        NumbersAnalyzer <|-- Naturals
-        NumbersAnalyzer <|-- Integers
-        NumbersAnalyzer <|-- Reals
+        class Naturals
+        class Integers
+        class Reals
         class BaseNumbersAnalyzer
-        NumbersAnalyzer <|-- BaseNumbersAnalyzer
-        BaseNumbersAnalyzer <|-- Binary
-        BaseNumbersAnalyzer <|-- Octal
-        BaseNumbersAnalyzer <|-- Hexadecimal
-        SemanticAnalyzer <|-- Intervals
-        SemanticAnalyzer <|-- Identifiers
-        SemanticAnalyzer <|-- Strings
-        SemanticAnalyzer <|-- Dates
+        class Binary
+        class Octal
+        class Hexadecimal
+        class Intervals
+        class Identifiers
+        class Strings
+        class Dates
     }
     Lexer --> LexicalPreprocessors : uses
     Lexer --> LexicalAnalyzers : uses
     LexicalPreprocessors --> Transformer : manages
     LexicalAnalyzers --> SemanticAnalyzer : manages
+    Transformer <|-- UnderscoreRemover
+    Transformer <|-- UpperCaseConverter
+    Transformer <|-- StripLeadingZeros
+    Transformer <|-- StripTrailingZeros
+    Transformer <|-- StringEscapeResolver
+    Transformer <|-- Nothing
+    SemanticAnalyzer <|-- NumbersAnalyzer
+    NumbersAnalyzer <|-- Naturals
+    NumbersAnalyzer <|-- Integers
+    NumbersAnalyzer <|-- Reals
+    NumbersAnalyzer <|-- BaseNumbersAnalyzer
+    BaseNumbersAnalyzer <|-- Binary
+    BaseNumbersAnalyzer <|-- Octal
+    BaseNumbersAnalyzer <|-- Hexadecimal
+    SemanticAnalyzer <|-- Intervals
+    SemanticAnalyzer <|-- Identifiers
+    SemanticAnalyzer <|-- Strings
+    SemanticAnalyzer <|-- Dates

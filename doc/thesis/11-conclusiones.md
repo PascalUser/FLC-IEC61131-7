@@ -33,7 +33,7 @@ Se ha diseñado, implementado y validado un **compilador completo para FCL (IEC 
 
 ## Trabajo futuro
 
-### Corto plazo (extensión semántica)
+### Corto plazo — extensión semántica
 
 | Tarea                                     | Ubicación TODO                                                          | Esfuerzo estimado |
 |-------------------------------------------|-------------------------------------------------------------------------|-------------------|
@@ -42,7 +42,7 @@ Se ha diseñado, implementado y validado un **compilador completo para FCL (IEC 
 | Conversión constantes con prefijo de tipo | `Parser.y` (numeric_constant)                                           | Bajo              |
 | Compatibilidad prefijo temporal + literal | `Parser.y` (time_constant)                                              | Bajo              |
 
-### Mediano plazo (extensión IEC 61131-3)
+### Mediano plazo — extensión IEC 61131-3
 
 | Extensión                | Cambios necesarios                                                                               |
 |--------------------------|--------------------------------------------------------------------------------------------------|
@@ -51,7 +51,7 @@ Se ha diseñado, implementado y validado un **compilador completo para FCL (IEC 
 | **Generación de código** | Backend codegen (C, IEC 61131-3 IL, bytecode) usando `SymbolTable` + `Initialization` hierarchy  |
 | **Ejecución en PLC**     | Runtime interpreter / codegen para target PLC                                                    |
 
-### Largo plazo (ecosistema)
+### Largo plazo — ecosistema
 
 | Dirección                | Descripción                                                                |
 |--------------------------|----------------------------------------------------------------------------|

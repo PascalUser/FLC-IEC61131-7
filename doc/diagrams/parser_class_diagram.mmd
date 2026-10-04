@@ -4,7 +4,7 @@ classDiagram
             +parse()
         }
     }
-    namespace parser.internals {
+    namespace parser_internals {
         class ContextHandler {
             +stack: List~ParsingContext~
             +push()
@@ -25,12 +25,9 @@ classDiagram
             +getNameMangled()
         }
     }
-    namespace parser.utils {
+    namespace parser_utils {
         class Publisher {
             +publish(ParsingContext)
-        }
-        class Declaration {
-            +publish()
         }
         class Factory {
             +createDefault()
@@ -42,21 +39,29 @@ classDiagram
             +search()
         }
     }
-    namespace parser.initializations {
+    namespace parser_initializations {
         class Initialization {
             +selectVariable()
             +getVariableValue()
             +copy()
         }
-        Initialization <|-- VariableInitialization
-        Initialization <|-- BooleanInitialization
-        Initialization <|-- RealInitialization
-        Initialization <|-- EnumeratedInitialization
-        Initialization <|-- MacroInitialization
-        Initialization <|-- SubrangeInitialization
-        Initialization <|-- StructInitialization
-        Initialization <|-- RepeatedInitialization
+        class VariableInitialization
+        class BooleanInitialization
+        class RealInitialization
+        class EnumeratedInitialization
+        class MacroInitialization
+        class SubrangeInitialization
+        class StructInitialization
+        class RepeatedInitialization
     }
+    Initialization <|-- VariableInitialization
+    Initialization <|-- BooleanInitialization
+    Initialization <|-- RealInitialization
+    Initialization <|-- EnumeratedInitialization
+    Initialization <|-- MacroInitialization
+    Initialization <|-- SubrangeInitialization
+    Initialization <|-- StructInitialization
+    Initialization <|-- RepeatedInitialization
     Parser --> ContextHandler : uses
     ContextHandler --> ParsingContext : manages
     ParsingContext --> NameMangler : uses

@@ -43,58 +43,49 @@ flowchart LR
 classDiagram
     namespace parser {
         class Parser {
-            +parse() boolean
-            +getNumberOfErrors() int
-            +yyerror(String)
-            -contexts: ContextHandler
-            -yylexer: Lexer
-            -symbolTable: SymbolTable
+            +parse()
         }
     }
-    namespace parser.internals {
+    namespace parser_internals {
         class ContextHandler {
-            +stack: List<ParsingContext>
-            +push(ParsingContext)
-            +pop() ParsingContext
-            +current() ParsingContext
+            +stack: List~ParsingContext~
+            +push()
+            +pop()
+            +current()
         }
         class ParsingContext {
-            +declaredIdentifiers: List<String>
+            +declaredIdentifiers: List
             +metadataBuilder: LexemeInfoBuilder
             +outerScopes: NameMangler
             +searchScope: NameMangler
             +nestedFields: NameMangler
-            +index: int
         }
         class NameMangler {
             +prefix: StringBuilder
-            +addScope(String)
+            +addScope()
             +popScope()
-            +getNameMangled(String) String
-            +getCurrentScope() String
+            +getNameMangled()
         }
     }
-    namespace parser.utils {
+    namespace parser_utils {
         class Publisher {
-            +publish(ParsingContext, SymbolTable)
+            +publish(ParsingContext)
         }
         class Factory {
-            +createPrimitiveInitialization(SymbolTable, Subtype) Initialization
-            +createDefaultInitialization(SymbolTable, Subtype) Initialization
+            +createDefault()
         }
         class DimensionCalculator {
-            +calculate(ParsingContext) int
+            +calculate()
         }
         class UnderlyingScopeSearcher {
-            +search(SymbolTable, String) String
+            +search()
         }
     }
-    namespace parser.initializations {
+    namespace parser_initializations {
         class Initialization {
-            <<abstract>>
-            +selectVariable(String) Initialization
-            +getVariableValue() String
-            +copy() Initialization
+            +selectVariable()
+            +getVariableValue()
+            +copy()
         }
         class VariableInitialization
         class BooleanInitialization
@@ -104,24 +95,21 @@ classDiagram
         class SubrangeInitialization
         class StructInitialization
         class RepeatedInitialization
-        Initialization <|-- VariableInitialization
-        Initialization <|-- BooleanInitialization
-        Initialization <|-- RealInitialization
-        Initialization <|-- EnumeratedInitialization
-        Initialization <|-- MacroInitialization
-        Initialization <|-- SubrangeInitialization
-        Initialization <|-- StructInitialization
-        Initialization <|-- RepeatedInitialization
     }
+    Initialization <|-- VariableInitialization
+    Initialization <|-- BooleanInitialization
+    Initialization <|-- RealInitialization
+    Initialization <|-- EnumeratedInitialization
+    Initialization <|-- MacroInitialization
+    Initialization <|-- SubrangeInitialization
+    Initialization <|-- StructInitialization
+    Initialization <|-- RepeatedInitialization
     Parser --> ContextHandler : uses
     ContextHandler --> ParsingContext : manages
-    ParsingContext --> NameMangler : uses 3 instances
+    ParsingContext --> NameMangler : uses
     ParsingContext --> LexemeInfoBuilder : uses
     Publisher --> SymbolTable : publishes
     Publisher --> ParsingContext : reads
-    Factory --> Initialization : creates
-    DimensionCalculator --> ParsingContext : reads range_list
-    UnderlyingScopeSearcher --> SymbolTable : queries
 ```
 
 ## Tabla de clases
@@ -287,7 +275,7 @@ classDiagram
         +symbolTable: SymbolTable
     }
     class EnumeratedInitialization {
-        +values: List<String>
+        +values: List~String~
     }
     class MacroInitialization {
         +symbolTable: SymbolTable
@@ -298,7 +286,7 @@ classDiagram
         +upper: String
     }
     class StructInitialization {
-        +fields: Map<String, Initialization>
+        +fields: Map~String, Initialization~
         +setFieldInitialization(String, Initialization)
         +selectVariable(String) Initialization
         +copy() Initialization
@@ -306,7 +294,7 @@ classDiagram
     class RepeatedInitialization {
         +dimension: int
         +defaultInit: Initialization
-        +intervals: List<Interval>
+        +intervals: List~Interval~
         +addInterval(int, int, Initialization)
     }
     Initialization <|-- VariableInitialization
@@ -347,6 +335,38 @@ sequenceDiagram
     Parser->>Ctx: Acciones semánticas (builder, scopes)
     Parser->>Publisher: publish(ctx) en var_init_decl, type_declaration, structure_field_declaration
     Publisher->>ST: put(name, LexemeInfo)
+```
+
+## Secuencia de contexto de análisis
+
+```mermaid
+sequenceDiagram
+    participant Parser as Parser (Bison)
+    participant CH as ContextHandler
+    participant PC as ParsingContext
+    participant NM as NameMangler
+    participant Builder as LexemeInfoBuilder
+    participant Pub as Publisher
+    participant ST as SymbolTable
+
+    Parser->>CH: pushContext()
+    CH->>PC: new ParsingContext()
+    CH->>NM: new NameMangler() x3
+    CH->>Builder: new LexemeInfoBuilder()
+
+    loop Grammar reductions
+        Parser->>Builder: configure attributes
+        Parser->>PC: addDeclaredIdentifier()
+    end
+
+    Parser->>Pub: publish(ParsingContext)
+    Pub->>PC: build() LexemeInfo
+    loop For each identifier
+        Pub->>NM: getNameMangled(identifier)
+        Pub->>ST: put(mangledName, LexemeInfo)
+    end
+
+    Parser->>CH: popContext()
 ```
 
 ## Tabla de símbolos — población desde el Parser

@@ -1,9 +1,9 @@
 {
   "enum_sizes": {
-    "Type": 8,
+    "Type": 6,
     "Source": 7,
     "Use": 9,
-    "Subtype": 21
+    "Subtype": 24
   },
   "transformer_chains": {
     "DATE_AND_TIMES": 0,

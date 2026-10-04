@@ -38,7 +38,7 @@ Cambio de código
     │
     ├─► /thesis-build [foco]
     │     thesis-writer lee síntesis + mermaid → doc/thesis/*.md
-    │     render_mermaid.py → doc/assets/rendered_diagrams/*.png
+    │     render_mermaid.py → ../assets/rendered_diagrams/*.png
     │     build_thesis.sh → Tesis.docx
     │
     └─► /readme-update
@@ -51,7 +51,7 @@ Cambio de código
 |----------------------------------------|-----------------------------------------------------------------------------------------------------|
 | `scripts/extract_stats.py`             | Gráficos estadísticos (pie/bar/histograma) + métricas (CYCLO, LOC, COVERAGE, coupling) → PNG + JSON |
 | `scripts/generate_diagrams.py`         | Diagramas relacionales (class, sequence, flow, package, object) → `.mmd`                            |
-| `scripts/render_mermaid.py`            | Renderiza ```mermaid``` en capítulos tesis → PNG en `doc/assets/rendered_diagrams/`                 |
+| `scripts/render_mermaid.py`            | Renderiza ```mermaid``` en capítulos tesis → PNG en `../assets/rendered_diagrams/`                  |
 | `scripts/synthesize_thesis_context.py` | Lee modules + stats + diagrams → `doc/_synthesis_context.json` (single source of truth)             |
 | `scripts/build_thesis.sh`              | Concatena capítulos + pandoc (markdown-raw_tex) → `Tesis.docx`                                      |
 | `scripts/validate_docs.py`             | Valida markdown (sin imágenes markdown, sin paréntesis en headings, PNGs existen, mermaid válido)   |
@@ -62,8 +62,8 @@ Cambio de código
 2. `build_thesis.sh` ejecuta `render_mermaid.py`:
    - Busca bloques ```mermaid``` en `doc/thesis/*.md`
    - Extrae contenido, renderiza con `npx mmdc` (config puppeteer: `--no-sandbox --disable-setuid-sandbox`)
-   - Guarda PNG en `doc/assets/rendered_diagrams/diagram_<hash>.png`
-   - Reemplaza bloque ```mermaid``` por `![Caption](doc/assets/rendered_diagrams/diagram_<hash>.png)`
+   - Guarda PNG en `../assets/rendered_diagrams/diagram_<hash>.png`
+   - Reemplaza bloque ```mermaid``` por `![Caption](../assets/rendered_diagrams/diagram_<hash>.png)`
 3. `pandoc` compila con `--resource-path="$ROOT_DIR:$ROOT_DIR/doc/assets:$ROOT_DIR/doc/assets/rendered_diagrams"`
 
 ## Agents y validación

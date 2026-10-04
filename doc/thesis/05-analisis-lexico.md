@@ -4,19 +4,7 @@
 
 `Lexer.processAndSaveYylval(Transformer, SemanticAnalyzer)` es el punto único por el que pasa todo lexema no trivial (números, cadenas, identificadores, literales temporales). Primero lo transforma, después lo analiza semánticamente:
 
-```mermaid
-sequenceDiagram
-    participant J as Regla JFlex
-    participant T as Transformer (cadena)
-    participant S as SemanticAnalyzer
-    participant ST as SymbolTable
-    J->>T: transform(yytext())
-    T->>T: giveToNext(...) por cada eslabón
-    T-->>J: lexema normalizado
-    J->>S: analyze(LexicalContext)
-    S->>ST: putIfAbsent(lexema, LexemeInfo)
-    S-->>J: Result(lexema, token)
-```
+![Pipeline por lexema](../assets/rendered_diagrams/diagram_ba531375.png)
 
 ## Cadena de transformadores por familia de lexema
 
@@ -35,26 +23,7 @@ Cada categoría de literal tiene su propia cadena de `Transformer` (`lexer.inter
 
 El patrón **Chain of Responsibility** permite componer transformaciones atómicas y reutilizables. Cada `Transformer` decide si modifica el lexema y si delega al siguiente eslabón vía `giveToNext()`.
 
-```mermaid
-classDiagram
-    class Transformer {
-        +transform(String) String
-        +giveToNext(Transformer) Transformer
-    }
-    Transformer <|-- UnderscoreRemover
-    Transformer <|-- UpperCaseConverter
-    Transformer <|-- StripLeadingZeros
-    Transformer <|-- StripTrailingZeros
-    Transformer <|-- StripBaseNumberLeadingZeros
-    Transformer <|-- OmitLeadingZeroMagnitudes
-    Transformer <|-- OmitTrailingZeroMagnitudes
-    Transformer <|-- OmitLeadingZerosInMagnitudes
-    Transformer <|-- OmitTrailingZerosInMagnitudes
-    Transformer <|-- StringHexResolver
-    Transformer <|-- WStringHexResolver
-    Transformer <|-- StringEscapeResolver
-    Transformer <|-- Nothing
-```
+![Cadena de transformadores por familia de lexema](../assets/rendered_diagrams/diagram_638db3d0.png)
 
 **Figura 5.1** — Jerarquía de transformadores (Chain of Responsibility).
 
@@ -68,35 +37,7 @@ classDiagram
 
 Los analizadores se registran en `lexer.internals.LexicalAnalyzers` y cubren 14 categorías léxicas: 3 de fecha/hora, 1 de intervalos, 7 numéricas (3 decimales + 4 con base), 2 de cadenas, y 1 de identificadores.
 
-```mermaid
-classDiagram
-    class SemanticAnalyzer {
-        +analyze(LexicalContext) Result
-        +parse(String) ParsedValue
-        +fallback(String) String
-        +createDiagnostic(int, String) Diagnostic
-    }
-    class NumbersAnalyzer {
-        +parse(String) ParsedValue
-        +fallback(String) String
-    }
-    class BaseNumbersAnalyzer {
-        +parse(String) ParsedValue
-    }
-    NumbersAnalyzer <|-- Naturals
-    NumbersAnalyzer <|-- Integers
-    NumbersAnalyzer <|-- Reals
-    BaseNumbersAnalyzer <|-- Binary
-    BaseNumbersAnalyzer <|-- Octal
-    BaseNumbersAnalyzer <|-- Hexadecimal
-    SemanticAnalyzer <|-- Intervals
-    SemanticAnalyzer <|-- Dates
-    SemanticAnalyzer <|-- DayTimes
-    SemanticAnalyzer <|-- DateAndDayTimes
-    SemanticAnalyzer <|-- Strings
-    SemanticAnalyzer <|-- WStrings
-    SemanticAnalyzer <|-- Identifiers
-```
+![Analizadores semánticos numéricos](../assets/rendered_diagrams/diagram_d0772d70.png)
 
 ## Diagnósticos: error vs. warning
 
@@ -110,24 +51,7 @@ El compilador distingue diagnósticos fatales (`Error`, detienen la compilación
 - **Error (fatal)**: detiene la compilación. No hay valor de reemplazo semánticamente razonable (literales temporales mal formados).
 - **Warning (no fatal)**: se reporta y se sigue con valor de reemplazo bien definido (desbordamientos numéricos).
 
-```mermaid
-classDiagram
-    Diagnostic <|-- Error
-    Diagnostic <|-- Warning
-    Error <|-- DateOutOfRange
-    Error <|-- IntervalConstructionError
-    Error <|-- IntervalOutOfRange
-    Error <|-- TimeOfDayOutOfRange
-    Error <|-- DateAndTimeOutOfRange
-    Error <|-- SyntaxError
-    Warning <|-- StringLengthWarning
-    Warning <|-- HexadecimalOutOfRange
-    Warning <|-- RealOutOfRange
-    Warning <|-- NaturalOutOfRange
-    Warning <|-- BinaryOutOfRange
-    Warning <|-- OctalOutOfRange
-    Warning <|-- IntegerOutOfRange
-```
+![Diagnósticos: error vs. warning](../assets/rendered_diagrams/diagram_0d36130f.png)
 
 ## Punto de integración único
 

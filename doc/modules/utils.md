@@ -42,7 +42,7 @@ flowchart LR
 classDiagram
     namespace utils {
         class SymbolTable {
-            +table: Map<String, LexemeInfo>
+            +table: Map~String, LexemeInfo~
             +get()
             +put()
             +putIfAbsent()
@@ -53,19 +53,19 @@ classDiagram
             +customType: String
             +use: Use
             +source: Source
-            +inferiorLimits: List<String>
-            +superiorLimits: List<String>
-            +parameters: List<String>
+            +inferiorLimits: List~String~
+            +superiorLimits: List~String~
+            +parameters: List~String~
             +initialValue: Object
         }
         class DiagnosticsHandler {
-            +diagnostics: List<Diagnostic>
+            +diagnostics: List~Diagnostic~
             +add()
             +hasErrors()
             +getDiagnostics()
         }
     }
-    namespace utils.builders {
+    namespace utils_builders {
         class LexemeInfoSchema {
             +type()
             +subtype()
@@ -84,19 +84,19 @@ classDiagram
             +makeDefaultBoolean()
         }
     }
-    namespace utils.enums {
-        class Type { SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
+    namespace utils_enums {
+        class Type { UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
         class Subtype { 24 values }
         class Use { 9 values }
-        Source { 7 values }
+        class Source { 7 values }
     }
-    namespace utils.diagnostics {
+    namespace utils_diagnostics {
         class Diagnostic
         class Error
         class Warning
-        Diagnostic <|-- Error
-        Diagnostic <|-- Warning
     }
+    Diagnostic <|-- Error
+    Diagnostic <|-- Warning
     LexemeInfoBuilder ..|> LexemeInfoSchema
     Director --> LexemeInfoBuilder
     Publisher ..|> LexemeInfoSchema
@@ -114,10 +114,10 @@ classDiagram
 | `utils.builders.LexemeInfoSchema`  | Contrato fluido para configurar atributos de `LexemeInfo`                                                         | Builder (interface) |
 | `utils.builders.LexemeInfoBuilder` | Implementación concreta del builder con `build()`                                                                 | Builder             |
 | `utils.builders.Director`          | Recetas predefinidas para literales y valores por defecto                                                         | Director            |
-| `utils.enums.Type`                 | Clasificación general: SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                                 | Enum                |
+| `utils.enums.Type`                 | Clasificación general: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                        | Enum                |
 | `utils.enums.Subtype`              | Tipos primitivos IEC 61131-7 (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE                                          | Enum                |
-| `utils.enums.Use`                  | Contexto de uso: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION                                    | Enum                |
-| `utils.enums.Source`               | Bloque de declaración: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE                                                | Enum                |
+| `utils.enums.Use`                  | Contexto de uso: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, UNKNOWN                           | Enum                |
+| `utils.enums.Source`               | Bloque de declaración: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE, UNKNOWN                                       | Enum                |
 | `utils.diagnostics.Diagnostic`     | Base abstracta con número de línea y `fatalForCompilation()`                                                      | Template Method     |
 | `utils.diagnostics.Error`          | Diagnóstico fatal (`fatalForCompilation() = true`)                                                                | Herencia            |
 | `utils.diagnostics.Warning`        | Diagnóstico no fatal (`fatalForCompilation() = false`)                                                            | Herencia            |
@@ -158,7 +158,7 @@ Chart: `assets/package_coupling.png` — Acoplamiento aferente/eferente entre pa
 ```mermaid
 classDiagram
     class SymbolTable {
-        +table: Map<String, LexemeInfo>
+        +table: Map~String, LexemeInfo~
         +get()
         +put()
         +putIfAbsent()
@@ -169,9 +169,9 @@ classDiagram
         +customType: String
         +use: Use
         +source: Source
-        +inferiorLimits: List<String>
-        +superiorLimits: List<String>
-        +parameters: List<String>
+        +inferiorLimits: List~String~
+        +superiorLimits: List~String~
+        +parameters: List~String~
         +initialValue: Object
     }
     SymbolTable --> "0..*" LexemeInfo : contains
@@ -257,7 +257,7 @@ src/main/java/utils/
 │   └── Director.java
 ├── enums/
 │   ├── package-info.java
-│   ├── Type.java (8 valores)
+│   ├── Type.java (6 valores)
 │   ├── Subtype.java (24 valores)
 │   ├── Use.java (9 valores)
 │   └── Source.java (7 valores)

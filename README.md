@@ -6,7 +6,8 @@ Compilador del lenguaje estándar para controladores difusos **IEC 61131-7 (Fuzz
 
 - Java 8 (el build está fijado a `source`/`target` 1.8 en `pom.xml`)
 - Maven
-- Los plugins `jflex-maven-plugin` (1.9.1) y el esqueleto Bison ya están configurados en `pom.xml`; no hace falta instalar JFlex ni Bison aparte para compilar con Maven.
+- JFlex 1.9.1 vía `jflex-maven-plugin` (configurado en `pom.xml`, no requiere instalación aparte)
+- GNU Bison: se usa offline para regenerar `Parser.java` desde `Parser.y` (esqueleto `lalr1.java`); el código generado está versionado, por lo que Bison no es necesario para compilar con Maven.
 
 ## Compilar y correr los tests
 
@@ -27,14 +28,14 @@ mvn test
 ```mermaid
 flowchart LR
     SRC[Source .fcl] --> LEX[Lexer \nJFlex]
-    LEX -- tokens --> PAR[Parser \nBison \nLALR1]
+    LEX -- tokens --> PAR[Parser \nBison LALR1]
     PAR -- publishes --> ST[(SymbolTable)]
     PAR -- reports --> DIAG[DiagnosticsHandler]
 ```
 
 El analizador sintáctico orquesta la compilación: invoca al lexer, ejecuta las acciones semánticas de la gramática y publica el resultado en una `SymbolTable` compartida. Cada lexema resuelto queda representado como un `LexemeInfo` (tipo, subtipo, uso, fuente, límites, parámetros e inicialización), construido incrementalmente con `LexemeInfoBuilder` y publicado atómicamente por `parser.utils.Publisher`.
 
-Documentación técnica completa: [`doc/modules/parser.md`](doc/modules/parser.md), [`doc/modules/utils.md`](doc/modules/utils.md).
+Documentación técnica completa: [`doc/modules/lexer.md`](doc/modules/lexer.md), [`doc/modules/parser.md`](doc/modules/parser.md), [`doc/modules/utils.md`](doc/modules/utils.md).
 
 ## Estructura del repositorio
 
@@ -45,11 +46,11 @@ Documentación técnica completa: [`doc/modules/parser.md`](doc/modules/parser.m
 | `src/main/java/utils/`         | `SymbolTable` (Repository pattern), `LexemeInfo` (DTO inmutable), `builders/` (`LexemeInfoBuilder`, `Director`), `enums/` (`Type`, `Subtype`, `Use`, `Source`), `diagnostics/` (jerarquía `Error`/`Warning`/`SyntaxError`), `LucaInfo` (@deprecated)                                                                                                                                  |
 | `src/test/java/`               | Tests unitarios por componente (`unit/lexer/`, `unit/parser/`, `unit/utils/`) e integración por tipo derivado (`integration/`)                                                                                                                                                                                                                                                        |
 | `src/test/resources/examples/` | Programas FCL de ejemplo usados por `ParserTest`                                                                                                                                                                                                                                                                                                                                      |
-| `doc/`                         | Documentación técnica modular (`doc/modules/parser.md`, `doc/modules/utils.md`), capítulos de tesis (`doc/thesis/`) y gráficos generados por código (`doc/assets/`)                                                                                                                                                                                                                   |
+| `doc/`                         | Documentación técnica modular (`doc/modules/lexer.md`, `doc/modules/parser.md`, `doc/modules/utils.md`), capítulos de tesis (`doc/thesis/`) y gráficos generados por código (`doc/assets/`)                                                                                                                                                                                           |
 | `scripts/`                     | `generate_charts.py` (gráficos a partir de datos reales del código) y `build_thesis.sh` (compila `doc/thesis/*.md` a `.docx` con pandoc)                                                                                                                                                                                                                                              |
 | `.opencode/`                   | Agentes de [OpenCode](https://opencode.ai) para mantener documentación, gráficos y tesis (ver `doc/HARNESS.md`)                                                                                                                                                                                                                                                                       |
 
-## Documentación asistida por agentes (OpenCode)
+## Documentación asistida por agentes OpenCode
 
 Este repo incluye un harness de agentes de OpenCode para mantener la documentación, los gráficos y la tesis actualizados contra el código real (nunca contra datos inventados). Ver [`doc/HARNESS.md`](doc/HARNESS.md).
 

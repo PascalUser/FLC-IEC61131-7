@@ -4,13 +4,7 @@
 
 El compilador sigue una arquitectura monolítica de dos fases (léxica y sintáctica) orquestada por el analizador sintáctico, con una tabla de símbolos compartida como repositorio central de estado.
 
-```mermaid
-flowchart LR
-    SRC[Código fuente .fcl] --> LEX[Lexer\nJFlex]
-    LEX -- tokens --> PAR[Parser\nBison LALR1]
-    PAR -- publica --> ST[(SymbolTable)]
-    PAR -- reporta --> DIAG[DiagnosticsHandler]
-```
+![Vista general](../assets/rendered_diagrams/diagram_962eca4f.png)
 
 **Figura 4.1** — Pipeline de compilación (generado directamente a partir del flujo implementado en `Lexer.processAndSaveYylval` y las acciones semánticas de `Parser.y`).
 
@@ -25,16 +19,7 @@ El paquete `utils` concentra el estado compartido entre fases:
 | `LexemeInfoBuilder` / `LexemeInfoSchema` | Builder fluido que las acciones de la gramática usan para ir completando un `LexemeInfo` a medida que se reducen reglas                                            |
 | `DiagnosticsHandler`                     | Colector de `Diagnostic` (errores y warnings) con un flag `hasErrors()` que decide si la compilación es válida                                                     |
 
-```mermaid
-flowchart TD
-    A[Lexer] -->|Tokens + Diagnósticos| B[SymbolTable]
-    C[Parser] -->|Publica LexemeInfo| B
-    C -->|Reporta errores| D[DiagnosticsHandler]
-    B --> E[LexemeInfo\n(DTO inmutable)]
-    F[LexemeInfoBuilder] -->|Construye| E
-    G[Director] -->|Recetas| F
-    H[Type/Subtype/Use/Source] -->|Clasifican| E
-```
+![Repositorio centralizado](../assets/rendered_diagrams/diagram_c2f1eab2.png)
 
 **Figura 4.2** — Arquitectura del módulo `utils` (Repository pattern).
 
@@ -56,33 +41,7 @@ Cada entrada en la `SymbolTable` es un `LexemeInfo` completo. Los campos relevan
 | ARRAY     | element type                | inferiorLimits, superiorLimits, initialValue=RepeatedInitialization                        | `ARRAY[0..9] OF INT := 5(0), 3(10)` |
 | STRUCT    | CUSTOM                      | parameters=nombres de campo, initialValue=StructInitialization (mapa campo→Initialization) | `STRUCT(a:=10, b:=20)`              |
 
-```mermaid
-classDiagram
-    class SymbolTable {
-        +table: Map<String, LexemeInfo>
-        +get()
-        +put()
-        +putIfAbsent()
-    }
-    class LexemeInfo {
-        +type: Type
-        +subtype: Subtype
-        +customType: String
-        +use: Use
-        +source: Source
-        +inferiorLimits: List<String>
-        +superiorLimits: List<String>
-        +parameters: List<String>
-        +initialValue: Object
-    }
-    SymbolTable --> "0..*" LexemeInfo : contains
-
-    note for LexemeInfo "SIMPLE\ntype=SIMPLE, subtype=INT/REAL/BOOL\nuse=VARIABLE/LITERAL\ninitialValue=literal"
-    note for LexemeInfo "ARRAY\ntype=ARRAY, subtype=element type\ninferiorLimits=[0], superiorLimits=[9]\ninitialValue=RepeatedInitialization"
-    note for LexemeInfo "STRUCT\ntype=STRUCT, customType=MyStruct\nparameters=[field1, field2]\ninitialValue=StructInitialization"
-    note for LexemeInfo "ENUMERATE\ntype=ENUMERATE, subtype=INT\nparameters=[A, B, C]\nuse=MACRO for each value"
-    note for LexemeInfo "SUBRANGE\ntype=SUBRANGE\ninferiorLimits=[0], superiorLimits=[100]\ninitialValue=SubrangeInitialization"
-```
+![Almacenamiento en SymbolTable por tipo](../assets/rendered_diagrams/diagram_76350cf1.png)
 
 **Figura 4.3** — Estructura de almacenamiento en SymbolTable por tipo de símbolo.
 

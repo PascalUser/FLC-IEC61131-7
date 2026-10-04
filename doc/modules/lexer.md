@@ -15,10 +15,13 @@ flowchart LR
         LJ[Lexer.java]
         LI[internals/*]
         LT[transformers/*]
+        LTH[transformers/hex_resolvers/*]
+        LTU[transformers/utils/*]
         LS[semantics/*]
         LSN[semantics/numbers/*]
         LSB[semantics/numbers/bases/*]
         LSS[semantics/strings/*]
+        LSU[semantics/utils/*]
     end
     subgraph Parser
         P1[Parser.y]
@@ -35,10 +38,13 @@ flowchart LR
     LF --> LJ
     LI --> LJ
     LT --> LJ
+    LTH --> LT
+    LTU --> LT
     LS --> LJ
     LSN --> LS
     LSB --> LSN
     LSS --> LS
+    LSU --> LS
     LJ --> P1
     LJ <--> U1
     LJ --> U3
@@ -90,31 +96,32 @@ classDiagram
             +IDENTIFIERS: SemanticAnalyzer
         }
     }
-    namespace lexer.transformers {
+    namespace lexer_transformers {
         class Transformer {
             <<abstract>>
             +transform(String) String
             #giveToNext(String) String
         }
-        Transformer <|-- UnderscoreRemover
-        Transformer <|-- UpperCaseConverter
-        Transformer <|-- StripLeadingZeros
-        Transformer <|-- StripTrailingZeros
-        Transformer <|-- OmitLeadingZeroMagnitudes
-        Transformer <|-- OmitTrailingZeroMagnitudes
-        Transformer <|-- OmitLeadingZerosInMagnitudes
-        Transformer <|-- OmitTrailingZerosInMagnitudes
-        Transformer <|-- StripBaseNumberLeadingZeros
-        Transformer <|-- StringEscapeResolver
-        Transformer <|-- StringHexResolver
-        Transformer <|-- WStringHexResolver
-        Transformer <|-- Nothing
+        class UnderscoreRemover
+        class UpperCaseConverter
+        class StripLeadingZeros
+        class StripTrailingZeros
+        class OmitLeadingZeroMagnitudes
+        class OmitTrailingZeroMagnitudes
+        class OmitLeadingZerosInMagnitudes
+        class OmitTrailingZerosInMagnitudes
+        class StripBaseNumberLeadingZeros
+        class StringEscapeResolver
+        class Nothing
     }
-    namespace lexer.transformers.hex_resolvers {
+    namespace lexer_transformers_hex_resolvers {
+        class HexResolver {
+            <<abstract>>
+        }
         class StringHexResolver
         class WStringHexResolver
     }
-    namespace lexer.semantics {
+    namespace lexer_semantics {
         class SemanticAnalyzer {
             <<interface>>
             +analyze(LexicalContext) Result
@@ -129,16 +136,13 @@ classDiagram
             +symbolTable: SymbolTable
             +diagnosticsHandler: DiagnosticsHandler
         }
-        SemanticAnalyzer <|-- NumbersAnalyzer
-        SemanticAnalyzer <|-- Intervals
-        SemanticAnalyzer <|-- Identifiers
-        SemanticAnalyzer <|-- Dates
-        SemanticAnalyzer <|-- DayTimes
-        SemanticAnalyzer <|-- DateAndDayTimes
-        SemanticAnalyzer <|-- Strings
-        SemanticAnalyzer <|-- WStrings
+        class Intervals
+        class Identifiers
+        class Dates
+        class DayTimes
+        class DateAndDayTimes
     }
-    namespace lexer.semantics.numbers {
+    namespace lexer_semantics_numbers {
         class NumbersAnalyzer {
             <<abstract>>
             +analyze(LexicalContext) Result
@@ -151,25 +155,53 @@ classDiagram
             +subtype: Subtype
             +value: Object
         }
-        NumbersAnalyzer <|-- Naturals
-        NumbersAnalyzer <|-- Integers
-        NumbersAnalyzer <|-- Reals
+        class Naturals
+        class Integers
+        class Reals
         class BaseNumbersAnalyzer {
             <<abstract>>
         }
-        NumbersAnalyzer <|-- BaseNumbersAnalyzer
-        BaseNumbersAnalyzer <|-- Binary
-        BaseNumbersAnalyzer <|-- Octal
-        BaseNumbersAnalyzer <|-- Hexadecimal
+        class Binary
+        class Octal
+        class Hexadecimal
     }
-    namespace lexer.semantics.strings {
+    namespace lexer_semantics_strings {
         class StringsAnalyzer {
             <<abstract>>
             +analyze(LexicalContext) Result
         }
-        StringsAnalyzer <|-- Strings
-        StringsAnalyzer <|-- WStrings
+        class Strings
+        class WStrings
     }
+    Transformer <|-- UnderscoreRemover
+    Transformer <|-- UpperCaseConverter
+    Transformer <|-- StripLeadingZeros
+    Transformer <|-- StripTrailingZeros
+    Transformer <|-- OmitLeadingZeroMagnitudes
+    Transformer <|-- OmitTrailingZeroMagnitudes
+    Transformer <|-- OmitLeadingZerosInMagnitudes
+    Transformer <|-- OmitTrailingZerosInMagnitudes
+    Transformer <|-- StripBaseNumberLeadingZeros
+    Transformer <|-- StringEscapeResolver
+    Transformer <|-- Nothing
+    HexResolver <|-- StringHexResolver
+    HexResolver <|-- WStringHexResolver
+    SemanticAnalyzer <|-- Intervals
+    SemanticAnalyzer <|-- Identifiers
+    SemanticAnalyzer <|-- Dates
+    SemanticAnalyzer <|-- DayTimes
+    SemanticAnalyzer <|-- DateAndDayTimes
+    NumbersAnalyzer <|-- Naturals
+    NumbersAnalyzer <|-- Integers
+    NumbersAnalyzer <|-- Reals
+    NumbersAnalyzer <|-- BaseNumbersAnalyzer
+    BaseNumbersAnalyzer <|-- Binary
+    BaseNumbersAnalyzer <|-- Octal
+    BaseNumbersAnalyzer <|-- Hexadecimal
+    SemanticAnalyzer <|-- NumbersAnalyzer
+    StringsAnalyzer <|-- Strings
+    StringsAnalyzer <|-- WStrings
+    SemanticAnalyzer <|-- StringsAnalyzer
     Lexer --> LexicalPreprocessors : uses
     Lexer --> LexicalAnalyzers : uses
     LexicalPreprocessors --> Transformer : manages chains
@@ -178,41 +210,44 @@ classDiagram
 
 ## Tabla de clases
 
-| Clase                                              | Responsabilidad                                                                                | Patrón                             |
-|----------------------------------------------------|------------------------------------------------------------------------------------------------|------------------------------------|
-| `lexer.Lexer`                                      | Escáner generado por JFlex; implementa `Parser.Lexer`; coordina preprocesadores y analizadores | Generated Lexer / Facade           |
-| `lexer.internals.LexicalPreprocessors`             | Registro de cadenas de transformadores por categoría léxica                                    | Registry / Chain of Responsibility |
-| `lexer.internals.LexicalAnalyzers`                 | Registro de analizadores semánticos por categoría léxica                                       | Registry                           |
-| `lexer.transformers.Transformer`                   | Base abstracta para transformadores encadenados                                                | Chain of Responsibility            |
-| `lexer.transformers.UnderscoreRemover`             | Elimina guiones bajos de literales numéricos y temporales                                      | Transform                          |
-| `lexer.transformers.UpperCaseConverter`            | Convierte identificadores a mayúsculas (IEC case-insensitive)                                  | Transform                          |
-| `lexer.transformers.StripLeadingZeros`             | Elimina ceros iniciales en números decimales                                                   | Transform                          |
-| `lexer.transformers.StripTrailingZeros`            | Elimina ceros finales en parte fraccionaria de reales                                          | Transform                          |
-| `lexer.transformers.OmitLeadingZeroMagnitudes`     | Elimina ceros iniciales en cada magnitud de intervalo                                          | Transform                          |
-| `lexer.transformers.OmitTrailingZeroMagnitudes`    | Elimina ceros finales en cada magnitud de intervalo                                            | Transform                          |
-| `lexer.transformers.OmitLeadingZerosInMagnitudes`  | Elimina ceros iniciales solo en magnitudes internas                                            | Transform                          |
-| `lexer.transformers.OmitTrailingZerosInMagnitudes` | Elimina ceros finales solo en magnitudes internas                                              | Transform                          |
-| `lexer.transformers.StripBaseNumberLeadingZeros`   | Elimina ceros iniciales tras prefijo base (2#, 8#, 16#)                                        | Transform                          |
-| `lexer.transformers.StringEscapeResolver`          | Resuelve escapes estándar (`$L`, `$N`, `$P`, `$R`, `$T`, `$$`, `$'`, `$"`)                     | Transform                          |
-| `lexer.transformers.StringHexResolver`             | Resuelve escapes hexadecimales de 2 dígitos (`$XX`) en STRING                                  | Transform                          |
-| `lexer.transformers.WStringHexResolver`            | Resuelve escapes hexadecimales de 4 dígitos (`$XXXX`) en WSTRING                               | Transform                          |
-| `lexer.transformers.Nothing`                       | Transformador identidad (sin preprocesamiento)                                                 | Null Object                        |
-| `lexer.semantics.SemanticAnalyzer`                 | Interfaz para análisis semántico con contexto léxico                                           | Strategy                           |
-| `lexer.semantics.NumbersAnalyzer`                  | Base para literales numéricos: parseo, validación de rango, fallback, diagnóstico              | Template Method                    |
-| `lexer.semantics.numbers.Naturals`                 | Enteros sin signo (0..4294967295, ULINT)                                                       | Template Method                    |
-| `lexer.semantics.numbers.Integers`                 | Enteros con signo (-2147483648..2147483647, DINT)                                              | Template Method                    |
-| `lexer.semantics.numbers.Reals`                    | Punto flotante IEEE 754 (REAL/LREAL) con notación científica                                   | Template Method                    |
-| `lexer.semantics.numbers.bases.Binary`             | Literales binarios (2#...) rango 0..65535 (UINT)                                               | Template Method                    |
-| `lexer.semantics.numbers.bases.Octal`              | Literales octales (8#...) rango 0..65535 (UINT)                                                | Template Method                    |
-| `lexer.semantics.numbers.bases.Hexadecimal`        | Literales hexadecimales (16#...) rango 0..65535 (UINT)                                         | Template Method                    |
-| `lexer.semantics.Intervals`                        | Literales TIME: validación magnitudes (D,H,M,S,MS) y total ≤ Long.MAX_VALUE                    | Strategy                           |
-| `lexer.semantics.Dates`                            | Literales DATE: validación calendario gregoriano                                               | Strategy                           |
-| `lexer.semantics.DayTimes`                         | Literales TIME_OF_DAY (TOD): validación 00:00:00.000..23:59:59.999                             | Strategy                           |
-| `lexer.semantics.DateAndDayTimes`                  | Literales DATE_AND_TIME (DT): combinación DATE + TOD                                           | Strategy                           |
-| `lexer.semantics.strings.StringsAnalyzer`          | Base para cadenas: validación longitud (255/16383), escapes                                    | Template Method                    |
-| `lexer.semantics.strings.Strings`                  | STRING (single-byte, máx 255 chars)                                                            | Template Method                    |
-| `lexer.semantics.strings.WStrings`                 | WSTRING (double-byte, máx 16383 chars)                                                         | Template Method                    |
-| `lexer.semantics.Identifiers`                      | Identificadores y palabras reservadas; case-insensitive via UpperCaseConverter                 | Strategy                           |
+| Clase                                                 | Responsabilidad                                                                                | Patrón                             |
+|-------------------------------------------------------|------------------------------------------------------------------------------------------------|------------------------------------|
+| `lexer.Lexer`                                         | Escáner generado por JFlex; implementa `Parser.Lexer`; coordina preprocesadores y analizadores | Generated Lexer / Facade           |
+| `lexer.internals.LexicalPreprocessors`                | Registro de cadenas de transformadores por categoría léxica                                    | Registry / Chain of Responsibility |
+| `lexer.internals.LexicalAnalyzers`                    | Registro de analizadores semánticos por categoría léxica                                       | Registry                           |
+| `lexer.transformers.Transformer`                      | Base abstracta para transformadores encadenados                                                | Chain of Responsibility            |
+| `lexer.transformers.UnderscoreRemover`                | Elimina guiones bajos de literales numéricos y temporales                                      | Transform                          |
+| `lexer.transformers.UpperCaseConverter`               | Convierte identificadores a mayúsculas (IEC case-insensitive)                                  | Transform                          |
+| `lexer.transformers.StripLeadingZeros`                | Elimina ceros iniciales en números decimales                                                   | Transform                          |
+| `lexer.transformers.StripTrailingZeros`               | Elimina ceros finales en parte fraccionaria de reales                                          | Transform                          |
+| `lexer.transformers.OmitLeadingZeroMagnitudes`        | Elimina ceros iniciales en cada magnitud de intervalo                                          | Transform                          |
+| `lexer.transformers.OmitTrailingZeroMagnitudes`       | Elimina ceros finales en cada magnitud de intervalo                                            | Transform                          |
+| `lexer.transformers.OmitLeadingZerosInMagnitudes`     | Elimina ceros iniciales solo en magnitudes internas                                            | Transform                          |
+| `lexer.transformers.OmitTrailingZerosInMagnitudes`    | Elimina ceros finales solo en magnitudes internas                                              | Transform                          |
+| `lexer.transformers.StripBaseNumberLeadingZeros`      | Elimina ceros iniciales tras prefijo base (2#, 8#, 16#)                                        | Transform                          |
+| `lexer.transformers.StringEscapeResolver`             | Resuelve escapes estándar (`$L`, `$N`, `$P`, `$R`, `$T`, `$$`, `$'`, `$"`)                     | Transform                          |
+| `lexer.transformers.hex_resolvers.HexResolver`        | Base abstracta para resolución de escapes hex en cadenas                                       | Chain of Responsibility            |
+| `lexer.transformers.hex_resolvers.StringHexResolver`  | Resuelve escapes hexadecimales de 2 dígitos (`$XX`) en STRING                                  | Transform                          |
+| `lexer.transformers.hex_resolvers.WStringHexResolver` | Resuelve escapes hexadecimales de 4 dígitos (`$XXXX`) en WSTRING                               | Transform                          |
+| `lexer.transformers.utils.ExponentFinder`             | Utilidad para localizar exponentes en literales reales                                         | Utility                            |
+| `lexer.transformers.Nothing`                          | Transformador identidad (sin preprocesamiento)                                                 | Null Object                        |
+| `lexer.semantics.SemanticAnalyzer`                    | Interfaz para análisis semántico con contexto léxico                                           | Strategy                           |
+| `lexer.semantics.numbers.NumbersAnalyzer`             | Base para literales numéricos: parseo, validación de rango, fallback, diagnóstico              | Template Method                    |
+| `lexer.semantics.numbers.Naturals`                    | Enteros sin signo (0..4294967295, ULINT)                                                       | Template Method                    |
+| `lexer.semantics.numbers.Integers`                    | Enteros con signo (-2147483648..2147483647, DINT)                                              | Template Method                    |
+| `lexer.semantics.numbers.Reals`                       | Punto flotante IEEE 754 (REAL/LREAL) con notación científica                                   | Template Method                    |
+| `lexer.semantics.numbers.bases.Binary`                | Literales binarios (2#...) rango 0..65535 (UINT)                                               | Template Method                    |
+| `lexer.semantics.numbers.bases.Octal`                 | Literales octales (8#...) rango 0..65535 (UINT)                                                | Template Method                    |
+| `lexer.semantics.numbers.bases.Hexadecimal`           | Literales hexadecimales (16#...) rango 0..65535 (UINT)                                         | Template Method                    |
+| `lexer.semantics.Intervals`                           | Literales TIME: validación magnitudes (D,H,M,S,MS) y total ≤ Long.MAX_VALUE                    | Strategy                           |
+| `lexer.semantics.Dates`                               | Literales DATE: validación calendario gregoriano                                               | Strategy                           |
+| `lexer.semantics.DayTimes`                            | Literales TIME_OF_DAY (TOD): validación 00:00:00.000..23:59:59.999                             | Strategy                           |
+| `lexer.semantics.DateAndDayTimes`                     | Literales DATE_AND_TIME (DT): combinación DATE + TOD                                           | Strategy                           |
+| `lexer.semantics.strings.StringsAnalyzer`             | Base para cadenas: validación longitud (255/16383), escapes                                    | Template Method                    |
+| `lexer.semantics.strings.Strings`                     | STRING (single-byte, máx 255 chars)                                                            | Template Method                    |
+| `lexer.semantics.strings.WStrings`                    | WSTRING (double-byte, máx 16383 chars)                                                         | Template Method                    |
+| `lexer.semantics.Identifiers`                         | Identificadores y palabras reservadas; case-insensitive via UpperCaseConverter                 | Strategy                           |
+| `lexer.semantics.utils.ReservedWords`                 | Conjunto de palabras reservadas IEC; consulta `isReserved`                                     | Registry                           |
 
 ## Cadenas de preprocesamiento — Transformer Chains
 
@@ -229,17 +264,20 @@ Cada categoría léxica tiene una cadena dedicada definida en `LexicalPreprocess
 | `WSTRINGS`                            | `WStringHexResolver → StringEscapeResolver`                                                                                                                      | Resuelve escapes hex (4 dígitos) y estándar                        |
 | `IDENTIFIERS`                         | `UpperCaseConverter`                                                                                                                                             | Convierte a mayúsculas (case-insensitive)                          |
 
+Chart: `assets/transformer_chain_lengths.png` — longitud de cada cadena de transformadores por categoría.
+
 ## Análisis semántico por categoría
 
 ### Literales numéricos — NumbersAnalyzer
 
-Todos heredan de `NumbersAnalyzer` que implementa el **Template Method**:
+Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **Template Method**:
 1. `parse(lexeme)` → `ParsedValue(lexeme, Subtype, value)` — subclase define parseo y rango
 2. Si `subtype == UNKNOWN` → `createDiagnostic()` + `fallback()` para valor corregido
 3. Construye `LexemeInfo` via `Director.makeLiteral()` y publica en `SymbolTable`
 4. Retorna `Result(lexeme, NUMERIC_LITERAL)`
 
 **Subtipos determinados por rango de valor:**
+
 | Analizador | Rango válido | Subtipos posibles | Fallback |
 |------------|--------------|-------------------|----------|
 | `Naturals` | 0 .. 4,294,967,295 | `USINT`..`ULINT` | 0 (USINT) |
@@ -361,11 +399,16 @@ Tests unitarios en `src/test/java/unit/lexer/`:
 - `LexerTokenizationTest.java` — tokenización correcta de todos los tipos de literal
 - `LexerSymbolTableTest.java` — población de SymbolTable con LexemeInfo correcto
 - `LexerDiagnosticHandlerTest.java` — generación de warnings/errors para valores fuera de rango
+- `transformers/OmitLeadingZeroMagnitudesTest.java`, `OmitTrailingZeroMagnitudesTest.java` — normalización de magnitudes internas
+- `transformers/OmitLeadingZerosInMagnitudesTest.java`, `OmitTrailingZerosInMagnitudesTest.java` — normalización de magnitudes internas
+- `transformers/StringEscapeResolverTest.java`, `StringHexResolverTest.java`, `WStringHexResolverTest.java` — resolución de escapes en cadenas
 
 Ejecución:
 ```bash
-mvn test -Dtest=LexerTokenizationTest,LexerSymbolTableTest,LexerDiagnosticHandlerTest
+mvn test -Dtest='Lexer*Test,unit.lexer.transformers.**'
 ```
+
+Chart: `assets/test_coverage.png` — cobertura JaCoCo por módulo; lexer limitado por código generado JFlex.
 
 Cobertura actual: **~90%** (JaCoCo — limitado por código generado JFlex).
 
@@ -374,8 +417,8 @@ Cobertura actual: **~90%** (JaCoCo — limitado por código generado JFlex).
 ```
 src/main/java/lexer/
 ├── package-info.java
-├── Lexer.flex              (especificación JFlex — 196 líneas)
-├── Lexer.java              (generado — 973 líneas, no editar a mano)
+├── Lexer.flex              (especificación JFlex)
+├── Lexer.java              (generado, no editar a mano)
 ├── internals/
 │   ├── package-info.java
 │   ├── LexicalPreprocessors.java
@@ -393,13 +436,15 @@ src/main/java/lexer/
 │   ├── OmitTrailingZerosInMagnitudes.java
 │   ├── StripBaseNumberLeadingZeros.java
 │   ├── StringEscapeResolver.java
-│   ├── StringHexResolver.java
-│   ├── WStringHexResolver.java
 │   ├── Nothing.java
 │   ├── hex_resolvers/
 │   │   ├── package-info.java
+│   │   ├── HexResolver.java
+│   │   ├── StringHexResolver.java
+│   │   └── WStringHexResolver.java
 │   └── utils/
 │       ├── package-info.java
+│       └── ExponentFinder.java
 ├── semantics/
 │   ├── package-info.java
 │   ├── SemanticAnalyzer.java
@@ -421,9 +466,13 @@ src/main/java/lexer/
 │   │   ├── Reals.java
 │   │   └── bases/
 │   │       ├── package-info.java
+│   │       ├── BaseNumbersAnalyzer.java
 │   │       ├── Binary.java
 │   │       ├── Octal.java
 │   │       └── Hexadecimal.java
+│   └── utils/
+│       ├── package-info.java
+│       └── ReservedWords.java
 ```
 
 ## Diagramas de apoyo — assets

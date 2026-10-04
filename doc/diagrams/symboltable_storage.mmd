@@ -1,6 +1,6 @@
 classDiagram
     class SymbolTable {
-        +table: Map<String, LexemeInfo>
+        +table: Map~String, LexemeInfo~
         +get()
         +put()
         +putIfAbsent()
@@ -11,9 +11,9 @@ classDiagram
         +customType: String
         +use: Use
         +source: Source
-        +inferiorLimits: List<String>
-        +superiorLimits: List<String>
-        +parameters: List<String>
+        +inferiorLimits: List~String~
+        +superiorLimits: List~String~
+        +parameters: List~String~
         +initialValue: Object
     }
     SymbolTable --> "0..*" LexemeInfo : contains

@@ -57,14 +57,21 @@ def extract_enum_sizes():
         # Count enum constants (lines with = or just identifiers before , or ;)
         import re
         # Find enum body
-        match = re.search(r'enum\s+\w+\s*\{([^}]+)}', content, re.DOTALL)
+        match = re.search(r'enum\s+\w+\s*\{(.+?)\}', content, re.DOTALL)
         if match:
             body = match.group(1)
-            # Count identifiers that look like enum constants
-            constants = re.findall(r'\b([A-Z_][A-Z0-9_]*)\b', body)
-            # Filter out common keywords
-            filtered = [c for c in constants if c not in {'PUBLIC', 'PRIVATE', 'PROTECTED', 'STATIC', 'FINAL', 'VOID', 'INT', 'STRING', 'RETURN', 'IF', 'ELSE', 'FOR', 'WHILE', 'THIS', 'SUPER', 'NEW', 'NULL', 'TRUE', 'FALSE', 'CASE', 'DEFAULT', 'SWITCH', 'BREAK', 'CONTINUE', 'THROW', 'TRY', 'CATCH', 'FINALLY', 'CLASS', 'INTERFACE', 'IMPLEMENTS', 'EXTENDS', 'PACKAGE', 'IMPORT', 'THROWS', 'NATIVE', 'SYNCHRONIZED', 'TRANSIENT', 'VOLATILE', 'ABSTRACT', 'STRICTFP', 'ASSERT', 'ENUM', 'CONST', 'GOTO', 'DO', 'LONG', 'SHORT', 'BYTE', 'CHAR', 'DOUBLE', 'FLOAT', 'BOOLEAN'}]
-            data[enum_name] = len(set(filtered))
+            # Strip comments before counting constants
+            body = re.sub(r'/\*.*?\*/', '', body, flags=re.DOTALL)
+            body = re.sub(r'//[^\n]*', '', body)
+            # Constants are declared before the first ';' (or end of body),
+            # separated by commas; each may optionally call a constructor.
+            decl_section = body.split(';', 1)[0]
+            constants = []
+            for part in decl_section.split(','):
+                name = part.strip().split('(', 1)[0].split('=', 1)[0].strip()
+                if re.fullmatch(r'[A-Z_][A-Z0-9_]*', name):
+                    constants.append(name)
+            data[enum_name] = len(constants)
     return data
 
 

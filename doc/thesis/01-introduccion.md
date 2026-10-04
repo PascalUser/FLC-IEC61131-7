@@ -35,37 +35,7 @@ Fuera de alcance: generación de código objetivo, optimización, enlace, ejecuc
 
 El desarrollo siguió un **ciclo de vida iterativo e incremental** con una única entrega final (single release), estructurado en cinco fases arquitectónicas que reflejan la evolución del sistema:
 
-```mermaid
-flowchart TD
-    subgraph Phase1[Initial Design]
-        A1[Lexer: JFlex + basic tokens]
-        A2[Parser: Bison + simple grammar]
-        A3[SymbolTable: Basic Map]
-    end
-    subgraph Phase2[Transformer Chain]
-        B1[LexicalPreprocessors registry]
-        B2[Chain of Responsibility: Transformer]
-        B3[Per-category chains]
-    end
-    subgraph Phase3[Semantic Analysis]
-        C1[SemanticAnalyzer base]
-        C2[Template Method: NumbersAnalyzer]
-        C3[Strategy: Binary/Octal/Hex]
-        C4[14 categories registered]
-    end
-    subgraph Phase4[SymbolTable Evolution]
-        D1[Repository pattern]
-        D2[LexemeInfo DTO with 9 fields]
-        D3[NameMangler for nested scopes]
-        D4[Publisher defers population]
-    end
-    subgraph Phase5[Initializations]
-        E1[Polymorphic Initialization hierarchy]
-        E2[StructInitialization: nested maps]
-        E3[RepeatedInitialization: interval partition]
-    end
-    Phase1 --> Phase2 --> Phase3 --> Phase4 --> Phase5
-```
+![Ciclo de vida iterativo con única entrega](../assets/rendered_diagrams/diagram_a59bd5a0.png)
 
 **Figura 1.1** — Evolución arquitectónica en cinco fases iterativas.
 

@@ -12,7 +12,7 @@
         <property name="max" value="120"/>
 
         <!-- Ignores long lines in package declarations, imports, and URLs to prevent false positives -->
-        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|https://|ftp://"/>
     </module>
 
     <module name="TreeWalker">

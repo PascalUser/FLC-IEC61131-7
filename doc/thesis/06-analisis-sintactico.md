@@ -6,8 +6,8 @@ La gramática (`src/main/java/parser/Parser.y`) reconoce dos grandes bloques: la
 
 ```mermaid
 flowchart TD
-    A[Lexer (JFlex)] -->|Tokens| B[Parser (Bison)]
-    B -->|Acciones semánticas| C[ContextHandler\n(Pila de ParsingContext)]
+    A["Lexer (JFlex)"] -->|Tokens| B["Parser (Bison)"]
+    B -->|Acciones semánticas| C["ContextHandler<br>(Pila de ParsingContext)"]
     C --> D[Publisher]
     D --> E[SymbolTable]
     C --> F[UnderlyingScopeSearcher]
@@ -20,14 +20,7 @@ flowchart TD
 
 ## Flujo de declaración de variables
 
-```mermaid
-flowchart TD
-    A["VAR x, y : INT := 10; END_VAR"] --> B["identifier_list = [x, y]"]
-    B --> C["var_spec_init -> simple_spec_init -> initialized_simple"]
-    C --> D["LexemeInfoBuilder{type=SIMPLE, subtype=INT, initialValue=10}"]
-    D --> E["Publisher.publish(ctx)"]
-    E --> F["symbolTable.put('X', ...) / put('Y', ...)"]
-```
+![Flujo de declaración de variables](../assets/rendered_diagrams/diagram_89e40370.png)
 
 **Figura 6.1** — Flujo de una declaración simple, tal como lo ejecutan las reglas `var_init_decl` y `Publisher.publish`.
 
@@ -48,41 +41,7 @@ flowchart TD
 
 Todas las formas de inicializar un valor implementan la interfaz `parser.initializations.Initialization` (`selectVariable`, `getVariableValue`, `copy`): `VariableInitialization` (un literal concreto), `MacroInitialization` (valor ordinal de un enumerado), `SubrangeInitialization`, `StructInitialization` (mapa recursivo, soporta structs anidados vía claves compuestas `RGB#GAMMA_R`) y `RepeatedInitialization` (particiona un arreglo en intervalos `[start,end]` disjuntos, cada uno con su propia `Initialization`, y los compacta automáticamente cuando dos intervalos adyacentes terminan con el mismo valor).
 
-```mermaid
-classDiagram
-    class Initialization {
-        <<abstract>>
-        +selectVariable(String) Initialization
-        +getVariableValue() String
-        +copy() Initialization
-    }
-    class VariableInitialization { +value: String }
-    class BooleanInitialization { +symbolTable: SymbolTable }
-    class RealInitialization { +symbolTable: SymbolTable }
-    class EnumeratedInitialization { +values: List<String> }
-    class MacroInitialization { +symbolTable: SymbolTable; +index: String }
-    class SubrangeInitialization { +lower: String; +upper: String }
-    class StructInitialization {
-        +fields: Map<String, Initialization>
-        +setFieldInitialization(String, Initialization)
-        +selectVariable(String) Initialization
-        +copy() Initialization
-    }
-    class RepeatedInitialization {
-        +dimension: int
-        +defaultInit: Initialization
-        +intervals: List<Interval>
-        +addInterval(int, int, Initialization)
-    }
-    Initialization <|-- VariableInitialization
-    Initialization <|-- BooleanInitialization
-    Initialization <|-- RealInitialization
-    Initialization <|-- EnumeratedInitialization
-    Initialization <|-- MacroInitialization
-    Initialization <|-- SubrangeInitialization
-    Initialization <|-- StructInitialization
-    Initialization <|-- RepeatedInitialization
-```
+![Inicializaciones como jerarquía polimórfica](../assets/rendered_diagrams/diagram_df8601ff.png)
 
 ## Parser internals
 
@@ -165,7 +124,7 @@ subcondition → IDENTIFIER IS IDENTIFIER | IDENTIFIER IS NOT IDENTIFIER
 conclusion_list → IDENTIFIER [IS IDENTIFIER] (',' IDENTIFIER [IS IDENTIFIER])*
 ```
 
-### Declaraciones de variables (Anexo B IEC 61131-3)
+### Declaraciones de variables — Anexo B IEC 61131-3
 ```
 var_declarations → var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
 var_id_decl → VAR { source=INTERNAL, use=VARIABLE }
@@ -397,7 +356,7 @@ initialized_structure_field → nested_field ':=' (constant | identifier_with_op
 nested_field → IDENTIFIER ('.' IDENTIFIER)*
 ```
 
-### Acciones semánticas clave (extracto de Parser.y)
+### Acciones semánticas clave — extracto de Parser.y
 
 | Regla                              | Acción semántica                                                                                                     |
 |------------------------------------|----------------------------------------------------------------------------------------------------------------------|

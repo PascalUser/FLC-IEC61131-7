@@ -21,8 +21,7 @@ El proyecto usa **JUnit 5 + Mockito** en dos niveles:
 # Analizadores semánticos
 ./gradlew test --tests unit.lexer.semantics.*
 ```
-
-### Qué verifica cada test
+## Qué verifica cada test
 
 | Test                         | Qué verifica                                                                                                                                   |
 |------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -19,6 +19,9 @@ Hard rules — validate and FAIL if any violation:
 6. **Mermaid blocks valid**: All ```mermaid``` blocks must have valid diagram type (flowchart, sequenceDiagram, classDiagram, etc.) and non-empty content.
 7. **No LucaInfo references**: `grep -r 'LucaInfo' doc/` must return empty (except filtered notes in synthesis).
 8. **Heading hierarchy**: No skipping heading levels (e.g., # → ###).
+9. **Mermaid classDiagram syntax**: No dots in namespace names, no `< >` generics (use `~`), no inheritance inside namespaces, all class/enum declarations have `class`/`enum` keyword.
+10. **Mermaid flowchart syntax**: Node labels with parentheses `()` must be quoted (e.g., `A["Label (text)"]`).
+11. **Thesis image paths**: Must use `../assets/` not `doc/assets/` in Markdown image syntax.
 
 Validation script: `python3 scripts/validate_docs.py`
 
@@ -26,5 +29,5 @@ Workflow:
 - Run `python3 scripts/validate_docs.py`
 - If violations found, report each with file, line, and description
 - Exit code 0 = all clean, 1 = violations found
-- Called by: readme-writer (after write), doc-writer (after write), thesis-writer (after each chapter)
+- Called by: readme-writer (after write), doc-writer (after write), thesis-writer (after each chapter), diagram-architect (after generating .mmd files)
 - Never modify files — only validate and report

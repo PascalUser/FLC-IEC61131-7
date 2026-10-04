@@ -4,15 +4,7 @@
 
 La arquitectura planificada inicial (Fase 1) contemplaba una tubería básica de tres etapas:
 
-```mermaid
-flowchart TD
-    subgraph Phase1[Initial Design]
-        A1[Lexer: JFlex + basic tokens]
-        A2[Parser: Bison + simple grammar]
-        A3[SymbolTable: Basic Map]
-    end
-    Phase1
-```
+![Diseño inicial](../assets/rendered_diagrams/diagram_7daa2277.png)
 
 **Figura 3.1** — Arquitectura inicial: tubería básica Lexer→Parser→SymbolTable.
 
