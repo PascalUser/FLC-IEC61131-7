@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Format a single markdown file with remark-cli (uses remark-gfm for tables)"""
+"""Format a single Markdown file with remark-cli (uses remark-gfm for tables)"""
 import subprocess
 import sys
 import re

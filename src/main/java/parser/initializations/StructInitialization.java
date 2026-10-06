@@ -9,6 +9,11 @@ import java.util.Objects;
  * from field name to that field's own {@link Initialization}. Nested structs
  * are addressed with a compound key (e.g. {@code "RGB#GAMMA_R"} sets field
  * {@code GAMMA_R} inside the nested struct stored under {@code "RGB"}).
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
  */
 public final class StructInitialization implements Initialization {
     private final Map<String, Initialization> map = new HashMap<>();

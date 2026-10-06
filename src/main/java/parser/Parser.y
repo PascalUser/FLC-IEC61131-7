@@ -614,6 +614,11 @@ initialized_boolean:
     boolean_specification edge
     | boolean_specification ASSIGN_OP boolean_constant
     {
+        /**
+         * Builds a boolean variable initialization from the assigned constant
+         * and stores it in the current parsing context.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder()
             .initialValue(
@@ -762,6 +767,11 @@ subrange_spec_init:
 subrange_specification:
     subrange_type_decl '(' range ')'
     {
+        /**
+         * Creates a SubrangeInitialization from the lower and upper limits already
+         * collected in the current context metadata and stores it there.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         LexemeInfo metadata = ctx.metadataBuilder().build();
         String ilimit = metadata.inferiorLimits.get(0);
@@ -938,6 +948,12 @@ array_spec_init:
 array_specification:
     ARRAY '[' range_list ']' OF IDENTIFIER
     {
+        /**
+         * Resolves the array's custom element type from the symbol table and
+         * builds an array metadata whose initial value repeats the element type
+         * initialization as many times as the computed dimension.
+        **/
+
         LexemeInfo typeMetadata = this.symbolTable.get($6);
         ParsingContext ctx = this.contexts.current();
 
@@ -955,6 +971,12 @@ array_specification:
     }
     | ARRAY '[' range_list ']' OF non_generic_type_name
     {
+        /**
+         * Builds an array metadata whose subtype is the given non-generic
+         * primitive type and whose initial value is the repeated primitive
+         * default initialization.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         int dimension= DimensionCalculator.calculate(ctx);
         Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $6);
@@ -1206,6 +1228,11 @@ initialized_field_with_array:
 initialized_field_with_structure:
     nested_field ASSIGN_OP structure_initialization
     {
+        /**
+         * Closes the nested field scope that was opened while scanning the
+         * field name, once its structure initialization is complete.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.nestedFields().popScope();
     }
@@ -1226,10 +1253,18 @@ nested_field:
 identifier_with_opt_mangling:
     IDENTIFIER
     {
+        /**
+         * Simple identifier: keeps the lexeme as-is.
+        **/
+
         $$ = $1;
     }
     | IDENTIFIER '#' IDENTIFIER
     {
+        /**
+         * Mangled identifier: joins both identifiers with '#'.
+        **/
+
         $$ = $1 + "#" + $3;
     }
 ;
@@ -1246,12 +1281,20 @@ initialized_standard_function_block:
 identifier_list:
     IDENTIFIER
     {
+        /**
+         * Starts the list of declared identifiers for the current context.
+        **/
+
         ParsingContext ctx = contexts.current();
         ctx.declaredIdentifiers().clear();
         ctx.declaredIdentifiers().add($1);
     }
     | identifier_list ',' IDENTIFIER
     {
+        /**
+         * Appends another identifier to the declared identifiers list.
+        **/
+
         ParsingContext ctx = contexts.current();
         ctx.declaredIdentifiers().add($3);
     }
@@ -1268,16 +1311,69 @@ string_spec_init:
 
 string_specification:
     type_string_specification
+    {
+        ParsingContext ctx = this.contexts.current();
+        LexemeInfo metadata = ctx.metadataBuilder().build();
+
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .initialValue(
+                new StringInitialization(this.symbolTable, metadata.subtype)
+            );
+    }
     | type_string_specification '[' numeric_constant ']'
+    {
+        /**
+         * Stores the explicit string length as the superior limit and creates
+         * a StringInitialization for the declared subtype.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        LexemeInfo metadata = ctx.metadataBuilder().build();
+
+        ctx.metadataBuilder()
+            .type(Type.SIMPLE)
+            .superiorLimits(
+                Collections.singletonList($3)
+            ).initialValue(
+                new StringInitialization(this.symbolTable, metadata.subtype)
+            );
+    }
 
 initialized_string:
-    type_string_specification  ASSIGN_OP string_constant
-    | type_string_specification '[' numeric_constant ']' ASSIGN_OP string_constant
+    string_specification  ASSIGN_OP string_constant
+    {
+        /**
+         * Wraps the assigned string literal as a VariableInitialization and
+         * stores it in the current context metadata.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().initialValue(
+            new VariableInitialization($3)
+        );
+    }
 ;
 
 type_string_specification:
     STRING
+    {
+        /**
+         * Sets the metadata subtype to STRING for an unqualified string type.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().subtype(Subtype.STRING);
+    }
     | WSTRING
+    {
+        /**
+         * Sets the metadata subtype to WSTRING (wide string).
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().subtype(Subtype.WSTRING);
+    }
 ;
 
 /* ----------------------------------- Data Type ---------------------------------------- */
@@ -1301,6 +1397,11 @@ data_type_declaration:
 type_id_decl:
     TYPE
     {
+        /**
+         * Opens a new parsing context for the type block and marks it as a
+         * type declaration with no source.
+        **/
+
         ParsingContext ctx = new ParsingContext(this.symbolTable);
         ctx.metadataBuilder()
             .use(Use.TYPE)
@@ -1384,12 +1485,20 @@ structure_specification:
 structure_field_declaration_list:
     structure_field_declaration ';'
     {
+        /**
+         * Starts the structure field list with the first declared field.
+        **/
+
         List<String> structParameters = new ArrayList<>();
         structParameters.add($1);
         $$ = structParameters;
     }
     | structure_field_declaration_list structure_field_declaration ';'
     {
+        /**
+         * Appends the next declared field to the structure field list.
+        **/
+
         $1.add($2);
         $$ = $1;
     }

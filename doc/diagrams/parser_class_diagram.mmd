@@ -6,8 +6,8 @@ classDiagram
     }
     namespace parser_internals {
         class ContextHandler {
-            +stack: List~ParsingContext~
-            +push()
+            +stack: Stack~ParsingContext~
+            +add()
             +pop()
             +current()
         }
@@ -30,7 +30,7 @@ classDiagram
             +publish(ParsingContext)
         }
         class Factory {
-            +createDefault()
+            +createPrimitiveInitialization()
         }
         class DimensionCalculator {
             +calculate()
@@ -46,6 +46,10 @@ classDiagram
             +copy()
         }
         class VariableInitialization
+        class StringInitialization {
+            +symbolTable: SymbolTable
+            +subtype: Subtype
+        }
         class BooleanInitialization
         class RealInitialization
         class EnumeratedInitialization
@@ -55,6 +59,7 @@ classDiagram
         class RepeatedInitialization
     }
     Initialization <|-- VariableInitialization
+    Initialization <|-- StringInitialization
     Initialization <|-- BooleanInitialization
     Initialization <|-- RealInitialization
     Initialization <|-- EnumeratedInitialization

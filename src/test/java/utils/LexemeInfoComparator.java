@@ -23,7 +23,7 @@ import java.util.Objects;
  * @version 2.1
  * @since 1.0
  */
-public class LexemeInfoComparator {
+public final class LexemeInfoComparator {
 
     /**
      * Looks up {@code key} in {@code symbolTable} and returns a list of

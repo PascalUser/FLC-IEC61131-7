@@ -41,7 +41,7 @@ public class BooleanInitialization implements Initialization {
     public BooleanInitialization(SymbolTable symbolTable) {
         LexemeInfoBuilder builder = new LexemeInfoBuilder();
         if (DEFAULT == null) {
-            String defaultValue = Director.makeDefaultReal(builder);
+            String defaultValue = Director.makeDefaultBoolean(builder);
             symbolTable.putIfAbsent(defaultValue, builder.build());
             DEFAULT = defaultValue;
         }

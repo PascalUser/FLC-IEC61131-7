@@ -5,8 +5,6 @@ import parser.Parser;
 
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -37,13 +35,5 @@ public abstract class ParserTestSupport {
 
     protected SymbolTable parse(String sourceCode) throws Exception {
         return this.parse(new StringReader(sourceCode));
-    }
-
-    protected static Map<String, Object> mapOf(Object... keyValues) {
-        Map<String, Object> map = new HashMap<>();
-        for (int i = 0; i < keyValues.length; i += 2) {
-            map.put((String) keyValues[i], keyValues[i + 1]);
-        }
-        return map;
     }
 }

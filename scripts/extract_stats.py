@@ -126,12 +126,21 @@ def extract_grammar_stats():
     content = parser_y.read_text()
     
     import re
-    # Count tokens in %token declarations
-    token_section = re.search(r'%token\s+(.*?)(?=%|$)', content, re.DOTALL)
-    token_count = 0
-    if token_section:
-        tokens_text = token_section.group(1)
-        token_count = len(re.findall(r'\b[A-Z_][A-Z0-9_]*\b', tokens_text))
+    # Count all tokens across every %token declaration (including typed ones
+    # such as '%token <String> IDENTIFIER'), de-duplicating and stripping the
+    # optional <Type> tags and trailing comments.
+    token_names = []
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith('%token'):
+            continue
+        body = stripped[len('%token'):]
+        body = body.split('/*', 1)[0]
+        body = re.sub(r'<[^>]*>', ' ', body)
+        for token in re.findall(r'\b[A-Z_][A-Z0-9_]*\b', body):
+            if token not in token_names:
+                token_names.append(token)
+    token_count = len(token_names)
     
     # Non-terminals from Parser.java (SymbolKind enum)
     parser_java = SRC_DIR / "parser" / "Parser.java"

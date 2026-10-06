@@ -3,6 +3,21 @@ package lexer.transformers.hex_resolvers;
 import lexer.transformers.Transformer;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Base transformer for resolving hexadecimal string literals.
+ * Subclasses implement {@link #getHexDigits()} to indicate how many hex
+ * digits the concrete resolver expects; the transform replaces '$XX'
+ * escapes with the corresponding code points, preserving '$$' pairs for
+ * later processing.
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ * @see Transformer
+ * @see StringHexResolver
+ * @see WStringHexResolver
+ */
 public abstract class HexResolver extends Transformer {
 
     public HexResolver(Transformer next) {

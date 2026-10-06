@@ -38,32 +38,33 @@ flowchart LR
 
 ## Diagrama de clases
 
+Generado por `scripts/generate_diagrams.py utils` en `doc/diagrams/utils_class_diagram.mmd`:
+
 ```mermaid
 classDiagram
     namespace utils {
         class SymbolTable {
-            -table: Map~String, LexemeInfo~
+            +table: Map~String, LexemeInfo~
             +get()
             +put()
             +putIfAbsent()
-            +size()
         }
         class LexemeInfo {
             +type: Type
-            +subtype: Subtype
-            +customType: String
-            +use: Use
-            +source: Source
-            +inferiorLimits: List~String~
-            +superiorLimits: List~String~
-            +parameters: List~String~
-            +initialValue: Object
+        +subtype: Subtype
+        +customType: String
+        +use: Use
+        +source: Source
+        +inferiorLimits: List~String~
+        +superiorLimits: List~String~
+        +parameters: List~String~
+        +initialValue: Object
         }
         class DiagnosticsHandler {
-            +diagnostics: List~Diagnostic~
-            +add()
-            +hasErrors()
-            +getDiagnostics()
+        +diagnostics: List~Diagnostic~
+        +add()
+        +hasErrors()
+        +getDiagnostics()
         }
     }
     namespace utils_builders {
@@ -86,7 +87,7 @@ classDiagram
         }
     }
     namespace utils_enums {
-        class Type { UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
+        class Type { SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
         class Subtype { 24 values }
         class Use { 9 values }
         class Source { 7 values }
@@ -100,6 +101,7 @@ classDiagram
     Diagnostic <|-- Warning
     LexemeInfoBuilder ..|> LexemeInfoSchema
     Director --> LexemeInfoBuilder
+    Publisher ..|> LexemeInfoSchema
     SymbolTable --> LexemeInfo
     DiagnosticsHandler --> Diagnostic
 ```
@@ -143,12 +145,17 @@ Chart: `assets/lexemeinfo_field_population.png` — Población de campos LexemeI
 ### Complejidad ciclomática por paquete
 
 Chart: `assets/cyclomatic_complexity.png` — Complejidad ciclomática promedio por paquete
-*Fuente: `utils` avg CYCLO 2.2 (42 métodos estimados)*
+*Fuente: `utils` avg CYCLO 2.1 (43 métodos estimados)*
 
 ### Líneas de código por módulo
 
 Chart: `assets/loc_per_module.png` — Líneas de código por módulo
-*Fuente: `utils` 970 LOC en 27 archivos*
+*Fuente: `utils` 981 LOC en 27 archivos*
+
+### Distribución de diagnósticos — errores vs warnings
+
+Chart: `assets/diagnostics_error_vs_warning.png` — Cantidad de clases de error vs warning en `utils.diagnostics`
+*Fuente: `src/main/java/utils/diagnostics/*.java` (5 errores, 7 warnings)*
 
 ### Cobertura de tests por paquete
 
@@ -161,6 +168,8 @@ Chart: `assets/package_coupling.png` — Acoplamiento aferente/eferente entre pa
 *Fuente: análisis de imports — `utils` afferent=2, efferent=0, instability=0.0*
 
 ## Almacenamiento en SymbolTable por tipo
+
+Generado por `scripts/generate_diagrams.py utils` en `doc/diagrams/symboltable_storage.mmd`:
 
 ```mermaid
 classDiagram
@@ -192,6 +201,8 @@ classDiagram
 ```
 
 ## Jerarquía de diagnósticos
+
+Generado por `scripts/generate_diagrams.py utils` en `doc/diagrams/diagnostics_hierarchy.mmd`:
 
 ```mermaid
 classDiagram
@@ -289,11 +300,19 @@ src/main/java/utils/
     └── StringLengthWarning.java
 ```
 
+## Diagramas de apoyo — assets
+
+| Diagrama              | Archivo                                       | Descripción                                 |
+|-----------------------|-----------------------------------------------|---------------------------------------------|
+| Clases utils          | `doc/diagrams/utils_class_diagram.mmd`        | Estructura completa utils + builders + enums |
+| Almacenamiento ST     | `doc/diagrams/symboltable_storage.mmd`        | SymbolTable ↔ LexemeInfo por tipo           |
+| Jerarquía diagnósticos| `doc/diagrams/diagnostics_hierarchy.mmd`      | Errores y warnings concretos                |
+
 ## Capítulos de tesis que consumen este módulo
 
 | Capítulo | Enfoque                                                                               |
 |----------|---------------------------------------------------------------------------------------|
 | 04       | Arquitectura implementada — SymbolTable, Repository pattern, Lexer↔Parser↔SymbolTable |
-| 07       | Mantenibilidad — design→QA, métricas (CYCLO 2.2, LOC 970, COVERAGE 95%, coupling 0.0) |
+| 07       | Mantenibilidad — design→QA, métricas (CYCLO 2.1, LOC 981, COVERAGE 95%, coupling 0.0) |
 
 *Excluye `LucaInfo.java` (marcado `@deprecated`) y archivos solo locales según reglas de validación.*

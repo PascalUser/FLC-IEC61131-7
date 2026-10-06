@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class FakeReservedWords implements Iterable<Map.Entry<String, Integer>> {
+public final class FakeReservedWords implements Iterable<Map.Entry<String, Integer>> {
     private final static Map<String, Integer> table;
 
     static {

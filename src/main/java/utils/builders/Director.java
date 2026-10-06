@@ -63,4 +63,16 @@ public final class Director {
         schema.subtype(Subtype.BOOL).initialValue(false);
         return "FALSE";
     }
+
+    public static String makeDefaultString(LexemeInfoSchema schema) {
+        makeLiteral(schema);
+        schema.subtype(Subtype.STRING).initialValue("");
+        return "''";
+    }
+
+    public static String makeDefaultWString(LexemeInfoSchema schema) {
+        makeLiteral(schema);
+        schema.subtype(Subtype.WSTRING).initialValue("");
+        return "\"\"";
+    }
 }

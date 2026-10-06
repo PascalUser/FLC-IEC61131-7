@@ -125,12 +125,12 @@ classDiagram
 | `lexer.transformers.Nothing`                          | Transformador identidad (sin preprocesamiento)                                                 | Null Object                        |
 | `lexer.semantics.SemanticAnalyzer`                    | Interfaz para análisis semántico con contexto léxico                                           | Strategy                           |
 | `lexer.semantics.numbers.NumbersAnalyzer`             | Base para literales numéricos: parseo, validación de rango, fallback, diagnóstico              | Template Method                    |
-| `lexer.semantics.numbers.Naturals`                    | Enteros sin signo (0..4294967295, ULINT)                                                       | Template Method                    |
-| `lexer.semantics.numbers.Integers`                    | Enteros con signo (-2147483648..2147483647, DINT)                                              | Template Method                    |
-| `lexer.semantics.numbers.Reals`                       | Punto flotante IEEE 754 (REAL/LREAL) con notación científica                                   | Template Method                    |
-| `lexer.semantics.numbers.bases.Binary`                | Literales binarios (2#...) rango 0..65535 (UINT)                                               | Template Method                    |
-| `lexer.semantics.numbers.bases.Octal`                 | Literales octales (8#...) rango 0..65535 (UINT)                                                | Template Method                    |
-| `lexer.semantics.numbers.bases.Hexadecimal`           | Literales hexadecimales (16#...) rango 0..65535 (UINT)                                         | Template Method                    |
+| `lexer.semantics.numbers.Naturals`                    | Enteros sin signo; determina USINT/UINT/UDINT/ULINT por rango con `BigInteger`                 | Template Method                    |
+| `lexer.semantics.numbers.Integers`                    | Enteros con signo; determina SINT/INT/DINT/LINT por rango con `Long`                            | Template Method                    |
+| `lexer.semantics.numbers.Reals`                       | Punto flotante IEEE 754; REAL si la magnitud cabe en float, LREAL en caso contrario            | Template Method                    |
+| `lexer.semantics.numbers.bases.Binary`                | Literales binarios (2#...) con hasta 64 dígitos; determina BYTE/WORD/DWORD/LWORD                | Template Method                    |
+| `lexer.semantics.numbers.bases.Octal`                 | Literales octales (8#...) con hasta 22 dígitos; determina BYTE/WORD/DWORD/LWORD                 | Template Method                    |
+| `lexer.semantics.numbers.bases.Hexadecimal`           | Literales hexadecimales (16#...) con hasta 16 dígitos; determina BYTE/WORD/DWORD/LWORD          | Template Method                    |
 | `lexer.semantics.Intervals`                           | Literales TIME: validación magnitudes (D,H,M,S,MS) y total ≤ Long.MAX_VALUE                    | Strategy                           |
 | `lexer.semantics.Dates`                               | Literales DATE: validación calendario gregoriano                                               | Strategy                           |
 | `lexer.semantics.DayTimes`                            | Literales TIME_OF_DAY (TOD): validación 00:00:00.000..23:59:59.999                             | Strategy                           |
@@ -158,6 +158,21 @@ Cada categoría léxica tiene una cadena dedicada definida en `LexicalPreprocess
 
 Chart: `assets/transformer_chain_lengths.png` — longitud de cada cadena de transformadores por categoría.
 
+### Diagrama de objetos — cadena INTERVALS
+
+Instancia concreta registrada en `LexicalPreprocessors.INTERVALS` (`src/main/java/lexer/internals/LexicalPreprocessors.java`):
+
+```mermaid
+flowchart LR
+    INTERVALS["LexicalPreprocessors.INTERVALS\n(Transformer)"] --> T1[UnderscoreRemover]
+    T1 --> T2[UpperCaseConverter]
+    T2 --> T3[OmitLeadingZeroMagnitudes]
+    T3 --> T4[OmitTrailingZeroMagnitudes]
+    T4 --> T5[OmitLeadingZerosInMagnitudes]
+    T5 --> T6[OmitTrailingZerosInMagnitudes]
+    T6 --> T7["null"]
+```
+
 ## Análisis semántico por categoría
 
 ### Literales numéricos — NumbersAnalyzer
@@ -171,23 +186,32 @@ Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **T
 
 **Subtipos determinados por rango de valor:**
 
-| Analizador    | Rango válido                            | Subtipos posibles | Fallback   |
-|---------------|-----------------------------------------|-------------------|------------|
-| `Naturals`    | 0 .. 4,294,967,295                      | `USINT`..`ULINT`  | 0 (USINT)  |
-| `Integers`    | -2,147,483,648 .. 2,147,483,647         | `SINT`..`DINT`    | 0 (SINT)   |
-| `Reals`       | IEEE 754 binary32/64                    | `REAL`, `LREAL`   | 0.0 (REAL) |
-| `Binary`      | 0 .. 65,535 (2#0 .. 2#1111111111111111) | `USINT`..`UINT`   | 0 (USINT)  |
-| `Octal`       | 0 .. 65,535 (8#0 .. 8#177777)           | `USINT`..`UINT`   | 0 (USINT)  |
-| `Hexadecimal` | 0 .. 65,535 (16#0 .. 16#FFFF)           | `USINT`..`UINT`   | 0 (USINT)  |
+| Analizador    | Rango válido                                       | Subtipos posibles       | Fallback           |
+|---------------|----------------------------------------------------|-------------------------|--------------------|
+| `Naturals`    | 0 .. 18,446,744,073,709,551,615 (2^64 - 1)         | `USINT`..`ULINT`        | MAX_ULINT (`ULINT`)|
+| `Integers`    | -9,223,372,036,854,775,808 .. 9,223,372,036,854,775,807 | `SINT`..`LINT`    | ±Long.MAX (`LINT`) |
+| `Reals`       | IEEE 754 binary32/64                               | `REAL`, `LREAL`         | ±Double.MAX (`LREAL`) |
+| `Binary`      | hasta 64 dígitos; determina por valor               | `BYTE`..`LWORD`         | MAX_ULINT (`LWORD`)|
+| `Octal`       | hasta 22 dígitos; determina por valor               | `BYTE`..`LWORD`         | MAX_ULINT (`LWORD`)|
+| `Hexadecimal` | hasta 16 dígitos; determina por valor               | `BYTE`..`LWORD`         | MAX_ULINT (`LWORD`)|
+
+Los tres analizadores de base comparten `BaseNumbersAnalyzer` (`src/main/java/lexer/semantics/numbers/bases/`): cada subclase define `getBase()` y `getMaxDigits()` y el rango se resuelve por valor con `BigInteger`.
+
+**Diagnósticos de warning (no fatal, con fallback):**
+
+* `NaturalOutOfRange`, `IntegerOutOfRange`, `RealOutOfRange`
+* `BinaryOutOfRange`, `OctalOutOfRange`, `HexadecimalOutOfRange`
 
 ### Literales temporales
 
 | Analizador        | Formato IEC                    | Validaciones                                                                                                         | Valor almacenado          |
 |-------------------|--------------------------------|----------------------------------------------------------------------------------------------------------------------|---------------------------|
-| `Intervals`       | `T#-?d#h#m#s#ms` / `TIME#...`  | Magnitudes: solo la mayor no-cero puede exceder límite natural (H≤23, M≤59, S≤59, MS≤999); total ≤ Long.MAX_VALUE ns | `Duration` (nanosegundos) |
-| `Dates`           | `DATE#YYYY-MM-DD`              | Calendario gregoriano válido                                                                                         | `LocalDate`               |
-| `DayTimes`        | `TOD#HH:MM:SS[.mmm]`           | 00:00:00.000 .. 23:59:59.999                                                                                         | `LocalTime`               |
-| `DateAndDayTimes` | `DT#YYYY-MM-DD-HH:MM:SS[.mmm]` | Combinación DATE + TOD válida                                                                                        | `LocalDateTime`           |
+| `Intervals`       | `[-]NdNhNmNsNms`               | Magnitudes: solo la mayor no-cero puede exceder límite natural (H≤23, M≤59, S≤59, MS≤999); total ≤ Long.MAX_VALUE ns | `Duration` (nanosegundos) |
+| `Dates`           | `YYYY-MM-DD`                   | Calendario gregoriano válido                                                                                         | `LocalDate`               |
+| `DayTimes`        | `HH:MM:SS[.mmm]`               | 00:00:00.000 .. 23:59:59.999                                                                                         | `LocalTime`               |
+| `DateAndDayTimes` | `YYYY-MM-DD-HH:MM:SS[.mmm]`    | Combinación DATE + TOD válida                                                                                        | `LocalDateTime`           |
+
+El prefijo de tipo (`T#`, `TIME#`, `D#`, `DATE#`, `TOD#`, `DT#`) es un token independiente consumido por el parser; el lexer recibe únicamente el cuerpo del literal.
 
 **Diagnósticos de error (fatal):**
 
@@ -197,12 +221,16 @@ Todos heredan de `lexer.semantics.numbers.NumbersAnalyzer` que implementa el **T
 * `TimeOfDayOutOfRange` — hora inválida
 * `DateAndTimeOutOfRange` — fecha/hora inválida
 
+Chart: `assets/diagnostics_error_vs_warning.png` — proporción de diagnósticos de error frente a warning en `src/main/java/utils/diagnostics/`.
+
 ### Literales de cadena — StringsAnalyzer
 
 | Analizador | Tipo IEC  | Longitud máx | Escape hex          | Valor almacenado |
 |------------|-----------|--------------|---------------------|------------------|
 | `Strings`  | `STRING`  | 255 chars    | `$XX` (2 dígitos)   | `String`         |
-| `WStrings` | `WSTRING` | 16,383 chars | `$XXXX` (4 dígitos) | `String`         |
+| `WStrings` | `WSTRING` | 255 chars    | `$XXXX` (4 dígitos) | `String`         |
+
+Ambos analizadores comparten `MAX_STRING_LENGTH = 255` en `StringsAnalyzer`; el excedente se trunca y se emite `StringLengthWarning`.
 
 **Diagnósticos de warning (no fatal):**
 
@@ -217,6 +245,12 @@ Escapes estándar soportados: `$L` (LF), `$N` (LF), `$P` (FF), `$R` (CR), `$T` (
 * Si es reservada (excepto `TRUE`/`FALSE`) → retorna token directo (ej. `VAR`, `IF`, `THEN`)
 * Si es `TRUE`/`FALSE` → publica `LexemeInfo(subtype=BOOL, initialValue=Boolean)` + `BOOLEAN_LITERAL`
 * Sino → publica `LexemeInfo` vacía + `IDENTIFIER`
+
+Los subtipos asignados por los analizadores numéricos pertenecen al enum `Subtype` (`src/main/java/utils/enums/`).
+
+Chart: `assets/enum_sizes.png` — tamaño de los enums auxiliares (`Type`, `Source`, `Use`, `Subtype`) usados por el lexer.
+
+Chart: `assets/lexemeinfo_field_population.png` — campos de `LexemeInfo` poblados por los analizadores léxicos.
 
 ## Flujo Lexer → Parser → SymbolTable
 
