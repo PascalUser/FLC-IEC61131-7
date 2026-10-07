@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class OctalOutOfRange extends Warning {
     private final String octLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundOctal the supplied out of bound octal
+     */
     public OctalOutOfRange(int line, String outOfBoundOctal) {
         super(line);
         this.octLexeme = outOfBoundOctal;

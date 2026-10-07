@@ -1,0 +1,8 @@
+flowchart LR
+    root["LexicalPreprocessors.INTERVALS"] --> node0["UnderscoreRemover"]
+    node0 --> node1["UpperCaseConverter"]
+    node1 --> node2["OmitLeadingZeroMagnitudes"]
+    node2 --> node3["OmitTrailingZeroMagnitudes"]
+    node3 --> node4["OmitLeadingZerosInMagnitudes"]
+    node4 --> node5["OmitTrailingZerosInMagnitudes"]
+    node5 --> endNode["null"]

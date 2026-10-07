@@ -21,12 +21,25 @@ import utils.SymbolTable;
 public interface SemanticAnalyzer {
 
     /**
-     * Result of semantic analysis containing the processed lexeme and token number.
+     * Holds the processed lexeme and token number produced by an analyzer.
+     *
+     * @author Matías Ortiz
+     * @author Victoriano Etcheverría
+     * @since 1.0-SNAPSHOT
+     * @version 1.0-SNAPSHOT
      */
     final class Result {
+        /** Processed lexeme returned to the scanner. */
         public final String lexeme;
+        /** Token code returned to the scanner. */
         public final int token;
 
+        /**
+         * Creates a result from the processed lexeme and token code.
+         *
+         * @param lexeme the lexeme produced by semantic analysis
+         * @param token the token code produced by semantic analysis
+         */
         public Result(String lexeme, int token) {
             this.lexeme = lexeme;
             this.token = token;
@@ -34,14 +47,31 @@ public interface SemanticAnalyzer {
     }
 
     /**
-     * Context provided to the analyzer during lexical analysis.
+     * Holds the scanner input and services supplied to a semantic analyzer.
+     *
+     * @author Matías Ortiz
+     * @author Victoriano Etcheverría
+     * @since 1.0-SNAPSHOT
+     * @version 1.0-SNAPSHOT
      */
     final class LexicalContext {
+        /** Lexeme after lexical preprocessing. */
         public final String preprocessedLexeme;
+        /** One-based source line of the lexeme. */
         public final int line;
+        /** Symbol table available to the analyzer. */
         public final SymbolTable symbolTable;
+        /** Collector for emitted diagnostics. */
         public final DiagnosticsHandler diagnosticsHandler;
 
+        /**
+         * Creates a lexical context for a preprocessed lexeme.
+         *
+         * @param preprocessedLexeme the input lexeme after preprocessing
+         * @param line the one-based source line
+         * @param symbolTable the symbol table available to the analyzer
+         * @param diagnosticsHandler the collector for reported diagnostics
+         */
         public LexicalContext(
                 String preprocessedLexeme,
                 int line,

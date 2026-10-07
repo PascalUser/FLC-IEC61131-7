@@ -113,7 +113,7 @@ Diagrama de clases: `doc/diagrams/parser_class_diagram.mmd` (generado por `scrip
 | `parser.utils.UnderlyingScopeSearcher`          | Sigue la cadena de tipos custom hasta el ámbito raíz que contiene campos/enums                          | Searcher                |
 | `parser.initializations.Initialization`         | Interfaz de valores iniciales polimórficos (`selectVariable`, `getVariableValue`, `copy`)              | Composite / Strategy    |
 | `parser.initializations.VariableInitialization` | Envuelve un literal o identificador como valor inicial explícito                                       | Value Object            |
-| `parser.initializations.StringInitialization`   | Valor por defecto de STRING/WSTRING registrado perezosamente en `SymbolTable`                          | Value Object            |
+| `parser.initializations.StringInitialization`   | Valor por defecto de STRING/WSTRING registrado perezosamente en `SymbolTable` vía `Director`           | Value Object            |
 | `parser.initializations.BooleanInitialization`  | Valor por defecto BOOL `FALSE` registrado perezosamente                                                | Value Object            |
 | `parser.initializations.RealInitialization`     | Valor por defecto REAL `0.0` registrado perezosamente                                                  | Value Object            |
 | `parser.initializations.EnumeratedInitialization` | Primer valor de un enumerado como valor por defecto                                                  | Value Object            |
@@ -122,7 +122,16 @@ Diagrama de clases: `doc/diagrams/parser_class_diagram.mmd` (generado por `scrip
 | `parser.initializations.StructInitialization`   | Mapa `field → Initialization` con claves compuestas para structs anidados                              | Composite               |
 | `parser.initializations.RepeatedInitialization` | Partición en intervalos `[start, end] → Initialization` para arrays con repetición                     | Interval Map            |
 
-Todos los tipos de inicialización salvo `Initialization` residen en `src/main/java/parser/initializations/`; `StringInitialization` fue incorporado recientemente y ya aparece en el diagrama de clases y en la jerarquía.
+Fuentes por subpaquete:
+
+| Subpaquete               | Directorio                                  |
+|--------------------------|---------------------------------------------|
+| `parser`                 | `src/main/java/parser/`                     |
+| `parser.internals`       | `src/main/java/parser/internals/`           |
+| `parser.utils`           | `src/main/java/parser/utils/`               |
+| `parser.initializations` | `src/main/java/parser/initializations/`     |
+
+`StringInitialization` (`src/main/java/parser/initializations/StringInitialization.java`) es la incorporación más reciente; la usa `string_specification` en `Parser.y` para variables y tipos STRING/WSTRING sin inicializador.
 
 ## Gramática soportada — resumen
 
@@ -131,10 +140,12 @@ Todos los tipos de inicialización salvo `Initialization` residen en `src/main/j
 | Métrica              | Valor | Origen                                                  |
 |----------------------|-------|---------------------------------------------------------|
 | Tokens declarados    | 82    | directivas `%token` de `src/main/java/parser/Parser.y`   |
-| No-terminales        | 231   | `enum SymbolKind` de `src/main/java/parser/Parser.java`  |
+| No-terminales        | 137   | constantes de `enum SymbolKind` en `src/main/java/parser/Parser.java` con índice ≥ `S_YYACCEPT`; incluye `$accept` |
 | Tipos de inicialización | 9  | archivos de `src/main/java/parser/initializations/`      |
 
 Chart: `assets/parser_grammar_stats.png` — tokens declarados, no-terminales y tipos de inicialización de la gramática Bison.
+
+El conteo de no-terminales coincide con la sección "Nonterminals" del reporte de Bison. Valores anteriores de 231 contaban todas las constantes de `SymbolKind`, incluidos los terminales.
 
 ### Bloques principales IEC 61131-7
 
@@ -294,12 +305,18 @@ Extracto de `src/main/java/parser/Parser.y`:
 | `array_specification`              | `type=ARRAY, initialValue=RepeatedInitialization(dimension, defaultInit)` para elemento custom o primitivo            |
 | `array_initial_elements`           | Consolida intervalos con `RepeatedInitialization.addInterval(start, end, init)` y reinicia el índice                  |
 | `structure_field_declaration`      | Nuevo contexto por campo, `use=FIELD, source=NONE`, publica y hace `pop` al reducir                                  |
-| `structure_specification`          | Construye `StructInitialization` con el `initialValue` de cada campo                                                 |
-| `string_specification`             | `type=SIMPLE`, `subtype` ya fijado por `type_string_specification`, `initialValue=new StringInitialization(...)`     |
+| `structure_specification`          | `type=STRUCT, subtype=NONE, parameters=campos`; construye `StructInitialization` con el `initialValue` de cada campo  |
+| `type_string_specification`        | Fija `subtype=STRING` o `subtype=WSTRING` en el builder                                                              |
+| `string_specification`             | `type=SIMPLE`, `initialValue=new StringInitialization(symbolTable, subtype)`                                         |
+| `string_specification` con `[n]`   | Igual que la anterior y además `superiorLimits=[n]` con la longitud declarada                                        |
 | `initialized_string`               | `initialValue=new VariableInitialization($3)` a partir de `string_constant`                                          |
 | `type_declaration`                 | `outerScopes.popScope(); Publisher.publish(ctx); declaredIdentifiers().clear()`                                      |
 
-Nota: `Factory.createPrimitiveInitialization` solo soporta `Subtype.REAL`; para el resto lanza `IllegalArgumentException` (`src/main/java/parser/utils/Factory.java`).
+Notas:
+
+* `Factory.createPrimitiveInitialization` solo soporta `Subtype.REAL`; para el resto lanza `IllegalArgumentException` (`src/main/java/parser/utils/Factory.java`). Por eso `simple_specification` sin inicializador solo funciona hoy para REAL; el caso INT está comentado en `PrimitiveTypeIT`.
+* BOOL no pasa por `Factory`: `boolean_specification` crea `BooleanInitialization` directamente.
+* STRING/WSTRING no pasan por `Factory`: `string_specification` crea `StringInitialization` directamente.
 
 ## Inicializaciones — jerarquía y uso
 
@@ -374,6 +391,8 @@ Comportamiento por defecto de `getVariableValue`:
 
 Todos los valores por defecto perezosos usan un campo `static DEFAULT` y `SymbolTable.putIfAbsent`, de modo que una misma tabla no duplica la entrada del literal.
 
+`StringInitialization` comparte un único `static DEFAULT` para ambos subtipos: la primera instancia creada en la JVM decide si se usa `Director.makeDefaultString` o `Director.makeDefaultWString`. `equals` compara solo la clase, no el subtipo.
+
 ## Flujo Lexer → Parser → SymbolTable
 
 ```mermaid
@@ -414,21 +433,22 @@ sequenceDiagram
     participant Pub as Publisher
     participant ST as SymbolTable
 
+    Parser->>PC: new ParsingContext(symbolTable)
+    PC->>NM: new NameMangler() x3
+    PC->>Builder: new LexemeInfoBuilder()
     Parser->>CH: add(ctx)
-    CH->>PC: new ParsingContext()
-    CH->>NM: new NameMangler() x3
-    CH->>Builder: new LexemeInfoBuilder()
 
-    loop Reducciones de la gramática
-        Parser->>Builder: configure attributes
-        Parser->>PC: declaredIdentifiers().add(...)
+    loop Grammar reductions
+        Parser->>CH: current()
+        Parser->>Builder: metadataBuilder() attributes
+        Parser->>PC: declaredIdentifiers().add(identifier)
     end
 
-    Parser->>Pub: publish(ParsingContext)
-    Pub->>PC: build() LexemeInfo
-    loop Por cada identificador declarado
-        Pub->>NM: getNameMangled(identifier)
-        Pub->>ST: put(mangledName, LexemeInfo)
+    Parser->>Pub: publish(ctx)
+    Pub->>Builder: build() LexemeInfo
+    loop For each declared identifier
+        Pub->>NM: outerScopes().getNameMangled(identifier)
+        Pub->>ST: put(completeIdentifier, LexemeInfo)
     end
 
     Parser->>CH: pop()
@@ -441,7 +461,7 @@ Diagrama de secuencia: `doc/diagrams/context_handler_sequence.mmd`.
 ```mermaid
 classDiagram
     class SymbolTable {
-        +table: Map
+        +table: Map~String, LexemeInfo~
         +get()
         +put()
         +putIfAbsent()
@@ -452,25 +472,35 @@ classDiagram
         +customType: String
         +use: Use
         +source: Source
-        +inferiorLimits: List
-        +superiorLimits: List
-        +parameters: List
+        +inferiorLimits: List~String~
+        +superiorLimits: List~String~
+        +parameters: List~String~
         +initialValue: Object
     }
     SymbolTable --> "0..*" LexemeInfo : contains
+
+    note for LexemeInfo "SIMPLE\ntype=SIMPLE, subtype=REAL/BOOL/STRING/WSTRING/CUSTOM\nuse=VARIABLE/TYPE/LITERAL\ninitialValue=Initialization"
+    note for LexemeInfo "ARRAY\ntype=ARRAY, subtype=element type\ninferiorLimits=[0], superiorLimits=[9]\ninitialValue=RepeatedInitialization"
+    note for LexemeInfo "STRUCT\ntype=STRUCT, subtype=NONE\nparameters=[field1, field2]\ninitialValue=StructInitialization"
+    note for LexemeInfo "ENUMERATE\ntype=ENUMERATE, subtype=INT\nparameters=[A, B, C]\nuse=MACRO for each value"
+    note for LexemeInfo "SUBRANGE\ntype=SUBRANGE\ninferiorLimits=[0], superiorLimits=[100]\ninitialValue=SubrangeInitialization"
 ```
 
 Diagrama de almacenamiento: `doc/diagrams/symboltable_storage.mmd`.
 
+Las claves quedan en mayúsculas porque el lexer normaliza los identificadores; por ejemplo `MAIN#STRVAR` y `STRINGTYPE` en `StringTypeIT`.
+
 | Tipo                  | Cuándo se publica                      | Clave en SymbolTable | LexemeInfo destacado                                                                         |
 |-----------------------|----------------------------------------|----------------------|----------------------------------------------------------------------------------------------|
-| Variable simple       | `var_init_decl` (simple_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=INT/REAL/BOOL..., initialValue=según `Factory`                            |
-| Variable string       | `var_init_decl` (string_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=STRING/WSTRING, initialValue=StringInitialization                        |
+| Variable simple       | `var_init_decl` (simple_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=REAL o BOOL, initialValue=RealInitialization o BooleanInitialization       |
+| Variable string       | `var_init_decl` (string_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=STRING/WSTRING, superiorLimits=[n] si hay longitud, initialValue=StringInitialization |
+| String inicializado   | `initialized_string`                   | `FB#varName`         | initialValue=VariableInitialization(string_constant)                                          |
+| Tipo string           | `type_declaration` (string_spec_init)  | `TypeName`           | use=TYPE, source=NONE, subtype=STRING/WSTRING, superiorLimits=[n]                              |
 | Variable custom       | `var_init_decl` (custom_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=CUSTOM, customType=TypeName, initialValue=Type.initialValue              |
-| Variable inicializada | `initialized_simple/custom/boolean`    | `FB#varName`         | initialValue=VariableInitialization(literal)                                                  |
+| Variable inicializada | `initialized_simple/custom/boolean/string` | `FB#varName`         | initialValue=VariableInitialization(literal)                                                  |
 | Array                 | `var_init_decl` (array_spec_init)      | `FB#arrName`         | type=ARRAY, subtype=elementType, initialValue=RepeatedInitialization(dimension, defaultInit)  |
 | Array inicializado    | `initialized_array`                    | `FB#arrName`         | initialValue=RepeatedInitialization con intervalos                                            |
-| Struct                | `structure_specification` (END_STRUCT) | `TypeName`           | type=STRUCT, parameters=[field1..], initialValue=StructInitialization                         |
+| Struct                | `type_declaration` tras `structure_specification` | `TypeName` | type=STRUCT, subtype=NONE, parameters=[field1..], initialValue=StructInitialization       |
 | Campo struct          | `structure_field_declaration`          | `TypeName#fieldName` | use=FIELD, type/subtype del campo                                                             |
 | Enum (tipo)           | `enumerated_specification`             | `FB#enumName`        | type=ENUMERATE, subtype=INT, parameters=[A,B,C]                                               |
 | Enum valor (macro)    | `enumerated_values_list`               | `TypeName#VALUE`     | use=MACRO, initialValue=MacroInitialization(index)                                            |
@@ -479,39 +509,77 @@ Diagrama de almacenamiento: `doc/diagrams/symboltable_storage.mmd`.
 
 ## Tests
 
-Tests de integración en `src/test/java/unit/parser/ParserTest.java`:
+### Tests unitarios
 
-* `Parse_ForSyntacticallyValidPrograms_IsTrue` — prueba parametrizada sobre los cuatro programas de `src/test/resources/examples/` (`program01.txt` … `program04.txt`); verifica `parse() == true` y ausencia de errores de diagnóstico.
+| Clase de test                                                                  | Qué verifica                                                                                                  |
+|--------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `src/test/java/unit/parser/ParserTest.java`                                    | `Parse_ForSyntacticallyValidPrograms_IsTrue`: prueba parametrizada sobre `src/test/resources/examples/program01.txt` … `program04.txt`; exige `parse() == true` y ausencia de errores |
+| `src/test/java/unit/parser/initializations/RepeatedInitializationTest.java`    | 8 métodos `@Test`: constructor, inserción de intervalos al medio, al inicio, fuera de rango, recorte, fusión de adyacentes, cobertura múltiple y `copy()` |
 
-Tests unitarios en `src/test/java/unit/parser/initializations/RepeatedInitializationTest.java`:
+### Tests de integración Lexer → Parser → SymbolTable
 
-* Ocho métodos `@Test` que cubren el constructor, la inserción de intervalos (medio, primero, fuera de rango, recorte, fusión de adyacentes, cobertura múltiple) y `copy()`.
+Ubicados en `src/test/java/integration/lexer/parser/symboltable/`. Todos extienden `ParserTestSupport` y comparan entradas del `SymbolTable` con `LexemeInfoComparator`.
 
-Base de soporte en `src/test/java/utils/ParserTestSupport.java`:
+| Clase                                                    | Alcance                                                         |
+|----------------------------------------------------------|-----------------------------------------------------------------|
+| `PrimitiveTypeIT`                                        | REAL y BOOL en `VAR`, `VAR_INPUT`, `VAR_OUTPUT`, con y sin inicializador |
+| `StringTypeIT`                                           | Tipos y variables STRING/WSTRING con longitud `[8]`, con y sin inicializador |
+| `ArrayVariableIT`, `ArrayTypeDeclarationIT`, `ArrayStructFieldIT` | Arrays como variable, tipo y campo de struct            |
+| `EnumerateVariableIT`, `EnumerateTypeDeclarationIT`      | Enumerados como variable y tipo                                 |
+| `StructVariableIT`, `StructTypeDeclarationIT`            | Structs simples                                                 |
+| `NestedStructVariableIT`, `NestedStructTypeDeclarationIT`| Structs anidados                                                |
+| `SubrangeVariableIT`, `SubrangeTypeDeclarationIT`        | Subrangos como variable y tipo                                  |
+| `*TypeErrorIT`                                           | Casos de error por familia de tipos marcados con `@NotYetImplemented` |
 
-* `parse(Reader)` / `parse(String)` — crea `SymbolTable`, `DiagnosticsHandler`, `Lexer` y `Parser`; asegura éxito y ausencia de errores; retorna el `SymbolTable` poblado.
+`StringTypeIT` contiene 6 métodos: 2 `@ParameterizedTest` sobre `Subtype.STRING` y `Subtype.WSTRING` y 4 `@Test`. Verifica:
 
-Ejecución:
+* `superiorLimits=["8"]` para `STRING[8]` y `WSTRING[8]`.
+* `initialValue=StringInitialization` sin inicializador.
+* `initialValue=VariableInitialization` con el literal entre comillas simples o dobles.
+* `use=TYPE, source=NONE` en `TYPE` y `use=VARIABLE, source=INTERNAL` en `VAR`.
+
+`StringTypeErrorIT` declara 2 casos pendientes: longitud excedida y literal de tipo incorrecto. Ambos usan `@NotYetImplemented`, una anotación que aplica `@Disabled` y está definida en `NotYetImplemented.java`.
+
+### Soporte
+
+`src/test/java/utils/ParserTestSupport.java`:
+
+* `parse(Reader)` / `parse(String)`: crea `SymbolTable`, `DiagnosticsHandler`, `Lexer` y `Parser`; exige `parse() == true` y `hasErrors() == false`; retorna el `SymbolTable` poblado.
+
+### Ejecución
 
 ```bash
 mvn test -Dtest=ParserTest
 mvn test -Dtest=RepeatedInitializationTest
+mvn test -Dtest=StringTypeIT
+mvn test -Dtest='*IT'
 ```
 
-Cobertura del paquete `parser`: **80%** (`doc/stats.json` — `test_coverage.packages.parser`).
+`pom.xml` no configura `maven-failsafe-plugin` ni `<includes>` en surefire. Por eso un `mvn test` sin `-Dtest` solo ejecuta los nombres por defecto de surefire, como `*Test`; las clases `*IT` deben seleccionarse explícitamente.
 
-Chart: `assets/test_coverage.png` — cobertura JaCoCo por módulo; el paquete `parser` aparece en 80%.
+### Cobertura
 
-Detalle por subpaquete desde `target/site/jacoco/jacoco.xml`:
+Detalle por subpaquete, calculado desde `target/site/jacoco/jacoco.csv`; el reporte JaCoCo es del 2026-10-06:
 
 | Subpaquete               | Instrucciones cubiertas | Líneas cubiertas | Ramas cubiertas |
 |--------------------------|-------------------------|------------------|-----------------|
 | `parser`                 | 96.6%                   | 79.1%            | 40.8%           |
 | `parser.internals`       | 98.8%                   | 100.0%           | 75.0%           |
 | `parser.utils`           | 82.0%                   | 86.4%            | 70.0%           |
-| `parser.initializations` | 55.9%                   | 64.9%            | 50.7%           |
+| `parser.initializations` | 66.4%                   | 73.5%            | 62.3%           |
+| **total `parser.*`**     | 94.8%                   | 78.7%            | 46.7%           |
 
-Métricas adicionales (`doc/stats.json`): 3994 LOC en 18 archivos; complejidad ciclomática promedio 5.9 (total 432, 73 métodos estimados); acoplamiento afferent 1 / efferent 1, inestabilidad 0.5.
+Advertencia: `doc/stats.json` → `test_coverage` y `assets/test_coverage.png` no se citan aquí. `extract_test_coverage()` en `scripts/extract_stats.py` devuelve valores fijos (`parser: 80`) en lugar de leer `jacoco.xml`.
+
+### Métricas estáticas
+
+Fuente: `doc/stats.json`, generado por `scripts/extract_stats.py`.
+
+| Métrica | Valor | Nota |
+|---------|-------|------|
+| LOC | 3994 en 18 archivos | Líneas no vacías ni `//`; incluye `Parser.java` generado |
+| Complejidad ciclomática | Promedio 5.9; total 432; 73 métodos estimados | Estimación heurística por conteo de palabras clave |
+| Acoplamiento | Afferent 1, efferent 1, inestabilidad 0.5 | |
 
 Chart: `assets/loc_per_module.png` — líneas de código por módulo.
 
@@ -549,7 +617,25 @@ src/main/java/parser/
     ├── SubrangeInitialization.java
     ├── StructInitialization.java
     └── RepeatedInitialization.java
+
+src/test/java/
+├── unit/parser/
+│   ├── ParserTest.java
+│   └── initializations/RepeatedInitializationTest.java
+├── integration/lexer/parser/symboltable/
+│   ├── *IT.java
+│   ├── *TypeErrorIT.java
+│   ├── NotYetImplemented.java
+│   └── builders/
+│       ├── ExpectedSymbolBuilder.java
+│       ├── SourceCodeBuilder.java
+│       └── TypeTestData.java
+└── utils/
+    ├── ParserTestSupport.java
+    └── LexemeInfoComparator.java
 ```
+
+`Parser.output`, el reporte de Bison, y `Luca.y`, una gramática obsoleta, están en `src/main/java/parser/` pero no están versionados. Por eso se excluyen de esta documentación.
 
 ## Diagramas de apoyo — assets
 

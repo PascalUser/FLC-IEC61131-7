@@ -13,6 +13,11 @@ package utils.diagnostics;
  */
 public abstract class Warning extends Diagnostic {
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     */
     public Warning(int line) {
         super(line);
     }

@@ -11,6 +11,12 @@ package utils.diagnostics;
 public final class DateAndTimeOutOfRange extends Error {
     private final String dateTimeLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundDateTime the supplied out of bound date time
+     */
     public DateAndTimeOutOfRange(int line, String outOfBoundDateTime) {
         super(line);
         this.dateTimeLexeme = outOfBoundDateTime;

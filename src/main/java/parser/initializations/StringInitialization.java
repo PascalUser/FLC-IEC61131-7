@@ -25,6 +25,12 @@ public class StringInitialization implements Initialization {
     private final SymbolTable symbolTable;
     private final Subtype subtype;
 
+    /**
+     * Creates an initialization from the supplied declaration context.
+     *
+     * @param symbolTable the table used for default literal registration
+     * @param subtype the declared string subtype
+     */
     public StringInitialization(SymbolTable symbolTable, Subtype subtype) {
         LexemeInfoBuilder builder = new LexemeInfoBuilder();
         if (DEFAULT == null) {

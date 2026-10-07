@@ -44,50 +44,56 @@ Generado por `scripts/generate_diagrams.py utils` en `doc/diagrams/utils_class_d
 classDiagram
     namespace utils {
         class SymbolTable {
-            +table: Map~String, LexemeInfo~
+            -table: Map~String, LexemeInfo~
             +get()
             +put()
             +putIfAbsent()
+            +size()
         }
         class LexemeInfo {
             +type: Type
-        +subtype: Subtype
-        +customType: String
-        +use: Use
-        +source: Source
-        +inferiorLimits: List~String~
-        +superiorLimits: List~String~
-        +parameters: List~String~
-        +initialValue: Object
+            +subtype: Subtype
+            +customType: String
+            +use: Use
+            +source: Source
+            +inferiorLimits: List~String~
+            +superiorLimits: List~String~
+            +parameters: List~String~
+            +initialValue: Object
         }
         class DiagnosticsHandler {
-        +diagnostics: List~Diagnostic~
-        +add()
-        +hasErrors()
-        +getDiagnostics()
+            -diagnostics: List~Diagnostic~
+            -hasErrors: boolean
+            +add()
+            +hasErrors()
+            +getDiagnostics()
         }
     }
     namespace utils_builders {
         class LexemeInfoSchema {
             +type()
             +subtype()
-            +use()
+            +customType()
             +source()
+            +use()
+            +inferiorLimits()
+            +superiorLimits()
+            +parameters()
             +initialValue()
-            +build()
         }
         class LexemeInfoBuilder {
-            +implements LexemeInfoSchema
             +build()
         }
         class Director {
             +makeLiteral()
             +makeDefaultReal()
             +makeDefaultBoolean()
+            +makeDefaultString()
+            +makeDefaultWString()
         }
     }
     namespace utils_enums {
-        class Type { SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
+        class Type { 6 values }
         class Subtype { 24 values }
         class Use { 9 values }
         class Source { 7 values }
@@ -96,12 +102,13 @@ classDiagram
         class Diagnostic
         class Error
         class Warning
+        class SyntaxError
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
+    Error <|-- SyntaxError
     LexemeInfoBuilder ..|> LexemeInfoSchema
-    Director --> LexemeInfoBuilder
-    Publisher ..|> LexemeInfoSchema
+    Director ..> LexemeInfoSchema
     SymbolTable --> LexemeInfo
     DiagnosticsHandler --> Diagnostic
 ```
@@ -113,9 +120,9 @@ classDiagram
 | `utils.SymbolTable`                | Almacena y recupera `LexemeInfo` por nombre de lexema                                                   | Repository          |
 | `utils.LexemeInfo`                 | DTO con atributos semánticos completos (tipo, subtipo, uso, fuente, límites, parámetros, valor inicial) | Value Object        |
 | `utils.DiagnosticsHandler`         | Recolecta y gestiona diagnósticos (errores/warnings) en orden de inserción                              | Collector           |
-| `utils.builders.LexemeInfoSchema`  | Contrato fluido para configurar atributos de `LexemeInfo`                                               | Builder (interface) |
+| `utils.builders.LexemeInfoSchema`  | Contrato fluido con un setter por atributo de `LexemeInfo` (no declara `build()`)                       | Builder (interface) |
 | `utils.builders.LexemeInfoBuilder` | Implementación concreta del builder con `build()`                                                       | Builder             |
-| `utils.builders.Director`          | Recetas predefinidas para literales y valores por defecto                                               | Director            |
+| `utils.builders.Director`          | Recetas estáticas: `makeLiteral` y valores por defecto REAL, BOOL, STRING y WSTRING                     | Director            |
 | `utils.enums.Type`                 | Clasificación general: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                              | Enum                |
 | `utils.enums.Subtype`              | Tipos primitivos IEC 61131-7 (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE                                | Enum                |
 | `utils.enums.Use`                  | Contexto de uso: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, UNKNOWN                 | Enum                |
@@ -123,7 +130,7 @@ classDiagram
 | `utils.diagnostics.Diagnostic`     | Base abstracta con número de línea y `fatalForCompilation()`                                            | Template Method     |
 | `utils.diagnostics.Error`          | Diagnóstico fatal (`fatalForCompilation() = true`)                                                      | Herencia            |
 | `utils.diagnostics.Warning`        | Diagnóstico no fatal (`fatalForCompilation() = false`)                                                  | Herencia            |
-| `utils.diagnostics.SyntaxError`    | Errores léxicos/sintácticos                                                                             | Herencia            |
+| `utils.diagnostics.SyntaxError`    | Errores léxicos/sintácticos (extiende `Error`)                                                          | Herencia            |
 
 ## Gráficos estadísticos
 
@@ -155,7 +162,7 @@ Chart: `assets/loc_per_module.png` — Líneas de código por módulo
 ### Distribución de diagnósticos — errores vs warnings
 
 Chart: `assets/diagnostics_error_vs_warning.png` — Cantidad de clases de error vs warning en `utils.diagnostics`
-*Fuente: `src/main/java/utils/diagnostics/*.java` (5 errores, 7 warnings)*
+*Fuente: `src/main/java/utils/diagnostics/*.java` (6 errores incluyendo `SyntaxError`, 7 warnings)*
 
 ### Cobertura de tests por paquete
 
@@ -222,7 +229,7 @@ classDiagram
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
-    Diagnostic <|-- SyntaxError
+    Error <|-- SyntaxError
 
     Error <|-- DateOutOfRange
     Error <|-- IntervalConstructionError
@@ -241,7 +248,7 @@ classDiagram
 
 ## Cómo testear
 
-Tests unitarios en `src/test/java/unit/utils/SymbolTableTest.java`:
+Tests unitarios en `src/test/java/unit/utils/SymbolTableTest.java` (`SymbolTable` es el único tipo de `utils` con test unitario propio):
 
 * `PutAndGet_StoresAndRetrievesLexemeInfo` — verifica `put`/`get` básico
 * `Put_WithVariousLexemeInfo_StoresCorrectly` — parámetros con 5 combinaciones de Type/Subtype/Use/Source

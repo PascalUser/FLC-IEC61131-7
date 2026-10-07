@@ -14,6 +14,11 @@ import lexer.transformers.utils.ExponentFinder;
  */
 public final class StripTrailingZeros extends Transformer {
 
+    /**
+     * Creates a transformer followed by the specified next stage.
+     *
+     * @param next the next transformer in the chain
+     */
     public StripTrailingZeros(Transformer next) {
         super(next);
     }

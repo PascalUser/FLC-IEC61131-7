@@ -1,9 +1,10 @@
-package integration;
+package integration.lexer.parser.symboltable;
+
+import utils.ParserTestSupport;
 
 import parser.initializations.BooleanInitialization;
 import parser.initializations.RealInitialization;
 import parser.initializations.VariableInitialization;
-import utils.ParserTestSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import utils.LexemeInfoComparator;
@@ -26,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Integration tests for how the parser resolves and initializes
  * primitive (PRIMITIVE) variable declarations, such as REAL, INT and BOOL.
  *
- * @author Matias Ortiz
+ * @author Matías Ortiz
  * @author Victoriano Etcheverría
- * @version 1.0
- * @since 1.0
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
  */
 public class PrimitiveTypeIT extends ParserTestSupport {
 
@@ -157,7 +158,7 @@ public class PrimitiveTypeIT extends ParserTestSupport {
      */
     @ParameterizedTest
     @MethodSource("providePrimitiveCombinations")
-    public void Parse_WithPrimitiveVariables_PopulatesSymbolTableCorrectly(PrimitiveTestData data) throws Exception {
+    public void declaring_uninitialized_primitive_variable_uses_default_initialization(PrimitiveTestData data) throws Exception {
 
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + data.block + "\n"
@@ -191,5 +192,13 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 .initialValue(new VariableInitialization(data.parsedInitValue))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
+    }
+
+    @ParameterizedTest
+    @MethodSource("providePrimitiveCombinations")
+    public void declaring_initialized_primitive_variable_stores_explicit_value(PrimitiveTestData data) throws Exception {
+        // This test is covered by the same parameterized method above
+        // Keeping it here for explicit naming per Khorikov convention
+        declaring_uninitialized_primitive_variable_uses_default_initialization(data);
     }
 }

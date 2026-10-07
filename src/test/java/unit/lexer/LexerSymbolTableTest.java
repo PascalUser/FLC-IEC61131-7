@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,13 +50,14 @@ public class LexerSymbolTableTest {
     }
 
     private void assertLiteral(SymbolTable st, String lexeme, Subtype expectedSubtype, Object expectedValue) {
-        assertTrue(LexemeInfoComparator.compare(st, lexeme, new LexemeInfoBuilder()
+        List<String> diffs = LexemeInfoComparator.compare(st, lexeme, new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(expectedSubtype)
                 .use(Use.LITERAL)
                 .source(Source.NONE)
                 .initialValue(expectedValue)
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     private static String repeatChar(char c, int count) {
@@ -330,12 +332,13 @@ public class LexerSymbolTableTest {
     void Yylex_Identifiers_PopulatesSymbolTableWithUnknownUseAndUpperCaseLetters() throws Exception {
         SymbolTable result = executeLexer("Sensor_Temp");
 
-        assertTrue(LexemeInfoComparator.compare(result, "SENSOR_TEMP", new LexemeInfoBuilder()
+        List<String> diffs = LexemeInfoComparator.compare(result, "SENSOR_TEMP", new LexemeInfoBuilder()
                 .type(Type.UNKNOWN)
                 .subtype(Subtype.UNKNOWN)
                 .use(Use.UNKNOWN)
                 .source(Source.UNKNOWN)
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -350,12 +353,13 @@ public class LexerSymbolTableTest {
             lexer.yylex();
         }
 
-        assertTrue(LexemeInfoComparator.compare(result, "SENSOR_TEMP", new LexemeInfoBuilder()
+        List<String> diffs = LexemeInfoComparator.compare(result, "SENSOR_TEMP", new LexemeInfoBuilder()
                 .type(Type.UNKNOWN)
                 .subtype(Subtype.UNKNOWN)
                 .use(Use.UNKNOWN)
                 .source(Source.UNKNOWN)
-                .build()).isEmpty());
+                .build());
+        assertTrue(diffs.isEmpty(), diffs.toString());
 
         assertEquals(1, result.size(),
                 "Symbol table should contain only one entry for case-equivalent identifiers");

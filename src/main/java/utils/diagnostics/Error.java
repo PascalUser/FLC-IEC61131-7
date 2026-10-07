@@ -13,6 +13,11 @@ package utils.diagnostics;
  */
 public abstract class Error extends Diagnostic {
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     */
     public Error(int line) {
         super(line);
     }

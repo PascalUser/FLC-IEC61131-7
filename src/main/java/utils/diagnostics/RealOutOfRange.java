@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class RealOutOfRange extends Warning {
     private final String realLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundReal the supplied out of bound real
+     */
     public RealOutOfRange(int line, String outOfBoundReal) {
         super(line);
         this.realLexeme = outOfBoundReal;

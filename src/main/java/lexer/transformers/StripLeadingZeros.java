@@ -13,6 +13,11 @@ package lexer.transformers;
  * @since 1.0
  */
 public final class StripLeadingZeros extends Transformer {
+    /**
+     * Creates a transformer followed by the specified next stage.
+     *
+     * @param next the next transformer in the chain
+     */
     public StripLeadingZeros(Transformer next) {
         super(next);
     }

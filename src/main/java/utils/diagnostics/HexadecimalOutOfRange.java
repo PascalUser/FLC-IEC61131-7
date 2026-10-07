@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class HexadecimalOutOfRange extends Warning {
     private final String hexLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundHexadecimal the supplied out of bound hexadecimal
+     */
     public HexadecimalOutOfRange(int line, String outOfBoundHexadecimal) {
         super(line);
         this.hexLexeme = outOfBoundHexadecimal;

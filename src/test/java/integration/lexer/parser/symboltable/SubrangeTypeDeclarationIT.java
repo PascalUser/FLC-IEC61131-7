@@ -1,9 +1,10 @@
-package integration;
+package integration.lexer.parser.symboltable;
 
+import utils.ParserTestSupport;
+
+import org.junit.jupiter.api.Test;
 import parser.initializations.SubrangeInitialization;
 import parser.initializations.VariableInitialization;
-import utils.ParserTestSupport;
-import org.junit.jupiter.api.Test;
 import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
@@ -21,15 +22,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Integration tests for SUBRANGE type declarations: custom subrange type resolution,
  * subrange variable declarations, bounds evaluation, and default/explicit initial values.
  *
- * @author Matias Ortiz
+ * @author Matías Ortiz
  * @author Victoriano Etcheverría
- * @version 1.0
- * @since 1.0
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
  */
-public class SubrangeTypeIT extends ParserTestSupport {
+public class SubrangeTypeDeclarationIT extends ParserTestSupport {
 
     @Test
-    public void Parse_WithSubrangeTypeDeclaration_PopulatesSymbolTableCorrectly() throws Exception {
+    public void declaring_valid_subrange_type_registers_bounds() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    Day : INT (0..31);\n"
                 + "END_TYPE\n"
@@ -62,26 +63,5 @@ public class SubrangeTypeIT extends ParserTestSupport {
                 .initialValue(new VariableInitialization("21"))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
-    }
-
-    @Test
-    public void Parse_WithInlineSubrangeVariable_PopulatesSymbolTableCorrectly() throws Exception {
-        String sourceCode = "FUNCTION_BLOCK main\n"
-                + "VAR\n"
-                + "    percentage : INT (0..100) := 50;\n"
-                + "END_VAR\n"
-                + "END_FUNCTION_BLOCK";
-
-        SymbolTable st = parse(sourceCode);
-
-        assertTrue(LexemeInfoComparator.compare(st, "MAIN#PERCENTAGE", new LexemeInfoBuilder()
-                .type(Type.SUBRANGE)
-                .subtype(Subtype.INT)
-                .use(Use.VARIABLE)
-                .source(Source.INTERNAL)
-                .inferiorLimits(Collections.singletonList("0"))
-                .superiorLimits(Collections.singletonList("100"))
-                .initialValue("50")
-                .build()).isEmpty());
     }
 }

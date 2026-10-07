@@ -1,22 +1,13 @@
 classDiagram
     namespace lexer {
-        class Lexer {
-            +processAndSaveYylval()
-        }
-        class LexicalPreprocessors {
-            +INTERVALS: Transformer
-            +REALS: Transformer
-            +IDENTIFIERS: Transformer
-        }
-        class LexicalAnalyzers {
-            +analyzers: Map
-        }
+        class Lexer
+    }
+    namespace lexer_internals {
+        class LexicalPreprocessors
+        class LexicalAnalyzers
     }
     namespace lexer_transformers {
-        class Transformer {
-            +transform()
-            +giveToNext()
-        }
+        class Transformer
         class UnderscoreRemover
         class UpperCaseConverter
         class StripLeadingZeros
@@ -24,46 +15,60 @@ classDiagram
         class StringEscapeResolver
         class Nothing
     }
+    namespace lexer_transformers_hex_resolvers {
+        class HexResolver
+        class StringHexResolver
+        class WStringHexResolver
+    }
     namespace lexer_semantics {
-        class SemanticAnalyzer {
-            +analyze()
-        }
-        class NumbersAnalyzer {
-            +parse()
-            +fallback()
-            +createDiagnostic()
-        }
+        class SemanticAnalyzer
+        class Identifiers
+        class Intervals
+        class Dates
+        class DayTimes
+        class DateAndDayTimes
+    }
+    namespace lexer_semantics_numbers {
+        class NumbersAnalyzer
         class Naturals
         class Integers
         class Reals
+    }
+    namespace lexer_semantics_numbers_bases {
         class BaseNumbersAnalyzer
         class Binary
         class Octal
         class Hexadecimal
-        class Intervals
-        class Identifiers
-        class Strings
-        class Dates
     }
-    Lexer --> LexicalPreprocessors : uses
-    Lexer --> LexicalAnalyzers : uses
-    LexicalPreprocessors --> Transformer : manages
-    LexicalAnalyzers --> SemanticAnalyzer : manages
-    Transformer <|-- UnderscoreRemover
-    Transformer <|-- UpperCaseConverter
-    Transformer <|-- StripLeadingZeros
-    Transformer <|-- StripTrailingZeros
-    Transformer <|-- StringEscapeResolver
-    Transformer <|-- Nothing
-    SemanticAnalyzer <|-- NumbersAnalyzer
-    NumbersAnalyzer <|-- Naturals
+    namespace lexer_semantics_strings {
+        class StringsAnalyzer
+        class Strings
+        class WStrings
+    }
+    SemanticAnalyzer <|-- DateAndDayTimes
+    SemanticAnalyzer <|-- Dates
+    SemanticAnalyzer <|-- DayTimes
+    SemanticAnalyzer <|-- Identifiers
+    SemanticAnalyzer <|-- Intervals
     NumbersAnalyzer <|-- Integers
+    NumbersAnalyzer <|-- Naturals
+    SemanticAnalyzer <|-- NumbersAnalyzer
     NumbersAnalyzer <|-- Reals
     NumbersAnalyzer <|-- BaseNumbersAnalyzer
     BaseNumbersAnalyzer <|-- Binary
-    BaseNumbersAnalyzer <|-- Octal
     BaseNumbersAnalyzer <|-- Hexadecimal
-    SemanticAnalyzer <|-- Intervals
-    SemanticAnalyzer <|-- Identifiers
-    SemanticAnalyzer <|-- Strings
-    SemanticAnalyzer <|-- Dates
+    BaseNumbersAnalyzer <|-- Octal
+    StringsAnalyzer <|-- Strings
+    SemanticAnalyzer <|-- StringsAnalyzer
+    StringsAnalyzer <|-- WStrings
+    Transformer <|-- Nothing
+    Transformer <|-- StringEscapeResolver
+    Transformer <|-- StripLeadingZeros
+    Transformer <|-- StripTrailingZeros
+    Transformer <|-- UnderscoreRemover
+    Transformer <|-- UpperCaseConverter
+    Transformer <|-- HexResolver
+    HexResolver <|-- StringHexResolver
+    HexResolver <|-- WStringHexResolver
+    Lexer --> LexicalPreprocessors : uses
+    Lexer --> LexicalAnalyzers : uses

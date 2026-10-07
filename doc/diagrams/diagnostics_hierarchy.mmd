@@ -15,7 +15,7 @@ classDiagram
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
-    Diagnostic <|-- SyntaxError
+    Error <|-- SyntaxError
 
     Error <|-- DateOutOfRange
     Error <|-- IntervalConstructionError

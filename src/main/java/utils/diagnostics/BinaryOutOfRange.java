@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class BinaryOutOfRange extends Warning {
     private final String binLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundBinary the supplied out of bound binary
+     */
     public BinaryOutOfRange(int line, String outOfBoundBinary) {
         super(line);
         this.binLexeme = outOfBoundBinary;

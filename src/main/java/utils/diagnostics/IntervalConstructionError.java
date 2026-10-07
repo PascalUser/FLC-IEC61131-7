@@ -16,6 +16,12 @@ package utils.diagnostics;
 public final class IntervalConstructionError extends Error {
     private final String intervalLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param invalidInterval the supplied invalid interval
+     */
     public IntervalConstructionError(int line, String invalidInterval) {
         super(line);
         this.intervalLexeme = invalidInterval;

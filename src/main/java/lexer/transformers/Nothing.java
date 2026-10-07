@@ -13,6 +13,11 @@ package lexer.transformers;
  * @since 1.0
  */
 public final class Nothing extends Transformer {
+    /**
+     * Creates a transformer followed by the specified next stage.
+     *
+     * @param next the next transformer in the chain
+     */
     public Nothing(Transformer next) {
         super(next);
     }

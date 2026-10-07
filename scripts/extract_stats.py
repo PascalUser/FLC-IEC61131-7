@@ -88,18 +88,9 @@ def extract_transformer_chains():
     for match in re.finditer(pattern, content, re.DOTALL):
         name = match.group(1)
         chain_expr = match.group(2)
-        # Count NEW occurrences (each transformer instantiation)
-        count = chain_expr.count('new ') + chain_expr.count('NEW ') + chain_expr.count('New ')
-        # Also count explicit class names in chain
-        if count == 0:
-            # Count class names like UnderscoreRemover, UpperCaseConverter, etc.
-            transformer_classes = ['UnderscoreRemover', 'UpperCaseConverter', 'StripLeadingZeros', 'StripTrailingZeros', 
-                                  'StripBaseNumberLeadingZeros', 'OmitLeadingZeroMagnitudes', 'OmitTrailingZeroMagnitudes',
-                                  'OmitLeadingZerosInMagnitudes', 'OmitTrailingZerosInMagnitudes', 
-                                  'StringHexResolver', 'WStringHexResolver', 'StringEscapeResolver', 'Nothing']
-            count = sum(1 for tc in transformer_classes if tc in chain_expr)
-        if name not in ['DATE_AND_TIMES', 'DAYTIMES', 'DATES'] or count > 0:
-            chains[name] = max(1, count) if name not in ['DATE_AND_TIMES', 'DAYTIMES', 'DATES'] else 0
+        # Every constructor call is a chain node, including Nothing for date/time.
+        count = len(re.findall(r'\bnew\s+\w+\s*\(', chain_expr))
+        chains[name] = count
     return chains
 
 
@@ -145,11 +136,16 @@ def extract_grammar_stats():
     # Non-terminals from Parser.java (SymbolKind enum)
     parser_java = SRC_DIR / "parser" / "Parser.java"
     content = parser_java.read_text()
-    match = re.search(r'enum SymbolKind\s*\{([^}]+)}', content, re.DOTALL)
+    # Each constant is declared as 'S_name(index)'. Bison numbers terminals
+    # first; nonterminals start at S_YYACCEPT ($accept), so count every
+    # constant whose index is >= the index of S_YYACCEPT (matches the
+    # "Nonterminals" section of Bison's .output report).
+    symbol_kinds = [(name, int(idx)) for name, idx in
+                    re.findall(r'^\s+(S_\w+)\((\d+)\)', content, re.MULTILINE)]
+    accept_idx = next((idx for name, idx in symbol_kinds if name == "S_YYACCEPT"), None)
     nonterminals = 0
-    if match:
-        enum_body = match.group(1)
-        nonterminals = len([x.strip() for x in enum_body.split(',') if x.strip() and not x.strip().startswith('//')])
+    if accept_idx is not None:
+        nonterminals = len([1 for _, idx in symbol_kinds if idx >= accept_idx])
     
     # Initialization types
     init_dir = SRC_DIR / "parser" / "initializations"
@@ -379,7 +375,7 @@ def generate_chart_grammar_stats(data):
     # Non-terminals
     val = data["nonterminals"]
     axes[1].bar(["Non-terminals"], [val], color='#2ecc71')
-    axes[1].set_title("Grammar Productions", fontsize=11, fontweight='bold')
+    axes[1].set_title("Grammar Non-terminals", fontsize=11, fontweight='bold')
     axes[1].set_ylim(0, val * 1.2)
     axes[1].text(0, val + val * 0.02, str(val), ha='center', fontsize=12)
     # Init types

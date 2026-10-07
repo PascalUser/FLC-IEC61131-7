@@ -1,0 +1,51 @@
+flowchart LR
+    lexer["lexer"]
+    lexer_internals["lexer.internals"]
+    lexer_semantics["lexer.semantics"]
+    lexer_semantics_numbers["lexer.semantics.numbers"]
+    lexer_semantics_numbers_bases["lexer.semantics.numbers.bases"]
+    lexer_semantics_strings["lexer.semantics.strings"]
+    lexer_semantics_utils["lexer.semantics.utils"]
+    lexer_transformers["lexer.transformers"]
+    lexer_transformers_hex_resolvers["lexer.transformers.hex_resolvers"]
+    lexer_transformers_utils["lexer.transformers.utils"]
+    parser["parser"]
+    utils["utils"]
+    utils_builders["utils.builders"]
+    utils_diagnostics["utils.diagnostics"]
+    utils_enums["utils.enums"]
+    lexer --> lexer_internals
+    lexer --> lexer_semantics
+    lexer --> lexer_transformers
+    lexer --> parser
+    lexer --> utils
+    lexer --> utils_diagnostics
+    lexer_internals --> lexer_semantics
+    lexer_internals --> lexer_semantics_numbers
+    lexer_internals --> lexer_semantics_numbers_bases
+    lexer_internals --> lexer_semantics_strings
+    lexer_internals --> lexer_transformers
+    lexer_internals --> lexer_transformers_hex_resolvers
+    lexer_semantics --> lexer
+    lexer_semantics --> lexer_semantics_utils
+    lexer_semantics --> parser
+    lexer_semantics --> utils
+    lexer_semantics --> utils_builders
+    lexer_semantics --> utils_diagnostics
+    lexer_semantics --> utils_enums
+    lexer_semantics_numbers --> lexer_semantics
+    lexer_semantics_numbers --> parser
+    lexer_semantics_numbers --> utils_builders
+    lexer_semantics_numbers --> utils_diagnostics
+    lexer_semantics_numbers --> utils_enums
+    lexer_semantics_numbers_bases --> lexer_semantics_numbers
+    lexer_semantics_numbers_bases --> utils_diagnostics
+    lexer_semantics_numbers_bases --> utils_enums
+    lexer_semantics_strings --> lexer_semantics
+    lexer_semantics_strings --> parser
+    lexer_semantics_strings --> utils_builders
+    lexer_semantics_strings --> utils_diagnostics
+    lexer_semantics_strings --> utils_enums
+    lexer_semantics_utils --> lexer
+    lexer_transformers --> lexer_transformers_utils
+    lexer_transformers_hex_resolvers --> lexer_transformers

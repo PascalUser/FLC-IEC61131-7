@@ -1,11 +1,11 @@
-package integration;
+package integration.lexer.parser.symboltable;
 
-import parser.initializations.EnumeratedInitialization;
-import parser.initializations.MacroInitialization;
-import parser.initializations.VariableInitialization;
 import utils.ParserTestSupport;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import parser.initializations.MacroInitialization;
+import parser.initializations.VariableInitialization;
 import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
@@ -20,15 +20,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration tests for ENUMERATED type declarations and variables: custom enum type resolution,
- * inline enumerated variables, and macro constant generation within FUNCTION_BLOCK scope.
- *
- * @author Matias Ortiz
- * @author Victoriano Etcheverría
- * @version 1.0
- * @since 1.0
+ * Integration tests for ENUMERATED variable declarations (inline and custom type).
  */
-public class EnumerateTypeIT extends ParserTestSupport {
+public class EnumerateVariableIT extends ParserTestSupport {
 
     @ParameterizedTest
     @CsvSource({
@@ -36,7 +30,10 @@ public class EnumerateTypeIT extends ParserTestSupport {
             "VAR_INPUT, IN",
             "VAR_OUTPUT, OUT"
     })
-    public void Parse_WithCustomEnumTypeDeclaration_PopulatesSymbolTableCorrectly(String block, Source expectedSource) throws Exception {
+    public void declaring_variable_of_enum_type_uses_fully_qualified_initializer(
+            String block,
+            Source expectedSource
+    ) throws Exception {
         String sourceCode = "TYPE\n"
                 + "    MethodType : (CENTROID, AVERAGE);\n"
                 + "END_TYPE\n"
@@ -49,17 +46,6 @@ public class EnumerateTypeIT extends ParserTestSupport {
         SymbolTable st = parse(sourceCode);
         List<String> diffs;
 
-        diffs = LexemeInfoComparator.compare(st, "METHODTYPE", new LexemeInfoBuilder()
-                .type(Type.ENUMERATE)
-                .subtype(Subtype.INT)
-                .use(Use.TYPE)
-                .source(Source.NONE)
-                .parameters(Arrays.asList("CENTROID", "AVERAGE"))
-                .initialValue(new EnumeratedInitialization(Arrays.asList("CENTROID", "AVERAGE")))
-                .build()
-        );
-        assertTrue(diffs.isEmpty(), diffs.toString());
-
         diffs = LexemeInfoComparator.compare(st, "MAIN#DEFUZZ_METHOD", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
@@ -67,26 +53,6 @@ public class EnumerateTypeIT extends ParserTestSupport {
                 .use(Use.VARIABLE)
                 .source(expectedSource)
                 .initialValue(new VariableInitialization("METHODTYPE#CENTROID"))
-                .build()
-        );
-        assertTrue(diffs.isEmpty(), diffs.toString());
-
-        diffs = LexemeInfoComparator.compare(st, "METHODTYPE#CENTROID", new LexemeInfoBuilder()
-                .type(Type.SIMPLE)
-                .subtype(Subtype.NONE)
-                .use(Use.MACRO)
-                .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "0"))
-                .build()
-        );
-        assertTrue(diffs.isEmpty(), diffs.toString());
-
-        diffs = LexemeInfoComparator.compare(st, "METHODTYPE#AVERAGE", new LexemeInfoBuilder()
-                .type(Type.SIMPLE)
-                .subtype(Subtype.NONE)
-                .use(Use.MACRO)
-                .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "1"))
                 .build()
         );
         assertTrue(diffs.isEmpty(), diffs.toString());
@@ -98,7 +64,10 @@ public class EnumerateTypeIT extends ParserTestSupport {
             "VAR_INPUT, IN",
             "VAR_OUTPUT, OUT"
     })
-    public void Parse_WithInlineEnumVariable_PopulatesSymbolTableCorrectly(String block, Source expectedSource) throws Exception {
+    public void declaring_inline_enum_variable_registers_anonymous_type(
+            String block,
+            Source expectedSource
+    ) throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + block + "\n"
                 + "    defuzz_method : (CENTROID, AVERAGE) := CENTROID;\n"

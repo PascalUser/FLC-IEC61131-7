@@ -13,6 +13,11 @@ package lexer.transformers;
  */
 public final class OmitTrailingZeroMagnitudes extends Transformer {
 
+    /**
+     * Creates a transformer followed by the specified next stage.
+     *
+     * @param next the next transformer in the chain
+     */
     public OmitTrailingZeroMagnitudes(Transformer next) {
         super(next);
     }

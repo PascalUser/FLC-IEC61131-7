@@ -32,18 +32,30 @@ import org.jspecify.annotations.NonNull;
     private LexicalPreprocessors preprocessor;
     private LexicalAnalyzers analyzer;
 
+    /**
+     * Returns the semantic value of the most recently analyzed token.
+     *
+     * @return the processed lexeme value, or {@code null} before any analysis
+     */
     public Object getLVal() {
         return this.yylval;
     }
 
+    /**
+     * Reports a syntax error on the scanner's current source line.
+     *
+     * @param msg the parser's error message (not retained by this handler)
+     */
     public void yyerror(String msg) {
         this.diagnosticsHandler.add(new SyntaxError(yyline + 1));
     }
 
     /**
-     * @param  transformer the lexeme preprocessor that transforms the lexeme before is analyzed
-     * @param  analyzer    the lexeme's semantic analyzer
-     * @return the lexeme's corresponded token number, or YYERROR if semantic analysis failed
+     * Preprocesses and analyzes the matched token, recording its semantic value.
+     *
+     * @param transformer the transformer applied to the matched lexeme
+     * @param analyzer the semantic analyzer for this token category
+     * @return the analyzer's token code (including its error code on failure)
      */
     public int processAndSaveYylval(@NonNull Transformer transformer, @NonNull SemanticAnalyzer analyzer) {
         String preprocessedLexeme = transformer.transform(yytext());

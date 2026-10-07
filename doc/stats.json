@@ -6,9 +6,9 @@
     "Subtype": 24
   },
   "transformer_chains": {
-    "DATE_AND_TIMES": 0,
-    "DAYTIMES": 0,
-    "DATES": 0,
+    "DATE_AND_TIMES": 1,
+    "DAYTIMES": 1,
+    "DATES": 1,
     "INTERVALS": 6,
     "NATURALS": 2,
     "INTEGERS": 2,
@@ -26,7 +26,7 @@
   },
   "grammar_stats": {
     "tokens": 82,
-    "nonterminals": 231,
+    "nonterminals": 137,
     "init_types": 9
   },
   "symboltable_distribution": {

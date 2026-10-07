@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class IntervalOutOfRange extends Error {
     private final String intervalLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundInterval the supplied out of bound interval
+     */
     public IntervalOutOfRange(int line, String outOfBoundInterval) {
         super(line);
         this.intervalLexeme = outOfBoundInterval;

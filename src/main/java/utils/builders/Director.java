@@ -64,12 +64,24 @@ public final class Director {
         return "FALSE";
     }
 
+    /**
+     * Configures a default STRING literal and returns its source spelling.
+     *
+     * @param schema the schema to configure
+     * @return the empty STRING literal {@code ''}
+     */
     public static String makeDefaultString(LexemeInfoSchema schema) {
         makeLiteral(schema);
         schema.subtype(Subtype.STRING).initialValue("");
         return "''";
     }
 
+    /**
+     * Configures a default WSTRING literal and returns its source spelling.
+     *
+     * @param schema the schema to configure
+     * @return the empty WSTRING literal {@code ""}
+     */
     public static String makeDefaultWString(LexemeInfoSchema schema) {
         makeLiteral(schema);
         schema.subtype(Subtype.WSTRING).initialValue("");

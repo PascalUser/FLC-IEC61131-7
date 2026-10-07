@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class NaturalOutOfRange extends Warning {
     private final String natLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundNatural the supplied out of bound natural
+     */
     public NaturalOutOfRange(int line, String outOfBoundNatural) {
         super(line);
         this.natLexeme = outOfBoundNatural;

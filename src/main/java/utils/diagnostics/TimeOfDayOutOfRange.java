@@ -14,6 +14,12 @@ package utils.diagnostics;
 public final class TimeOfDayOutOfRange extends Error {
     private final String timeLexeme;
 
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundTime the supplied out of bound time
+     */
     public TimeOfDayOutOfRange(int line, String outOfBoundTime) {
         super(line);
         this.timeLexeme = outOfBoundTime;

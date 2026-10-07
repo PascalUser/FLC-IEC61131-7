@@ -1,50 +1,56 @@
 classDiagram
     namespace utils {
         class SymbolTable {
-            +table: Map~String, LexemeInfo~
+            -table: Map~String, LexemeInfo~
             +get()
             +put()
             +putIfAbsent()
+            +size()
         }
         class LexemeInfo {
             +type: Type
-        +subtype: Subtype
-        +customType: String
-        +use: Use
-        +source: Source
-        +inferiorLimits: List~String~
-        +superiorLimits: List~String~
-        +parameters: List~String~
-        +initialValue: Object
+            +subtype: Subtype
+            +customType: String
+            +use: Use
+            +source: Source
+            +inferiorLimits: List~String~
+            +superiorLimits: List~String~
+            +parameters: List~String~
+            +initialValue: Object
         }
         class DiagnosticsHandler {
-        +diagnostics: List~Diagnostic~
-        +add()
-        +hasErrors()
-        +getDiagnostics()
+            -diagnostics: List~Diagnostic~
+            -hasErrors: boolean
+            +add()
+            +hasErrors()
+            +getDiagnostics()
         }
     }
     namespace utils_builders {
         class LexemeInfoSchema {
             +type()
             +subtype()
-            +use()
+            +customType()
             +source()
+            +use()
+            +inferiorLimits()
+            +superiorLimits()
+            +parameters()
             +initialValue()
-            +build()
         }
         class LexemeInfoBuilder {
-            +implements LexemeInfoSchema
             +build()
         }
         class Director {
             +makeLiteral()
             +makeDefaultReal()
             +makeDefaultBoolean()
+            +makeDefaultString()
+            +makeDefaultWString()
         }
     }
     namespace utils_enums {
-        class Type { SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT }
+        class Type { 6 values }
         class Subtype { 24 values }
         class Use { 9 values }
         class Source { 7 values }
@@ -53,11 +59,12 @@ classDiagram
         class Diagnostic
         class Error
         class Warning
+        class SyntaxError
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
+    Error <|-- SyntaxError
     LexemeInfoBuilder ..|> LexemeInfoSchema
-    Director --> LexemeInfoBuilder
-    Publisher ..|> LexemeInfoSchema
+    Director ..> LexemeInfoSchema
     SymbolTable --> LexemeInfo
     DiagnosticsHandler --> Diagnostic

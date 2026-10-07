@@ -20,10 +20,20 @@ import org.jspecify.annotations.NonNull;
  */
 public abstract class HexResolver extends Transformer {
 
+    /**
+     * Creates a hexadecimal resolver followed by another transformer.
+     *
+     * @param next the transformer that receives the resolved lexeme
+     */
     public HexResolver(Transformer next) {
         super(next);
     }
 
+    /**
+     * Returns the number of hexadecimal digits in an escape sequence.
+     *
+     * @return the number of digits following the dollar sign
+     */
     protected abstract int getHexDigits();
 
     @Override

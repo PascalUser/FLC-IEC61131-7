@@ -15,6 +15,11 @@ package utils.diagnostics;
  * @see utils.diagnostics.Error
  */
 public class SyntaxError extends Error {
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     */
     public SyntaxError(int line) {
         super(line);
     }

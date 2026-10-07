@@ -29,6 +29,11 @@ public final class LexemeInfoComparator {
      * Looks up {@code key} in {@code symbolTable} and returns a list of
      * human-readable diffs against {@code expected}. An empty list means
      * the actual value matches the expected one.
+     *
+     * @param symbolTable the table containing the actual symbol metadata
+     * @param key the symbol name to look up
+     * @param expected the expected symbol metadata
+     * @return the mismatches, or an empty list if the metadata matches
      */
     public static List<String> compare(SymbolTable symbolTable, String key, LexemeInfo expected) {
         LexemeInfo actual = symbolTable.get(key);

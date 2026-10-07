@@ -19,6 +19,15 @@ public final class StructInitialization implements Initialization {
     private final Map<String, Initialization> map = new HashMap<>();
     private String selectedVariable = null;
 
+    /**
+     * Replaces a field's initialization, traversing nested structs for compound names.
+     *
+     * @param fieldName the field name, optionally qualified by {@code #}
+     * @param initialization the value to store for the field
+     * @return the previous field initialization, or {@code null} if none exists
+     *         or an intermediate struct field is missing
+     * @throws ClassCastException if an intermediate field is not a struct initialization
+     */
     public Initialization setFieldInitialization(final String fieldName, final Initialization initialization) {
         if (selectedVariable == null) {
             selectedVariable = fieldName;
