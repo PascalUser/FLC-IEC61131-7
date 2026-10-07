@@ -113,9 +113,9 @@ Diagrama de clases: `doc/diagrams/parser_class_diagram.mmd` (generado por `scrip
 | `parser.utils.UnderlyingScopeSearcher`          | Sigue la cadena de tipos custom hasta el ámbito raíz que contiene campos/enums                          | Searcher                |
 | `parser.initializations.Initialization`         | Interfaz de valores iniciales polimórficos (`selectVariable`, `getVariableValue`, `copy`)              | Composite / Strategy    |
 | `parser.initializations.VariableInitialization` | Envuelve un literal o identificador como valor inicial explícito                                       | Value Object            |
-| `parser.initializations.StringInitialization`   | Valor por defecto de STRING/WSTRING registrado perezosamente en `SymbolTable` vía `Director`           | Value Object            |
-| `parser.initializations.BooleanInitialization`  | Valor por defecto BOOL `FALSE` registrado perezosamente                                                | Value Object            |
-| `parser.initializations.RealInitialization`     | Valor por defecto REAL `0.0` registrado perezosamente                                                  | Value Object            |
+| `parser.initializations.primitives.StringInitialization`   | Valor por defecto de STRING/WSTRING registrado perezosamente en `SymbolTable` vía `Director`           | Value Object            |
+| `parser.initializations.primitives.BooleanInitialization`  | Valor por defecto BOOL `FALSE` registrado perezosamente                                                | Value Object            |
+| `parser.initializations.primitives.RealInitialization`     | Valor por defecto REAL `0.0` registrado perezosamente                                                  | Value Object            |
 | `parser.initializations.EnumeratedInitialization` | Primer valor de un enumerado como valor por defecto                                                  | Value Object            |
 | `parser.initializations.MacroInitialization`    | Valor ordinal de un literal de enumerado registrado como `Subtype.INT`                                 | Value Object            |
 | `parser.initializations.SubrangeInitialization` | Cota inferior como valor por defecto; conserva inferior y superior                                     | Value Object            |

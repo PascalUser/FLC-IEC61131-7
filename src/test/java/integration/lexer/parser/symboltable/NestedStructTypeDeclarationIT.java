@@ -3,8 +3,8 @@ package integration.lexer.parser.symboltable;
 import utils.ParserTestSupport;
 
 import org.junit.jupiter.api.Test;
-import parser.initializations.BooleanInitialization;
-import parser.initializations.RealInitialization;
+import parser.initializations.primitives.BooleanInitialization;
+import parser.initializations.primitives.RealInitialization;
 import parser.initializations.StructInitialization;
 import parser.initializations.VariableInitialization;
 import utils.LexemeInfoComparator;

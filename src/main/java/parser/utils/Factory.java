@@ -1,8 +1,7 @@
 package parser.utils;
 
-import parser.initializations.Initialization;
-import parser.initializations.RealInitialization;
-import parser.initializations.StringInitialization;
+import parser.initializations.*;
+import parser.initializations.primitives.*;
 import utils.SymbolTable;
 import utils.enums.Subtype;
 
@@ -11,7 +10,7 @@ import utils.enums.Subtype;
  * <p>
  * Currently only handles {@link Subtype#REAL} via {@link RealInitialization}.
  * Other primitive types use their respective initialization classes directly
- * in the parser semantic actions (e.g., {@link parser.initializations.BooleanInitialization},
+ * in the parser semantic actions (e.g., {@link BooleanInitialization},
  * {@link parser.initializations.SubrangeInitialization}).
  * </p>
  *
@@ -36,13 +35,26 @@ public final class Factory {
      */
     public static Initialization createPrimitiveInitialization(SymbolTable symbolTable, Subtype subtype) {
         switch (subtype) {
-            case WSTRING:
-            case STRING:
-                return new StringInitialization(symbolTable, subtype);
+            case BOOL:
+                return new BooleanInitialization(symbolTable);
+            case LREAL:
             case REAL:
                 return new RealInitialization(symbolTable);
+            case STRING:
+                return new StringInitialization(symbolTable);
+            case WSTRING:
+                return new WStringInitialization(symbolTable);
+            case SINT:
+            case INT :
+            case LINT:
+            case DINT:
+            case USINT:
+            case UINT :
+            case ULINT:
+            case UDINT:
+                return new IntInitialization(symbolTable);
             default:
-                throw new IllegalArgumentException("Factory detected an unexpected subtype: " + subtype);
+                throw new IllegalArgumentException("Subtipo primitivo no soportado por Factory: " + subtype);
         }
     }
 }

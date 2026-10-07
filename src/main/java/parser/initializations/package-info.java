@@ -5,8 +5,8 @@
  * </p>
  * <ul>
  *   <li>{@link parser.initializations.VariableInitialization} - explicit user assignments</li>
- *   <li>{@link parser.initializations.BooleanInitialization} - default BOOL (FALSE)</li>
- *   <li>{@link parser.initializations.RealInitialization} - default REAL (0.0)</li>
+ *   <li>{@link parser.initializations.primitives.BooleanInitialization} - default BOOL (FALSE)</li>
+ *   <li>{@link parser.initializations.primitives.RealInitialization} - default REAL (0.0)</li>
  *   <li>{@link parser.initializations.EnumeratedInitialization} - default enum (first value)</li>
  *   <li>{@link parser.initializations.MacroInitialization} - explicit enum literal reference</li>
  *   <li>{@link parser.initializations.SubrangeInitialization} - default subrange (lower bound)</li>

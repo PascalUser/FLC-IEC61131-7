@@ -40,6 +40,12 @@ public final class Director {
                 .source(Source.NONE);
     }
 
+    public static String makeDefaultInteger(LexemeInfoSchema schema) {
+        makeLiteral(schema);
+        schema.subtype(Subtype.INT).initialValue(0);
+        return "0";
+    }
+
     /**
      * Configures the schema for a default REAL value and returns the literal string.
      *

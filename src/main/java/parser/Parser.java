@@ -38,16 +38,15 @@ package parser;
 
 
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 /* "%code imports" blocks.  */
 /* "src/main/java/parser/Parser.y":7  */
 
     import java.util.List;
-    import java.util.ArrayList;
-    import java.util.Collections;
+import java.util.Collections;
 
-    import utils.LexemeInfo;
+import parser.initializations.primitives.BooleanInitialization;
+import utils.LexemeInfo;
     import utils.SymbolTable;
     import utils.enums.*;
 

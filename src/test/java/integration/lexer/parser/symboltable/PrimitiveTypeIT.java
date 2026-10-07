@@ -1,9 +1,8 @@
 package integration.lexer.parser.symboltable;
 
+import parser.initializations.primitives.*;
 import utils.ParserTestSupport;
 
-import parser.initializations.BooleanInitialization;
-import parser.initializations.RealInitialization;
 import parser.initializations.VariableInitialization;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -129,9 +128,27 @@ public class PrimitiveTypeIT extends ParserTestSupport {
 
         // 2. Define the primitive types to test
         List<TypeConfig> types = Arrays.asList(
-                new TypeConfig("REAL", Subtype.REAL, "0.3e10", ".3e10", RealInitialization::new),
-                new TypeConfig("BOOL", Subtype.BOOL, "TRUE", "TRUE", BooleanInitialization::new)
-                // new TypeConfig("INT", Subtype.INT, "42", "42", IntInitialization::new),
+                // Boolean type
+                new TypeConfig("BOOL", Subtype.BOOL, "TRUE", "TRUE", BooleanInitialization::new),
+                // Real types
+                new TypeConfig("REAL" ,  Subtype.REAL, "0.3e10", ".3e10", RealInitialization::new),
+                new TypeConfig("LREAL", Subtype.LREAL, "0.3e10", ".3e10", RealInitialization::new),
+                // Int types
+                new TypeConfig("SINT" , Subtype.SINT, "42", "42", IntInitialization::new),
+                new TypeConfig("INT"  , Subtype.INT , "42", "42", IntInitialization::new),
+                new TypeConfig("LINT" , Subtype.LINT, "42", "42", IntInitialization::new),
+                new TypeConfig("DINT" , Subtype.DINT, "42", "42", IntInitialization::new),
+                // UInt types
+                new TypeConfig("USINT", Subtype.USINT, "42", "42", IntInitialization::new),
+                new TypeConfig("UINT" , Subtype.UINT , "42", "42", IntInitialization::new),
+                new TypeConfig("ULINT", Subtype.ULINT, "42", "42", IntInitialization::new),
+                new TypeConfig("UDINT", Subtype.UDINT, "42", "42", IntInitialization::new),
+                // String types
+                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'", StringInitialization::new),
+                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'", StringInitialization::new),
+                // WString types
+                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"", WStringInitialization::new),
+                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"", WStringInitialization::new)
         );
 
         // 3. Construct the Cartesian product

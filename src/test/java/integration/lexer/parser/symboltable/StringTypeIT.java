@@ -3,8 +3,8 @@ package integration.lexer.parser.symboltable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import parser.initializations.StringInitialization;
 import parser.initializations.VariableInitialization;
+import parser.utils.Factory;
 import utils.LexemeInfoComparator;
 import utils.ParserTestSupport;
 import utils.SymbolTable;
@@ -40,7 +40,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .source(Source.NONE)
                 .inferiorLimits(null)
                 .superiorLimits(Collections.singletonList("8"))
-                .initialValue(new StringInitialization(st, subtype))
+                .initialValue(Factory.createPrimitiveInitialization(st, subtype))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
     }
@@ -110,7 +110,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .source(Source.INTERNAL)
                 .inferiorLimits(null)
                 .superiorLimits(Collections.singletonList("8"))
-                .initialValue(new StringInitialization(st, subtype))
+                .initialValue(Factory.createPrimitiveInitialization(st, subtype))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
     }

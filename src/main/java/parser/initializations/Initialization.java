@@ -1,5 +1,8 @@
 package parser.initializations;
 
+import parser.initializations.primitives.BooleanInitialization;
+import parser.initializations.primitives.RealInitialization;
+
 /**
  * Interface for polymorphic initialization values in IEC 61131-7.
  * <p>
