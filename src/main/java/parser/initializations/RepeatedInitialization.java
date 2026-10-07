@@ -20,7 +20,7 @@ import java.util.Objects;
  * @version 1.1
  * @since 1.0
  */
-public class RepeatedInitialization implements Initialization {
+public final class RepeatedInitialization implements Initialization {
 
     /**
      * A disjoint and contiguous interval [start, end] with its associated

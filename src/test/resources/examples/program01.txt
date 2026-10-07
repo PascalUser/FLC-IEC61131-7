@@ -3,10 +3,6 @@
 TYPE
     color_type :
         STRUCT
-            white: BOOL;
-        END_STRUCT;
-    color_type :
-        STRUCT
             brown: REAL;
             light: REAL;
             dark:  REAL;

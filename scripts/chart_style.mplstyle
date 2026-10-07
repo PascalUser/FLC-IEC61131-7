@@ -20,18 +20,18 @@ figure.titlesize: 16
 
 # Axes
 axes.facecolor: white
-axes.edgecolor: #333333
+axes.edgecolor: 0.2
 axes.linewidth: 1.0
 axes.grid: True
 axes.grid.axis: y
 axes.grid.which: major
 axes.axisbelow: True
-grid.color: #cccccc
+grid.color: 0.8
 grid.linewidth: 0.7
 grid.linestyle: --
 
-# Colors - thesis palette
-axes.prop_cycle: cycler('color', ['#2C3E50', '#E74C3C', '#27AE60', '#F39C12', '#8E44AD', '#3498DB', '#E67E22', '#1ABC9C', '#95A5A6', '#34495E'])
+# Colors - thesis palette (using matplotlib color names or valid formats)
+axes.prop_cycle: cycler('color', ['darkslategray', 'firebrick', 'forestgreen', 'goldenrod', 'mediumorchid', 'royalblue', 'chocolate', 'mediumturquoise', 'darkgray', 'darkslateblue'])
 
 # Lines
 lines.linewidth: 2.0
@@ -39,7 +39,7 @@ lines.markersize: 6
 
 # Bars
 patch.linewidth: 0.5
-patch.edgecolor: #333333
+patch.edgecolor: 0.2
 
 # Ticks
 xtick.direction: out
@@ -53,13 +53,13 @@ ytick.minor.size: 2
 legend.frameon: True
 legend.framealpha: 0.9
 legend.facecolor: white
-legend.edgecolor: #cccccc
+legend.edgecolor: 0.8
 legend.fancybox: True
 
-# Text
-text.color: #2C3E50
-axes.titlecolor: #2C3E50
-axes.labelcolor: #34495E
+# Text - using named colors
+text.color: darkslategray
+axes.titlecolor: darkslategray
+axes.labelcolor: darkslategray
 
 # Savefig
 savefig.facecolor: white

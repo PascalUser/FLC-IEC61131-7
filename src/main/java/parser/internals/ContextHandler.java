@@ -1,5 +1,7 @@
 package parser.internals;
 
+import utils.LexemeInfo;
+
 import java.util.Stack;
 
 /**
@@ -43,6 +45,9 @@ public final class ContextHandler {
      * @throws java.util.EmptyStackException if the stack is empty
      */
     public ParsingContext pop() {
+        if (contextStack.empty()) {
+            throw new RuntimeException("ContextHandler: cannot remove a context if there's no context");
+        }
         return contextStack.pop();
     }
 
@@ -53,6 +58,30 @@ public final class ContextHandler {
      * @throws java.util.EmptyStackException if the stack is empty
      */
     public ParsingContext current() {
+        if (contextStack.empty()) {
+            throw new RuntimeException("ContextHandler: cannot get current context if there's no context");
+        }
         return contextStack.lastElement();
+    }
+
+    public void createSubcontext() {
+        if (contextStack.empty()) {
+            throw new RuntimeException("ContextHandler: cannot create a subcontext without the actual context");
+        }
+
+        ParsingContext ctx = this.contextStack.lastElement();
+
+        LexemeInfo ctxMetadata = ctx.metadataBuilder().build();
+        String ctxOuterScopes = ctx.outerScopes().getCurrentScope();
+
+        ParsingContext subctx = new ParsingContext(ctx.symbolTable());
+        // Copies the context source block
+        subctx.metadataBuilder().source(ctxMetadata.source);
+        // Copies the context block usage
+        subctx.metadataBuilder().use(ctxMetadata.use);
+        // Copies the context outerScope
+        subctx.outerScopes().addScope(ctxOuterScopes);
+
+        this.contextStack.add(ctx);
     }
 }

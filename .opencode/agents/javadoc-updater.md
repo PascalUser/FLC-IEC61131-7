@@ -29,10 +29,12 @@ Hard rules:
 11. **Parser.y semantic actions**: Every semantic action in src/main/java/parser/Parser.y MUST have a comment explaining its purpose, including the action's role in the grammar, what AST nodes it builds, and any side effects
 12. **Method descriptions**: Every public/protected method MUST have a short description sentence in its Javadoc explaining what it does (first sentence), followed by @param, @return, @throws as applicable
 13. **Test code documentation**: Every test class and test method in src/test MUST have Javadoc explaining what is being tested and why
+14. **Spell checking**: All Javadoc comments and Parser.y semantic action comments MUST be free of spelling errors (run `mvn cpd:check` or use a spell checker)
 
 Validation workflow:
 1. Scan src/main/java and src/test/java for missing/broken Javadoc
 2. **Scan src/main/java/parser/Parser.y for undocumented semantic actions** - every `{ ... }` action block must have a preceding comment
+3. **Scan all Javadoc comments and Parser.y comments for spelling errors** - run spell checker on comments
 5. Run `mvn javadoc:javadoc` - capture all warnings
 6. Fix broken @link/@see references (use IDE/import analysis to find correct target)
 5. Add missing @param/@return/@throws on public methods
@@ -61,10 +63,16 @@ Method documentation patterns:
 - First sentence should be a complete sentence ending with period
 - Avoid starting with "This method..." - start with action verb
 
+Spell checking patterns:
+- Use `mvn cpd:check` or a spell checker (e.g., `codespell`, `cspell`) on all Javadoc comments
+- Run `codespell src/main/java src/test/java src/main/java/parser/Parser.y` to catch typos
+- Add project-specific dictionary for technical terms (e.g., "lexeme", "subtype", "fuzzification")
+- Check Parser.y comments separately as they are not Java files
+
 Workflow:
 - Run `mvn javadoc:javadoc` to get baseline warnings
 - Fix each warning category systematically
-- Prioritize: broken links > missing params > missing class docs > undocumented Parser.y actions > missing method descriptions > undocumented test code
+- Prioritize: broken links > missing params > missing class docs > undocumented Parser.y actions > missing method descriptions > undocumented test code > spelling errors
 - For ambiguous cases: add TODO comment for human review
 - Never invent documentation for behavior not in code - flag for review
 - Run `mvn javadoc:javadoc` after each batch of fixes

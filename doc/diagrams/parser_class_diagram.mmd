@@ -41,27 +41,64 @@ classDiagram
     }
     namespace parser_initializations {
         class Initialization {
-            +selectVariable()
-            +getVariableValue()
-            +copy()
+            <<interface>>
+            +selectVariable(String) Initialization
+            +getVariableValue() String
+            +copy() Initialization
         }
-        class VariableInitialization
+        class VariableInitialization {
+            +value: String
+        }
+        class AbstractPrimitiveInitialization {
+            <<abstract>>
+            +symbolTable: SymbolTable
+        }
         class StringInitialization {
             +symbolTable: SymbolTable
-            +subtype: Subtype
         }
-        class BooleanInitialization
-        class RealInitialization
-        class EnumeratedInitialization
-        class MacroInitialization
-        class SubrangeInitialization
-        class StructInitialization
-        class RepeatedInitialization
+        class WStringInitialization {
+            +symbolTable: SymbolTable
+        }
+        class BooleanInitialization {
+            +symbolTable: SymbolTable
+        }
+        class RealInitialization {
+            +symbolTable: SymbolTable
+        }
+        class IntInitialization {
+            +symbolTable: SymbolTable
+        }
+        class EnumeratedInitialization {
+            +enumeratedValue: String
+        }
+        class MacroInitialization {
+            +symbolTable: SymbolTable
+            +replaceValue: String
+        }
+        class SubrangeInitialization {
+            +ilimit: String
+            +slimit: String
+        }
+        class StructInitialization {
+            +map: Map
+            +setFieldInitialization(String, Initialization)
+            +selectVariable(String) Initialization
+            +copy() Initialization
+        }
+        class RepeatedInitialization {
+            +dimension: int
+            +intervals: List
+            +addInterval(int, int, Initialization)
+            +getRepetitionsList() List
+        }
     }
     Initialization <|-- VariableInitialization
-    Initialization <|-- StringInitialization
-    Initialization <|-- BooleanInitialization
-    Initialization <|-- RealInitialization
+    Initialization <|-- AbstractPrimitiveInitialization
+    AbstractPrimitiveInitialization <|-- StringInitialization
+    AbstractPrimitiveInitialization <|-- WStringInitialization
+    AbstractPrimitiveInitialization <|-- BooleanInitialization
+    AbstractPrimitiveInitialization <|-- RealInitialization
+    AbstractPrimitiveInitialization <|-- IntInitialization
     Initialization <|-- EnumeratedInitialization
     Initialization <|-- MacroInitialization
     Initialization <|-- SubrangeInitialization

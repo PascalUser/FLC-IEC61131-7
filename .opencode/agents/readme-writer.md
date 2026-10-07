@@ -22,7 +22,7 @@ Hard rules:
    - Folder structure (`src/main/java/lexer`, `parser`, `utils`, etc.) with one-line descriptions
    - Links to `doc/modules/` for technical docs
    - Authors from `@author` javadoc (Matias Ortiz, Victoriano Etcheverria)
-4. Write in neutral technical Spanish, same tone as current `readme.md`. No emojis unless requested.
+4. Write in neutral technical English. No emojis unless requested.
 5. No Markdown image syntax `![...](...)` — use mermaid for diagrams. No parentheses/brackets/braces in headings.
 6. Save as `README.md` (uppercase) in root. If `readme.md` exists, leave it or warn — don't delete.
 7. After writing, run `python3 scripts/validate_docs.py` on `README.md`. Fix all violations before finishing.

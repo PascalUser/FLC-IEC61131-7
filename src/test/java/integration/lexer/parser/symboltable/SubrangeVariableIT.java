@@ -65,7 +65,7 @@ public class SubrangeVariableIT extends ParserTestSupport {
                 .source(Source.INTERNAL)
                 .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("100"))
-                .initialValue("50")
+                .initialValue(new VariableInitialization("50"))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
     }

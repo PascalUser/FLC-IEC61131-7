@@ -24,8 +24,8 @@ El analizador sintáctico se generó con **GNU Bison** (`esqueleto lalr1.java`),
 | Repository              | `utils.SymbolTable`                                   | Punto único de verdad para toda la información semántica resuelta                            |
 | Strategy                | `lexer.semantics.numbers.NumbersAnalyzer` y subclases | Un algoritmo de parseo/rango distinto por familia numérica (natural, entero, real, con base) |
 | Template Method         | `lexer.semantics.numbers.NumbersAnalyzer` y subclases | Estructura común de parseo/validación con pasos especializados por subclase                  |
-| Publisher               | `parser.utils.Publisher`                              | Separar construcción incremental de metadatos de su publicación atómica                      |
+| Publisher               | `parser.facades.Publisher`                              | Separar construcción incremental de metadatos de su publicación atómica                      |
 | Composite               | `parser.initializations.Initialization` y subclases   | Tratar inicializaciones simples y compuestas uniformemente                                   |
-| Name Mangling           | `parser.internals.NameMangler`                        | Resolver nombres compuestos en tabla plana sin colisiones                                    |
+| Name Mangling           | `parser.utils.NameMangler`                        | Resolver nombres compuestos en tabla plana sin colisiones                                    |
 
 Estos patrones se retoman con más detalle, y con las clases concretas involucradas, en los Capítulos 4 y 5.

@@ -15,13 +15,13 @@
  *   <li>Fuzzy blocks: FUZZIFY, DEFUZZIFY, RULEBLOCK, OPTION (syntactic recognition only)</li>
  * </ul>
  * <p>
- * Semantic actions use the {@link parser.utils.Publisher} pattern to defer
+ * Semantic actions use the {@link parser.facades.Publisher} pattern to defer
  * symbol table population until all contextual attributes are known.
  * </p>
  *
  * @see parser.Parser
  * @see parser.internals.ParsingContext
- * @see parser.utils.Publisher
+ * @see parser.facades.Publisher
  * @since 1.0
  */
 package parser;

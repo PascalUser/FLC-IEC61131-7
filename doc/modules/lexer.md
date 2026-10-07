@@ -81,8 +81,13 @@ classDiagram
         class UpperCaseConverter
         class StripLeadingZeros
         class StripTrailingZeros
+        class StripBaseNumberLeadingZeros
         class StringEscapeResolver
         class Nothing
+        class OmitLeadingZeroMagnitudes
+        class OmitTrailingZeroMagnitudes
+        class OmitLeadingZerosInMagnitudes
+        class OmitTrailingZerosInMagnitudes
     }
     namespace lexer_transformers_hex_resolvers {
         class HexResolver
@@ -134,8 +139,13 @@ classDiagram
     Transformer <|-- StringEscapeResolver
     Transformer <|-- StripLeadingZeros
     Transformer <|-- StripTrailingZeros
+    Transformer <|-- StripBaseNumberLeadingZeros
     Transformer <|-- UnderscoreRemover
     Transformer <|-- UpperCaseConverter
+    Transformer <|-- OmitLeadingZeroMagnitudes
+    Transformer <|-- OmitTrailingZeroMagnitudes
+    Transformer <|-- OmitLeadingZerosInMagnitudes
+    Transformer <|-- OmitTrailingZerosInMagnitudes
     Transformer <|-- HexResolver
     HexResolver <|-- StringHexResolver
     HexResolver <|-- WStringHexResolver
@@ -269,9 +279,13 @@ sequenceDiagram
 | `src/test/java/unit/lexer/LexerDiagnosticHandlerTest.java` | Advertencias de rango y longitud y errores temporales. |
 | `src/test/java/unit/lexer/transformers/StringEscapeResolverTest.java` | Interpretación de escapes estándar. |
 | `src/test/java/unit/lexer/transformers/StringHexResolverTest.java`, `src/test/java/unit/lexer/transformers/WStringHexResolverTest.java` | Escapes hexadecimales de cadenas. |
+| `src/test/java/unit/lexer/transformers/OmitLeadingZeroMagnitudesTest.java` | Eliminación de magnitudes iniciales nulas en intervalos. |
+| `src/test/java/unit/lexer/transformers/OmitTrailingZeroMagnitudesTest.java` | Eliminación de magnitudes finales nulas en intervalos. |
+| `src/test/java/unit/lexer/transformers/OmitLeadingZerosInMagnitudesTest.java` | Eliminación de ceros iniciales dentro de magnitudes de intervalos. |
+| `src/test/java/unit/lexer/transformers/OmitTrailingZerosInMagnitudesTest.java` | Eliminación de ceros finales de la fracción de magnitudes de intervalos. |
 
 ```bash
-mvn -q -Dtest=LexerTokenizationTest,LexerSymbolTableTest,LexerDiagnosticHandlerTest test
+mvn -q -Dtest=LexerTokenizationTest,LexerSymbolTableTest,LexerDiagnosticHandlerTest,OmitLeadingZeroMagnitudesTest,OmitTrailingZeroMagnitudesTest,OmitLeadingZerosInMagnitudesTest,OmitTrailingZerosInMagnitudesTest test
 ```
 
 ## Árbol de archivos

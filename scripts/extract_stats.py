@@ -147,9 +147,11 @@ def extract_grammar_stats():
     if accept_idx is not None:
         nonterminals = len([1 for _, idx in symbol_kinds if idx >= accept_idx])
     
-    # Initialization types
+    # Initialization types (concrete classes implementing Initialization interface)
     init_dir = SRC_DIR / "parser" / "initializations"
-    init_types = len([f for f in init_dir.glob("*.java") if f.name not in ["package-info.java", "Initialization.java"]])
+    init_files = list(init_dir.glob("*.java")) + list((init_dir / "primitives").glob("*.java"))
+    excluded = {"package-info.java", "Initialization.java", "AbstractPrimitiveInitialization.java"}
+    init_types = len([f for f in init_files if f.name not in excluded])
     
     return {
         "tokens": token_count,
@@ -262,10 +264,49 @@ def extract_test_coverage():
     
     import xml.etree.ElementTree as ET
     tree = ET.parse(jacoco_file)
-    tree.getroot()
+    root = tree.getroot()
     
-    # This is simplified - real JaCoCo XML parsing is more complex
-    return {"overall": 85, "packages": {"lexer": 90, "parser": 80, "utils": 95}}
+    # Parse JaCoCo XML for line coverage per package
+    packages_data = {}
+    total_covered = 0
+    total_missed = 0
+    
+    # JaCoCo internal packages to exclude from coverage report
+    EXCLUDED_MODULES = {'jacoco', 'org.jacoco', 'com.google.code.jacoco'}
+    
+    for package in root.findall('.//package'):
+        name = package.get('name', '')
+        # Convert package name to module name (lexer, parser, utils)
+        if name.startswith('lexer'):
+            module = 'lexer'
+        elif name.startswith('parser'):
+            module = 'parser'
+        elif name.startswith('utils'):
+            module = 'utils'
+        else:
+            module = name.split('.')[0]
+        
+        # Skip JaCoCo internal packages
+        if module in EXCLUDED_MODULES:
+            continue
+        # Skip empty module names (empty package name in XML)
+        if not module:
+            continue
+        
+        for counter in package.findall('counter'):
+            if counter.get('type') == 'LINE':
+                missed = int(counter.get('missed', 0))
+                covered = int(counter.get('covered', 0))
+                total = missed + covered
+                if total > 0:
+                    pct = round(covered / total * 100)
+                    packages_data[module] = pct
+                total_covered += covered
+                total_missed += missed
+    
+    overall = round(total_covered / (total_covered + total_missed) * 100) if (total_covered + total_missed) > 0 else 0
+    
+    return {"overall": overall, "packages": packages_data}
 
 
 def extract_coupling():

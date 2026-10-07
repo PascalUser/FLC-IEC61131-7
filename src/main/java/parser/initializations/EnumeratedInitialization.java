@@ -19,7 +19,7 @@ import java.util.Objects;
  * @see Initialization
  * @see MacroInitialization
  */
-public class EnumeratedInitialization implements Initialization {
+public final class EnumeratedInitialization implements Initialization {
     private final String enumeratedValue;
 
     /**

@@ -1,4 +1,4 @@
-package parser.utils;
+package parser.facades;
 
 import utils.LexemeInfo;
 import utils.SymbolTable;

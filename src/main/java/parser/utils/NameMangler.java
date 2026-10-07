@@ -1,4 +1,4 @@
-package parser.internals;
+package parser.utils;
 
 /**
  * Generates qualified (mangled) names for symbols in nested scopes.

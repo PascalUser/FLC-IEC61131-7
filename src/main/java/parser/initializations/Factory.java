@@ -1,6 +1,5 @@
-package parser.utils;
+package parser.initializations;
 
-import parser.initializations.*;
 import parser.initializations.primitives.*;
 import utils.SymbolTable;
 import utils.enums.Subtype;

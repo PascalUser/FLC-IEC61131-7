@@ -23,7 +23,7 @@ import java.util.Objects;
  * @see EnumeratedInitialization
  * @see Director
  */
-public class MacroInitialization implements Initialization {
+public final class MacroInitialization implements Initialization {
     private final SymbolTable symbolTable;
     private final String replaceValue;
 

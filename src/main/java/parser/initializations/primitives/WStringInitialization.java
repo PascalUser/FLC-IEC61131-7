@@ -4,7 +4,7 @@ import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 
-public class WStringInitialization extends AbstractPrimitiveInitialization {
+public final class WStringInitialization extends AbstractPrimitiveInitialization {
     static LexemeInfoBuilder builder = new LexemeInfoBuilder();
     static String defaultWString = Director.makeDefaultWString(builder);
 

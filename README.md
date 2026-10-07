@@ -1,29 +1,35 @@
 # FLC-IEC61131-7 Compiler
 
-Compilador del lenguaje estándar para controladores difusos **IEC 61131-7 (Fuzzy Control Language, FCL)**. Implementa análisis léxico (JFlex), análisis sintáctico LALR(1) (GNU Bison, esqueleto `lalr1.java`) y resolución semántica de tipos hacia una tabla de símbolos, para el subconjunto declarativo e inicializador del estándar: bloques de función, tipos definidos por el usuario (estructuras, enumerados, subrangos, arreglos) y bloques de fuzzificación/defuzzificación/reglas.
+Compiler for the **IEC 61131-7 (Fuzzy Control Language, FCL)** standard. Implements lexical analysis (JFlex), LALR(1) syntactic analysis (GNU Bison, `lalr1.java` skeleton), and semantic type resolution into a symbol table, covering the declarative and initializer subset of the standard: function blocks, user-defined types (structures, enumerations, subranges, arrays), and fuzzification/defuzzification/rule blocks.
 
-## Requisitos
+## Requirements
 
-- Java 8 (el build está fijado a `source`/`target` 1.8 en `pom.xml`)
+- Java 8 (build locked to `source`/`target` 1.8 in `pom.xml`)
 - Maven
-- JFlex 1.9.1 vía `jflex-maven-plugin` (configurado en `pom.xml`, no requiere instalación aparte)
-- GNU Bison: se usa offline para regenerar `Parser.java` desde `Parser.y` (esqueleto `lalr1.java`); el código generado está versionado, por lo que Bison no es necesario para compilar con Maven.
+- JFlex 1.9.1 via `jflex-maven-plugin` (configured in `pom.xml`, no separate installation needed)
+- GNU Bison: used offline to regenerate `Parser.java` from `Parser.y` (skeleton `lalr1.java`); generated code is versioned, so Bison is not required for Maven builds.
 
-## Compilar y correr los tests
+## Build and Run Tests
 
 ```bash
 mvn clean verify
 ```
 
-Esto ejecuta, en orden: generación del lexer (JFlex) a partir de `src/main/java/lexer/Lexer.flex`, compilación, tests con JUnit 5 + Mockito, cobertura con JaCoCo, y los gates de calidad Checkstyle y SpotBugs (`mvn verify` falla si se supera el umbral configurado en cada plugin).
+This runs, in order: lexer generation (JFlex) from `src/main/java/lexer/Lexer.flex`, compilation, JUnit 5 + Mockito tests, JaCoCo coverage, and Checkstyle/SpotBugs quality gates (`mvn verify` fails if thresholds are exceeded).
 
-Solo tests:
+Tests only:
 
 ```bash
 mvn test
 ```
 
-## Arquitectura
+Integration tests (require explicit selection):
+
+```bash
+mvn test -Dtest='*IT'
+```
+
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -33,32 +39,51 @@ flowchart LR
     PAR -- reports --> DIAG[DiagnosticsHandler]
 ```
 
-El analizador sintáctico orquesta la compilación: invoca al lexer, ejecuta las acciones semánticas de la gramática y publica el resultado en una `SymbolTable` compartida (patrón Repository). El lexer normaliza el texto de entrada con una cadena de transformadores (`lexer/transformers/`, Chain of Responsibility) y valida los literales con analizadores semánticos por familia (`lexer/semantics/`). Cada lexema resuelto queda representado como un `LexemeInfo` (tipo, subtipo, uso, fuente, límites, parámetros e inicialización), construido incrementalmente con `LexemeInfoBuilder` y las recetas predefinidas de `Director` (`utils/builders/`), y publicado atómicamente por `parser.utils.Publisher`. La clasificación semántica se apoya en los enums `Type`, `Subtype`, `Use` y `Source` (`utils/enums/`). Los errores y warnings se recolectan en un `DiagnosticsHandler` central, en orden de inserción.
+The parser orchestrates compilation: invokes the lexer, executes grammar semantic actions, and publishes results to a shared `SymbolTable` (Repository pattern). The lexer normalizes input text via transformer chains (`lexer/transformers/`, Chain of Responsibility) and validates literals with per-category semantic analyzers (`lexer/semantics/`). Each resolved lexeme becomes a `LexemeInfo` (type, subtype, use, source, limits, parameters, initialization), built incrementally via `LexemeInfoBuilder` and predefined `Director` recipes (`utils/builders/`), and published atomically by `parser.facades.Publisher`. Semantic classification relies on the `Type`, `Subtype`, `Use`, and `Source` enums (`utils/enums/`). Errors and warnings are collected in a central `DiagnosticsHandler`, preserving insertion order.
 
-Documentación técnica completa: [`doc/modules/lexer.md`](doc/modules/lexer.md), [`doc/modules/parser.md`](doc/modules/parser.md), [`doc/modules/utils.md`](doc/modules/utils.md).
+Key Classes:
 
-## Estructura del repositorio
+| Module | Class | Responsibility |
+|--------|-------|----------------|
+| `utils` | `SymbolTable` | Stores and retrieves `LexemeInfo` by lexeme name |
+| `utils` | `LexemeInfo` | Immutable DTO with complete semantic attributes (type, subtype, use, source, limits, parameters, initialization) |
+| `utils` | `DiagnosticsHandler` | Collects and manages diagnostics (errors/warnings) in insertion order |
+| `utils.builders` | `LexemeInfoSchema` | Fluent contract with one setter per `LexemeInfo` attribute |
+| `utils.builders` | `LexemeInfoBuilder` | Concrete builder implementation with `build()` |
+| `utils.builders` | `Director` | Static recipes: `makeLiteral` and default values for REAL, BOOL, STRING, WSTRING |
+| `utils.enums` | `Type` | General classification: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT |
+| `utils.enums` | `Subtype` | IEC 61131-7 primitive types (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE |
+| `utils.enums` | `Use` | Usage context: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, … |
+| `utils.enums` | `Source` | Declaration block: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE, UNKNOWN |
 
-| Carpeta                            | Contenido                                                                                                                                                                                                                                                                                                                                                                             |
-|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `src/main/java/lexer/`             | `Lexer.flex`/`Lexer.java` (generado), `internals/` (`LexicalAnalyzers`, `LexicalPreprocessors`), `transformers/` (Chain of Responsibility de normalización léxica), `semantics/` (analizadores semánticos por familia de literal: números, fechas, strings, identificadores, intervalos)                                                                                              |
-| `src/main/java/parser/`            | `Parser.y`/`Parser.java` (generado; `Luca.y` es una gramática heredada que no forma parte del build), `internals/` (contexto de parseo: `ContextHandler`, `ParsingContext`, `NameMangler`), `initializations/` (jerarquía polimórfica de inicializaciones: `BooleanInitialization`, `RealInitialization`, `StructInitialization`, `RepeatedInitialization`, etc.), `utils/` (`Publisher`, `Factory`, `UnderlyingScopeSearcher`, `DimensionCalculator`) |
-| `src/main/java/utils/`             | `SymbolTable` (Repository pattern), `LexemeInfo` (DTO inmutable), `DiagnosticsHandler`, `builders/` (`LexemeInfoBuilder`, `Director`), `enums/` (`Type`, `Subtype`, `Use`, `Source`), `diagnostics/` (jerarquía `Error`/`Warning`/`SyntaxError`), `LucaInfo` (@deprecated)                                                                                                            |
-| `src/main/java/Main.java`          | Punto de entrada del compilador                                                                                                                                                                                                                                                                                                                                                       |
-| `src/test/java/`                   | Tests unitarios por componente (`unit/lexer/`, `unit/parser/`, `unit/utils/`), tests de integración del lexer con el parser (`integration/lexer/`), dobles de test (`doubles/`) y clases de soporte (`utils/`)                                                                                                                                                                                             |
-| `src/test/resources/examples/`     | Programas FCL de ejemplo usados por `ParserTest` y los tests de integración                                                                                                                                                                                                                                                                                                           |
-| `doc/`                             | Documentación técnica modular (`doc/modules/`), capítulos de tesis (`doc/thesis/`), diagramas Mermaid versionados (`doc/diagrams/`) y gráficos generados por código (`doc/assets/`)                                                                                                                                                                                                   |
-| `scripts/`                         | Utilidades de documentación: `generate_charts.py`, `generate_diagrams.py`, `render_mermaid.py`, `synthesize_thesis_context.py`, `validate_docs.py`, `format_markdown.py`, `extract_stats.py`, `build_thesis.sh`                                                                                                                                                                      |
-| `config/`                          | Configuración de calidad: `config/checkstyle/checkstyle.xml` y `config/spotbugs/excludeFilter.xml` (usados por los gates de `mvn verify`)                                                                                                                                                                                                                                          |
-| `requirements.txt`                 | Dependencias Python de los scripts de documentación (matplotlib); instalación vía `pip install -r requirements.txt`                                                                                                                                                                                                                                                         |
-| `Dockerfile`, `docker-compose.yml` | Entorno reproducible de build y documentación (Maven 3.9 + JDK 8, pandoc, python3)                                                                                                                                                                                                                                                                                                    |
-| `.opencode/`                       | Agentes de [OpenCode](https://opencode.ai) para mantener documentación, gráficos y tesis (ver `doc/HARNESS.md`)                                                                                                                                                                                                                                                                       |
+Full technical documentation: [`doc/modules/lexer.md`](doc/modules/lexer.md), [`doc/modules/parser.md`](doc/modules/parser.md), [`doc/modules/utils.md`](doc/modules/utils.md).
 
-## Documentación asistida por agentes OpenCode
+## Repository Structure
 
-Este repo incluye un harness de agentes de OpenCode para mantener la documentación, los gráficos y la tesis actualizados contra el código real (nunca contra datos inventados). Ver [`doc/HARNESS.md`](doc/HARNESS.md).
+| Folder | Contents |
+|--------|----------|
+| `src/main/java/lexer/` | `Lexer.flex`/`Lexer.java` (generated), `internals/` (`LexicalAnalyzers`, `LexicalPreprocessors`), `transformers/` (Chain of Responsibility for lexical normalization), `semantics/` (semantic analyzers per literal family: numbers, dates, strings, identifiers, intervals) |
+| `src/main/java/parser/` | `Parser.y`/`Parser.java` (generated; `Luca.y` is a legacy grammar not part of the build), `internals/` (parse context: `ContextHandler`, `ParsingContext`, `NameMangler`), `initializations/` (polymorphic initialization hierarchy: `BooleanInitialization`, `RealInitialization`, `StructInitialization`, `RepeatedInitialization`, etc.), `utils/` (`Publisher`, `Factory`, `UnderlyingScopeSearcher`, `DimensionCalculator`) |
+| `src/main/java/utils/` | `SymbolTable` (Repository pattern), `LexemeInfo` (immutable DTO), `DiagnosticsHandler`, `builders/` (`LexemeInfoBuilder`, `Director`, `LexemeInfoSchema`), `enums/` (`Type`, `Subtype`, `Use`, `Source`), `diagnostics/` (`Error`/`Warning`/`SyntaxError` hierarchy), `LucaInfo` (@deprecated) |
+| `src/main/java/Main.java` | Compiler entry point |
+| `src/test/java/` | Unit tests by component (`unit/lexer/`, `unit/parser/`, `unit/utils/`), lexer-parser integration tests (`integration/lexer/`), test doubles (`doubles/`), support classes (`utils/`) |
+| `src/test/resources/examples/` | Example FCL programs used by `ParserTest` and integration tests |
+| `doc/` | Modular technical docs (`doc/modules/`), thesis chapters (`doc/thesis/`), versioned Mermaid diagrams (`doc/diagrams/`), code-generated charts (`doc/assets/`) |
+| `scripts/` | Documentation utilities: `generate_charts.py`, `generate_diagrams.py`, `render_mermaid.py`, `synthesize_thesis_context.py`, `validate_docs.py`, `format_markdown.py`, `extract_stats.py`, `build_thesis.sh` |
+| `config/` | Quality config: `config/checkstyle/checkstyle.xml` and `config/spotbugs/excludeFilter.xml` (used by `mvn verify` gates) |
+| `requirements.txt` | Python deps for doc scripts (matplotlib); install via `pip install -r requirements.txt` |
+| `Dockerfile`, `docker-compose.yml` | Reproducible build/doc environment (Maven 3.9 + JDK 8, pandoc, python3) |
+| `.opencode/` | [OpenCode](https://opencode.ai) agents for docs, charts, and thesis (see `doc/HARNESS.md`) |
 
-## Autores
+## Agent-Assisted Documentation
 
-- Matias Ortiz
+This repo includes an OpenCode agent harness to keep docs, charts, and thesis in sync with actual code (never invented data). See [`doc/HARNESS.md`](doc/HARNESS.md).
+
+## Authors
+
+- Matías Ortiz
 - Victoriano Etcheverría
+
+---
+
+*Generated and maintained by OpenCode agents. See [`doc/HARNESS.md`](doc/HARNESS.md) for details.*

@@ -26,7 +26,7 @@ import utils.builders.LexemeInfoSchema;
  * @see Initialization
  * @see Director
  */
-public class BooleanInitialization extends AbstractPrimitiveInitialization {
+public final class BooleanInitialization extends AbstractPrimitiveInitialization {
     static LexemeInfoBuilder builder = new LexemeInfoBuilder();
     static String defaultBool = Director.makeDefaultBoolean(builder);
 

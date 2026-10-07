@@ -4,7 +4,7 @@ import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
 
-public class RealInitialization extends AbstractPrimitiveInitialization {
+public final class RealInitialization extends AbstractPrimitiveInitialization {
     static LexemeInfoBuilder builder = new LexemeInfoBuilder();
     static String defaultReal = Director.makeDefaultReal(builder);
 

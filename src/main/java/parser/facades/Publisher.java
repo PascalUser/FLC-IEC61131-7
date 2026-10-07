@@ -1,4 +1,4 @@
-package parser.utils;
+package parser.facades;
 
 import parser.internals.ParsingContext;
 import utils.LexemeInfo;
@@ -15,7 +15,6 @@ import utils.LexemeInfo;
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
- * <!-- TODO: Previously referenced parser.utils.Declaration and parser.utils.Compound, which no longer exist in the source tree. -->
  * @see ParsingContext
  */
 public final class Publisher {

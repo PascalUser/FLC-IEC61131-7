@@ -1,10 +1,10 @@
-package parser.utils;
+package parser.facades;
 
 import parser.internals.ParsingContext;
 import utils.LexemeInfo;
 
 /**
- * Calculates the total dimension (number of elements) of a multi-dimensional array.
+ * Calculates the total dimension (number of elements) of a multidimensional array.
  * <p>
  * Reads the lower and upper bounds from the context's metadata and computes
  * the product of all dimension sizes.
