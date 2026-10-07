@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SubrangeVariableIT extends ParserTestSupport {
 
     @Test
-    public void declaring_variable_of_subrange_type_inherits_bounds() throws Exception {
+    public void Declaring_Variable_Of_Subrange_Type_Inherits_Bounds() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    Day : INT (0..31);\n"
                 + "END_TYPE\n"
@@ -48,7 +48,7 @@ public class SubrangeVariableIT extends ParserTestSupport {
     }
 
     @Test
-    public void declaring_inline_subrange_variable_registers_anonymous_type() throws Exception {
+    public void Declaring_Inline_Subrange_Variable_Registers_Anonymous_Type() throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + "VAR\n"
                 + "    percentage : INT (0..100) := 50;\n"

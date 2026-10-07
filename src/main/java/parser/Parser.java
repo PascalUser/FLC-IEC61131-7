@@ -861,7 +861,6 @@ public final class Parser
      * to the next token and prepares to return the semantic value
      * of the token.
      * @return the token identifier corresponding to the next token.
-     * @throws java.io.IOException if reading the input fails
      */
     int yylex() throws java.io.IOException;
 
@@ -890,8 +889,7 @@ public final class Parser
 
   /**
    * Instantiates the Bison-generated parser.
-   * @param yylexer the scanner that will supply tokens to the parser
-   * @param symbolTable the symbol table used by semantic actions
+   * @param yylexer The scanner that will supply tokens to the parser.
    */
   public Parser(Lexer yylexer, SymbolTable symbolTable)
   {
@@ -912,8 +910,7 @@ this.symbolTable = symbolTable;
   private int yynerrs = 0;
 
   /**
-   * Returns the number of syntax errors so far.
-   * @return the number of syntax errors
+   * The number of syntax errors so far.
    */
   public final int getNumberOfErrors() { return yynerrs; }
 
@@ -1021,8 +1018,9 @@ this.symbolTable = symbolTable;
 
 
   /**
-   * Checks whether the parser's error-recovery status is clear.
-   * @return {@code true} when no error recovery is pending
+   * Whether error recovery is being done.  In this state, the parser
+   * reads token until it reaches a known state, and then restarts normal
+   * operation.
    */
   public final boolean recovering ()
   {
@@ -1055,7 +1053,7 @@ this.symbolTable = symbolTable;
       {
           case 3: /* function_block_declaration: FUNCTION_BLOCK function_block_name opt_fb_io_var_declarations_list opt_other_var_declarations_list opt_function_block_body END_FUNCTION_BLOCK  */
   if (yyn == 3)
-    /* "src/main/java/parser/Parser.y":103  */
+    /* "src/main/java/parser/Parser.y":104  */
     {
         /**
          * Pops the function block context
@@ -1068,7 +1066,7 @@ this.symbolTable = symbolTable;
 
   case 4: /* function_block_name: IDENTIFIER  */
   if (yyn == 4)
-    /* "src/main/java/parser/Parser.y":114  */
+    /* "src/main/java/parser/Parser.y":115  */
     {
         /**
          * Builds a new context and adds the function block name to the outer scope
@@ -1084,7 +1082,7 @@ this.symbolTable = symbolTable;
 
   case 95: /* io_var_decl: VAR_INPUT  */
   if (yyn == 95)
-    /* "src/main/java/parser/Parser.y":394  */
+    /* "src/main/java/parser/Parser.y":395  */
     {
         /**
          * Adds to the current context the source and use of the inner block declared identifiers
@@ -1098,7 +1096,7 @@ this.symbolTable = symbolTable;
 
   case 96: /* io_var_decl: VAR_OUTPUT  */
   if (yyn == 96)
-    /* "src/main/java/parser/Parser.y":403  */
+    /* "src/main/java/parser/Parser.y":404  */
     {
         /**
          * Adds to the current context the source and use of the inner block declared identifiers
@@ -1112,7 +1110,7 @@ this.symbolTable = symbolTable;
 
   case 98: /* var_id_decl: VAR  */
   if (yyn == 98)
-    /* "src/main/java/parser/Parser.y":421  */
+    /* "src/main/java/parser/Parser.y":422  */
     {
         /**
          * Adds to the current context the source and use of the inner block declared identifiers
@@ -1126,7 +1124,7 @@ this.symbolTable = symbolTable;
 
   case 100: /* var_retain_spec: RETAIN  */
   if (yyn == 100)
-    /* "src/main/java/parser/Parser.y":435  */
+    /* "src/main/java/parser/Parser.y":436  */
     {
         // TODO: ctx with retain spec
     };
@@ -1135,7 +1133,7 @@ this.symbolTable = symbolTable;
 
   case 101: /* var_retain_spec: NON_RETAIN  */
   if (yyn == 101)
-    /* "src/main/java/parser/Parser.y":439  */
+    /* "src/main/java/parser/Parser.y":440  */
     {
         // TODO: ctx with non retain spec
     };
@@ -1144,7 +1142,7 @@ this.symbolTable = symbolTable;
 
   case 102: /* var_constant_spec: %empty  */
   if (yyn == 102)
-    /* "src/main/java/parser/Parser.y":447  */
+    /* "src/main/java/parser/Parser.y":448  */
     {
         // TODO: ctx with non constant spec
     };
@@ -1153,7 +1151,7 @@ this.symbolTable = symbolTable;
 
   case 103: /* var_constant_spec: CONSTANT  */
   if (yyn == 103)
-    /* "src/main/java/parser/Parser.y":451  */
+    /* "src/main/java/parser/Parser.y":452  */
     {
         // TODO: ctx with constant spec
     };
@@ -1162,7 +1160,7 @@ this.symbolTable = symbolTable;
 
   case 106: /* var_init_decl: identifier_list ':' var_spec_init  */
   if (yyn == 106)
-    /* "src/main/java/parser/Parser.y":465  */
+    /* "src/main/java/parser/Parser.y":466  */
     {
         /**
          * Publishes the variables into the symbol table using the loaded context
@@ -1178,7 +1176,7 @@ this.symbolTable = symbolTable;
 
   case 117: /* custom_specification: IDENTIFIER  */
   if (yyn == 117)
-    /* "src/main/java/parser/Parser.y":496  */
+    /* "src/main/java/parser/Parser.y":497  */
     {
         /**
          * Loads the left identifiers type, subtype and initialValue
@@ -1196,7 +1194,7 @@ this.symbolTable = symbolTable;
 
   case 121: /* initialized_custom_with_constant: custom_type_name ASSIGN_OP constant  */
   if (yyn == 121)
-    /* "src/main/java/parser/Parser.y":518  */
+    /* "src/main/java/parser/Parser.y":519  */
     {
         /**
          * Adds to the context the left identifiers initial value and drops the search scope added
@@ -1211,7 +1209,7 @@ this.symbolTable = symbolTable;
 
   case 122: /* initialized_custom_with_identifier: custom_type_name ASSIGN_OP identifier_with_opt_mangling  */
   if (yyn == 122)
-    /* "src/main/java/parser/Parser.y":531  */
+    /* "src/main/java/parser/Parser.y":532  */
     {
         /**
          * Searches if the enumerated value is valid and in that cases loads the initial value and drops the search
@@ -1236,7 +1234,7 @@ this.symbolTable = symbolTable;
 
   case 123: /* initialized_custom_with_structure: custom_type_name ASSIGN_OP structure_initialization  */
   if (yyn == 123)
-    /* "src/main/java/parser/Parser.y":554  */
+    /* "src/main/java/parser/Parser.y":555  */
     {
         /**
          * Drops the search scope after reducing the assignment
@@ -1250,7 +1248,7 @@ this.symbolTable = symbolTable;
 
   case 124: /* custom_type_name: IDENTIFIER  */
   if (yyn == 124)
-    /* "src/main/java/parser/Parser.y":566  */
+    /* "src/main/java/parser/Parser.y":567  */
     {
         /**
          * Builds the LexemeInfo associated to the identifier and appends the underlying scope to the search scope.
@@ -1276,7 +1274,7 @@ this.symbolTable = symbolTable;
 
   case 127: /* boolean_specification: BOOL  */
   if (yyn == 127)
-    /* "src/main/java/parser/Parser.y":597  */
+    /* "src/main/java/parser/Parser.y":598  */
     {
         /**
          * Loads the left identifiers type and subtype
@@ -1295,7 +1293,7 @@ this.symbolTable = symbolTable;
 
   case 129: /* initialized_boolean: boolean_specification ASSIGN_OP boolean_constant  */
   if (yyn == 129)
-    /* "src/main/java/parser/Parser.y":616  */
+    /* "src/main/java/parser/Parser.y":617  */
     {
         /**
          * Builds a boolean variable initialization from the assigned constant
@@ -1313,7 +1311,7 @@ this.symbolTable = symbolTable;
 
   case 134: /* simple_specification: elementary_type_name  */
   if (yyn == 134)
-    /* "src/main/java/parser/Parser.y":643  */
+    /* "src/main/java/parser/Parser.y":644  */
     {
         /**
          * Loads the left identifiers type and subtype
@@ -1332,7 +1330,7 @@ this.symbolTable = symbolTable;
 
   case 135: /* initialized_simple: simple_specification ASSIGN_OP constant  */
   if (yyn == 135)
-    /* "src/main/java/parser/Parser.y":660  */
+    /* "src/main/java/parser/Parser.y":661  */
     {
         /**
          * Loads the left identifiers type, subtype and initialValue
@@ -1348,196 +1346,196 @@ this.symbolTable = symbolTable;
 
   case 136: /* elementary_type_name: numeric_type_name  */
   if (yyn == 136)
-    /* "src/main/java/parser/Parser.y":675  */
+    /* "src/main/java/parser/Parser.y":676  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 137: /* elementary_type_name: date_type_name  */
   if (yyn == 137)
-    /* "src/main/java/parser/Parser.y":676  */
+    /* "src/main/java/parser/Parser.y":677  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 138: /* elementary_type_name: bit_string_type_name  */
   if (yyn == 138)
-    /* "src/main/java/parser/Parser.y":677  */
+    /* "src/main/java/parser/Parser.y":678  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 139: /* numeric_type_name: integer_type_name  */
   if (yyn == 139)
-    /* "src/main/java/parser/Parser.y":681  */
+    /* "src/main/java/parser/Parser.y":682  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 140: /* numeric_type_name: real_type_name  */
   if (yyn == 140)
-    /* "src/main/java/parser/Parser.y":682  */
+    /* "src/main/java/parser/Parser.y":683  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 141: /* integer_type_name: signed_integer_type_name  */
   if (yyn == 141)
-    /* "src/main/java/parser/Parser.y":686  */
+    /* "src/main/java/parser/Parser.y":687  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 142: /* integer_type_name: unsigned_integer_type_name  */
   if (yyn == 142)
-    /* "src/main/java/parser/Parser.y":687  */
+    /* "src/main/java/parser/Parser.y":688  */
                                     { yyval = ((Subtype)(yystack.valueAt (0))); };
   break;
 
 
   case 143: /* signed_integer_type_name: SINT  */
   if (yyn == 143)
-    /* "src/main/java/parser/Parser.y":691  */
+    /* "src/main/java/parser/Parser.y":692  */
            { yyval = Subtype.SINT; };
   break;
 
 
   case 144: /* signed_integer_type_name: INT  */
   if (yyn == 144)
-    /* "src/main/java/parser/Parser.y":692  */
+    /* "src/main/java/parser/Parser.y":693  */
            { yyval = Subtype.INT;  };
   break;
 
 
   case 145: /* signed_integer_type_name: DINT  */
   if (yyn == 145)
-    /* "src/main/java/parser/Parser.y":693  */
+    /* "src/main/java/parser/Parser.y":694  */
            { yyval = Subtype.DINT; };
   break;
 
 
   case 146: /* signed_integer_type_name: LINT  */
   if (yyn == 146)
-    /* "src/main/java/parser/Parser.y":694  */
+    /* "src/main/java/parser/Parser.y":695  */
            { yyval = Subtype.LINT; };
   break;
 
 
   case 147: /* unsigned_integer_type_name: USINT  */
   if (yyn == 147)
-    /* "src/main/java/parser/Parser.y":698  */
+    /* "src/main/java/parser/Parser.y":699  */
             { yyval = Subtype.USINT; };
   break;
 
 
   case 148: /* unsigned_integer_type_name: UINT  */
   if (yyn == 148)
-    /* "src/main/java/parser/Parser.y":699  */
+    /* "src/main/java/parser/Parser.y":700  */
             { yyval = Subtype.UINT;  };
   break;
 
 
   case 149: /* unsigned_integer_type_name: UDINT  */
   if (yyn == 149)
-    /* "src/main/java/parser/Parser.y":700  */
+    /* "src/main/java/parser/Parser.y":701  */
             { yyval = Subtype.UDINT; };
   break;
 
 
   case 150: /* unsigned_integer_type_name: ULINT  */
   if (yyn == 150)
-    /* "src/main/java/parser/Parser.y":701  */
+    /* "src/main/java/parser/Parser.y":702  */
             { yyval = Subtype.ULINT; };
   break;
 
 
   case 151: /* real_type_name: REAL  */
   if (yyn == 151)
-    /* "src/main/java/parser/Parser.y":705  */
+    /* "src/main/java/parser/Parser.y":706  */
             { yyval = Subtype.REAL;  };
   break;
 
 
   case 152: /* real_type_name: LREAL  */
   if (yyn == 152)
-    /* "src/main/java/parser/Parser.y":706  */
+    /* "src/main/java/parser/Parser.y":707  */
             { yyval = Subtype.LREAL; };
   break;
 
 
   case 153: /* date_type_name: TIME  */
   if (yyn == 153)
-    /* "src/main/java/parser/Parser.y":710  */
+    /* "src/main/java/parser/Parser.y":711  */
                     { yyval = Subtype.TIME;          };
   break;
 
 
   case 154: /* date_type_name: DATE  */
   if (yyn == 154)
-    /* "src/main/java/parser/Parser.y":711  */
+    /* "src/main/java/parser/Parser.y":712  */
                     { yyval = Subtype.DATE;          };
   break;
 
 
   case 155: /* date_type_name: TIME_OF_DAY  */
   if (yyn == 155)
-    /* "src/main/java/parser/Parser.y":712  */
+    /* "src/main/java/parser/Parser.y":713  */
                     { yyval = Subtype.TIME_OF_DAY;   };
   break;
 
 
   case 156: /* date_type_name: DATE_AND_TIME  */
   if (yyn == 156)
-    /* "src/main/java/parser/Parser.y":713  */
+    /* "src/main/java/parser/Parser.y":714  */
                     { yyval = Subtype.DATE_AND_TIME; };
   break;
 
 
   case 157: /* constant: string_constant  */
   if (yyn == 157)
-    /* "src/main/java/parser/Parser.y":719  */
+    /* "src/main/java/parser/Parser.y":720  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
   case 158: /* constant: boolean_constant  */
   if (yyn == 158)
-    /* "src/main/java/parser/Parser.y":720  */
+    /* "src/main/java/parser/Parser.y":721  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
   case 159: /* constant: time_constant  */
   if (yyn == 159)
-    /* "src/main/java/parser/Parser.y":721  */
+    /* "src/main/java/parser/Parser.y":722  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
   case 160: /* constant: numeric_constant  */
   if (yyn == 160)
-    /* "src/main/java/parser/Parser.y":722  */
+    /* "src/main/java/parser/Parser.y":723  */
                        { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
   case 161: /* string_constant: STRING_LITERAL  */
   if (yyn == 161)
-    /* "src/main/java/parser/Parser.y":726  */
+    /* "src/main/java/parser/Parser.y":727  */
                    { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
   case 162: /* boolean_constant: BOOLEAN_LITERAL  */
   if (yyn == 162)
-    /* "src/main/java/parser/Parser.y":730  */
+    /* "src/main/java/parser/Parser.y":731  */
                     { yyval = ((String)(yystack.valueAt (0))); };
   break;
 
 
   case 164: /* numeric_constant: number_prefix NUMERIC_LITERAL  */
   if (yyn == 164)
-    /* "src/main/java/parser/Parser.y":735  */
+    /* "src/main/java/parser/Parser.y":736  */
     {
         // TODO: convert this constant in code
         yyval = "";
@@ -1547,7 +1545,7 @@ this.symbolTable = symbolTable;
 
   case 168: /* time_constant: date_type_name '#' TIME_LITERAL  */
   if (yyn == 168)
-    /* "src/main/java/parser/Parser.y":748  */
+    /* "src/main/java/parser/Parser.y":749  */
                                     {
         // TODO: semantic action to verify prefix matches time_literal type
     };
@@ -1556,35 +1554,35 @@ this.symbolTable = symbolTable;
 
   case 169: /* bit_string_type_name: BYTE  */
   if (yyn == 169)
-    /* "src/main/java/parser/Parser.y":754  */
+    /* "src/main/java/parser/Parser.y":755  */
             { yyval = Subtype.BYTE;  };
   break;
 
 
   case 170: /* bit_string_type_name: WORD  */
   if (yyn == 170)
-    /* "src/main/java/parser/Parser.y":755  */
+    /* "src/main/java/parser/Parser.y":756  */
             { yyval = Subtype.WORD;  };
   break;
 
 
   case 171: /* bit_string_type_name: DWORD  */
   if (yyn == 171)
-    /* "src/main/java/parser/Parser.y":756  */
+    /* "src/main/java/parser/Parser.y":757  */
             { yyval = Subtype.DWORD; };
   break;
 
 
   case 172: /* bit_string_type_name: LWORD  */
   if (yyn == 172)
-    /* "src/main/java/parser/Parser.y":757  */
+    /* "src/main/java/parser/Parser.y":758  */
             { yyval = Subtype.LWORD; };
   break;
 
 
   case 175: /* subrange_specification: subrange_type_decl '(' range ')'  */
   if (yyn == 175)
-    /* "src/main/java/parser/Parser.y":769  */
+    /* "src/main/java/parser/Parser.y":770  */
     {
         /**
          * Creates a SubrangeInitialization from the lower and upper limits already
@@ -1604,7 +1602,7 @@ this.symbolTable = symbolTable;
 
   case 176: /* subrange_type_decl: integer_type_name  */
   if (yyn == 176)
-    /* "src/main/java/parser/Parser.y":787  */
+    /* "src/main/java/parser/Parser.y":788  */
     {
         /**
          * Loads the left identifiers subrange subtype
@@ -1618,7 +1616,7 @@ this.symbolTable = symbolTable;
 
   case 177: /* initialized_subrange: subrange_specification ASSIGN_OP numeric_constant  */
   if (yyn == 177)
-    /* "src/main/java/parser/Parser.y":799  */
+    /* "src/main/java/parser/Parser.y":800  */
     {
         /**
          * Loads the left identifiers subrange initialization
@@ -1632,7 +1630,7 @@ this.symbolTable = symbolTable;
 
   case 178: /* range: numeric_constant RANGE_OP numeric_constant  */
   if (yyn == 178)
-    /* "src/main/java/parser/Parser.y":811  */
+    /* "src/main/java/parser/Parser.y":812  */
     {
         /**
          * Loads the left identifiers subrange numeric range
@@ -1659,7 +1657,7 @@ this.symbolTable = symbolTable;
 
   case 181: /* enumerated_specification: '(' enumerated_values ')'  */
   if (yyn == 181)
-    /* "src/main/java/parser/Parser.y":840  */
+    /* "src/main/java/parser/Parser.y":841  */
                               {
         /**
          * Loads the enumerated metadata to the current context.
@@ -1679,7 +1677,7 @@ this.symbolTable = symbolTable;
 
   case 182: /* initialized_enumerated: enumerated_specification ASSIGN_OP identifier_with_opt_mangling  */
   if (yyn == 182)
-    /* "src/main/java/parser/Parser.y":858  */
+    /* "src/main/java/parser/Parser.y":859  */
     {
         /**
          * Verifies that the initializer value is correct and loads it to the context.
@@ -1707,7 +1705,7 @@ this.symbolTable = symbolTable;
 
   case 183: /* enumerated_values: enumerated_values_list  */
   if (yyn == 183)
-    /* "src/main/java/parser/Parser.y":884  */
+    /* "src/main/java/parser/Parser.y":885  */
     {
         /**
          * Just drops the context built for the enumerated list.
@@ -1720,7 +1718,7 @@ this.symbolTable = symbolTable;
 
   case 184: /* enumerated_values_list: IDENTIFIER  */
   if (yyn == 184)
-    /* "src/main/java/parser/Parser.y":895  */
+    /* "src/main/java/parser/Parser.y":896  */
     {
         /**
          * Creates a new context with the data associated to the enums value list and then publish the identifier found
@@ -1756,7 +1754,7 @@ this.symbolTable = symbolTable;
 
   case 185: /* enumerated_values_list: enumerated_values_list ',' IDENTIFIER  */
   if (yyn == 185)
-    /* "src/main/java/parser/Parser.y":926  */
+    /* "src/main/java/parser/Parser.y":927  */
     {
         // TODO: verify interaction with lexer again
         Integer newIndex = ((List<String>)(yystack.valueAt (2))).size();
@@ -1777,7 +1775,7 @@ this.symbolTable = symbolTable;
 
   case 188: /* array_specification: ARRAY '[' range_list ']' OF IDENTIFIER  */
   if (yyn == 188)
-    /* "src/main/java/parser/Parser.y":950  */
+    /* "src/main/java/parser/Parser.y":951  */
     {
         /**
          * Resolves the array's custom element type from the symbol table and
@@ -1805,7 +1803,7 @@ this.symbolTable = symbolTable;
 
   case 189: /* array_specification: ARRAY '[' range_list ']' OF non_generic_type_name  */
   if (yyn == 189)
-    /* "src/main/java/parser/Parser.y":973  */
+    /* "src/main/java/parser/Parser.y":974  */
     {
         /**
          * Builds an array metadata whose subtype is the given non-generic
@@ -1829,7 +1827,7 @@ this.symbolTable = symbolTable;
 
   case 194: /* array_initialization: array_init_open_square_bracket array_initial_elements_list ']'  */
   if (yyn == 194)
-    /* "src/main/java/parser/Parser.y":1008  */
+    /* "src/main/java/parser/Parser.y":1009  */
     {
         /**
          * Drops the useless context generated at the end of the initialization list.
@@ -1842,7 +1840,7 @@ this.symbolTable = symbolTable;
 
   case 195: /* array_init_open_square_bracket: '['  */
   if (yyn == 195)
-    /* "src/main/java/parser/Parser.y":1019  */
+    /* "src/main/java/parser/Parser.y":1020  */
     {
         /**
          * Creates a new context so that it can be overwritten by the inner rules.
@@ -1866,7 +1864,7 @@ this.symbolTable = symbolTable;
 
   case 198: /* array_initial_elements: array_initial_element_routine  */
   if (yyn == 198)
-    /* "src/main/java/parser/Parser.y":1046  */
+    /* "src/main/java/parser/Parser.y":1047  */
     {
         /**
          * Retrieves the relevant information of the initialization and copies it into the current context
@@ -1898,7 +1896,7 @@ this.symbolTable = symbolTable;
 
   case 201: /* array_initial_element: constant  */
   if (yyn == 201)
-    /* "src/main/java/parser/Parser.y":1081  */
+    /* "src/main/java/parser/Parser.y":1082  */
     {
         /**
          * Creates the initialization and adds the context counter by one
@@ -1913,7 +1911,7 @@ this.symbolTable = symbolTable;
 
   case 202: /* array_initial_element: identifier_with_opt_mangling  */
   if (yyn == 202)
-    /* "src/main/java/parser/Parser.y":1091  */
+    /* "src/main/java/parser/Parser.y":1092  */
     {
         /**
          * Creates the initialization and adds the context counter by one
@@ -1932,7 +1930,7 @@ this.symbolTable = symbolTable;
 
   case 203: /* array_initial_element: structure_initialization  */
   if (yyn == 203)
-    /* "src/main/java/parser/Parser.y":1105  */
+    /* "src/main/java/parser/Parser.y":1106  */
     {
         /**
          * Only adds the context counter by one because the initialization is created inside the rule.
@@ -1946,7 +1944,7 @@ this.symbolTable = symbolTable;
 
   case 204: /* array_initial_element: array_initialization  */
   if (yyn == 204)
-    /* "src/main/java/parser/Parser.y":1114  */
+    /* "src/main/java/parser/Parser.y":1115  */
     {
         /**
          * Only adds the context counter by one because the initialization is created inside the rule.
@@ -1960,7 +1958,7 @@ this.symbolTable = symbolTable;
 
   case 205: /* repeated_initial_element: numeric_constant '(' array_initial_element ')'  */
   if (yyn == 205)
-    /* "src/main/java/parser/Parser.y":1126  */
+    /* "src/main/java/parser/Parser.y":1127  */
     {
         /**
          * Repeats N times the inner initialization.
@@ -1977,7 +1975,7 @@ this.symbolTable = symbolTable;
 
   case 207: /* struct_init_open_parenthesis: '('  */
   if (yyn == 207)
-    /* "src/main/java/parser/Parser.y":1145  */
+    /* "src/main/java/parser/Parser.y":1146  */
     {
         /**
          * Copies the initialization of the custom type to overwrite the fields later if it's the first time
@@ -1999,7 +1997,7 @@ this.symbolTable = symbolTable;
 
   case 214: /* initialized_field_with_constant: nested_field ASSIGN_OP constant  */
   if (yyn == 214)
-    /* "src/main/java/parser/Parser.y":1178  */
+    /* "src/main/java/parser/Parser.y":1179  */
     {
         /**
          * Overwrites the field with a constant.
@@ -2020,7 +2018,7 @@ this.symbolTable = symbolTable;
 
   case 215: /* initialized_field_with_identifier: nested_field ASSIGN_OP identifier_with_opt_mangling  */
   if (yyn == 215)
-    /* "src/main/java/parser/Parser.y":1197  */
+    /* "src/main/java/parser/Parser.y":1198  */
     {
         /**
          * Overwrites the field with an enumerated value.
@@ -2044,7 +2042,7 @@ this.symbolTable = symbolTable;
 
   case 216: /* initialized_field_with_array: nested_field ASSIGN_OP array_initialization  */
   if (yyn == 216)
-    /* "src/main/java/parser/Parser.y":1219  */
+    /* "src/main/java/parser/Parser.y":1220  */
     {
         /**
          * Overwrites the field with an array initialization.
@@ -2057,7 +2055,7 @@ this.symbolTable = symbolTable;
 
   case 217: /* initialized_field_with_structure: nested_field ASSIGN_OP structure_initialization  */
   if (yyn == 217)
-    /* "src/main/java/parser/Parser.y":1230  */
+    /* "src/main/java/parser/Parser.y":1231  */
     {
         /**
          * Closes the nested field scope that was opened while scanning the
@@ -2072,7 +2070,7 @@ this.symbolTable = symbolTable;
 
   case 218: /* nested_field: IDENTIFIER  */
   if (yyn == 218)
-    /* "src/main/java/parser/Parser.y":1243  */
+    /* "src/main/java/parser/Parser.y":1244  */
     {
         /**
          * Needs to expand the nested scope to keep overwritting.
@@ -2086,7 +2084,7 @@ this.symbolTable = symbolTable;
 
   case 219: /* identifier_with_opt_mangling: IDENTIFIER  */
   if (yyn == 219)
-    /* "src/main/java/parser/Parser.y":1255  */
+    /* "src/main/java/parser/Parser.y":1256  */
     {
         /**
          * Simple identifier: keeps the lexeme as-is.
@@ -2099,7 +2097,7 @@ this.symbolTable = symbolTable;
 
   case 220: /* identifier_with_opt_mangling: IDENTIFIER '#' IDENTIFIER  */
   if (yyn == 220)
-    /* "src/main/java/parser/Parser.y":1263  */
+    /* "src/main/java/parser/Parser.y":1264  */
     {
         /**
          * Mangled identifier: joins both identifiers with '#'.
@@ -2112,7 +2110,7 @@ this.symbolTable = symbolTable;
 
   case 224: /* identifier_list: IDENTIFIER  */
   if (yyn == 224)
-    /* "src/main/java/parser/Parser.y":1283  */
+    /* "src/main/java/parser/Parser.y":1284  */
     {
         /**
          * Starts the list of declared identifiers for the current context.
@@ -2127,7 +2125,7 @@ this.symbolTable = symbolTable;
 
   case 225: /* identifier_list: identifier_list ',' IDENTIFIER  */
   if (yyn == 225)
-    /* "src/main/java/parser/Parser.y":1293  */
+    /* "src/main/java/parser/Parser.y":1294  */
     {
         /**
          * Appends another identifier to the declared identifiers list.
@@ -2141,15 +2139,14 @@ this.symbolTable = symbolTable;
 
   case 229: /* string_specification: type_string_specification  */
   if (yyn == 229)
-    /* "src/main/java/parser/Parser.y":1314  */
+    /* "src/main/java/parser/Parser.y":1315  */
     {
         ParsingContext ctx = this.contexts.current();
-        LexemeInfo metadata = ctx.metadataBuilder().build();
-
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
+            .subtype(((Subtype)(yystack.valueAt (0))))
             .initialValue(
-                new StringInitialization(this.symbolTable, metadata.subtype)
+                Factory.createPrimitiveInitialization(this.symbolTable, ((Subtype)(yystack.valueAt (0))))
             );
     };
   break;
@@ -2165,14 +2162,13 @@ this.symbolTable = symbolTable;
         **/
 
         ParsingContext ctx = this.contexts.current();
-        LexemeInfo metadata = ctx.metadataBuilder().build();
-
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
+            .subtype(((Subtype)(yystack.valueAt (3))))
             .superiorLimits(
                 Collections.singletonList(((String)(yystack.valueAt (1))))
             ).initialValue(
-                new StringInitialization(this.symbolTable, metadata.subtype)
+                Factory.createPrimitiveInitialization(this.symbolTable, ((Subtype)(yystack.valueAt (3))))
             );
     };
   break;
@@ -2180,7 +2176,7 @@ this.symbolTable = symbolTable;
 
   case 231: /* initialized_string: string_specification ASSIGN_OP string_constant  */
   if (yyn == 231)
-    /* "src/main/java/parser/Parser.y":1345  */
+    /* "src/main/java/parser/Parser.y":1344  */
     {
         /**
          * Wraps the assigned string literal as a VariableInitialization and
@@ -2197,35 +2193,21 @@ this.symbolTable = symbolTable;
 
   case 232: /* type_string_specification: STRING  */
   if (yyn == 232)
-    /* "src/main/java/parser/Parser.y":1360  */
-    {
-        /**
-         * Sets the metadata subtype to STRING for an unqualified string type.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().subtype(Subtype.STRING);
-    };
+    /* "src/main/java/parser/Parser.y":1358  */
+                { yyval = Subtype.STRING;  };
   break;
 
 
   case 233: /* type_string_specification: WSTRING  */
   if (yyn == 233)
-    /* "src/main/java/parser/Parser.y":1369  */
-    {
-        /**
-         * Sets the metadata subtype to WSTRING (wide string).
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().subtype(Subtype.WSTRING);
-    };
+    /* "src/main/java/parser/Parser.y":1359  */
+                { yyval = Subtype.WSTRING; };
   break;
 
 
   case 236: /* data_type_declaration: type_id_decl type_declaration_list END_TYPE  */
   if (yyn == 236)
-    /* "src/main/java/parser/Parser.y":1388  */
+    /* "src/main/java/parser/Parser.y":1371  */
     {
         /**
          * After reducing the whole block, the type block context needs to popped
@@ -2238,7 +2220,7 @@ this.symbolTable = symbolTable;
 
   case 237: /* type_id_decl: TYPE  */
   if (yyn == 237)
-    /* "src/main/java/parser/Parser.y":1399  */
+    /* "src/main/java/parser/Parser.y":1382  */
     {
         /**
          * Opens a new parsing context for the type block and marks it as a
@@ -2257,7 +2239,7 @@ this.symbolTable = symbolTable;
 
   case 240: /* type_declaration: type_name_declaration ':' type_spec_init  */
   if (yyn == 240)
-    /* "src/main/java/parser/Parser.y":1421  */
+    /* "src/main/java/parser/Parser.y":1404  */
     {
         /**
          * The type declaration is published after being reduced and it's outerScopes unappended.
@@ -2274,7 +2256,7 @@ this.symbolTable = symbolTable;
 
   case 241: /* type_name_declaration: IDENTIFIER  */
   if (yyn == 241)
-    /* "src/main/java/parser/Parser.y":1436  */
+    /* "src/main/java/parser/Parser.y":1419  */
     {
         /**
          * Adds the identifier as the current scope so that everything declared inside this scope belongs to the outer
@@ -2290,7 +2272,7 @@ this.symbolTable = symbolTable;
 
   case 249: /* structure_specification: STRUCT structure_field_declaration_list END_STRUCT  */
   if (yyn == 249)
-    /* "src/main/java/parser/Parser.y":1460  */
+    /* "src/main/java/parser/Parser.y":1443  */
     {
         /**
          * Builds the declaration of the structure and publishes it to the symbol table. For that to happen every field
@@ -2319,7 +2301,7 @@ this.symbolTable = symbolTable;
 
   case 250: /* structure_field_declaration_list: structure_field_declaration ';'  */
   if (yyn == 250)
-    /* "src/main/java/parser/Parser.y":1487  */
+    /* "src/main/java/parser/Parser.y":1470  */
     {
         /**
          * Starts the structure field list with the first declared field.
@@ -2334,7 +2316,7 @@ this.symbolTable = symbolTable;
 
   case 251: /* structure_field_declaration_list: structure_field_declaration_list structure_field_declaration ';'  */
   if (yyn == 251)
-    /* "src/main/java/parser/Parser.y":1497  */
+    /* "src/main/java/parser/Parser.y":1480  */
     {
         /**
          * Appends the next declared field to the structure field list.
@@ -2348,7 +2330,7 @@ this.symbolTable = symbolTable;
 
   case 252: /* structure_field_declaration: field_name ':' structure_field_spec_init  */
   if (yyn == 252)
-    /* "src/main/java/parser/Parser.y":1509  */
+    /* "src/main/java/parser/Parser.y":1492  */
     {
         /**
          * Publishes the field to the symbol table.
@@ -2365,7 +2347,7 @@ this.symbolTable = symbolTable;
 
   case 253: /* field_name: IDENTIFIER  */
   if (yyn == 253)
-    /* "src/main/java/parser/Parser.y":1524  */
+    /* "src/main/java/parser/Parser.y":1507  */
     {
         /**
          * Builds the new field context
@@ -2388,7 +2370,7 @@ this.symbolTable = symbolTable;
 
 
 
-/* "src/main/java/parser/Parser.java":2390  */
+/* "src/main/java/parser/Parser.java":2374  */
 
         default: break;
       }
@@ -2410,7 +2392,6 @@ this.symbolTable = symbolTable;
    *
    * @return <tt>true</tt> if the parsing succeeds.  Note that this does not
    *          imply that there were no syntax errors.
-   * @throws java.io.IOException if the scanner cannot read the input
    */
   public boolean parse() throws java.io.IOException
 
@@ -2662,8 +2643,7 @@ this.symbolTable = symbolTable;
 
 
     /**
-     * Returns the symbol kind of the lookahead token.
-     * @return the lookahead token's symbol kind
+     * The symbol kind of the lookahead token.
      */
     public final SymbolKind getToken() {
       return yytoken;
@@ -3209,7 +3189,7 @@ private static final short[] yycheck_ = yycheck_init();
 
     private ContextHandler contexts;
 
-/* "src/main/java/parser/Parser.java":3209  */
+/* "src/main/java/parser/Parser.java":3193  */
 
 }
-/* "src/main/java/parser/Parser.y":1554  */
+/* "src/main/java/parser/Parser.y":1537  */

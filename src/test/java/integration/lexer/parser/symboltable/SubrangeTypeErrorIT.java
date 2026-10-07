@@ -12,19 +12,19 @@ public class SubrangeTypeErrorIT extends ParserTestSupport {
 
     @Test
     @NotYetImplemented
-    void subrange_with_invalid_bounds_rejected() {
+    void Subrange_With_Invalid_Bounds_Rejected() {
         // INT (10..5) - lower > upper
     }
 
     @Test
     @NotYetImplemented
-    void subrange_with_non_constant_bounds_rejected() {
+    void Subrange_With_Non_Constant_Bounds_Rejected() {
         // INT (?..10) - bounds not constants
     }
 
     @Test
     @NotYetImplemented
-    void subrange_variable_initialized_out_of_bounds_rejected() {
+    void Subrange_Variable_Initialized_Out_Of_Bounds_Rejected() {
         // INT (0..10) var := 15
     }
 }

@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class NestedStructVariableIT extends ParserTestSupport {
 
     @Test
-    public void declaring_variable_of_nested_struct_type_inherits_full_hierarchy() throws Exception {
+    public void Declaring_Variable_Of_Nested_Struct_Type_Inherits_Full_Hierarchy() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    rgb_type: STRUCT\n"
                 + "        gamma_r: REAL;\n"
@@ -71,7 +71,7 @@ public class NestedStructVariableIT extends ParserTestSupport {
     }
 
     @Test
-    public void declaring_initialized_nested_struct_variable_stores_deep_field_overrides() throws Exception {
+    public void Declaring_Initialized_Nested_Struct_Variable_Stores_Deep_Field_Overrides() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    rgb_type: STRUCT\n"
                 + "        gamma_r: REAL;\n"

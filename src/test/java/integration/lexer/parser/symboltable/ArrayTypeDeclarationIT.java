@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ArrayTypeDeclarationIT extends ParserTestSupport {
 
     @Test
-    public void declaring_multidimensional_array_of_struct_type_registers_bounds() throws Exception {
+    public void Declaring_Multidimensional_Array_Of_Struct_Type_Registers_Bounds() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    color_type : \n"
                 + "        STRUCT \n"

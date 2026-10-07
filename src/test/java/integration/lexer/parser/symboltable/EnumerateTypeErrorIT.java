@@ -12,19 +12,19 @@ public class EnumerateTypeErrorIT extends ParserTestSupport {
 
     @Test
     @NotYetImplemented
-    void enum_type_with_duplicate_enumerator_rejected() {
+    void Enum_Type_With_Duplicate_Enumerator_Rejected() {
         // TYPE T : (A, A); END_TYPE
     }
 
     @Test
     @NotYetImplemented
-    void enum_variable_initialized_with_undefined_enumerator_rejected() {
+    void Enum_Variable_Initialized_With_Undefined_Enumerator_Rejected() {
         // TYPE T : (A, B); VAR v : T := C; END_VAR
     }
 
     @Test
     @NotYetImplemented
-    void enum_variable_initialized_with_wrong_type_rejected() {
+    void Enum_Variable_Initialized_With_Wrong_Type_Rejected() {
         // TYPE T : (A, B); VAR v : T := 42; END_VAR
     }
 }

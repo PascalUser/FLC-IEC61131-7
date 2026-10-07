@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class StructVariableIT extends ParserTestSupport {
 
     @Test
-    public void declaring_variable_of_struct_type_inherits_default_field_values() throws Exception {
+    public void Declaring_Variable_Of_Struct_Type_Inherits_Default_Field_Values() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    color_type : STRUCT\n"
                 + "        brown: REAL;\n"
@@ -58,7 +58,7 @@ public class StructVariableIT extends ParserTestSupport {
     }
 
     @Test
-    public void declaring_initialized_struct_variable_stores_field_overrides() throws Exception {
+    public void Declaring_Initialized_Struct_Variable_Stores_Field_Overrides() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    color_type : STRUCT\n"
                 + "        brown: REAL;\n"

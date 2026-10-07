@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SubrangeTypeDeclarationIT extends ParserTestSupport {
 
     @Test
-    public void declaring_valid_subrange_type_registers_bounds() throws Exception {
+    public void Declaring_Valid_Subrange_Type_Registers_Bounds() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    Day : INT (0..31);\n"
                 + "END_TYPE\n"

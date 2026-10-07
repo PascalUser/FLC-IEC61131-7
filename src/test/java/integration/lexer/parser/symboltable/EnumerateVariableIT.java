@@ -30,7 +30,7 @@ public class EnumerateVariableIT extends ParserTestSupport {
             "VAR_INPUT, IN",
             "VAR_OUTPUT, OUT"
     })
-    public void declaring_variable_of_enum_type_uses_fully_qualified_initializer(
+    public void Declaring_Variable_Of_Custom_Enum_Type_Uses_Fully_Qualified_Initializer(
             String block,
             Source expectedSource
     ) throws Exception {
@@ -64,7 +64,7 @@ public class EnumerateVariableIT extends ParserTestSupport {
             "VAR_INPUT, IN",
             "VAR_OUTPUT, OUT"
     })
-    public void declaring_inline_enum_variable_registers_anonymous_type(
+    public void Declaring_Inline_Enum_Variable_Registers_Anonymous_Type(
             String block,
             Source expectedSource
     ) throws Exception {

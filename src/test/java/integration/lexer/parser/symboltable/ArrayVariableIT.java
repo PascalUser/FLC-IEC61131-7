@@ -29,7 +29,7 @@ public class ArrayVariableIT extends ParserTestSupport {
             "VAR_INPUT, IN",
             "VAR_OUTPUT, OUT"
     })
-    public void declaring_multidimensional_array_with_repeated_initializer_expands_correctly(
+    public void Declaring_Multidimensional_Array_With_Repeated_Initializer_Expands_Correctly(
             String block,
             Source expectedSource
     ) throws Exception {

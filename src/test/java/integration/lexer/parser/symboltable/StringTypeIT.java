@@ -23,7 +23,7 @@ public class StringTypeIT extends ParserTestSupport {
 
     @ParameterizedTest
     @EnumSource(value = Subtype.class, names = {"STRING", "WSTRING"})
-    void declaring_valid_fixed_length_string_type_registers_in_symbol_table(Subtype subtype) throws Exception {
+    void Declaring_Fixed_Length_String_Type_Registers_Correctly(Subtype subtype) throws Exception {
         String sourceCode = "TYPE\n"
                 + "    StringType : " + subtype.name() + " [ 8 ];\n"
                 + "END_TYPE\n"
@@ -46,7 +46,7 @@ public class StringTypeIT extends ParserTestSupport {
     }
 
     @Test
-    void declaring_initialized_fixed_length_string_type_stores_initial_value() throws Exception {
+    void Declaring_Initialized_Fixed_Length_String_Type_Stores_Initial_Value() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    StringType : STRING[8] := 'STRING';\n"
                 + "END_TYPE\n"
@@ -69,7 +69,7 @@ public class StringTypeIT extends ParserTestSupport {
     }
 
     @Test
-    void declaring_initialized_fixed_length_wstring_type_stores_initial_value() throws Exception {
+    void Declaring_Initialized_Fixed_Length_WString_Type_Stores_Initial_Value() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    StringType : WSTRING[8] := \"WSTRING\";\n"
                 + "END_TYPE\n"
@@ -93,7 +93,7 @@ public class StringTypeIT extends ParserTestSupport {
 
     @ParameterizedTest
     @EnumSource(value = Subtype.class, names = {"STRING", "WSTRING"})
-    void declaring_valid_fixed_length_string_variable_registers_in_symbol_table(Subtype subtype) throws Exception {
+    void Declaring_Fixed_Length_String_Variable_Registers_Correctly(Subtype subtype) throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + "VAR\n"
                 + "    strVar : " + subtype.name() + "[8];\n"
@@ -116,7 +116,7 @@ public class StringTypeIT extends ParserTestSupport {
     }
 
     @Test
-    void declaring_initialized_fixed_length_string_variable_stores_initial_value() throws Exception {
+    void Declaring_Initialized_Fixed_Length_String_Variable_Stores_Initial_Value() throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + "VAR\n"
                 + "    strVar : STRING[8] := 'STRING';\n"
@@ -139,7 +139,7 @@ public class StringTypeIT extends ParserTestSupport {
     }
 
     @Test
-    void declaring_initialized_fixed_length_wstring_variable_stores_initial_value() throws Exception {
+    void Declaring_Initialized_Fixed_Length_WString_Variable_Stores_Initial_Value() throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + "VAR\n"
                 + "    strVar : WSTRING[8] := \"WSTRING\";\n"

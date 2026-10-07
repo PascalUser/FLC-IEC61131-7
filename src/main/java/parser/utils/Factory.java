@@ -2,6 +2,7 @@ package parser.utils;
 
 import parser.initializations.Initialization;
 import parser.initializations.RealInitialization;
+import parser.initializations.StringInitialization;
 import utils.SymbolTable;
 import utils.enums.Subtype;
 
@@ -35,6 +36,9 @@ public final class Factory {
      */
     public static Initialization createPrimitiveInitialization(SymbolTable symbolTable, Subtype subtype) {
         switch (subtype) {
+            case WSTRING:
+            case STRING:
+                return new StringInitialization(symbolTable, subtype);
             case REAL:
                 return new RealInitialization(symbolTable);
             default:

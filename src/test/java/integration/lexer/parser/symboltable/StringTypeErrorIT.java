@@ -12,13 +12,13 @@ public class StringTypeErrorIT extends ParserTestSupport {
 
     @Test
     @NotYetImplemented
-    void string_literal_exceeds_capacity_rejected() {
+    void String_Literal_Exceeds_Capacity_Rejected() {
         // STRING[5] := 'toolong'
     }
 
     @Test
     @NotYetImplemented
-    void string_variable_initialized_with_wrong_type_rejected() {
+    void String_Variable_Initialized_With_Wrong_Type_Rejected() {
         // STRING[10] := 42
     }
 }

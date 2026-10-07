@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class EnumerateTypeDeclarationIT extends ParserTestSupport {
     @Test
-    public void declaring_valid_enum_type_registers_enumerators() throws Exception {
+    public void Declaring_Valid_Enum_Type_Registers_Enumerators_And_Macros() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    MethodType : (CENTROID, AVERAGE);\n"
                 + "END_TYPE\n"

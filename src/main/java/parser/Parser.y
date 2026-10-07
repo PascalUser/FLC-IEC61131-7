@@ -63,6 +63,7 @@
     bit_string_type_name
     elementary_type_name
     non_generic_type_name
+    type_string_specification
 
 %type <String>
     constant
@@ -1313,12 +1314,11 @@ string_specification:
     type_string_specification
     {
         ParsingContext ctx = this.contexts.current();
-        LexemeInfo metadata = ctx.metadataBuilder().build();
-
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
+            .subtype($1)
             .initialValue(
-                new StringInitialization(this.symbolTable, metadata.subtype)
+                Factory.createPrimitiveInitialization(this.symbolTable, $1)
             );
     }
     | type_string_specification '[' numeric_constant ']'
@@ -1329,14 +1329,13 @@ string_specification:
         **/
 
         ParsingContext ctx = this.contexts.current();
-        LexemeInfo metadata = ctx.metadataBuilder().build();
-
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
+            .subtype($1)
             .superiorLimits(
                 Collections.singletonList($3)
             ).initialValue(
-                new StringInitialization(this.symbolTable, metadata.subtype)
+                Factory.createPrimitiveInitialization(this.symbolTable, $1)
             );
     }
 
@@ -1356,24 +1355,8 @@ initialized_string:
 ;
 
 type_string_specification:
-    STRING
-    {
-        /**
-         * Sets the metadata subtype to STRING for an unqualified string type.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().subtype(Subtype.STRING);
-    }
-    | WSTRING
-    {
-        /**
-         * Sets the metadata subtype to WSTRING (wide string).
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().subtype(Subtype.WSTRING);
-    }
+    STRING      { $$ = Subtype.STRING;  }
+    | WSTRING   { $$ = Subtype.WSTRING; }
 ;
 
 /* ----------------------------------- Data Type ---------------------------------------- */

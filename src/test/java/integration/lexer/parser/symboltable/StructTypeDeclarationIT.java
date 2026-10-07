@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class StructTypeDeclarationIT extends ParserTestSupport {
 
     @Test
-    public void declaring_valid_struct_type_registers_fields() throws Exception {
+    public void Declaring_Valid_Struct_Type_Registers_Fields() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    color_type : STRUCT\n"
                 + "        brown: REAL;\n"

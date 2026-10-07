@@ -12,19 +12,19 @@ public class ArrayTypeErrorIT extends ParserTestSupport {
 
     @Test
     @NotYetImplemented
-    void array_initializer_exceeds_dimension_rejected() {
+    void Array_Initializer_Exceeds_Dimension_Rejected() {
         // ARRAY [1..2] OF INT := [1, 2, 3]
     }
 
     @Test
     @NotYetImplemented
-    void array_initializer_with_type_mismatch_rejected() {
+    void Array_Initializer_With_Type_Mismatch_Rejected() {
         // ARRAY [1..2] OF INT := ['a', 'b']
     }
 
     @Test
     @NotYetImplemented
-    void array_with_invalid_bounds_rejected() {
+    void Array_With_Invalid_Bounds_Rejected() {
         // ARRAY [5..1] OF INT
     }
 }

@@ -12,25 +12,25 @@ public class PrimitiveTypeErrorIT extends ParserTestSupport {
 
     @Test
     @NotYetImplemented
-    void duplicate_type_declaration_rejected() {
+    void Duplicate_Type_Declaration_Rejected() {
         // TYPE block with duplicate type name
     }
 
     @Test
     @NotYetImplemented
-    void duplicate_variable_declaration_rejected() {
+    void Duplicate_Variable_Declaration_Rejected() {
         // VAR block with duplicate variable name
     }
 
     @Test
     @NotYetImplemented
-    void real_variable_with_string_initializer_rejected() {
+    void Real_Variable_With_String_Initializer_Rejected() {
         // REAL var := 'string'
     }
 
     @Test
     @NotYetImplemented
-    void bool_variable_with_int_initializer_rejected() {
+    void Bool_Variable_With_Int_Initializer_Rejected() {
         // BOOL var := 42
     }
 }

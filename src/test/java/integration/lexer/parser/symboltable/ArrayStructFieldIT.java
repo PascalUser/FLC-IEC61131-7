@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ArrayStructFieldIT extends ParserTestSupport {
 
     @Test
-    public void declaring_struct_field_with_inline_enum_registers_enumerators_and_macros() throws Exception {
+    public void Declaring_Struct_Field_With_Inline_Enum_Registers_Enumerators_And_Macros() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    color_type : \n"
                 + "        STRUCT \n"
@@ -83,7 +83,7 @@ public class ArrayStructFieldIT extends ParserTestSupport {
             "VAR_INPUT, IN",
             "VAR_OUTPUT, OUT"
     })
-    public void declaring_struct_field_with_initialized_field_uses_default() throws Exception {
+    public void Declaring_Struct_Field_With_Initialized_Field_Uses_Default() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    color_type : \n"
                 + "        STRUCT \n"

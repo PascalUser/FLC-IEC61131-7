@@ -158,7 +158,7 @@ public class PrimitiveTypeIT extends ParserTestSupport {
      */
     @ParameterizedTest
     @MethodSource("providePrimitiveCombinations")
-    public void declaring_uninitialized_primitive_variable_uses_default_initialization(PrimitiveTestData data) throws Exception {
+    public void Declaring_Uninitialized_Primitive_Variable_Uses_Default_Initialization(PrimitiveTestData data) throws Exception {
 
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + data.block + "\n"
@@ -192,13 +192,5 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 .initialValue(new VariableInitialization(data.parsedInitValue))
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
-    }
-
-    @ParameterizedTest
-    @MethodSource("providePrimitiveCombinations")
-    public void declaring_initialized_primitive_variable_stores_explicit_value(PrimitiveTestData data) throws Exception {
-        // This test is covered by the same parameterized method above
-        // Keeping it here for explicit naming per Khorikov convention
-        declaring_uninitialized_primitive_variable_uses_default_initialization(data);
     }
 }

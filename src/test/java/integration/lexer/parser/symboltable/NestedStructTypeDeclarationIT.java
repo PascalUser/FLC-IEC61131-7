@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class NestedStructTypeDeclarationIT extends ParserTestSupport {
 
     @Test
-    public void declaring_nested_struct_type_registers_hierarchical_fields() throws Exception {
+    public void Declaring_Nested_Struct_Type_Registers_Hierarchical_Fields() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    rgb_type: STRUCT\n"
                 + "        gamma_r: REAL;\n"
@@ -109,7 +109,7 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
     }
 
     @Test
-    public void declaring_nested_struct_with_initialized_inner_field_uses_default() throws Exception {
+    public void Declaring_Nested_Struct_With_Initialized_Inner_Field_Uses_Default() throws Exception {
         String sourceCode = "TYPE\n"
                 + "    rgb_type: STRUCT\n"
                 + "        gamma_r: REAL;\n"

@@ -12,19 +12,19 @@ public class StructTypeErrorIT extends ParserTestSupport {
 
     @Test
     @NotYetImplemented
-    void struct_type_with_duplicate_field_rejected() {
+    void Struct_Type_With_Duplicate_Field_Rejected() {
         // STRUCT a: INT; a: REAL; END_STRUCT
     }
 
     @Test
     @NotYetImplemented
-    void struct_variable_initialized_with_unknown_field_rejected() {
+    void Struct_Variable_Initialized_With_Unknown_Field_Rejected() {
         // STRUCT a: INT; END_STRUCT; VAR v : T := (b := 1); END_VAR
     }
 
     @Test
     @NotYetImplemented
-    void struct_variable_initialized_with_type_mismatch_rejected() {
+    void Struct_Variable_Initialized_With_Type_Mismatch_Rejected() {
         // STRUCT a: INT; END_STRUCT; VAR v : T := (a := 'str'); END_VAR
     }
 }
