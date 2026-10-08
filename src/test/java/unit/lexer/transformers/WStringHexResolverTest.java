@@ -39,13 +39,13 @@ class WStringHexResolverTest {
 
     @ParameterizedTest(name = "{index}: Input {0} is preserved intact")
     @ValueSource(strings = {
-            "\"$GGGG\"",     // Caracteres no hexadecimales
-            "\"$00G1\"",     // Mezcla de caracteres válidos e inválidos
-            "\"$004\"",      // Incompleto (3 dígitos)
-            "\"$41\"",       // Incompleto para WSTRING (sólo 2 dígitos, requiere 4)
-            "\"$\"",         // Símbolo $ colgado
-            "\"$$0041\"",    // Símbolo $ escapado (se preserva para el EscapeResolver)
-            "\"hello\""      // Texto sin escapes
+            "\"$GGGG\"",     // Non-hexadecimal characters
+            "\"$00G1\"",     // Mix of valid and invalid characters
+            "\"$004\"",      // Incomplete (3 digits)
+            "\"$41\"",       // Incomplete for WSTRING (only 2 digits, requires 4)
+            "\"$\"",         // Trailing $ symbol
+            "\"$$0041\"",    // Escaped $ symbol (preserved for EscapeResolver)
+            "\"hello\""      // Text without escapes
     })
     void transform_InvalidOrIncomplete_PassesThroughUnchanged(String input) {
         assertEquals(input, resolver.transform(input));

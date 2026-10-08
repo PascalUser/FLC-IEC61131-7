@@ -40,6 +40,9 @@ public final class SubrangeInitialization implements Initialization {
         return ilimit;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Initialization copy() {
         return new SubrangeInitialization(ilimit, slimit);

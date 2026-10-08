@@ -146,6 +146,10 @@ class SymbolTableTest {
         );
     }
 
+    /**
+     * Verifies that {@link SymbolTable#put(String, LexemeInfo)} stores a value and
+     * {@link SymbolTable#get(String)} retrieves the same value.
+     */
     @Test
     void PutAndGet_StoresAndRetrievesLexemeInfo() {
         SymbolTable table = new SymbolTable();
@@ -165,6 +169,12 @@ class SymbolTableTest {
         );
     }
 
+    /**
+     * Verifies that {@link SymbolTable#put(String, LexemeInfo)} correctly stores
+     * various {@link LexemeInfo} configurations (different types, subtypes, uses, sources).
+     *
+     * @param info the LexemeInfo to store
+     */
     @ParameterizedTest(name = "{index}: {4}")
     @MethodSource("ProvideLexemeInfos")
     void Put_WithVariousLexemeInfo_StoresCorrectly(LexemeInfo info) {
@@ -178,6 +188,10 @@ class SymbolTableTest {
         );
     }
 
+    /**
+     * Verifies that {@link SymbolTable#get(String)} returns {@code null} for a key
+     * that was never stored.
+     */
     @Test
     void Get_ForNonExistentKey_ReturnsNull() {
         SymbolTable table = new SymbolTable();
@@ -187,6 +201,10 @@ class SymbolTableTest {
         assertNull(result);
     }
 
+    /**
+     * Verifies that {@link SymbolTable#put(String, LexemeInfo)} overwrites an existing
+     * key and returns the previous value.
+     */
     @Test
     void Put_OverwritesExistingKey_ReturnsOldValue() {
         SymbolTable table = new SymbolTable();
@@ -214,6 +232,16 @@ class SymbolTableTest {
         );
     }
 
+    /**
+     * Verifies the behavior of {@link SymbolTable#putIfAbsent(String, LexemeInfo)}:
+     * - returns {@code null} and stores the value for absent keys
+     * - returns the existing value and does not overwrite for present keys
+     *
+     * @param key            the key to insert
+     * @param toInsert       the value to insert
+     * @param preExisting    the pre-existing value (or {@code null})
+     * @param expectedStored the value expected to be stored after the operation
+     */
     @ParameterizedTest(name = "{index}: putIfAbsent({0}) -> returns {1}, stores {2} ({3})")
     @MethodSource("ProvidePutIfAbsentCases")
     void PutIfAbsent_Behavior(String key, LexemeInfo toInsert, LexemeInfo preExisting, LexemeInfo expectedStored) {
@@ -236,6 +264,10 @@ class SymbolTableTest {
         );
     }
 
+    /**
+     * Verifies that {@link SymbolTable#putIfAbsent(String, LexemeInfo)} stores a {@code null}
+     * value and returns {@code null} for an absent key.
+     */
     @Test
     void PutIfAbsent_NullValue_StoresNull() {
         SymbolTable table = new SymbolTable();
@@ -248,6 +280,13 @@ class SymbolTableTest {
         );
     }
 
+    /**
+     * Verifies that {@link SymbolTable#size()} returns the correct entry count
+     * for various initial entry configurations.
+     *
+     * @param initialEntries the initial entries to populate the table
+     * @param expectedSize   the expected size after population
+     */
     @ParameterizedTest(name = "{index}: size() = {1} for {2}")
     @MethodSource("ProvideSizeCases")
     void Size_ReturnsEntryCount(java.util.Map<String, LexemeInfo> initialEntries, int expectedSize) {
@@ -259,6 +298,10 @@ class SymbolTableTest {
         assertEquals(expectedSize, actualSize);
     }
 
+    /**
+     * Verifies that {@link SymbolTable#size()} only increments for new keys
+     * when using {@link SymbolTable#putIfAbsent(String, LexemeInfo)}.
+     */
     @Test
     void Size_AfterPutIfAbsent_IncrementsOnlyForNewKeys() {
         SymbolTable table = new SymbolTable();

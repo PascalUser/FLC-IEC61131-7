@@ -2148,7 +2148,7 @@ this.symbolTable = symbolTable;
     /* "src/main/java/parser/Parser.y":1242  */
     {
         /**
-         * Needs to expand the nested scope to keep overwritting.
+         * Needs to expand the nested scope to keep overwriting.
         **/
 
         ParsingContext ctx = this.contexts.current();

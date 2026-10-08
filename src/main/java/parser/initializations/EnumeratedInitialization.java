@@ -41,6 +41,9 @@ public final class EnumeratedInitialization implements Initialization {
         return enumeratedValue;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Initialization copy() {
         List<String> values = new ArrayList<>();

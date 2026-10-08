@@ -7,6 +7,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Test double providing a mapping of IEC 61131-7 reserved words to their corresponding token types.
+ * <p>
+ * This class implements {@link Iterable} to allow parameterized tests to iterate over all
+ * reserved word / token pairs for case-insensitivity and tokenization verification.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class FakeReservedWords implements Iterable<Map.Entry<String, Integer>> {
     private final static Map<String, Integer> table;
 

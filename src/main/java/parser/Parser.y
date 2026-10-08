@@ -736,65 +736,65 @@ initialized_simple:
 /* -------------------------------- Elementary Types ------------------------------------ */
 
 elementary_type_name:
-    numeric_type_name               { $$ = $1; }
-    | date_type_name                { $$ = $1; }
-    | bit_string_type_name          { $$ = $1; }
+    numeric_type_name               { /** Propagates the numeric type name. */    $$ = $1; }
+    | date_type_name                { /** Propagates the date type name. */       $$ = $1; }
+    | bit_string_type_name          { /** Propagates the bit string type name. */ $$ = $1; }
 ;
 
 numeric_type_name:
-    integer_type_name               { $$ = $1; }
-    | real_type_name                { $$ = $1; }
+    integer_type_name               { /** Propagates the integer type name. */ $$ = $1; }
+    | real_type_name                { /** Propagates the real type name. */    $$ = $1; }
 ;
 
 integer_type_name:
-    signed_integer_type_name        { $$ = $1; }
-    | unsigned_integer_type_name    { $$ = $1; }
+    signed_integer_type_name        { /** Propagates the signed integer type name.   */ $$ = $1; }
+    | unsigned_integer_type_name    { /** Propagates the unsigned integer type name. */ $$ = $1; }
 ;
 
 signed_integer_type_name:
-    SINT   { $$ = Subtype.SINT; }
-    | INT  { $$ = Subtype.INT;  }
-    | DINT { $$ = Subtype.DINT; }
-    | LINT { $$ = Subtype.LINT; }
+    SINT   { /** Sets the subtype to SINT. */ $$ = Subtype.SINT; }
+    | INT  { /** Sets the subtype to INT.  */ $$ = Subtype.INT;  }
+    | DINT { /** Sets the subtype to DINT. */ $$ = Subtype.DINT; }
+    | LINT { /** Sets the subtype to LINT. */ $$ = Subtype.LINT; }
 ;
 
 unsigned_integer_type_name:
-    USINT   { $$ = Subtype.USINT; }
-    | UINT  { $$ = Subtype.UINT;  }
-    | UDINT { $$ = Subtype.UDINT; }
-    | ULINT { $$ = Subtype.ULINT; }
+    USINT   { /** Sets the subtype to USINT. */ $$ = Subtype.USINT; }
+    | UINT  { /** Sets the subtype to UINT.  */ $$ = Subtype.UINT;  }
+    | UDINT { /** Sets the subtype to UDINT. */ $$ = Subtype.UDINT; }
+    | ULINT { /** Sets the subtype to ULINT. */ $$ = Subtype.ULINT; }
 ;
 
 real_type_name:
-    REAL    { $$ = Subtype.REAL;  }
-    | LREAL { $$ = Subtype.LREAL; }
+    REAL    { /** Sets the subtype to REAL.  */ $$ = Subtype.REAL;  }
+    | LREAL { /** Sets the subtype to LREAL. */ $$ = Subtype.LREAL; }
 ;
 
 date_type_name:
-    TIME            { $$ = Subtype.TIME;          }
-    | DATE          { $$ = Subtype.DATE;          }
-    | TIME_OF_DAY   { $$ = Subtype.TIME_OF_DAY;   }
-    | DATE_AND_TIME { $$ = Subtype.DATE_AND_TIME; }
+    TIME            { /** Sets the subtype to TIME. */ $$ = Subtype.TIME; }
+    | DATE          { /** Sets the subtype to DATE. */ $$ = Subtype.DATE; }
+    | TIME_OF_DAY   { /** Sets the subtype to TIME_OF_DAY.   */ $$ = Subtype.TIME_OF_DAY;   }
+    | DATE_AND_TIME { /** Sets the subtype to DATE_AND_TIME. */ $$ = Subtype.DATE_AND_TIME; }
 ;
 
 /* ----------------------------------- Literals ----------------------------------------- */
 
 constant:
-    string_constant    { $$ = $1; }
-    | boolean_constant { $$ = $1; }
-    | time_constant    { $$ = $1; }
-    | numeric_constant { $$ = $1; }
+    string_constant    { /** Propagates the string constant.  */ $$ = $1; }
+    | boolean_constant { /** Propagates the boolean constant. */ $$ = $1; }
+    | time_constant    { /** Propagates the time constant.    */ $$ = $1; }
+    | numeric_constant { /** Propagates the numeric constant. */ $$ = $1; }
 ;
 
 string_constant:
-    STRING_LITERAL { $$ = $1; }
+    STRING_LITERAL { /** Propagates the string literal. */   $$ = $1; }
 ;
 
 boolean_constant:
-    BOOLEAN_LITERAL { $$ = $1; }
+    BOOLEAN_LITERAL { /** Propagates the boolean literal. */ $$ = $1; }
 
 numeric_constant:
-    NUMERIC_LITERAL
+    NUMERIC_LITERAL { /** Propagates the numeric literal. */ $$ = $1; }
     | number_prefix NUMERIC_LITERAL
     {
         // TODO: convert this constant in code
@@ -803,9 +803,9 @@ numeric_constant:
 ;
 
 number_prefix:
-    integer_type_name '#'
-    | real_type_name '#'
-    | bit_string_type_name '#'
+    integer_type_name '#' { /** Propagates the integer type name prefix. */ $$ = $1; }
+    | real_type_name '#'  { /** Propagates the real type name prefix.    */ $$ = $1; }
+    | bit_string_type_name '#' { /** Propagates the bit string type name prefix. */ $$ = $1; }
 ;
 
 time_constant:
@@ -815,10 +815,10 @@ time_constant:
 ;
 
 bit_string_type_name:
-    BYTE    { $$ = Subtype.BYTE;  }
-    | WORD  { $$ = Subtype.WORD;  }
-    | DWORD { $$ = Subtype.DWORD; }
-    | LWORD { $$ = Subtype.LWORD; }
+    BYTE    { /** Sets the subtype to BYTE.  */ $$ = Subtype.BYTE;  }
+    | WORD  { /** Sets the subtype to WORD.  */ $$ = Subtype.WORD;  }
+    | DWORD { /** Sets the subtype to DWORD. */ $$ = Subtype.DWORD; }
+    | LWORD { /** Sets the subtype to LWORD. */ $$ = Subtype.LWORD; }
 ;
 
 /* --------------------------------- Derived Types  ------------------------------------- */
@@ -1274,7 +1274,7 @@ nested_field:
     IDENTIFIER
     {
         /**
-         * Needs to expand the nested scope to keep overwritting.
+         * Needs to expand the nested scope to keep overwriting.
         **/
 
         ParsingContext ctx = this.contexts.current();

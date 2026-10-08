@@ -45,8 +45,8 @@ public abstract class HexResolver extends Transformer {
             char c = lexeme.charAt(i);
 
             if (c == '$' && i + 1 < lexeme.length()) {
-                // Preserva '$$' intacto y salta ambos caracteres
-                // para que StringEscapeResolver los procese después
+                // Preserve '$$' intact and skip both characters
+                // for StringEscapeResolver to process later
                 if (lexeme.charAt(i + 1) == '$') {
                     result.append("$$");
                     i++;

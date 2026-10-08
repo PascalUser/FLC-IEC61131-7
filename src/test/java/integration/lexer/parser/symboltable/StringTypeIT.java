@@ -15,7 +15,19 @@ import utils.enums.Use;
 
 import java.util.Collections;
 
-
+/**
+ * Integration tests for STRING and WSTRING type declarations and variable declarations
+ * with fixed lengths and initial values.
+ * <p>
+ * Verifies that the symbol table correctly registers string types with their length
+ * constraints and initial values for both type declarations and variable declarations.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public class StringTypeIT extends ParserTestSupport {
 
     @ParameterizedTest

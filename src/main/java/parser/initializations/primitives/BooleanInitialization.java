@@ -34,6 +34,9 @@ public final class BooleanInitialization extends AbstractPrimitiveInitialization
         super(symbolTable, defaultBool, builder);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BooleanInitialization copy() {
         return new BooleanInitialization(symbolTable);

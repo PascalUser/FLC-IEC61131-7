@@ -79,6 +79,9 @@ public final class StructInitialization implements Initialization {
         return map.get(key1).selectVariable(key2).getVariableValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public StructInitialization copy() {
         StructInitialization copy = new StructInitialization();

@@ -37,6 +37,9 @@ public final class VariableInitialization implements Initialization {
         return value;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public VariableInitialization copy() {
         return new VariableInitialization(value);

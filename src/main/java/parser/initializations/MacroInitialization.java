@@ -59,6 +59,9 @@ public final class MacroInitialization implements Initialization {
         return replaceValue;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Initialization copy() {
         return new MacroInitialization(symbolTable, replaceValue);
