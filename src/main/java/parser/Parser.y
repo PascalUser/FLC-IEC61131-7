@@ -4,7 +4,7 @@
 %define api.parser.public
 %define api.parser.final
 
-%code requires {
+%code imports {
     import java.util.List;
     import java.util.ArrayList;
     import java.util.Collections;
@@ -19,39 +19,6 @@
     import parser.internals.*;
     import parser.initializations.*;
     import parser.initializations.primitives.*;
-}
-
-%code requires {
-    /**
-     * Lexical analyzer interface.
-     * <p>
-     * The parser uses this interface to communicate with the scanner (lexer).
-     * </p>
-     */
-    interface Lexer {
-        /**
-         * Retrieves the semantic value of the last scanned token.
-         *
-         * @return the semantic value of the last scanned token
-         */
-        Object getLVal();
-
-        /**
-         * Entry point for the scanner. Returns the token identifier corresponding
-         * to the next token and prepares to return the semantic value of the token.
-         *
-         * @return the token identifier corresponding to the next token
-         * @throws java.io.IOException if an I/O error occurs
-         */
-        int yylex() throws java.io.IOException;
-
-        /**
-         * Reports a syntax error.
-         *
-         * @param msg the error message
-         */
-        void yyerror(String msg);
-    }
 }
 
 %code {
