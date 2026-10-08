@@ -67,25 +67,25 @@ public class ArrayVariableIT extends ParserTestSupport {
         );
         expectedArrayInitialValue.addInterval(
                 20, 20, createStructInit(
-                        new VariableInitialization("COLOR_TYPE#BLACK"),
+                        new VariableInitialization("BLACK"),
                         new VariableInitialization(".0")
                 )
         );
         expectedArrayInitialValue.addInterval(
                 21, 30, createStructInit(
-                        new VariableInitialization("COLOR_TYPE#WHITE"),
+                        new VariableInitialization("WHITE"),
                         new VariableInitialization("1.0")
                 )
         );
         expectedArrayInitialValue.addInterval(
                 31, 38, createStructInit(
-                        new VariableInitialization("COLOR_TYPE#BLACK"),
+                        new VariableInitialization("BLACK"),
                         new VariableInitialization(".0")
                 )
         );
         expectedArrayInitialValue.addInterval(
                 39, 39, createStructInit(
-                        new VariableInitialization("COLOR_TYPE#GRAY"),
+                        new VariableInitialization("GRAY"),
                         gammaInit
                 )
         );

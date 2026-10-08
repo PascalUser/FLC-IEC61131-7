@@ -13,17 +13,20 @@ classDiagram
         class StripLeadingZeros
         class StripTrailingZeros
         class StripBaseNumberLeadingZeros
-        class StringEscapeResolver
-        class Nothing
         class OmitLeadingZeroMagnitudes
         class OmitTrailingZeroMagnitudes
         class OmitLeadingZerosInMagnitudes
         class OmitTrailingZerosInMagnitudes
+        class StringEscapeResolver
+        class Nothing
     }
     namespace lexer_transformers_hex_resolvers {
         class HexResolver
         class StringHexResolver
         class WStringHexResolver
+    }
+    namespace lexer_transformers_utils {
+        class ExponentFinder
     }
     namespace lexer_semantics {
         class SemanticAnalyzer
@@ -49,6 +52,9 @@ classDiagram
         class StringsAnalyzer
         class Strings
         class WStrings
+    }
+    namespace lexer_semantics_utils {
+        class ReservedWords
     }
     SemanticAnalyzer <|-- DateAndDayTimes
     SemanticAnalyzer <|-- Dates

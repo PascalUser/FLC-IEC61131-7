@@ -39,9 +39,6 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 + "    END_STRUCT;\n"
                 + "END_TYPE\n"
                 + "FUNCTION_BLOCK main\n"
-                + "VAR_INPUT\n"
-                + "    color : color_type;\n"
-                + "END_VAR\n"
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);

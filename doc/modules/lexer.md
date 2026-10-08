@@ -2,7 +2,7 @@
 
 Reconoce lexemas FCL, los normaliza y comunica al analizador sintáctico tokens y valores asociados.
 
-**Fuentes:** `src/main/java/lexer/Lexer.flex`, `src/main/java/lexer/Lexer.java` y `src/main/java/lexer/semantics/SemanticAnalyzer.java`. `Lexer.java` se identifica en su cabecera como código generado por JFlex 1.8.2; la configuración actual del complemento Maven figura en `pom.xml`.
+**Fuentes:** `src/main/java/lexer/Lexer.flex`, `src/main/java/lexer/Lexer.java` y `src/main/java/lexer/semantics/SemanticAnalyzer.java`. `Lexer.java` se identifica en su cabecera como código generado por JFlex 1.9.1; la configuración actual del complemento Maven figura en `pom.xml`.
 
 ## Dependencias entre paquetes
 
@@ -82,17 +82,20 @@ classDiagram
         class StripLeadingZeros
         class StripTrailingZeros
         class StripBaseNumberLeadingZeros
-        class StringEscapeResolver
-        class Nothing
         class OmitLeadingZeroMagnitudes
         class OmitTrailingZeroMagnitudes
         class OmitLeadingZerosInMagnitudes
         class OmitTrailingZerosInMagnitudes
+        class StringEscapeResolver
+        class Nothing
     }
     namespace lexer_transformers_hex_resolvers {
         class HexResolver
         class StringHexResolver
         class WStringHexResolver
+    }
+    namespace lexer_transformers_utils {
+        class ExponentFinder
     }
     namespace lexer_semantics {
         class SemanticAnalyzer
@@ -118,6 +121,9 @@ classDiagram
         class StringsAnalyzer
         class Strings
         class WStrings
+    }
+    namespace lexer_semantics_utils {
+        class ReservedWords
     }
     SemanticAnalyzer <|-- DateAndDayTimes
     SemanticAnalyzer <|-- Dates
@@ -171,8 +177,8 @@ classDiagram
 | `lexer.transformers.Nothing` | Devuelve el lexema sin modificar. | Transformador identidad |
 | `lexer.transformers.StringEscapeResolver` | Sustituye escapes de control y de comillas. | Transformador |
 | `lexer.transformers.hex_resolvers.HexResolver` | Resuelve escapes hexadecimales según el ancho indicado por sus subclases. | Plantilla de transformación |
-| `lexer.transformers.hex_resolvers.StringHexResolver` | Configura escapes hexadecimales de STRING. | Especialización |
-| `lexer.transformers.hex_resolvers.WStringHexResolver` | Configura escapes hexadecimales de WSTRING. | Especialización |
+| `lexer.transformers.hex_resolvers.StringHexResolver` | Configura escapes hexadecimales de STRING (2 dígitos). | Especialización |
+| `lexer.transformers.hex_resolvers.WStringHexResolver` | Configura escapes hexadecimales de WSTRING (4 dígitos). | Especialización |
 | `lexer.transformers.utils.ExponentFinder` | Localiza el exponente de un literal real. | Utilidad |
 | `lexer.semantics.SemanticAnalyzer` | Define `analyze`, el contexto y el resultado léxicos. | Interfaz de estrategia |
 | `lexer.semantics.numbers.NumbersAnalyzer` | Comparte análisis, advertencia, recuperación y publicación de números. | Método plantilla |
@@ -274,15 +280,15 @@ sequenceDiagram
 
 | Clase en `src/test/java` | Verificación |
 |---|---|
-| `src/test/java/unit/lexer/LexerTokenizationTest.java` | Reconocimiento de identificadores, cadenas, números, fechas e intervalos. |
-| `src/test/java/unit/lexer/LexerSymbolTableTest.java` | Subtipos, valores, claves canónicas y truncamiento de cadenas. |
-| `src/test/java/unit/lexer/LexerDiagnosticHandlerTest.java` | Advertencias de rango y longitud y errores temporales. |
-| `src/test/java/unit/lexer/transformers/StringEscapeResolverTest.java` | Interpretación de escapes estándar. |
-| `src/test/java/unit/lexer/transformers/StringHexResolverTest.java`, `src/test/java/unit/lexer/transformers/WStringHexResolverTest.java` | Escapes hexadecimales de cadenas. |
-| `src/test/java/unit/lexer/transformers/OmitLeadingZeroMagnitudesTest.java` | Eliminación de magnitudes iniciales nulas en intervalos. |
-| `src/test/java/unit/lexer/transformers/OmitTrailingZeroMagnitudesTest.java` | Eliminación de magnitudes finales nulas en intervalos. |
-| `src/test/java/unit/lexer/transformers/OmitLeadingZerosInMagnitudesTest.java` | Eliminación de ceros iniciales dentro de magnitudes de intervalos. |
-| `src/test/java/unit/lexer/transformers/OmitTrailingZerosInMagnitudesTest.java` | Eliminación de ceros finales de la fracción de magnitudes de intervalos. |
+| `unit/lexer/LexerTokenizationTest.java` | Reconocimiento de identificadores, cadenas, números, fechas e intervalos. |
+| `unit/lexer/LexerSymbolTableTest.java` | Subtipos, valores, claves canónicas y truncamiento de cadenas. |
+| `unit/lexer/LexerDiagnosticHandlerTest.java` | Advertencias de rango y longitud y errores temporales. |
+| `unit/lexer/transformers/StringEscapeResolverTest.java` | Interpretación de escapes estándar. |
+| `unit/lexer/transformers/StringHexResolverTest.java`, `unit/lexer/transformers/WStringHexResolverTest.java` | Escapes hexadecimales de cadenas. |
+| `unit/lexer/transformers/OmitLeadingZeroMagnitudesTest.java` | Eliminación de magnitudes iniciales nulas en intervalos. |
+| `unit/lexer/transformers/OmitTrailingZeroMagnitudesTest.java` | Eliminación de magnitudes finales nulas en intervalos. |
+| `unit/lexer/transformers/OmitLeadingZerosInMagnitudesTest.java` | Eliminación de ceros iniciales dentro de magnitudes de intervalos. |
+| `unit/lexer/transformers/OmitTrailingZerosInMagnitudesTest.java` | Eliminación de ceros finales de la fracción de magnitudes de intervalos. |
 
 ```bash
 mvn -q -Dtest=LexerTokenizationTest,LexerSymbolTableTest,LexerDiagnosticHandlerTest,OmitLeadingZeroMagnitudesTest,OmitTrailingZeroMagnitudesTest,OmitLeadingZerosInMagnitudesTest,OmitTrailingZerosInMagnitudesTest test

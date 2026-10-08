@@ -1,6 +1,5 @@
 package parser.internals;
 
-import parser.facades.Publisher;
 import parser.utils.NameMangler;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
@@ -70,7 +69,7 @@ public final class ParsingContext {
     /**
      * Returns the list of identifiers declared in this context.
      * <p>
-     * Used by {@link Publisher} to know which identifiers
+     * Used by {@link ContextHandler#publish()} to know which identifiers
      * to publish with the configured metadata.
      * </p>
      *

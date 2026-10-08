@@ -1,5 +1,6 @@
 package integration.lexer.parser.symboltable;
 
+import parser.initializations.Factory;
 import parser.initializations.primitives.*;
 import utils.ParserTestSupport;
 
@@ -17,7 +18,6 @@ import utils.enums.Use;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,7 +44,6 @@ public class PrimitiveTypeIT extends ParserTestSupport {
         public final Subtype subtype;
         public final String rawInitValue;
         public final String parsedInitValue;
-        public final Function<SymbolTable, Object> initFactory;
 
         /**
          * Constructs a new test data combination.
@@ -55,7 +54,6 @@ public class PrimitiveTypeIT extends ParserTestSupport {
          * @param subtype         The specific subtype mapped to the IEC 61131-7 standard.
          * @param rawInitValue    The literal initialization value as written in source code.
          * @param parsedInitValue The normalized initialization value expected after parsing.
-         * @param initFactory     A factory lambda to instantiate the default initialization dynamically.
          */
         public PrimitiveTestData(
                 String block,
@@ -63,8 +61,7 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 String typeName,
                 Subtype subtype,
                 String rawInitValue,
-                String parsedInitValue,
-                Function<SymbolTable, Object> initFactory
+                String parsedInitValue
         ) {
             this.block = block;
             this.source = source;
@@ -72,7 +69,6 @@ public class PrimitiveTypeIT extends ParserTestSupport {
             this.subtype = subtype;
             this.rawInitValue = rawInitValue;
             this.parsedInitValue = parsedInitValue;
-            this.initFactory = initFactory;
         }
     }
 
@@ -99,14 +95,12 @@ public class PrimitiveTypeIT extends ParserTestSupport {
         final Subtype subtype;
         final String rawInitValue;
         final String parsedInitValue;
-        final Function<SymbolTable, Object> initFactory;
 
-        TypeConfig(String typeName, Subtype subtype, String rawInitValue, String parsedInitValue, Function<SymbolTable, Object> initFactory) {
+        TypeConfig(String typeName, Subtype subtype, String rawInitValue, String parsedInitValue) {
             this.typeName = typeName;
             this.subtype = subtype;
             this.rawInitValue = rawInitValue;
             this.parsedInitValue = parsedInitValue;
-            this.initFactory = initFactory;
         }
     }
 
@@ -129,26 +123,26 @@ public class PrimitiveTypeIT extends ParserTestSupport {
         // 2. Define the primitive types to test
         List<TypeConfig> types = Arrays.asList(
                 // Boolean type
-                new TypeConfig("BOOL", Subtype.BOOL, "TRUE", "TRUE", BooleanInitialization::new),
+                new TypeConfig("BOOL", Subtype.BOOL, "TRUE", "TRUE"),
                 // Real types
-                new TypeConfig("REAL" ,  Subtype.REAL, "0.3e10", ".3e10", RealInitialization::new),
-                new TypeConfig("LREAL", Subtype.LREAL, "0.3e10", ".3e10", RealInitialization::new),
+                new TypeConfig("REAL" ,  Subtype.REAL, "0.3e10", ".3e10"),
+                new TypeConfig("LREAL", Subtype.LREAL, "0.3e10", ".3e10"),
                 // Int types
-                new TypeConfig("SINT" , Subtype.SINT, "42", "42", IntInitialization::new),
-                new TypeConfig("INT"  , Subtype.INT , "42", "42", IntInitialization::new),
-                new TypeConfig("LINT" , Subtype.LINT, "42", "42", IntInitialization::new),
-                new TypeConfig("DINT" , Subtype.DINT, "42", "42", IntInitialization::new),
+                new TypeConfig("SINT" , Subtype.SINT, "42", "42"),
+                new TypeConfig("INT"  , Subtype.INT , "42", "42"),
+                new TypeConfig("LINT" , Subtype.LINT, "42", "42"),
+                new TypeConfig("DINT" , Subtype.DINT, "42", "42"),
                 // UInt types
-                new TypeConfig("USINT", Subtype.USINT, "42", "42", IntInitialization::new),
-                new TypeConfig("UINT" , Subtype.UINT , "42", "42", IntInitialization::new),
-                new TypeConfig("ULINT", Subtype.ULINT, "42", "42", IntInitialization::new),
-                new TypeConfig("UDINT", Subtype.UDINT, "42", "42", IntInitialization::new),
+                new TypeConfig("USINT", Subtype.USINT, "42", "42"),
+                new TypeConfig("UINT" , Subtype.UINT , "42", "42"),
+                new TypeConfig("ULINT", Subtype.ULINT, "42", "42"),
+                new TypeConfig("UDINT", Subtype.UDINT, "42", "42"),
                 // String types
-                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'", StringInitialization::new),
-                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'", StringInitialization::new),
+                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'"),
+                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'"),
                 // WString types
-                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"", WStringInitialization::new),
-                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"", WStringInitialization::new)
+                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\""),
+                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"")
         );
 
         // 3. Construct the Cartesian product
@@ -157,12 +151,10 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 arguments.add(new PrimitiveTestData(
                         b.block, b.source,
                         t.typeName, t.subtype,
-                        t.rawInitValue, t.parsedInitValue,
-                        t.initFactory
+                        t.rawInitValue, t.parsedInitValue
                 ));
             }
         }
-
         return arguments.stream();
     }
 
@@ -175,12 +167,11 @@ public class PrimitiveTypeIT extends ParserTestSupport {
      */
     @ParameterizedTest
     @MethodSource("providePrimitiveCombinations")
-    public void Declaring_Uninitialized_Primitive_Variable_Uses_Default_Initialization(PrimitiveTestData data) throws Exception {
+    public void Declaring_Uninitialized_Primitive_Variable_Uses_Default(PrimitiveTestData data) throws Exception {
 
         String sourceCode = "FUNCTION_BLOCK main\n"
                 + data.block + "\n"
                 + "    var1 : " + data.typeName + ";\n"
-                + "    var2 : " + data.typeName + " := " + data.rawInitValue + ";\n"
                 + "END_VAR\n"
                 + "END_FUNCTION_BLOCK";
 
@@ -188,7 +179,7 @@ public class PrimitiveTypeIT extends ParserTestSupport {
         List<String> diffs;
 
         // Apply the lambda factory to generate the default initialization linked to the symbol table
-        Object defaultInitialization = data.initFactory.apply(st);
+        Object defaultInitialization = Factory.createPrimitiveInitialization(st, data.subtype);
 
         // Assert symbol 'var1' without explicit initialization is registered properly
         diffs = LexemeInfoComparator.compare(st, "MAIN#VAR1", new LexemeInfoBuilder()
@@ -199,9 +190,30 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 .initialValue(defaultInitialization)
                 .build());
         assertTrue(diffs.isEmpty(), diffs.toString());
+    }
 
-        // Assert symbol 'var2' with explicit inline initialization is registered properly
-        diffs = LexemeInfoComparator.compare(st, "MAIN#VAR2", new LexemeInfoBuilder()
+    /**
+     * Integration test verifying that the compiler's parser correctly structures and populates
+     * the symbol table for different primitive types and assignment combinations.
+     *
+     * @param data The test data payload containing combinations of blocks and types.
+     * @throws Exception If parsing or validation encounters a fatal error.
+     */
+    @ParameterizedTest
+    @MethodSource("providePrimitiveCombinations")
+    public void Declaring_Initialized_Primitive_Variable_Uses_Literal_Value(PrimitiveTestData data) throws Exception {
+
+        String sourceCode = "FUNCTION_BLOCK main\n"
+                + data.block + "\n"
+                + "    var1 : " + data.typeName + " := " + data.rawInitValue + ";\n"
+                + "END_VAR\n"
+                + "END_FUNCTION_BLOCK";
+
+        SymbolTable st = parse(sourceCode);
+        List<String> diffs;
+
+        // Assert symbol 'var' with explicit inline initialization is registered properly
+        diffs = LexemeInfoComparator.compare(st, "MAIN#VAR1", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(data.subtype)
                 .use(Use.VARIABLE)

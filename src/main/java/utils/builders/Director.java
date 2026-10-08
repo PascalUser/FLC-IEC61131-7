@@ -40,6 +40,18 @@ public final class Director {
                 .source(Source.NONE);
     }
 
+    public static void makeType(LexemeInfoSchema schema) {
+        schema.use(Use.TYPE)
+                .source(Source.NONE);
+    }
+
+    public static void makeMacro(LexemeInfoSchema schema) {
+        schema.type(Type.SIMPLE)
+                .subtype(Subtype.NONE)
+                .use(Use.MACRO)
+                .source(Source.NONE);
+    }
+
     public static String makeDefaultInteger(LexemeInfoSchema schema) {
         makeLiteral(schema);
         schema.subtype(Subtype.INT).initialValue(0);

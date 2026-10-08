@@ -34,15 +34,19 @@ public final class MacroInitialization implements Initialization {
      * @param replaceValue the ordinal value as string (e.g., "0", "1", "2")
      */
     public MacroInitialization(SymbolTable symbolTable, String replaceValue) {
-        LexemeInfoBuilder builder = new LexemeInfoBuilder();
-        Director.makeLiteral(builder);
-        symbolTable.putIfAbsent(replaceValue, builder
-                .subtype(Subtype.INT)
-                .initialValue(Integer.valueOf(replaceValue))
-                .build()
-        );
-        this.replaceValue = replaceValue;
-        this.symbolTable = symbolTable;
+        try {
+            LexemeInfoBuilder builder = new LexemeInfoBuilder();
+            Director.makeLiteral(builder);
+            symbolTable.putIfAbsent(replaceValue, builder
+                    .subtype(Subtype.INT)
+                    .initialValue(Integer.valueOf(replaceValue))
+                    .build()
+            );
+            this.replaceValue = replaceValue;
+            this.symbolTable = symbolTable;
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("MacroInitialization: macro cannot be replaced with invalid number");
+        }
     }
 
     @Override

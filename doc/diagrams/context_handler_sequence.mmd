@@ -4,7 +4,6 @@ sequenceDiagram
     participant PC as ParsingContext
     participant NM as NameMangler
     participant Builder as LexemeInfoBuilder
-    participant Pub as Publisher
     participant ST as SymbolTable
 
     Parser->>PC: new ParsingContext(symbolTable)
@@ -18,11 +17,11 @@ sequenceDiagram
         Parser->>PC: declaredIdentifiers().add(identifier)
     end
 
-    Parser->>Pub: publish(ctx)
-    Pub->>Builder: build() LexemeInfo
+    Parser->>CH: publish()
+    CH->>Builder: build() LexemeInfo
     loop For each declared identifier
-        Pub->>NM: outerScopes().getNameMangled(identifier)
-        Pub->>ST: put(completeIdentifier, LexemeInfo)
+        CH->>NM: outerScopes().getNameMangled(identifier)
+        CH->>ST: put(completeIdentifier, LexemeInfo)
     end
 
     Parser->>CH: pop()

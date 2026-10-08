@@ -4,7 +4,7 @@
 %define api.parser.public
 %define api.parser.final
 
-%code imports {
+%code requires {
     import java.util.List;
     import java.util.ArrayList;
     import java.util.Collections;
@@ -12,10 +12,46 @@
     import utils.LexemeInfo;
     import utils.SymbolTable;
     import utils.enums.*;
+    import utils.builders.*;
 
     import parser.utils.*;
+    import parser.facades.*;
     import parser.internals.*;
     import parser.initializations.*;
+    import parser.initializations.primitives.*;
+}
+
+%code requires {
+    /**
+     * Lexical analyzer interface.
+     * <p>
+     * The parser uses this interface to communicate with the scanner (lexer).
+     * </p>
+     */
+    interface Lexer {
+        /**
+         * Retrieves the semantic value of the last scanned token.
+         *
+         * @return the semantic value of the last scanned token
+         */
+        Object getLVal();
+
+        /**
+         * Entry point for the scanner. Returns the token identifier corresponding
+         * to the next token and prepares to return the semantic value of the token.
+         *
+         * @return the token identifier corresponding to the next token
+         * @throws java.io.IOException if an I/O error occurs
+         */
+        int yylex() throws java.io.IOException;
+
+        /**
+         * Reports a syntax error.
+         *
+         * @param msg the error message
+         */
+        void yyerror(String msg);
+    }
 }
 
 %code {
@@ -75,12 +111,13 @@
     type_name_declaration
     structure_field_declaration
     field_name
+    linguistic_term
 
 %type <List<String>>
     identifier_list
     enumerated_values
-    enumerated_values_list
     structure_field_declaration_list
+    linguistic_term_list
 
 %%
 
@@ -119,7 +156,6 @@ function_block_name:
 
         ParsingContext ctx = new ParsingContext(this.symbolTable);
         ctx.outerScopes().addScope($1);
-
         this.contexts.add(ctx);
     }
 ;
@@ -157,9 +193,21 @@ opt_fuzzify_block_list:
 ;
 
 fuzzify_block:
-    FUZZIFY IDENTIFIER
+    FUZZIFY fuzzify_block_name
     linguistic_term_list
     END_FUZZIFY
+    {
+        this.contexts.publish();
+    }
+;
+
+fuzzify_block_name:
+    function_block_name
+    {
+        ParsingContext ctx = this.contexts.current();
+        ctx.declaredIdentifiers().add("@fuzzifier");
+        ctx.metadataBuilder().source(Source.FUZZIFY);
+    }
 ;
 
 opt_defuzzify_block_list:
@@ -168,75 +216,97 @@ opt_defuzzify_block_list:
 ;
 
 defuzzify_block:
-    DEFUZZIFY IDENTIFIER
+    DEFUZZIFY defuzzify_block_name
     opt_range
     opt_linguistic_term_list
     defuzzification_method
     default_value
     END_DEFUZZIFY
+    {
+        this.contexts.publish();
+    }
+;
+
+defuzzify_block_name:
+    function_block_name
+    {
+        ParsingContext ctx = this.contexts.current();
+        ctx.declaredIdentifiers().add("@defuzzifier");
+        ctx.metadataBuilder().source(Source.DEFUZZIFY);
+    }
 ;
 
 opt_linguistic_term_list:
     /* empty */
     | linguistic_term_list
+    {
+        ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().parameters($1);
+    }
 ;
 
 linguistic_term_list:
     linguistic_term
+    {
+        List<String> terms = new ArrayList<>();
+        terms.add($1);
+        $$ = terms;
+    }
     | linguistic_term_list linguistic_term
+    {
+        $1.add($2);
+        $$ = $1;
+    }
 ;
 
-/* linguistic_term: TERM IDENTIFIER = (IDENTIFIER | membership_function) */
 linguistic_term:
-    TERM IDENTIFIER ASSIGN_OP IDENTIFIER ';'
-    | TERM IDENTIFIER ASSIGN_OP membership_function ';'
+    TERM IDENTIFIER ASSIGN_OP linguistic_term_value
+    {
+        this.contexts.createSubcontext();
+    }
 ;
 
-/* membership_function: singleton | point_list */
+linguistic_term_value:
+    IDENTIFIER ';'
+    | membership_function ';'
+;
+
 membership_function:
     singleton
     | point_list
 ;
 
-/* singleton: numeric_constant */
 singleton:
     numeric_constant
 ;
 
-/* point_list: one or more points */
 point_list:
     point
     | point_list point
 ;
 
-/* point: (numeric_constant, numeric_constant) | (IDENTIFIER, numeric_constant) */
 point:
     '(' numeric_constant ',' numeric_constant ')'
     | '(' IDENTIFIER ',' numeric_constant ')'
 ;
 
-/* defuzzification_method: METHOD ':' defuzz_method ';' */
 defuzzification_method:
     METHOD ':' defuzz_method ';'
 ;
 
-/* defuzz_method: COG | COGS | COA | LM | RM */
 defuzz_method:
     COG | COGS | COA | LM | RM
 ;
 
-/* default_value: DEFAULT ':=' default_val ';' */
 default_value:
     DEFAULT ASSIGN_OP default_val ';'
 ;
 
-/* default_val: numeric_constant | NC */
 default_val:
     numeric_constant
     | NC
 ;
 
-/* opt_range: optional RANGE '(' numeric_constant '..' numeric_constant ')' ';' */
 opt_range:
     /* empty */
     | RANGE '(' numeric_constant RANGE_OP numeric_constant ')' ';'
@@ -247,7 +317,6 @@ opt_rule_block_list:
     | opt_rule_block_list rule_block
 ;
 
-/* rule_block: RULEBLOCK IDENTIFIER operator_definition activation_method_opt accumulation_method rule_list END_RULEBLOCK */
 rule_block:
     RULEBLOCK IDENTIFIER
     operator_definition
@@ -257,7 +326,6 @@ rule_block:
     END_RULEBLOCK
 ;
 
-/* operator_definition: optional OR ':' or_type AND ':' and_type ';' */
 operator_definition:
     opt_operator_or operator_and_opt ';'
 ;
@@ -272,12 +340,10 @@ operator_and_opt:
     | AND ':' and_type
 ;
 
-/* or_type: MAX | ASUM | BSUM */
 or_type:
     MAX | ASUM | BSUM
 ;
 
-/* and_type: MIN | PROD | BDIF */
 and_type:
     MIN | PROD | BDIF
 ;
@@ -287,51 +353,42 @@ activation_method_opt:
     | activation_method
 ;
 
-/* activation_method: ACT ':' act_type ';' */
 activation_method:
     ACT ':' act_type ';'
 ;
 
-/* act_type: PROD | MIN */
 act_type:
     PROD | MIN
 ;
 
-/* accumulation_method: ACCU ':' accu_type ';' */
 accumulation_method:
     ACCU ':' accu_type ';'
 ;
 
-/* accu_type: MAX | BSUM | NSUM */
 accu_type:
     MAX | BSUM | NSUM
 ;
 
-/* rule_list: zero or more rules */
 rule_list:
     /* empty */
     | rule_list rule
 ;
 
-/* rule: RULE numeric_constant ':' IF condition THEN conclusion_list opt_weighting ';' */
 rule:
     RULE numeric_constant ':' IF condition THEN conclusion_list opt_weighting ';'
 ;
 
-/* opt_weighting: optional WITH (numeric_constant | IDENTIFIER) */
 opt_weighting:
     /* empty */
     | WITH numeric_constant
     | WITH IDENTIFIER
 ;
 
-/* condition: x condition_tail | IDENTIFIER condition_tail */
 condition:
     x condition_tail
     | IDENTIFIER condition_tail
 ;
 
-/* condition_tail: empty | AND IDENTIFIER condition_tail | OR IDENTIFIER condition_tail | AND x condition_tail | OR x condition_tail */
 condition_tail:
     /* empty */
     | AND IDENTIFIER condition_tail
@@ -340,7 +397,6 @@ condition_tail:
     | OR x condition_tail
 ;
 
-/* x: NOT x | NOT IDENTIFIER | subcondition | '(' condition ')' */
 x:
     NOT x
     | NOT IDENTIFIER
@@ -348,13 +404,11 @@ x:
     | '(' condition ')'
 ;
 
-/* subcondition: IDENTIFIER IS IDENTIFIER | IDENTIFIER IS NOT IDENTIFIER */
 subcondition:
     IDENTIFIER IS IDENTIFIER
     | IDENTIFIER IS NOT IDENTIFIER
 ;
 
-/* conclusion_list: IDENTIFIER IS IDENTIFIER | IDENTIFIER | comma-separated list */
 conclusion_list:
     IDENTIFIER IS IDENTIFIER
     | IDENTIFIER
@@ -373,13 +427,11 @@ option_block:
 
 /* ------------------------------------ Pragmas ----------------------------------------- */
 
-/* pragma_list: one or more pragmas */
 pragma_list:
     pragma
     | pragma_list pragma
 ;
 
-/* pragma: PRAGMA IDENTIFIER ';' | PRAGMA IDENTIFIER numeric_constant ';' */
 pragma:
     PRAGMA IDENTIFIER ';'
     | PRAGMA IDENTIFIER numeric_constant ';'
@@ -389,7 +441,6 @@ pragma:
 
 /* ------------------------------ Variable Declarations --------------------------------- */
 
-/* io_var_decl: VAR_INPUT | VAR_OUTPUT with source/use context setup */
 io_var_decl:
     VAR_INPUT
     {
@@ -411,12 +462,10 @@ io_var_decl:
     }
 ;
 
-/* var_declarations: var_id_decl var_constant_spec var_init_decl_list ';' END_VAR */
 var_declarations:
     var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
 ;
 
-/* var_id_decl: VAR with source=INTERNAL, use=VARIABLE */
 var_id_decl:
     VAR
     {
@@ -429,7 +478,6 @@ var_id_decl:
     }
 ;
 
-/* var_retain_spec: optional RETAIN | NON_RETAIN */
 var_retain_spec:
     /* empty */
     | RETAIN
@@ -442,7 +490,6 @@ var_retain_spec:
     }
 ;
 
-/* var_constant_spec: optional CONSTANT */
 var_constant_spec:
     /* empty */
     {
@@ -454,13 +501,11 @@ var_constant_spec:
     }
 ;
 
-/* var_init_decl_list: one or more variable initializations separated by ';' */
 var_init_decl_list:
     var_init_decl
     | var_init_decl_list ';' var_init_decl
 ;
 
-/* var_init_decl: identifier_list ':' var_spec_init [publish] | identifier_list ':' standard_function_block_spec_init */
 var_init_decl:
     identifier_list ':' var_spec_init
     {
@@ -468,15 +513,33 @@ var_init_decl:
          * Publishes the variables into the symbol table using the loaded context
         **/
 
-        ParsingContext ctx = this.contexts.current();
-        Publisher.publish(ctx);
-
-        ctx.declaredIdentifiers().clear();
+        this.contexts.publish();
     }
     | identifier_list ':' standard_function_block_spec_init
 ;
 
-/* var_spec_init: all type specification alternatives */
+identifier_list:
+    IDENTIFIER
+    {
+        /**
+         * Starts the list of declared identifiers for the current context.
+        **/
+
+        this.contexts.createSubcontext();
+        ParsingContext ctx = this.contexts.current();
+        ctx.declaredIdentifiers().add($1);
+    }
+    | identifier_list ',' IDENTIFIER
+    {
+        /**
+         * Appends another identifier to the declared identifiers list.
+        **/
+
+        ParsingContext ctx = this.contexts.current();
+        ctx.declaredIdentifiers().add($3);
+    }
+;
+
 var_spec_init:
     custom_spec_init
     | boolean_spec_init
@@ -803,7 +866,7 @@ initialized_subrange:
         **/
 
         ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().initialValue($3);
+        ctx.metadataBuilder().initialValue(new VariableInitialization($3));
     }
 ;
 
@@ -838,7 +901,8 @@ enumerated_spec_init:
 ;
 
 enumerated_specification:
-    '(' enumerated_values ')' {
+    '(' enumerated_values ')'
+    {
         /**
          * Loads the enumerated metadata to the current context.
         **/
@@ -862,7 +926,6 @@ initialized_enumerated:
         **/
 
         ParsingContext ctx = this.contexts.current();
-
         if ($3.indexOf('#') != -1) {
             // TODO: error control. Anonymous enum cannot be initialized with mangling
         }
@@ -881,17 +944,6 @@ initialized_enumerated:
 ;
 
 enumerated_values:
-    enumerated_values_list
-    {
-        /**
-         * Just drops the context built for the enumerated list.
-        **/
-
-        this.contexts.pop();
-    }
-;
-
-enumerated_values_list:
     IDENTIFIER
     {
         /**
@@ -899,42 +951,44 @@ enumerated_values_list:
          * to the symbol table.
         **/
 
-        ParsingContext oldCtx = this.contexts.current();
-        String outerScopes = oldCtx.outerScopes().getCurrentScope();
+        String declaredEnumerated = this.contexts.current().declaredIdentifiers().get(0);
 
-        ParsingContext ctx = new ParsingContext(this.symbolTable);
+        this.contexts.createSubcontext();
+        ParsingContext ctx = this.contexts.current();
+
+        // This is necessary so that it can be disambiguated
+        Use currentUse = this.contexts.current().metadataBuilder().build().use;
+        if (currentUse == Use.TYPE) {
+            ctx.outerScopes().addScope(declaredEnumerated);
+        }
+
         ctx.declaredIdentifiers().add($1);
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.NONE)
-            .use(Use.MACRO)
-            .source(Source.NONE)
-            .initialValue(
-                // TODO: verify interaction with lexer for constant publication
-                new MacroInitialization(this.symbolTable, "0")
-            );
-        ctx.outerScopes().addScope(outerScopes);
-
-        Publisher.publish(ctx);
-        this.contexts.add(ctx);
+        Director.makeMacro(ctx.metadataBuilder());
+        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, "0"));
+        this.contexts.publish();
 
         List<String> enumeratedValues = new ArrayList<>();
         enumeratedValues.add($1);
-
         $$ = enumeratedValues;
     }
-    | enumerated_values_list ',' IDENTIFIER
+    | enumerated_values ',' IDENTIFIER
     {
-        // TODO: verify interaction with lexer again
-        Integer newIndex = $1.size();
+        Integer replaceValue = $1.size();
+        String declaredEnumerated = this.contexts.current().declaredIdentifiers().get(0);
 
+        this.contexts.createSubcontext();
         ParsingContext ctx = this.contexts.current();
-        ctx.declaredIdentifiers().set(0, $3);
-        ctx.metadataBuilder().initialValue(
-            new MacroInitialization(this.symbolTable, newIndex.toString())
-        );
 
-        Publisher.publish(ctx);
+        // This is necessary so that it can be disambiguated
+        Use currentUse = this.contexts.current().metadataBuilder().build().use;
+        if (currentUse == Use.TYPE) {
+            ctx.outerScopes().addScope(declaredEnumerated);
+        }
+
+        ctx.declaredIdentifiers().add($3);
+        Director.makeMacro(ctx.metadataBuilder());
+        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, replaceValue.toString()));
+        this.contexts.publish();
 
         $1.add($3);
         $$ = $1;
@@ -947,44 +1001,38 @@ array_spec_init:
 ;
 
 array_specification:
-    ARRAY '[' range_list ']' OF IDENTIFIER
+    ARRAY '[' range_list ']' OF array_type
     {
-        /**
-         * Resolves the array's custom element type from the symbol table and
-         * builds an array metadata whose initial value repeats the element type
-         * initialization as many times as the computed dimension.
-        **/
-
-        LexemeInfo typeMetadata = this.symbolTable.get($6);
         ParsingContext ctx = this.contexts.current();
+        ctx.metadataBuilder().type(Type.ARRAY);
+    }
+;
 
-        int dimension= DimensionCalculator.calculate(ctx);
+array_type:
+    IDENTIFIER
+    {
+        ParsingContext ctx = this.contexts.current();
+        LexemeInfo typeMetadata = this.symbolTable.get($1);
+
+        int dimension = DimensionCalculator.calculate(ctx);
         ctx.metadataBuilder()
-            .type(Type.ARRAY)
             .subtype(Subtype.CUSTOM)
-            .customType($6)
+            .customType($1)
             .initialValue(
                 new RepeatedInitialization(dimension, (Initialization) typeMetadata.initialValue)
             );
 
-        String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, $6);
+        String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, $1);
         ctx.searchScope().addScope(underlyingScope);
     }
-    | ARRAY '[' range_list ']' OF non_generic_type_name
+    | non_generic_type_name
     {
-        /**
-         * Builds an array metadata whose subtype is the given non-generic
-         * primitive type and whose initial value is the repeated primitive
-         * default initialization.
-        **/
-
         ParsingContext ctx = this.contexts.current();
-        int dimension= DimensionCalculator.calculate(ctx);
-        Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $6);
 
+        int dimension = DimensionCalculator.calculate(ctx);
+        Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $1);
         ctx.metadataBuilder()
-            .type(Type.ARRAY)
-            .subtype($6)
+            .subtype($1)
             .initialValue(
                 new RepeatedInitialization(dimension, defaultInit)
             );
@@ -1005,48 +1053,24 @@ non_generic_type_name:
 ;
 
 array_initialization:
-    array_init_open_square_bracket array_initial_elements_list ']'
-    {
-        /**
-         * Drops the useless context generated at the end of the initialization list.
-        **/
-
-        this.contexts.pop();
-    }
-;
-
-array_init_open_square_bracket:
-    '['
-    {
-        /**
-         * Creates a new context so that it can be overwritten by the inner rules.
-        **/
-
-        ParsingContext oldCtx = this.contexts.current();
-        ParsingContext newCtx = new ParsingContext(this.symbolTable);
-
-        LexemeInfo oldCtxMetadata = oldCtx.metadataBuilder().build();
-
-        // Copies the valuable info of the current (old) context
-        newCtx.metadataBuilder()
-            .subtype(oldCtxMetadata.subtype)
-            .customType(oldCtxMetadata.customType);
-        newCtx.searchScope().addScope(oldCtx.searchScope().getCurrentScope());
-
-        this.contexts.add(newCtx);
-    }
+    '[' array_initial_elements_list ']'
 ;
 
 array_initial_elements_list:
-    array_initial_elements
-    | array_initial_elements_list ',' array_initial_elements
+    array_initial_elements _actionAfterElement_
+    | array_initial_elements_list ',' array_initial_elements _actionAfterElement_
 ;
 
 array_initial_elements:
-    array_initial_element_routine
+    array_initial_element
+    | repeated_initial_element
+;
+
+_actionAfterElement_:
+    /* empty */
     {
         /**
-         * Retrieves the relevant information of the initialization and copies it into the current context
+         * Retrieves the relevant information of the initialization and copies it into the array declaration context
          * (arrayContext)
         **/
 
@@ -1065,16 +1089,7 @@ array_initial_elements:
             arrayContext.index() - 1,
             (Initialization) initMetadata.initialValue
         );
-
-        // Set the index to zero to avoid creating a new empty context
-        initContext.incrementIndex(-initContext.index());
-        this.contexts.add(initContext);
     }
-;
-
-array_initial_element_routine:
-    array_initial_element
-    | repeated_initial_element
 ;
 
 array_initial_element:
@@ -1084,9 +1099,10 @@ array_initial_element:
          * Creates the initialization and adds the context counter by one
         **/
 
-        ParsingContext initContext = this.contexts.current();
-        initContext.incrementIndex(1);
-        initContext.metadataBuilder().initialValue(new VariableInitialization($1));
+        ParsingContext constantContext = new ParsingContext(this.symbolTable);
+        this.contexts.add(constantContext);
+        constantContext.metadataBuilder().initialValue(new VariableInitialization($1));
+        constantContext.incrementIndex(1);
     }
     | identifier_with_opt_mangling
     {
@@ -1094,31 +1110,31 @@ array_initial_element:
          * Creates the initialization and adds the context counter by one
         **/
 
-        ParsingContext initContext = this.contexts.current();
-        initContext.incrementIndex(1);
+        ParsingContext constantContext = new ParsingContext(this.symbolTable);
+        this.contexts.add(constantContext);
+        constantContext.incrementIndex(1);
 
         // TODO: verify enum as in initialized_custom_with_identifier rule
-        String completeEnumerateName = initContext.searchScope().getNameMangled($1);
-
-        initContext.metadataBuilder().initialValue(new VariableInitialization(completeEnumerateName));
+        String completeEnumerateName = constantContext.searchScope().getNameMangled($1);
+        constantContext.metadataBuilder().initialValue(new VariableInitialization(completeEnumerateName));
     }
-    | structure_initialization
+    | _actionBeforeNotSimpleInitialization_ structure_initialization
     {
         /**
          * Only adds the context counter by one because the initialization is created inside the rule.
         **/
 
-        ParsingContext initContext = this.contexts.current();
-        initContext.incrementIndex(1);
+        ParsingContext complexContext = this.contexts.current();
+        complexContext.incrementIndex(1);
     }
-    | array_initialization
+    | _actionBeforeNotSimpleInitialization_ array_initialization
     {
         /**
          * Only adds the context counter by one because the initialization is created inside the rule.
         **/
 
-        ParsingContext initContext = this.contexts.current();
-        initContext.incrementIndex(1);
+        ParsingContext complexContext = this.contexts.current();
+        complexContext.incrementIndex(1);
     }
 ;
 
@@ -1129,7 +1145,7 @@ repeated_initial_element:
          * Repeats N times the inner initialization.
         **/
 
-        // TODO: verify that numeric_constant is additive
+        // TODO: verify that numeric_constant is additive (non negative)
         int multiplier = Integer.parseInt($1);
 
         ParsingContext initContext = this.contexts.current();
@@ -1137,12 +1153,28 @@ repeated_initial_element:
     }
 ;
 
-structure_initialization:
-    struct_init_open_parenthesis structure_field_initialization_list ')'
+_actionBeforeNotSimpleInitialization_:
+    /* empty */
+    {
+        ParsingContext arrayCtx = this.contexts.current();
+        LexemeInfo arrayMetadata = arrayCtx.metadataBuilder().build();
+
+        this.contexts.createSubcontext();
+        ParsingContext compxCtx = this.contexts.current();
+
+        // So that a structure can find it's copy data
+        compxCtx.metadataBuilder().customType(
+            arrayMetadata.customType
+        );
+    }
 ;
 
-struct_init_open_parenthesis:
-    '('
+structure_initialization:
+    '(' _actionAfterParenthesis_ structure_field_initialization_list ')'
+;
+
+_actionAfterParenthesis_:
+    /* empty */
     {
         /**
          * Copies the initialization of the custom type to overwrite the fields later if it's the first time
@@ -1155,7 +1187,6 @@ struct_init_open_parenthesis:
             LexemeInfo metadata = ctx.metadataBuilder().build();
             String typeName = metadata.customType;
             Initialization typeInitialValues = (Initialization) this.symbolTable.get(typeName).initialValue;
-
             ctx.metadataBuilder().initialValue(typeInitialValues.copy());
         }
     }
@@ -1279,28 +1310,6 @@ initialized_standard_function_block:
     standard_function_block_specification ASSIGN_OP structure_initialization
 ;
 
-identifier_list:
-    IDENTIFIER
-    {
-        /**
-         * Starts the list of declared identifiers for the current context.
-        **/
-
-        ParsingContext ctx = contexts.current();
-        ctx.declaredIdentifiers().clear();
-        ctx.declaredIdentifiers().add($1);
-    }
-    | identifier_list ',' IDENTIFIER
-    {
-        /**
-         * Appends another identifier to the declared identifiers list.
-        **/
-
-        ParsingContext ctx = contexts.current();
-        ctx.declaredIdentifiers().add($3);
-    }
-;
-
 standard_function_block_specification:
     // TODO: No information in standard for this function type
     STD_FB_IDENTIFIER
@@ -1367,31 +1376,7 @@ opt_data_type_declaration:
 ;
 
 data_type_declaration:
-    type_id_decl type_declaration_list END_TYPE
-    {
-        /**
-         * After reducing the whole block, the type block context needs to popped
-        **/
-
-        this.contexts.pop();
-    }
-;
-
-type_id_decl:
-    TYPE
-    {
-        /**
-         * Opens a new parsing context for the type block and marks it as a
-         * type declaration with no source.
-        **/
-
-        ParsingContext ctx = new ParsingContext(this.symbolTable);
-        ctx.metadataBuilder()
-            .use(Use.TYPE)
-            .source(Source.NONE);
-
-        this.contexts.add(ctx);
-    }
+    TYPE type_declaration_list END_TYPE
 ;
 
 type_declaration_list:
@@ -1406,11 +1391,7 @@ type_declaration:
          * The type declaration is published after being reduced and it's outerScopes unappended.
         **/
 
-        ParsingContext ctx = this.contexts.current();
-        ctx.outerScopes().popScope();
-        Publisher.publish(ctx);
-
-        ctx.declaredIdentifiers().clear();
+        this.contexts.publish();
     }
 ;
 
@@ -1422,9 +1403,10 @@ type_name_declaration:
          * scope.
         **/
 
-        ParsingContext ctx = this.contexts.current();
+        ParsingContext ctx = new ParsingContext(this.symbolTable);
+        Director.makeType(ctx.metadataBuilder());
         ctx.declaredIdentifiers().add($1);
-        ctx.outerScopes().addScope($1);
+        this.contexts.add(ctx);
     }
 ;
 
@@ -1448,15 +1430,22 @@ structure_specification:
 
         ParsingContext ctx = this.contexts.current();
 
-        List<String> structParameters = $2;
-        StructInitialization initialization = new StructInitialization();
+        // Builds the search scope to look up his fields
+        String structName = ctx.declaredIdentifiers().get(0);
+        ctx.searchScope().addScope(structName);
 
+        // Builds the structure parameters
+        List<String> structParameters = $2;
+
+        // Builds the structure initial value
+        StructInitialization initialization = new StructInitialization();
         for (String field : structParameters) {
-            String fieldName = ctx.outerScopes().getNameMangled(field);
+            String fieldName = ctx.searchScope().getNameMangled(field);
             LexemeInfo fieldMetadata = this.symbolTable.get(fieldName);
             initialization.setFieldInitialization(field, (Initialization) fieldMetadata.initialValue);
         }
 
+        // Modifies the context
         ctx.metadataBuilder()
             .type(Type.STRUCT)
             .subtype(Subtype.NONE)
@@ -1494,10 +1483,8 @@ structure_field_declaration:
          * Publishes the field to the symbol table.
         **/
 
-        ParsingContext ctx = this.contexts.current();
-        Publisher.publish(ctx);
+        this.contexts.publish();
 
-        this.contexts.pop();
         $$ = $1;
     }
 ;
@@ -1509,17 +1496,14 @@ field_name:
          * Builds the new field context
         **/
 
+        String newScope = this.contexts.current().declaredIdentifiers().get(0);
+        this.contexts.createSubcontext();
+
         ParsingContext ctx = this.contexts.current();
-        String outerScopes = ctx.outerScopes().getCurrentScope();
-
-        ctx = new ParsingContext(this.symbolTable);
         ctx.declaredIdentifiers().add($1);
-        ctx.metadataBuilder().use(Use.FIELD).source(Source.NONE);
+        ctx.metadataBuilder().use(Use.FIELD);
+        ctx.outerScopes().addScope(newScope);
 
-        // Copies the outer scope from before
-        ctx.outerScopes().addScope(outerScopes);
-
-        this.contexts.add(ctx);
         $$ = $1;
     }
 ;

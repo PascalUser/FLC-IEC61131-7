@@ -7,9 +7,20 @@ Compiler for the **IEC 61131-7 (Fuzzy Control Language, FCL)** standard. Impleme
 - Java 8 (build locked to `source`/`target` 1.8 in `pom.xml`)
 - Maven
 - JFlex 1.9.1 via `jflex-maven-plugin` (configured in `pom.xml`, no separate installation needed)
-- GNU Bison: used offline to regenerate `Parser.java` from `Parser.y` (skeleton `lalr1.java`); generated code is versioned, so Bison is not required for Maven builds.
+- GNU Bison: used offline to regenerate `Parser.java` from `Parser.y` (skeleton `lalr1.java`); generated code is versioned, so Bison is not required for Maven builds
+
+## Dependencies
+
+| Dependency | Version | Scope |
+|------------|---------|-------|
+| JUnit Jupiter (API + Engine) | 5.11.4 | test |
+| Mockito Inline + JUnit Jupiter | 4.11.0 | test |
+| JSpecify (nullability annotations) | 1.0.0 | compile |
+| SpotBugs Annotations | 4.8.3 | provided |
 
 ## Build and Run Tests
+
+Full build with quality gates:
 
 ```bash
 mvn clean verify
@@ -29,13 +40,22 @@ Integration tests (require explicit selection):
 mvn test -Dtest='*IT'
 ```
 
+## Quality Gate Plugins
+
+| Plugin | Version | Phase |
+|--------|---------|-------|
+| maven-checkstyle-plugin | 3.3.1 | verify |
+| spotbugs-maven-plugin | 4.8.3.1 | verify |
+| jacoco-maven-plugin | 0.8.12 | test |
+| sonar-maven-plugin | 4.0.0.4121 | manual |
+
 ## Architecture
 
 ```mermaid
 flowchart LR
     SRC[Source .fcl] --> LEX[Lexer\nJFlex]
     LEX -- tokens --> PAR[Parser\nBison LALR1]
-    PAR -- publishes --> ST[(SymbolTable)]
+    PAR -- publishes --> ST["(SymbolTable)"]
     PAR -- reports --> DIAG[DiagnosticsHandler]
 ```
 

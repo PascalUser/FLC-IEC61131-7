@@ -45,9 +45,7 @@ public final class ContextHandler {
      * @throws java.util.EmptyStackException if the stack is empty
      */
     public ParsingContext pop() {
-        if (contextStack.empty()) {
-            throw new RuntimeException("ContextHandler: cannot remove a context if there's no context");
-        }
+        assertNotEmptyContext("remove");
         return contextStack.pop();
     }
 
@@ -58,19 +56,25 @@ public final class ContextHandler {
      * @throws java.util.EmptyStackException if the stack is empty
      */
     public ParsingContext current() {
-        if (contextStack.empty()) {
-            throw new RuntimeException("ContextHandler: cannot get current context if there's no context");
-        }
+        assertNotEmptyContext("get");
         return contextStack.lastElement();
     }
 
-    public void createSubcontext() {
-        if (contextStack.empty()) {
-            throw new RuntimeException("ContextHandler: cannot create a subcontext without the actual context");
+    public void publish() {
+        assertNotEmptyContext("create publish with");
+
+        ParsingContext ctx = this.contextStack.pop();
+        LexemeInfo metadata = ctx.metadataBuilder().build();
+        for (String identifier : ctx.declaredIdentifiers()) {
+            String completeIdentifier = ctx.outerScopes().getNameMangled(identifier);
+            ctx.symbolTable().put(completeIdentifier, metadata);
         }
+    }
+
+    public void createSubcontext() {
+        assertNotEmptyContext("create subcontext with");
 
         ParsingContext ctx = this.contextStack.lastElement();
-
         LexemeInfo ctxMetadata = ctx.metadataBuilder().build();
         String ctxOuterScopes = ctx.outerScopes().getCurrentScope();
 
@@ -79,9 +83,19 @@ public final class ContextHandler {
         subctx.metadataBuilder().source(ctxMetadata.source);
         // Copies the context block usage
         subctx.metadataBuilder().use(ctxMetadata.use);
-        // Copies the context outerScope
-        subctx.outerScopes().addScope(ctxOuterScopes);
 
-        this.contextStack.add(ctx);
+        // Copies the context outerScope
+        if (!ctxOuterScopes.isEmpty()) {
+            subctx.outerScopes().addScope(ctxOuterScopes);
+        }
+        this.contextStack.add(subctx);
+    }
+
+    private void assertNotEmptyContext(String method) {
+        if (contextStack.empty()) {
+            throw new RuntimeException(
+                "ContextHandler: cannot " + method + " the top context without the actual context"
+            );
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 Módulo de análisis sintáctico generado con **GNU Bison 3.8.2** (LALR(1)) a partir de `src/main/java/parser/Parser.y`; implementa la gramática de **IEC 61131-7** y el **Anexo B de IEC 61131-3**.
 
-*Última actualización: 2026-10-07 (JaCoCo report, extract_stats.py run)*
+*Última actualización: 2026-10-08 (Documentación actualizada: estructura de paquetes corregida, Publisher eliminado, Factory/Facades reubicados)*
 
 ## Diagrama de paquetes
 
@@ -34,6 +34,9 @@ classDiagram
             +add()
             +pop()
             +current()
+            +publish()
+            +createSubcontext()
+            +cloneTop()
         }
         class ParsingContext {
             +declaredIdentifiers: List
@@ -41,62 +44,79 @@ classDiagram
             +outerScopes: NameMangler
             +searchScope: NameMangler
             +nestedFields: NameMangler
+            +index: int
+            +symbolTable(): SymbolTable
+            +incrementIndex(int)
         }
         class NameMangler {
             +prefix: StringBuilder
             +addScope()
             +popScope()
             +getNameMangled()
+            +getCurrentScope()
         }
     }
     namespace parser_utils {
-        class Publisher {
-            +publish(ParsingContext)
+        class NameMangler {
+            +prefix: StringBuilder
+            +addScope()
+            +popScope()
+            +getNameMangled()
+            +getCurrentScope()
         }
-        class Factory {
-            +createPrimitiveInitialization()
-        }
+    }
+    namespace parser_facades {
         class DimensionCalculator {
-            +calculate()
+            +calculate(ParsingContext) int
         }
         class UnderlyingScopeSearcher {
-            +search()
+            +search(SymbolTable, String) String
         }
     }
     namespace parser_initializations {
+        class Factory {
+            +createPrimitiveInitialization(SymbolTable, Subtype) Initialization
+        }
         class Initialization {
-            +selectVariable()
-            +getVariableValue()
-            +copy()
+            <<interface>>
+            +selectVariable(String) Initialization
+            +getVariableValue() String
+            +copy() Initialization
         }
         class VariableInitialization
-        class StringInitialization {
-            +symbolTable: SymbolTable
-            +subtype: Subtype
-        }
-        class BooleanInitialization
-        class RealInitialization
         class EnumeratedInitialization
         class MacroInitialization
         class SubrangeInitialization
         class StructInitialization
         class RepeatedInitialization
+        class AbstractPrimitiveInitialization {
+            <<abstract>>
+            +symbolTable: SymbolTable
+        }
+        class StringInitialization
+        class WStringInitialization
+        class BooleanInitialization
+        class RealInitialization
+        class IntInitialization
     }
     Initialization <|-- VariableInitialization
-    Initialization <|-- StringInitialization
-    Initialization <|-- BooleanInitialization
-    Initialization <|-- RealInitialization
+    Initialization <|-- AbstractPrimitiveInitialization
     Initialization <|-- EnumeratedInitialization
     Initialization <|-- MacroInitialization
     Initialization <|-- SubrangeInitialization
     Initialization <|-- StructInitialization
     Initialization <|-- RepeatedInitialization
+    AbstractPrimitiveInitialization <|-- StringInitialization
+    AbstractPrimitiveInitialization <|-- WStringInitialization
+    AbstractPrimitiveInitialization <|-- BooleanInitialization
+    AbstractPrimitiveInitialization <|-- RealInitialization
+    AbstractPrimitiveInitialization <|-- IntInitialization
     Parser --> ContextHandler : uses
     ContextHandler --> ParsingContext : manages
     ParsingContext --> NameMangler : uses
     ParsingContext --> LexemeInfoBuilder : uses
-    Publisher --> SymbolTable : publishes
-    Publisher --> ParsingContext : reads
+    ContextHandler --> SymbolTable : publishes
+    ContextHandler --> ParsingContext : reads
 ```
 
 Diagrama de clases: `doc/diagrams/parser_class_diagram.mmd` (generado por `scripts/generate_diagrams.py parser`).
@@ -106,11 +126,10 @@ Diagrama de clases: `doc/diagrams/parser_class_diagram.mmd` (generado por `scrip
 | Clase                                           | Responsabilidad                                                                                       | Patrón                  |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------------|-------------------------|
 | `parser.Parser`                                 | Analizador LALR(1) generado por Bison; punto de entrada `parse()`                                     | Generated Parser        |
-| `parser.internals.ContextHandler`               | Pila LIFO de contextos de análisis anidados; operaciones `add`, `pop`, `current`                       | Stack / Context Manager |
+| `parser.internals.ContextHandler`               | Pila LIFO de contextos de análisis anidados; operaciones `add`, `pop`, `current`, `publish`, `createSubcontext`, `cloneTop` | Stack / Context Manager |
 | `parser.internals.ParsingContext`               | Contexto mutable por ámbito: identificadores declarados, builder semántico, tres `NameMangler` e índice de array | Context Object   |
 | `parser.utils.NameMangler`                  | Prefijos jerárquicos con separador `#` (`FB#TYPE#FIELD`) para resolución de nombres                    | Name Mangling           |
-| `parser.facades.Publisher`                        | Publica los `LexemeInfo` construidos en `SymbolTable` a partir de `ParsingContext`                     | Publisher               |
-| `parser.initializations.Factory`                          | Crea inicializaciones por defecto de **todos** los tipos primitivos (BOOL, INT, REAL, LREAL, STRING, WSTRING y variantes) | Factory                 |
+| `parser.initializations.Factory`                | Crea inicializaciones por defecto de **todos** los tipos primitivos (BOOL, INT, REAL, LREAL, STRING, WSTRING y variantes) | Factory                 |
 | `parser.facades.DimensionCalculator`              | Calcula la cardinalidad total de arrays multidimensionales desde `inferiorLimits`/`superiorLimits`     | Calculator              |
 | `parser.facades.UnderlyingScopeSearcher`          | Sigue la cadena de tipos custom hasta el ámbito raíz que contiene campos/enums                          | Searcher                |
 | `parser.initializations.Initialization`         | Interfaz de valores iniciales polimórficos (`selectVariable`, `getVariableValue`, `copy`)              | Composite / Strategy    |
@@ -133,10 +152,11 @@ Fuentes por subpaquete:
 | `parser`                         | `src/main/java/parser/`                            |
 | `parser.internals`               | `src/main/java/parser/internals/`                  |
 | `parser.utils`                   | `src/main/java/parser/utils/`                      |
+| `parser.facades`                 | `src/main/java/parser/facades/`                    |
 | `parser.initializations`         | `src/main/java/parser/initializations/`            |
 | `parser.initializations.primitives` | `src/main/java/parser/initializations/primitives/` |
 
-`StringInitialization` y `WStringInitialization` (`src/main/java/parser/initializations/primitives/`) son adiciones recientes; las usa `string_specification` en `Parser.y` para variables y tipos STRING/WSTRING sin inicializador. `IntInitialization` cubre todos los enteros (SINT..ULINT).
+`StringInitialization`, `WStringInitialization`, `IntInitialization`, `BooleanInitialization`, `RealInitialization` (`src/main/java/parser/initializations/primitives/`) implementan `AbstractPrimitiveInitialization`. `Factory.createPrimitiveInitialization` en `parser.initializations` crea instancias de todas ellas. `IntInitialization` cubre todos los enteros (SINT..ULINT).
 
 ## Gramática soportada — resumen
 
@@ -231,7 +251,7 @@ var_id_decl → VAR { source=INTERNAL, use=VARIABLE }
 io_var_decl → VAR_INPUT { source=IN, use=VARIABLE }
            | VAR_OUTPUT { source=OUT, use=VARIABLE }
 
-var_init_decl → identifier_list ':' var_spec_init { Publisher.publish(ctx) }
+var_init_decl → identifier_list ':' var_spec_init { contexts.publish() }
              | identifier_list ':' standard_function_block_spec_init
 var_spec_init → custom_spec_init | boolean_spec_init | simple_spec_init
              | subrange_spec_init | enumerated_spec_init | array_spec_init | string_spec_init
@@ -302,7 +322,7 @@ Extracto de `src/main/java/parser/Parser.y`:
 | `io_var_decl` (VAR_INPUT)          | `ctx.metadataBuilder().source(Source.IN).use(Use.VARIABLE)`                                                          |
 | `io_var_decl` (VAR_OUTPUT)         | `ctx.metadataBuilder().source(Source.OUT).use(Use.VARIABLE)`                                                         |
 | `var_id_decl` (VAR)                | `ctx.metadataBuilder().source(Source.INTERNAL).use(Use.VARIABLE)`                                                    |
-| `var_init_decl`                    | `Publisher.publish(ctx); ctx.declaredIdentifiers().clear()`                                                          |
+| `var_init_decl`                    | `contexts.publish(); ctx.declaredIdentifiers().clear()`                                                              |
 | `custom_type_name`                 | Busca `LexemeInfo`, fija `type=SIMPLE, subtype=CUSTOM` y añade el ámbito subyacente a `searchScope`                   |
 | `custom_specification`             | Fija `type=SIMPLE, subtype=CUSTOM, customType=$1, initialValue` tomado del `SymbolTable`                              |
 | `simple_specification`             | `type=SIMPLE, subtype=$1, initialValue=Factory.createPrimitiveInitialization(...)`                                   |
@@ -313,16 +333,17 @@ Extracto de `src/main/java/parser/Parser.y`:
 | `structure_field_declaration`      | Nuevo contexto por campo, `use=FIELD, source=NONE`, publica y hace `pop` al reducir                                  |
 | `structure_specification`          | `type=STRUCT, subtype=NONE, parameters=campos`; construye `StructInitialization` con el `initialValue` de cada campo  |
 | `type_string_specification`        | Fija `subtype=STRING` o `subtype=WSTRING` en el builder                                                              |
-| `string_specification`             | `type=SIMPLE`, `initialValue=new StringInitialization(symbolTable, subtype)`                                         |
+| `string_specification`             | `type=SIMPLE`, `initialValue=Factory.createPrimitiveInitialization(symbolTable, subtype)`                            |
 | `string_specification` con `[n]`   | Igual que la anterior y además `superiorLimits=[n]` con la longitud declarada                                        |
 | `initialized_string`               | `initialValue=new VariableInitialization($3)` a partir de `string_constant`                                          |
-| `type_declaration`                 | `outerScopes.popScope(); Publisher.publish(ctx); declaredIdentifiers().clear()`                                      |
+| `type_declaration`                 | `outerScopes.popScope(); contexts.publish(); declaredIdentifiers().clear()`                                          |
 
 Notas:
 
-* `Factory.createPrimitiveInitialization` soporta **todos** los subtipos primitivos: BOOL, STRING, WSTRING, REAL/LREAL, y todos los enteros (SINT..ULINT) vía `IntInitialization`. Ya no lanza `IllegalArgumentException` para tipos no soportados.
+* `Factory.createPrimitiveInitialization` (en `parser.initializations`) soporta **todos** los subtipos primitivos: BOOL, STRING, WSTRING, REAL/LREAL, y todos los enteros (SINT..ULINT) vía `IntInitialization`. Lanza `IllegalArgumentException` para subtipos no soportados.
 * BOOL usa `BooleanInitialization` directamente en `boolean_specification` (no pasa por `Factory`).
 * STRING/WSTRING usan `StringInitialization`/`WStringInitialization` directamente en `string_specification` (no pasan por `Factory` en la regla, aunque `Factory` ahora también los crea).
+* La publicación en `SymbolTable` la realiza `ContextHandler.publish()`, no una clase `Publisher` separada.
 
 ## Inicializaciones — jerarquía y uso
 
@@ -379,6 +400,9 @@ classDiagram
         +addInterval(int, int, Initialization)
         +getRepetitionsList() List
     }
+    class Factory {
+        +createPrimitiveInitialization(SymbolTable, Subtype) Initialization
+    }
     Initialization <|-- VariableInitialization
     Initialization <|-- AbstractPrimitiveInitialization
     AbstractPrimitiveInitialization <|-- StringInitialization
@@ -391,6 +415,7 @@ classDiagram
     Initialization <|-- SubrangeInitialization
     Initialization <|-- StructInitialization
     Initialization <|-- RepeatedInitialization
+    Factory ..> Initialization : creates
 ```
 
 Comportamiento por defecto de `getVariableValue`:
@@ -436,7 +461,7 @@ sequenceDiagram
     Analyzer->>Diag: add(Diagnostic) if needed
     Analyzer-->>Lexer: Result(token, lexeme)
     Lexer-->>Parser: token + yylval
-    Parser->>ST: Publisher.publish(ctx)
+    Parser->>ST: ContextHandler.publish(ctx)
 ```
 
 Diagrama de secuencia: `doc/diagrams/lexer_parser_sequence.mmd`.
@@ -450,7 +475,6 @@ sequenceDiagram
     participant PC as ParsingContext
     participant NM as NameMangler
     participant Builder as LexemeInfoBuilder
-    participant Pub as Publisher
     participant ST as SymbolTable
 
     Parser->>PC: new ParsingContext(symbolTable)
@@ -464,11 +488,11 @@ sequenceDiagram
         Parser->>PC: declaredIdentifiers().add(identifier)
     end
 
-    Parser->>Pub: publish(ctx)
-    Pub->>Builder: build() LexemeInfo
+    Parser->>CH: publish()
+    CH->>Builder: build() LexemeInfo
     loop For each declared identifier
-        Pub->>NM: outerScopes().getNameMangled(identifier)
-        Pub->>ST: put(completeIdentifier, LexemeInfo)
+        CH->>NM: outerScopes().getNameMangled(identifier)
+        CH->>ST: put(completeIdentifier, LexemeInfo)
     end
 
     Parser->>CH: pop()
@@ -631,12 +655,14 @@ src/main/java/parser/
 │   └── NameMangler.java
 ├── utils/
 │   ├── package-info.java
-│   ├── Publisher.java
-│   ├── Factory.java
+│   └── NameMangler.java
+├── facades/
+│   ├── package-info.java
 │   ├── DimensionCalculator.java
 │   └── UnderlyingScopeSearcher.java
 └── initializations/
     ├── package-info.java
+    ├── Factory.java
     ├── Initialization.java
     ├── VariableInitialization.java
     ├── EnumeratedInitialization.java
@@ -686,7 +712,7 @@ src/test/java/
 
 | Capítulo | Enfoque                                                                                              |
 |----------|------------------------------------------------------------------------------------------------------|
-| 06       | Análisis sintáctico — gramática, Publisher, jerarquía de inicializaciones, almacenamiento            |
+| 06       | Análisis sintáctico — gramática, ContextHandler, jerarquía de inicializaciones, almacenamiento       |
 | 07       | Mantenibilidad — métricas (CYCLO, LOC, cobertura) y acoplamiento `parser → utils` (efferent=1)        |
 
 ## Regeneración del parser
