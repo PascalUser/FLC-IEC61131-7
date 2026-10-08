@@ -67,6 +67,7 @@
     elementary_type_name
     non_generic_type_name
     type_string_specification
+    number_prefix
 
 %type <String>
     constant
