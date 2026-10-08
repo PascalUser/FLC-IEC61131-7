@@ -4,7 +4,6 @@ import utils.ParserTestSupport;
 
 import org.junit.jupiter.api.Test;
 import parser.initializations.VariableInitialization;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -13,9 +12,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Collections;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for SUBRANGE variable declarations.
@@ -34,9 +31,7 @@ public class SubrangeVariableIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#WORK_DAY", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#WORK_DAY", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
                 .customType("DAY")
@@ -44,7 +39,6 @@ public class SubrangeVariableIT extends ParserTestSupport {
                 .source(Source.INTERNAL)
                 .initialValue(new VariableInitialization("21"))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -56,9 +50,7 @@ public class SubrangeVariableIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#PERCENTAGE", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#PERCENTAGE", new LexemeInfoBuilder()
                 .type(Type.SUBRANGE)
                 .subtype(Subtype.INT)
                 .use(Use.VARIABLE)
@@ -67,6 +59,5 @@ public class SubrangeVariableIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("100"))
                 .initialValue(new VariableInitialization("50"))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

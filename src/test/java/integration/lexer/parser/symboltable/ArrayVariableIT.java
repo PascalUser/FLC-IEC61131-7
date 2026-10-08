@@ -5,7 +5,6 @@ import utils.ParserTestSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import parser.initializations.*;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -14,9 +13,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for ARRAY variable declarations with repeated initializers.
@@ -53,8 +50,6 @@ public class ArrayVariableIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK\n";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
         Initialization classificationInit = new EnumeratedInitialization(Arrays.asList("WHITE", "GRAY", "BLACK"));
         Initialization gammaInit = new VariableInitialization(".5");
 
@@ -90,7 +85,7 @@ public class ArrayVariableIT extends ParserTestSupport {
                 )
         );
 
-        diffs = LexemeInfoComparator.compare(st, "MAIN#PIXELS", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#PIXELS", new LexemeInfoBuilder()
                 .type(Type.ARRAY)
                 .subtype(Subtype.CUSTOM)
                 .customType("COLOR_TYPE")
@@ -100,11 +95,10 @@ public class ArrayVariableIT extends ParserTestSupport {
                 .superiorLimits(Arrays.asList("1", "10", "4"))
                 .initialValue(expectedArrayInitialValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     /**
-     * Helper to create a StructInitialization surrogate for LexemeInfoComparator deep reflection.
+     * Helper to create a StructInitialization surrogate.
      */
     private static Initialization createStructInit(Initialization v1, Initialization v2) {
         StructInitialization structInit = new StructInitialization();

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import parser.initializations.primitives.RealInitialization;
 import parser.initializations.StructInitialization;
 import parser.initializations.VariableInitialization;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -15,9 +14,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for STRUCT variable declarations with initial values.
@@ -44,9 +41,7 @@ public class StructVariableIT extends ParserTestSupport {
         colorTypeValue.setFieldInitialization("BROWN", new RealInitialization(st));
         colorTypeValue.setFieldInitialization("LIGHT", new RealInitialization(st));
 
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#COLOR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#COLOR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
                 .customType("COLOR_TYPE")
@@ -54,7 +49,6 @@ public class StructVariableIT extends ParserTestSupport {
                 .source(Source.IN)
                 .initialValue(colorTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -81,9 +75,7 @@ public class StructVariableIT extends ParserTestSupport {
         colorValue.setFieldInitialization("BROWN", new RealInitialization(st));
         colorValue.setFieldInitialization("LIGHT", new VariableInitialization("1.0"));
 
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "COLOR_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
                 .subtype(Subtype.NONE)
                 .use(Use.TYPE)
@@ -91,27 +83,24 @@ public class StructVariableIT extends ParserTestSupport {
                 .parameters(Arrays.asList("BROWN", "LIGHT"))
                 .initialValue(colorTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#BROWN", new LexemeInfoBuilder()
+        assertSymbol(st, "COLOR_TYPE#BROWN", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .initialValue(new RealInitialization(st))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE#LIGHT", new LexemeInfoBuilder()
+        assertSymbol(st, "COLOR_TYPE#LIGHT", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .initialValue(new RealInitialization(st))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "MAIN#COLOR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#COLOR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
                 .customType("COLOR_TYPE")
@@ -119,6 +108,5 @@ public class StructVariableIT extends ParserTestSupport {
                 .source(Source.IN)
                 .initialValue(colorValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

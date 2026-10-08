@@ -5,6 +5,7 @@ import parser.Parser;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,5 +36,18 @@ public abstract class ParserTestSupport {
 
     protected SymbolTable parse(String sourceCode) throws Exception {
         return this.parse(new StringReader(sourceCode));
+    }
+
+    /**
+     * Asserts that {@code key} is registered in {@code symbolTable} with exactly
+     * the {@code expected} metadata, failing with the list of field-level diffs.
+     *
+     * @param symbolTable the table produced by {@link #parse(String)}
+     * @param key         the (mangled) symbol name, e.g. {@code "MAIN#VAR1"}
+     * @param expected    the metadata the symbol must have
+     */
+    protected static void assertSymbol(SymbolTable symbolTable, String key, LexemeInfo expected) {
+        List<String> diffs = LexemeInfoComparator.compare(symbolTable, key, expected);
+        assertTrue(diffs.isEmpty(), key + ": " + diffs);
     }
 }

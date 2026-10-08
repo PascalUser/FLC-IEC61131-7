@@ -5,7 +5,6 @@ import utils.ParserTestSupport;
 
 import parser.initializations.EnumeratedInitialization;
 import parser.initializations.MacroInitialization;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -14,9 +13,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for ENUMERATED type declarations: custom enum type resolution,
@@ -37,9 +34,7 @@ public class EnumerateTypeDeclarationIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK\n";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "METHODTYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "METHODTYPE", new LexemeInfoBuilder()
                 .type(Type.ENUMERATE)
                 .subtype(Subtype.INT)
                 .use(Use.TYPE)
@@ -48,9 +43,8 @@ public class EnumerateTypeDeclarationIT extends ParserTestSupport {
                 .initialValue(new EnumeratedInitialization(Arrays.asList("CENTROID", "AVERAGE")))
                 .build()
         );
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "METHODTYPE#CENTROID", new LexemeInfoBuilder()
+        assertSymbol(st, "METHODTYPE#CENTROID", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
@@ -58,9 +52,8 @@ public class EnumerateTypeDeclarationIT extends ParserTestSupport {
                 .initialValue(new MacroInitialization(st, "0"))
                 .build()
         );
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "METHODTYPE#AVERAGE", new LexemeInfoBuilder()
+        assertSymbol(st, "METHODTYPE#AVERAGE", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
@@ -68,6 +61,5 @@ public class EnumerateTypeDeclarationIT extends ParserTestSupport {
                 .initialValue(new MacroInitialization(st, "1"))
                 .build()
         );
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

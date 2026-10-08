@@ -7,7 +7,6 @@ import parser.initializations.primitives.BooleanInitialization;
 import parser.initializations.primitives.RealInitialization;
 import parser.initializations.StructInitialization;
 import parser.initializations.VariableInitialization;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -15,9 +14,7 @@ import utils.enums.Subtype;
 import utils.enums.Type;
 import utils.enums.Use;
 
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for nested STRUCT variable declarations with initial values.
@@ -57,9 +54,7 @@ public class NestedStructVariableIT extends ParserTestSupport {
         colorTypeValue.setFieldInitialization("RGB#GAMMA_G", new RealInitialization(st));
         colorTypeValue.setFieldInitialization("RGB#GAMMA_B", new RealInitialization(st));
 
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#COLOR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#COLOR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
                 .customType("COLOR_TYPE")
@@ -67,7 +62,6 @@ public class NestedStructVariableIT extends ParserTestSupport {
                 .source(Source.IN)
                 .initialValue(colorTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -110,9 +104,7 @@ public class NestedStructVariableIT extends ParserTestSupport {
         mainColorValue.setFieldInitialization("RGB#GAMMA_G", new VariableInitialization("3.0"));
         mainColorValue.setFieldInitialization("RGB#GAMMA_B", new RealInitialization(st));
 
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#COLOR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#COLOR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
                 .customType("COLOR_TYPE")
@@ -120,6 +112,5 @@ public class NestedStructVariableIT extends ParserTestSupport {
                 .source(Source.IN)
                 .initialValue(mainColorValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

@@ -7,7 +7,6 @@ import parser.initializations.primitives.BooleanInitialization;
 import parser.initializations.primitives.RealInitialization;
 import parser.initializations.StructInitialization;
 import parser.initializations.VariableInitialization;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -16,9 +15,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for nested STRUCT type declarations.
@@ -55,9 +52,7 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
         colorTypeValue.setFieldInitialization("RGB#GAMMA_G", new RealInitialization(st));
         colorTypeValue.setFieldInitialization("RGB#GAMMA_B", new RealInitialization(st));
 
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "RGB_TYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "RGB_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
                 .subtype(Subtype.NONE)
                 .use(Use.TYPE)
@@ -65,36 +60,32 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .parameters(Arrays.asList("GAMMA_R", "GAMMA_G", "GAMMA_B"))
                 .initialValue(rgbTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "RGB_TYPE#GAMMA_R", new LexemeInfoBuilder()
+        assertSymbol(st, "RGB_TYPE#GAMMA_R", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .initialValue(new RealInitialization(st))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "RGB_TYPE#GAMMA_G", new LexemeInfoBuilder()
+        assertSymbol(st, "RGB_TYPE#GAMMA_G", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .initialValue(new RealInitialization(st))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "RGB_TYPE#GAMMA_B", new LexemeInfoBuilder()
+        assertSymbol(st, "RGB_TYPE#GAMMA_B", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
                 .initialValue(new RealInitialization(st))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "COLOR_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
                 .subtype(Subtype.NONE)
                 .use(Use.TYPE)
@@ -102,7 +93,6 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .parameters(Arrays.asList("WHITE", "RGB"))
                 .initialValue(colorTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -138,9 +128,7 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
         colorTypeValue.setFieldInitialization("RGB#GAMMA_G", new VariableInitialization("3.0"));
         colorTypeValue.setFieldInitialization("RGB#GAMMA_B", new RealInitialization(st));
 
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "RGB_TYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "RGB_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
                 .subtype(Subtype.NONE)
                 .use(Use.TYPE)
@@ -148,9 +136,8 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .parameters(Arrays.asList("GAMMA_R", "GAMMA_G", "GAMMA_B"))
                 .initialValue(rgbTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "COLOR_TYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "COLOR_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
                 .subtype(Subtype.NONE)
                 .use(Use.TYPE)
@@ -158,6 +145,5 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .parameters(Arrays.asList("WHITE", "RGB"))
                 .initialValue(colorTypeValue)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

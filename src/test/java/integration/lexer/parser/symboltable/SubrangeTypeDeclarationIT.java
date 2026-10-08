@@ -5,7 +5,6 @@ import utils.ParserTestSupport;
 import org.junit.jupiter.api.Test;
 import parser.initializations.SubrangeInitialization;
 import parser.initializations.VariableInitialization;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -14,9 +13,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Collections;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for SUBRANGE type declarations: custom subrange type resolution,
@@ -41,9 +38,7 @@ public class SubrangeTypeDeclarationIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "DAY", new LexemeInfoBuilder()
+        assertSymbol(st, "DAY", new LexemeInfoBuilder()
                 .type(Type.SUBRANGE)
                 .subtype(Subtype.INT)
                 .use(Use.TYPE)
@@ -52,9 +47,8 @@ public class SubrangeTypeDeclarationIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("31"))
                 .initialValue(new SubrangeInitialization("0", "31"))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
 
-        diffs = LexemeInfoComparator.compare(st, "MAIN#WORK_DAY", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#WORK_DAY", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
                 .customType("DAY")
@@ -62,6 +56,5 @@ public class SubrangeTypeDeclarationIT extends ParserTestSupport {
                 .source(Source.INTERNAL)
                 .initialValue(new VariableInitialization("21"))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

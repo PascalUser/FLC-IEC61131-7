@@ -7,7 +7,6 @@ import utils.ParserTestSupport;
 import parser.initializations.VariableInitialization;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import utils.LexemeInfoComparator;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -20,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for how the parser resolves and initializes
@@ -72,88 +70,41 @@ public class PrimitiveTypeIT extends ParserTestSupport {
         }
     }
 
-    /**
-     * Helper class to strongly type the variable block configurations,
-     * avoiding Object arrays and unchecked casts.
-     */
-    private static class BlockConfig {
-        final String block;
-        final Source source;
+    private static final String[] BLOCKS = {"VAR", "VAR_INPUT", "VAR_OUTPUT"};
+    private static final Source[] BLOCK_SOURCES = {Source.INTERNAL, Source.IN, Source.OUT};
 
-        BlockConfig(String block, Source source) {
-            this.block = block;
-            this.source = source;
-        }
+    private static PrimitiveTestData[] typesFor(String block, Source source) {
+        return new PrimitiveTestData[] {
+                // Boolean type
+                new PrimitiveTestData(block, source, "BOOL", Subtype.BOOL, "TRUE", "TRUE"),
+                // Real types
+                new PrimitiveTestData(block, source, "REAL", Subtype.REAL, "0.3e10", ".3e10"),
+                new PrimitiveTestData(block, source, "LREAL", Subtype.LREAL, "0.3e10", ".3e10"),
+                // Int types
+                new PrimitiveTestData(block, source, "SINT", Subtype.SINT, "42", "42"),
+                new PrimitiveTestData(block, source, "INT", Subtype.INT, "42", "42"),
+                new PrimitiveTestData(block, source, "LINT", Subtype.LINT, "42", "42"),
+                new PrimitiveTestData(block, source, "DINT", Subtype.DINT, "42", "42"),
+                // UInt types
+                new PrimitiveTestData(block, source, "USINT", Subtype.USINT, "42", "42"),
+                new PrimitiveTestData(block, source, "UINT", Subtype.UINT, "42", "42"),
+                new PrimitiveTestData(block, source, "ULINT", Subtype.ULINT, "42", "42"),
+                new PrimitiveTestData(block, source, "UDINT", Subtype.UDINT, "42", "42"),
+                // String types
+                new PrimitiveTestData(block, source, "STRING", Subtype.STRING, "'string'", "'string'"),
+                new PrimitiveTestData(block, source, "WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"")
+        };
     }
 
     /**
-     * Helper class to strongly type the data type configurations,
-     * allowing the Function lambda to be stored safely without type erasure warnings.
-     */
-    private static class TypeConfig {
-        final String typeName;
-        final Subtype subtype;
-        final String rawInitValue;
-        final String parsedInitValue;
-
-        TypeConfig(String typeName, Subtype subtype, String rawInitValue, String parsedInitValue) {
-            this.typeName = typeName;
-            this.subtype = subtype;
-            this.rawInitValue = rawInitValue;
-            this.parsedInitValue = parsedInitValue;
-        }
-    }
-
-    /**
-     * Generates a Cartesian product of variable block declarations and primitive types
-     * to test all combinations systematically.
+     * Cartesian product of variable blocks and primitive types.
      *
-     * @return A stream of strongly-typed PrimitiveTestData objects.
+     * @return one {@link PrimitiveTestData} per (block, type) combination.
      */
     static Stream<PrimitiveTestData> providePrimitiveCombinations() {
         List<PrimitiveTestData> arguments = new ArrayList<>();
-
-        // 1. Define the variable block declaration targets
-        List<BlockConfig> blocks = Arrays.asList(
-                new BlockConfig("VAR", Source.INTERNAL),
-                new BlockConfig("VAR_INPUT", Source.IN),
-                new BlockConfig("VAR_OUTPUT", Source.OUT)
-        );
-
-        // 2. Define the primitive types to test
-        List<TypeConfig> types = Arrays.asList(
-                // Boolean type
-                new TypeConfig("BOOL", Subtype.BOOL, "TRUE", "TRUE"),
-                // Real types
-                new TypeConfig("REAL" ,  Subtype.REAL, "0.3e10", ".3e10"),
-                new TypeConfig("LREAL", Subtype.LREAL, "0.3e10", ".3e10"),
-                // Int types
-                new TypeConfig("SINT" , Subtype.SINT, "42", "42"),
-                new TypeConfig("INT"  , Subtype.INT , "42", "42"),
-                new TypeConfig("LINT" , Subtype.LINT, "42", "42"),
-                new TypeConfig("DINT" , Subtype.DINT, "42", "42"),
-                // UInt types
-                new TypeConfig("USINT", Subtype.USINT, "42", "42"),
-                new TypeConfig("UINT" , Subtype.UINT , "42", "42"),
-                new TypeConfig("ULINT", Subtype.ULINT, "42", "42"),
-                new TypeConfig("UDINT", Subtype.UDINT, "42", "42"),
-                // String types
-                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'"),
-                new TypeConfig("STRING", Subtype.STRING, "'string'", "'string'"),
-                // WString types
-                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\""),
-                new TypeConfig("WSTRING", Subtype.WSTRING, "\"wstring\"", "\"wstring\"")
-        );
-
-        // 3. Construct the Cartesian product
-        for (BlockConfig b : blocks) {
-            for (TypeConfig t : types) {
-                arguments.add(new PrimitiveTestData(
-                        b.block, b.source,
-                        t.typeName, t.subtype,
-                        t.rawInitValue, t.parsedInitValue
-                ));
-            }
+        for (int i = 0; i < BLOCKS.length; i++) {
+            arguments.addAll(Arrays.asList(typesFor(BLOCKS[i], BLOCK_SOURCES[i])));
         }
         return arguments.stream();
     }
@@ -176,20 +127,17 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
         // Apply the lambda factory to generate the default initialization linked to the symbol table
         Object defaultInitialization = Factory.createPrimitiveInitialization(st, data.subtype);
 
         // Assert symbol 'var1' without explicit initialization is registered properly
-        diffs = LexemeInfoComparator.compare(st, "MAIN#VAR1", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#VAR1", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(data.subtype)
                 .use(Use.VARIABLE)
                 .source(data.source)
                 .initialValue(defaultInitialization)
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     /**
@@ -210,16 +158,13 @@ public class PrimitiveTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
         // Assert symbol 'var' with explicit inline initialization is registered properly
-        diffs = LexemeInfoComparator.compare(st, "MAIN#VAR1", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#VAR1", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(data.subtype)
                 .use(Use.VARIABLE)
                 .source(data.source)
                 .initialValue(new VariableInitialization(data.parsedInitValue))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }

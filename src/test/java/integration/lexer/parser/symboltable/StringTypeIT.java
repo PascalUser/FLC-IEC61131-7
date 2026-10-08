@@ -5,7 +5,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import parser.initializations.VariableInitialization;
 import parser.initializations.Factory;
-import utils.LexemeInfoComparator;
 import utils.ParserTestSupport;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
@@ -15,9 +14,7 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.Collections;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringTypeIT extends ParserTestSupport {
 
@@ -31,9 +28,7 @@ public class StringTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "STRINGTYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "STRINGTYPE", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(subtype)
                 .use(Use.TYPE)
@@ -42,7 +37,6 @@ public class StringTypeIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(Factory.createPrimitiveInitialization(st, subtype))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -54,9 +48,7 @@ public class StringTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "STRINGTYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "STRINGTYPE", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.STRING)
                 .use(Use.TYPE)
@@ -65,7 +57,6 @@ public class StringTypeIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("'STRING'"))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -77,9 +68,7 @@ public class StringTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "STRINGTYPE", new LexemeInfoBuilder()
+        assertSymbol(st, "STRINGTYPE", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.WSTRING)
                 .use(Use.TYPE)
@@ -88,7 +77,6 @@ public class StringTypeIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("\"WSTRING\""))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @ParameterizedTest
@@ -101,9 +89,7 @@ public class StringTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#STRVAR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#STRVAR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(subtype)
                 .use(Use.VARIABLE)
@@ -112,7 +98,6 @@ public class StringTypeIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(Factory.createPrimitiveInitialization(st, subtype))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -124,9 +109,7 @@ public class StringTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#STRVAR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#STRVAR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.STRING)
                 .use(Use.VARIABLE)
@@ -135,7 +118,6 @@ public class StringTypeIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("'STRING'"))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 
     @Test
@@ -147,9 +129,7 @@ public class StringTypeIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK";
 
         SymbolTable st = parse(sourceCode);
-        List<String> diffs;
-
-        diffs = LexemeInfoComparator.compare(st, "MAIN#STRVAR", new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#STRVAR", new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.WSTRING)
                 .use(Use.VARIABLE)
@@ -158,6 +138,5 @@ public class StringTypeIT extends ParserTestSupport {
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("\"WSTRING\""))
                 .build());
-        assertTrue(diffs.isEmpty(), diffs.toString());
     }
 }
