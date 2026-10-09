@@ -18,7 +18,7 @@ Se ha diseñado, implementado y validado un **compilador completo para FCL (IEC 
 | **Chain of Responsibility para transformadores léxicos**  | 11 transformadores atómicos componibles en 11 cadenas por categoría léxica                  |
 | **Template Method + Strategy en analizadores semánticos** | 14 categorías léxicas con parseo, fallback y diagnóstico por familia                        |
 | **Repository pattern (SymbolTable) + Publisher**          | Publicación diferida, tabla plana con name mangling (#), 3 instancias NameMangler por scope |
-| **Jerarquía Initialization (Composite/Strategy)**         | 8 tipos, StructInitialization recursivo, RepeatedInitialization con compactación            |
+| **Jerarquía Initialization (Composite/Strategy)**         | 8 tipos, parser.initializations.nodes.StructInitialization recursivo, RepeatedInitialization con compactación            |
 | **Jerarquía Diagnostic (Error/Warning/SyntaxError)**      | 6 errores fatales, 7 warnings, 1 SyntaxError; orden de inserción, inmutabilidad             |
 
 ### Métricas finales

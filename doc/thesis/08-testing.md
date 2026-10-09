@@ -61,7 +61,7 @@ Los tests de integración parsean un fragmento FCL completo y verifican, lexema 
 | Test              | Qué verifica (lexema a lexema)                                                                                                                                        |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `EnumerateTypeIT` | Declaración `TYPE E = (A, B, C) END_TYPE`; variables `VAR x : E := A END_VAR`; verifica `type=ENUMERATE`, `subtype=INT`, `parameters=[A,B,C]`, cada valor `use=MACRO` |
-| `StructTypeIT`    | `STRUCT a: INT; b: REAL END_STRUCT`; inicialización `STRUCT(a:=10, b:=20.5)`; verifica `StructInitialization` con mapa `a→10`, `b→20.5`                               |
+| `StructTypeIT`    | `STRUCT a: INT; b: REAL END_STRUCT`; inicialización `STRUCT(a:=10, b:=20.5)`; verifica `parser.initializations.nodes.StructInitialization` con mapa `a→10`, `b→20.5`                               |
 | `SubrangeTypeIT`  | `INT (0..100)`; inicialización `:= 50`; verifica límites, `SubrangeInitialization` con valor por defecto = límite inferior                                            |
 | `ArrayTypeIT`     | `ARRAY [0..9] OF INT`; inicialización `5(0), 3(100)`; verifica `RepeatedInitialization` con intervalos `[0..4]→0`, `[5..7]→100`, compactación                         |
 | `PrimitiveTypeIT` | Todos los tipos elementales (BOOL, SINT..ULINT, REAL/LREAL, TIME, DATE, STRING/WSTRING); verifica subtipo, valor por defecto, fallback                                |

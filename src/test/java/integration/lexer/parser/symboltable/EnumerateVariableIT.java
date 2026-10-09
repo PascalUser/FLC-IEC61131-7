@@ -4,8 +4,8 @@ import utils.ParserTestSupport;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import parser.initializations.MacroInitialization;
-import parser.initializations.VariableInitialization;
+import parser.initializations.leafs.MacroInitialization;
+import parser.initializations.leafs.VariableInitialization;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -84,7 +84,7 @@ public class EnumerateVariableIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "0"))
+                .initialValue(new MacroInitialization(st, 0))
                 .build()
         );
 
@@ -93,7 +93,7 @@ public class EnumerateVariableIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "1"))
+                .initialValue(new MacroInitialization(st, 1))
                 .build()
         );
     }

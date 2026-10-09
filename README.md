@@ -5,7 +5,7 @@ Compiler for the **IEC 61131-7 (Fuzzy Control Language, FCL)** standard. Impleme
 ## Requirements
 
 - Java 8 (build locked to `source`/`target` 1.8 in `pom.xml`)
-- Maven
+- Maven 3.6+
 - JFlex 1.9.1 via `jflex-maven-plugin` (configured in `pom.xml`, no separate installation needed)
 - GNU Bison: used offline to regenerate `Parser.java` from `Parser.y` (skeleton `lalr1.java`); generated code is versioned, so Bison is not required for Maven builds
 
@@ -55,7 +55,7 @@ mvn test -Dtest='*IT'
 flowchart LR
     SRC[Source .fcl] --> LEX[Lexer\nJFlex]
     LEX -- tokens --> PAR[Parser\nBison LALR1]
-    PAR -- publishes --> ST["(SymbolTable)"]
+    PAR -- publishes --> ST[(SymbolTable)]
     PAR -- reports --> DIAG[DiagnosticsHandler]
 ```
 
@@ -83,10 +83,10 @@ Full technical documentation: [`doc/modules/lexer.md`](doc/modules/lexer.md), [`
 | Folder | Contents |
 |--------|----------|
 | `src/main/java/lexer/` | `Lexer.flex`/`Lexer.java` (generated), `internals/` (`LexicalAnalyzers`, `LexicalPreprocessors`), `transformers/` (Chain of Responsibility for lexical normalization), `semantics/` (semantic analyzers per literal family: numbers, dates, strings, identifiers, intervals) |
-| `src/main/java/parser/` | `Parser.y`/`Parser.java` (generated; `Luca.y` is a legacy grammar not part of the build), `internals/` (parse context: `ContextHandler`, `ParsingContext`, `NameMangler`), `initializations/` (polymorphic initialization hierarchy: `BooleanInitialization`, `RealInitialization`, `StructInitialization`, `RepeatedInitialization`, etc.), `utils/` (`Publisher`, `Factory`, `UnderlyingScopeSearcher`, `DimensionCalculator`) |
+| `src/main/java/parser/` | `Parser.y`/`Parser.java` (generated; `Luca.y` is a legacy grammar not part of the build), `internals/` (parse context: `ContextHandler`, `ParsingContext`, `NameMangler`), `initializations/` (polymorphic initialization hierarchy: `VariableInitialization`, `EnumeratedInitialization`, `parser.initializations.nodes.StructInitialization`, `RepeatedInitialization`, etc.), `utils/` (`NameMangler`), `facades/` (`DimensionCalculator`, `UnderlyingScopeSearcher`), `Factory` |
 | `src/main/java/utils/` | `SymbolTable` (Repository pattern), `LexemeInfo` (immutable DTO), `DiagnosticsHandler`, `builders/` (`LexemeInfoBuilder`, `Director`, `LexemeInfoSchema`), `enums/` (`Type`, `Subtype`, `Use`, `Source`), `diagnostics/` (`Error`/`Warning`/`SyntaxError` hierarchy), `LucaInfo` (@deprecated) |
 | `src/main/java/Main.java` | Compiler entry point |
-| `src/test/java/` | Unit tests by component (`unit/lexer/`, `unit/parser/`, `unit/utils/`), lexer-parser integration tests (`integration/lexer/`), test doubles (`doubles/`), support classes (`utils/`) |
+| `src/test/java/` | Unit tests by component (`unit/lexer/`, `unit/parser/`, `unit/utils/`), lexer-parser integration tests (`integration/lexer/parser/symboltable/`), test doubles (`doubles/`), support classes (`utils/`) |
 | `src/test/resources/examples/` | Example FCL programs used by `ParserTest` and integration tests |
 | `doc/` | Modular technical docs (`doc/modules/`), thesis chapters (`doc/thesis/`), versioned Mermaid diagrams (`doc/diagrams/`), code-generated charts (`doc/assets/`) |
 | `scripts/` | Documentation utilities: `generate_charts.py`, `generate_diagrams.py`, `render_mermaid.py`, `synthesize_thesis_context.py`, `validate_docs.py`, `format_markdown.py`, `extract_stats.py`, `build_thesis.sh` |

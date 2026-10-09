@@ -3,7 +3,7 @@ package integration.lexer.parser.symboltable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import parser.initializations.VariableInitialization;
+import parser.initializations.leafs.VariableInitialization;
 import parser.initializations.Factory;
 import utils.ParserTestSupport;
 import utils.SymbolTable;

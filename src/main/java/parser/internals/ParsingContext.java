@@ -1,5 +1,6 @@
 package parser.internals;
 
+import parser.initializations.nodes.RepeatedInitialization;
 import parser.utils.NameMangler;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
@@ -133,7 +134,7 @@ public final class ParsingContext {
     /**
      * Returns the current array initialization index.
      * <p>
-     * Used by {@link parser.initializations.RepeatedInitialization} to track
+     * Used by {@link RepeatedInitialization} to track
      * which array element is being initialized.
      * </p>
      *

@@ -1,6 +1,9 @@
 package integration.lexer.parser.symboltable;
 
 import org.junit.jupiter.api.Test;
+import parser.initializations.leafs.EnumeratedInitialization;
+import parser.initializations.leafs.MacroInitialization;
+import parser.initializations.leafs.VariableInitialization;
 import utils.ParserTestSupport;
 
 import parser.initializations.*;
@@ -46,7 +49,7 @@ public class ArrayStructFieldIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "0"))
+                .initialValue(new MacroInitialization(st, 0))
                 .build());
 
         assertSymbol(st, "COLOR_TYPE#GRAY", new LexemeInfoBuilder()
@@ -54,7 +57,7 @@ public class ArrayStructFieldIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "1"))
+                .initialValue(new MacroInitialization(st, 1))
                 .build());
 
         assertSymbol(st, "COLOR_TYPE#BLACK", new LexemeInfoBuilder()
@@ -62,7 +65,7 @@ public class ArrayStructFieldIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "2"))
+                .initialValue(new MacroInitialization(st, 2))
                 .build());
     }
 

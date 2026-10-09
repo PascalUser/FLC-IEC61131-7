@@ -1,22 +1,24 @@
 package parser.initializations;
 
-import parser.initializations.primitives.*;
+import parser.initializations.leafs.DefaultInitialization;
 import utils.SymbolTable;
 import utils.enums.Subtype;
 
 /**
- * Factory for creating default initialization objects for primitive types.
+ * Factory for creating default primitive initializations.
  * <p>
- * Currently only handles {@link Subtype#REAL} via {@link RealInitialization}.
- * Other primitive types use their respective initialization classes directly
- * in the parser semantic actions (e.g., {@link BooleanInitialization},
- * {@link parser.initializations.SubrangeInitialization}).
+ * Provides static methods to create {@link Initialization} objects for
+ * primitive subtypes (BOOL, integer types, REAL/LREAL, STRING, WSTRING)
+ * using the {@link Director} to generate appropriate default literal values
+ * and registering them in the {@link SymbolTable}.
  * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
+ * @see DefaultInitialization
+ * @see Director
  */
 public final class Factory {
 
@@ -35,14 +37,14 @@ public final class Factory {
     public static Initialization createPrimitiveInitialization(SymbolTable symbolTable, Subtype subtype) {
         switch (subtype) {
             case BOOL:
-                return new BooleanInitialization(symbolTable);
+                return DefaultInitialization.bool(symbolTable);
             case LREAL:
             case REAL:
-                return new RealInitialization(symbolTable);
+                return DefaultInitialization.real(symbolTable);
             case STRING:
-                return new StringInitialization(symbolTable);
+                return DefaultInitialization.string(symbolTable);
             case WSTRING:
-                return new WStringInitialization(symbolTable);
+                return DefaultInitialization.wstring(symbolTable);
             case SINT:
             case INT :
             case LINT:
@@ -51,9 +53,9 @@ public final class Factory {
             case UINT :
             case ULINT:
             case UDINT:
-                return new IntInitialization(symbolTable);
+                return DefaultInitialization.integer(symbolTable);
             default:
-                throw new IllegalArgumentException("Subtipo primitivo no soportado por Factory: " + subtype);
+                throw new IllegalArgumentException("Factory: could not find an object for " + subtype);
         }
     }
 }

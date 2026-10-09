@@ -1,10 +1,9 @@
 package integration.lexer.parser.symboltable;
 
 import parser.initializations.Factory;
-import parser.initializations.primitives.*;
 import utils.ParserTestSupport;
 
-import parser.initializations.VariableInitialization;
+import parser.initializations.leafs.VariableInitialization;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import utils.SymbolTable;

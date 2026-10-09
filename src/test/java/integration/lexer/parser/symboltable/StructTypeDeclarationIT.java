@@ -1,10 +1,10 @@
 package integration.lexer.parser.symboltable;
 
+import parser.initializations.leafs.DefaultInitialization;
+import parser.initializations.nodes.StructInitialization;
 import utils.ParserTestSupport;
 
 import org.junit.jupiter.api.Test;
-import parser.initializations.primitives.RealInitialization;
-import parser.initializations.StructInitialization;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -38,8 +38,8 @@ public class StructTypeDeclarationIT extends ParserTestSupport {
         SymbolTable st = parse(sourceCode);
 
         StructInitialization colorTypeValue = new StructInitialization();
-        colorTypeValue.setFieldInitialization("BROWN", new RealInitialization(st));
-        colorTypeValue.setFieldInitialization("LIGHT", new RealInitialization(st));
+        colorTypeValue.put("BROWN", DefaultInitialization.real(st));
+        colorTypeValue.put("LIGHT", DefaultInitialization.real(st));
 
         assertSymbol(st, "COLOR_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
@@ -55,7 +55,7 @@ public class StructTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
-                .initialValue(new RealInitialization(st))
+                .initialValue(DefaultInitialization.real(st))
                 .build());
 
         assertSymbol(st, "COLOR_TYPE#LIGHT", new LexemeInfoBuilder()
@@ -63,7 +63,7 @@ public class StructTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
-                .initialValue(new RealInitialization(st))
+                .initialValue(DefaultInitialization.real(st))
                 .build());
     }
 }

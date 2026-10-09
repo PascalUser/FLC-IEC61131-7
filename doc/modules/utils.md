@@ -157,7 +157,7 @@ Chart: `assets/cyclomatic_complexity.png` — Complejidad ciclomática promedio 
 ### Líneas de código por módulo
 
 Chart: `assets/loc_per_module.png` — Líneas de código por módulo
-*Fuente: `utils` 981 LOC en 27 archivos*
+*Fuente: `utils` 995 LOC en 27 archivos*
 
 ### Distribución de diagnósticos — errores vs warnings
 
@@ -200,9 +200,9 @@ classDiagram
     }
     SymbolTable --> "0..*" LexemeInfo : contains
 
-    note for LexemeInfo "SIMPLE\ntype=SIMPLE, subtype=INT/REAL/BOOL\nuse=VARIABLE/LITERAL\ninitialValue=literal"
+    note for LexemeInfo "SIMPLE\ntype=SIMPLE, subtype=REAL/BOOL/STRING/WSTRING/CUSTOM\nuse=VARIABLE/TYPE/LITERAL\ninitialValue=Initialization"
     note for LexemeInfo "ARRAY\ntype=ARRAY, subtype=element type\ninferiorLimits=[0], superiorLimits=[9]\ninitialValue=RepeatedInitialization"
-    note for LexemeInfo "STRUCT\ntype=STRUCT, customType=MyStruct\nparameters=[field1, field2]\ninitialValue=StructInitialization"
+    note for LexemeInfo "STRUCT\ntype=STRUCT, subtype=NONE\nparameters=[field1, field2]\ninitialValue=parser.initializations.nodes.StructInitialization"
     note for LexemeInfo "ENUMERATE\ntype=ENUMERATE, subtype=INT\nparameters=[A, B, C]\nuse=MACRO for each value"
     note for LexemeInfo "SUBRANGE\ntype=SUBRANGE\ninferiorLimits=[0], superiorLimits=[100]\ninitialValue=SubrangeInitialization"
 ```
@@ -320,6 +320,6 @@ src/main/java/utils/
 | Capítulo | Enfoque                                                                               |
 |----------|---------------------------------------------------------------------------------------|
 | 04       | Arquitectura implementada — SymbolTable, Repository pattern, Lexer↔Parser↔SymbolTable |
-| 07       | Mantenibilidad — design→QA, métricas (CYCLO 2.1, LOC 981, COVERAGE 95%, coupling 0.0) |
+| 07       | Mantenibilidad — design→QA, métricas (CYCLO 2.1, LOC 995, COVERAGE 95%, coupling 0.0) |
 
 *Excluye `LucaInfo.java` (marcado `@deprecated`) y archivos solo locales según reglas de validación.*

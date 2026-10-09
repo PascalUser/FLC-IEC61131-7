@@ -1,20 +1,18 @@
+
 /**
- * Polymorphic initialization hierarchy for IEC 61131-7.
+ * Factory and node types for building and manipulating IEC 61131-7
+ * variable initializations.
  * <p>
- * Models all forms of variable initialization as {@link parser.initializations.Initialization} subtypes:
+ * This package provides the {@link Initialization} interface hierarchy along with
+ * {@link Factory} for creating default initializations, and concrete implementations
+ * for leaf values ({@link leafs.VariableInitialization}, {@link leafs.EnumeratedInitialization},
+ * {@link leafs.DefaultInitialization}, {@link leafs.SubrangeInitialization}) and
+ * composite nodes ({@link nodes.StructInitialization}, {@link nodes.RepeatedInitialization}).
  * </p>
- * <ul>
- *   <li>{@link parser.initializations.VariableInitialization} - explicit user assignments</li>
- *   <li>{@link parser.initializations.primitives.BooleanInitialization} - default BOOL (FALSE)</li>
- *   <li>{@link parser.initializations.primitives.RealInitialization} - default REAL (0.0)</li>
- *   <li>{@link parser.initializations.EnumeratedInitialization} - default enum (first value)</li>
- *   <li>{@link parser.initializations.MacroInitialization} - explicit enum literal reference</li>
- *   <li>{@link parser.initializations.SubrangeInitialization} - default subrange (lower bound)</li>
- *   <li>{@link parser.initializations.RepeatedInitialization} - arrays with repetition factors and intervals</li>
- *   <li>{@link parser.initializations.StructInitialization} - structs with named field initialization</li>
- * </ul>
  *
- * @see parser.initializations.Initialization
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
  * @since 1.0
  */
 package parser.initializations;

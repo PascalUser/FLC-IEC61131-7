@@ -149,8 +149,10 @@ def extract_grammar_stats():
     
     # Initialization types (concrete classes implementing Initialization interface)
     init_dir = SRC_DIR / "parser" / "initializations"
-    init_files = list(init_dir.glob("*.java")) + list((init_dir / "primitives").glob("*.java"))
-    excluded = {"package-info.java", "Initialization.java", "AbstractPrimitiveInitialization.java"}
+    init_files = list(init_dir.glob("*.java")) + \
+                 list((init_dir / "leafs").glob("*.java")) + \
+                 list((init_dir / "nodes").glob("*.java"))
+    excluded = {"package-info.java", "Initialization.java", "NodeInitialization.java", "LeafInitialization.java", "Factory.java"}
     init_types = len([f for f in init_files if f.name not in excluded])
     
     return {

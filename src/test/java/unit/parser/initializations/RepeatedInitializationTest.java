@@ -2,9 +2,12 @@ package unit.parser.initializations;
 
 import org.junit.jupiter.api.Test;
 import parser.initializations.Initialization;
-import parser.initializations.RepeatedInitialization;
+import parser.initializations.leafs.VariableInitialization;
+import parser.initializations.nodes.RepeatedInitialization;
+import parser.initializations.nodes.RepeatedInitialization.Interval;
+import parser.initializations.nodes.StructInitialization;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,143 +20,166 @@ import static org.junit.jupiter.api.Assertions.*;
  * </p>
  */
 class RepeatedInitializationTest {
+    @Test
+    void Put_WithEmptyPath_ThrowsRuntimeException() {
+        RepeatedInitialization repeated = new RepeatedInitialization(10, Collections.emptyList());
 
-    /**
-     * Test stub: always returns a fixed, pre-canned value. It is never
-     * verified through interaction, so it is a stub, not a mock.
-     */
-    private static class StubInitialization implements Initialization {
-        private final String value;
-
-        StubInitialization(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public Initialization selectVariable(String variable) {
-            return this;
-        }
-
-        @Override
-        public String getVariableValue() {
-            return value;
-        }
-
-        @Override
-        public Initialization copy() {
-            return new StubInitialization(value);
-        }
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> repeated.put("", new VariableInitialization("5"))
+        );
+        assertEquals("RepeatedInitialization: cannot insert an element in the root", exception.getMessage());
     }
 
     @Test
-    void Constructor_WhenInitialized_SpansFullDimensionWithDefaultValue() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
+    void Put_WithInvalidIndexFormat_ThrowsRuntimeException() {
+        RepeatedInitialization repeated = new RepeatedInitialization(10, Collections.emptyList());
 
-        assertEquals(100, repeated.getDimension());
-        assertEquals(Collections.singletonList(100), repeated.getRepetitionsList());
-        assertNull(repeated.getInitializationsList().get(0));
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> repeated.put("abc", new VariableInitialization("5"))
+        );
+        assertEquals("RepeatedInitialization: index is not a valid number: abc", exception.getMessage());
     }
 
     @Test
-    void AddInterval_WhenMiddleRangeAdded_SplitsIntoThreeSegments() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
-        StubInitialization value = new StubInitialization("A");
+    void Put_WithIndexOutOfBounds_ThrowsRuntimeException() {
+        RepeatedInitialization repeated = new RepeatedInitialization(5, Collections.emptyList());
 
-        repeated.addInterval(1, 90, value);
-
-        assertEquals(Arrays.asList(1, 90, 9), repeated.getRepetitionsList());
-        List<Initialization> values = repeated.getInitializationsList();
-        assertNull(values.get(0));
-        assertEquals(value, values.get(1));
-        assertNull(values.get(2));
+        RuntimeException exNegative = assertThrows(
+                RuntimeException.class,
+                () -> repeated.put("-1", new VariableInitialization("5"))
+        );
+        assertEquals("RepeatedInitialization: index out of bounds: -1", exNegative.getMessage());
+        RuntimeException exOverflow = assertThrows(
+                RuntimeException.class,
+                () -> repeated.put("5", new VariableInitialization("5"))
+        );
+        assertEquals("RepeatedInitialization: index out of bounds: 5", exOverflow.getMessage());
     }
 
     @Test
-    void AddInterval_WhenFirstSegmentOverwritten_LeavesRestUntouched() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
-        StubInitialization a = new StubInitialization("A");
-        StubInitialization b = new StubInitialization("B");
-        repeated.addInterval(1, 90, a);
+    void Put_ReplacesElementAndReturnsPreviousValue_InSingleElementInterval() {
+        VariableInitialization initialValue = new VariableInitialization("A");
+        RepeatedInitialization.Interval interval = new RepeatedInitialization.Interval(0, 0, initialValue);
+        RepeatedInitialization repeated = new RepeatedInitialization(1, Collections.singletonList(interval));
 
-        repeated.addInterval(0, 0, b);
+        VariableInitialization newValue = new VariableInitialization("B");
+        Initialization previous = repeated.put("0", newValue);
 
-        assertEquals(Arrays.asList(1, 90, 9), repeated.getRepetitionsList());
-        List<Initialization> values = repeated.getInitializationsList();
-        assertEquals(b, values.get(0));
-        assertEquals(a, values.get(1));
-        assertNull(values.get(2));
+        assertEquals(initialValue, previous);
+        assertEquals(newValue, repeated.find("0").orElse(null));
     }
 
     @Test
-    void AddInterval_WhenUpperLimitExceeded_ClampsWithoutThrowing() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
-        StubInitialization value = new StubInitialization("X");
+    void Put_SplitsIntervalWhenMutatingSingleIndexInMiddle() {
+        VariableInitialization defaultValue = new VariableInitialization("A");
+        RepeatedInitialization.Interval interval = new RepeatedInitialization.Interval(0, 9, defaultValue);
+        RepeatedInitialization repeated = new RepeatedInitialization(10, Collections.singletonList(interval));
 
-        assertDoesNotThrow(() -> repeated.addInterval(80, 150, value));
+        VariableInitialization newValue = new VariableInitialization("B");
+        repeated.put("3", newValue);
 
-        assertEquals(Arrays.asList(80, 20), repeated.getRepetitionsList());
-        List<Initialization> values = repeated.getInitializationsList();
-        assertNull(values.get(0));
-        assertEquals(value, values.get(1));
+        assertEquals(defaultValue, repeated.find("2").orElse(null));
+        assertEquals(defaultValue, repeated.find("4").orElse(null));
+        assertEquals(newValue, repeated.find("3").orElse(null));
+        assertEquals("[3(A), B, 6(A)]", repeated.variableValue());
     }
 
     @Test
-    void AddInterval_WhenCompletelyOutOfBounds_IgnoresSilently() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
-        StubInitialization value = new StubInitialization("X");
+    void Put_SplitsIntervalAtStartAndEnd() {
+        VariableInitialization defaultValue = new VariableInitialization("X");
+        RepeatedInitialization.Interval interval = new RepeatedInitialization.Interval(0, 4, defaultValue);
+        RepeatedInitialization repeated = new RepeatedInitialization(5, Collections.singletonList(interval));
 
-        assertDoesNotThrow(() -> repeated.addInterval(200, 300, value));
-        assertDoesNotThrow(() -> repeated.addInterval(-50, -10, value));
-        assertDoesNotThrow(() -> repeated.addInterval(50, 20, value)); // start > end
+        repeated.put("0", new VariableInitialization("FIRST"));
+        repeated.put("4", new VariableInitialization("LAST"));
 
-        assertEquals(Collections.singletonList(100), repeated.getRepetitionsList());
-        assertNull(repeated.getInitializationsList().get(0));
+        assertEquals("FIRST", repeated.find("0").orElseThrow(AssertionError::new).variableValue());
+        assertEquals("X", repeated.find("1").orElseThrow(AssertionError::new).variableValue());
+        assertEquals("X", repeated.find("3").orElseThrow(AssertionError::new).variableValue());
+        assertEquals("LAST", repeated.find("4").orElseThrow(AssertionError::new).variableValue());
     }
 
     @Test
-    void AddInterval_WhenAdjacentSegmentsHaveSameInitialization_MergesSegments() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
-        StubInitialization a = new StubInitialization("A");
-        repeated.addInterval(1, 90, a);
+    void Put_WithNestedPath_SplitsAndMutatesNestedElementWithoutAffectingOthers() {
+        StructInitialization point = new StructInitialization();
+        point.put("X", new VariableInitialization("1"));
+        point.put("Y", new VariableInitialization("2"));
+        RepeatedInitialization.Interval interval = new RepeatedInitialization.Interval(0, 2, point);
+        RepeatedInitialization repeated = new RepeatedInitialization(3, Collections.singletonList(interval));
 
-        repeated.addInterval(0, 0, a);
+        repeated.put("1#X", new VariableInitialization("99"));
 
-        assertEquals(Arrays.asList(91, 9), repeated.getRepetitionsList());
-        assertEquals(a, repeated.getInitializationsList().get(0));
+        assertEquals(new VariableInitialization("1"), repeated.find("0#X").orElse(null));
+        assertEquals(new VariableInitialization("1"), repeated.find("2#X").orElse(null));
+        assertEquals(new VariableInitialization("99"), repeated.find("1#X").orElse(null));
     }
 
     @Test
-    void AddInterval_WhenRangeSpansMultipleSegments_ReplacesAllCoveredSegments() {
-        RepeatedInitialization repeated = new RepeatedInitialization(100, null);
-        StubInitialization a = new StubInitialization("A");
-        StubInitialization b = new StubInitialization("B");
-        StubInitialization c = new StubInitialization("C");
-        StubInitialization x = new StubInitialization("X");
+    void Put_WithNestedPathOnNullElement_ThrowsRuntimeException() {
+        RepeatedInitialization.Interval interval = new RepeatedInitialization.Interval(0, 4, null);
+        RepeatedInitialization repeated = new RepeatedInitialization(5, Collections.singletonList(interval));
 
-        repeated.addInterval(0, 9, a);   // 0..9
-        repeated.addInterval(10, 19, b); // 10..19
-        repeated.addInterval(20, 29, c); // 20..29
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> repeated.put("2#X", new VariableInitialization("9"))
+        );
 
-        repeated.addInterval(5, 25, x);
+        assertEquals("RepeatedInitialization: element at index 2 is null", exception.getMessage());
+    }
+    
+    @Test
+    void Find_WithEmptyPath_ReturnsTheArrayItself() {
+        RepeatedInitialization repeated = new RepeatedInitialization(10,
+                Collections.singletonList(new Interval(0, 10, new VariableInitialization("A")))
+        );
 
-        assertEquals(Arrays.asList(5, 21, 4, 70), repeated.getRepetitionsList());
-        List<Initialization> values = repeated.getInitializationsList();
-        assertEquals(a, values.get(0)); // 0..4
-        assertEquals(x, values.get(1)); // 5..25
-        assertEquals(c, values.get(2)); // 26..29
-        assertNull(values.get(3));      // 30..99, merged back into a single segment
+        assertSame(repeated, repeated.find("").orElse(null));
     }
 
     @Test
-    void Copy_WhenInvoked_ProducesIndependentInstanceWithSameLayout() {
-        RepeatedInitialization repeated = new RepeatedInitialization(50, null);
-        repeated.addInterval(0, 10, new StubInitialization("TEST"));
+    void Find_ForValidIndex_ReturnsTheElementOfItsInterval() {
+        List<Interval> intervals = new ArrayList<>();
+        VariableInitialization vB = new VariableInitialization("B");
+        intervals.add(new Interval(0, 2, new VariableInitialization("A")));
+        intervals.add(new Interval(3, 5, vB));
+        intervals.add(new Interval(6, 10, new VariableInitialization("A")));
+        RepeatedInitialization repeated = new RepeatedInitialization(10, intervals);
 
-        Initialization copied = repeated.copy();
+        assertSame(vB, repeated.find("4").orElse(null));
+        assertEquals("A", repeated.find("0").orElseThrow(AssertionError::new).variableValue());
+        assertEquals("A", repeated.find("9").orElseThrow(AssertionError::new).variableValue());
+    }
 
-        assertInstanceOf(RepeatedInitialization.class, copied);
-        RepeatedInitialization copiedRepeated = (RepeatedInitialization) copied;
-        assertEquals(repeated.getDimension(), copiedRepeated.getDimension());
-        assertEquals(repeated.getRepetitionsList(), copiedRepeated.getRepetitionsList());
+    @Test
+    void Find_ForIndexOutOfRangeOrNotANumber_IsEmpty() {
+        RepeatedInitialization repeated = new RepeatedInitialization(10,
+                Collections.singletonList(new Interval(0, 9, new VariableInitialization("A")))
+        );
+
+        assertFalse(repeated.find("-1").isPresent());
+        assertFalse(repeated.find("10").isPresent());
+        assertFalse(repeated.find("x").isPresent());
+    }
+
+    @Test
+    void Find_WhenIntervalHasNoInitialization_IsEmpty() {
+        RepeatedInitialization repeated = new RepeatedInitialization(10,
+                Collections.singletonList(new Interval(0, 9, null))
+        );
+        assertFalse(repeated.find("2").isPresent());
+    }
+
+    @Test
+    void Find_WithPathPastTheIndex_DelegatesToTheElement() {
+        StructInitialization point = new StructInitialization();
+        point.put("X", new VariableInitialization("7"));
+        RepeatedInitialization repeated = new RepeatedInitialization(10,
+                Collections.singletonList(new Interval(0, 2, point))
+        );
+
+        assertEquals(new VariableInitialization("7"), repeated.find("2#X").orElse(null));
+        assertFalse(repeated.find("2#Y").isPresent());
     }
 }

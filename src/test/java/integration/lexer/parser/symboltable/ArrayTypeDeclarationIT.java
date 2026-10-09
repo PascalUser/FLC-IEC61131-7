@@ -1,6 +1,9 @@
 package integration.lexer.parser.symboltable;
 
 import org.junit.jupiter.api.Test;
+import parser.initializations.leafs.EnumeratedInitialization;
+import parser.initializations.leafs.VariableInitialization;
+import parser.initializations.nodes.StructInitialization;
 import utils.ParserTestSupport;
 
 import parser.initializations.*;
@@ -46,12 +49,12 @@ public class ArrayTypeDeclarationIT extends ParserTestSupport {
     }
 
     /**
-     * Helper to create a StructInitialization surrogate.
+     * Helper to create a parser.initializations.nodes.StructInitialization surrogate.
      */
     private static Initialization createStructInit(Initialization v1, Initialization v2) {
         StructInitialization structInit = new StructInitialization();
-        structInit.setFieldInitialization("CLASSIFICATION", v1);
-        structInit.setFieldInitialization("GAMMA", v2);
+        structInit.put("CLASSIFICATION", v1);
+        structInit.put("GAMMA", v2);
         return structInit;
     }
 }

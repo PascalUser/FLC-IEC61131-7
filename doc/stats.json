@@ -27,7 +27,7 @@
   "grammar_stats": {
     "tokens": 82,
     "nonterminals": 139,
-    "init_types": 12
+    "init_types": 7
   },
   "symboltable_distribution": {
     "SIMPLE": 10,
@@ -101,9 +101,9 @@
       "estimated_methods": 56
     },
     "parser": {
-      "avg_cyclomatic": 7.0,
-      "total_complexity": 432,
-      "estimated_methods": 62
+      "avg_cyclomatic": 9.3,
+      "total_complexity": 362,
+      "estimated_methods": 39
     },
     "utils": {
       "avg_cyclomatic": 2.6,
@@ -117,8 +117,8 @@
       "files": 21
     },
     "parser": {
-      "loc": 3761,
-      "files": 12
+      "loc": 3138,
+      "files": 6
     },
     "utils": {
       "loc": 1158,
@@ -126,7 +126,7 @@
     }
   },
   "test_coverage": {
-    "overall": 73,
+    "overall": 71,
     "packages": {
       "parser": 31,
       "lexer": 100,

@@ -1,5 +1,10 @@
 package integration.lexer.parser.symboltable;
 
+import parser.initializations.leafs.EnumeratedInitialization;
+import parser.initializations.leafs.VariableInitialization;
+import parser.initializations.nodes.RepeatedInitialization;
+import parser.initializations.nodes.RepeatedInitialization.Interval;
+import parser.initializations.nodes.StructInitialization;
 import utils.ParserTestSupport;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,7 +17,9 @@ import utils.enums.Subtype;
 import utils.enums.Type;
 import utils.enums.Use;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -53,37 +60,38 @@ public class ArrayVariableIT extends ParserTestSupport {
         Initialization classificationInit = new EnumeratedInitialization(Arrays.asList("WHITE", "GRAY", "BLACK"));
         Initialization gammaInit = new VariableInitialization(".5");
 
-        RepeatedInitialization expectedArrayInitialValue = new RepeatedInitialization(40, null);
-        expectedArrayInitialValue.addInterval(
+        List<Interval> expectedIntervals = new ArrayList<>();
+        expectedIntervals.add(new Interval(
                 0, 19, createStructInit(
                         classificationInit,
                         new VariableInitialization("1.0")
-                )
+                ))
         );
-        expectedArrayInitialValue.addInterval(
+        expectedIntervals.add(new Interval(
                 20, 20, createStructInit(
                         new VariableInitialization("BLACK"),
                         new VariableInitialization(".0")
-                )
+                ))
         );
-        expectedArrayInitialValue.addInterval(
+        expectedIntervals.add(new Interval(
                 21, 30, createStructInit(
                         new VariableInitialization("WHITE"),
                         new VariableInitialization("1.0")
-                )
+                ))
         );
-        expectedArrayInitialValue.addInterval(
+        expectedIntervals.add(new Interval(
                 31, 38, createStructInit(
                         new VariableInitialization("BLACK"),
                         new VariableInitialization(".0")
-                )
+                ))
         );
-        expectedArrayInitialValue.addInterval(
-                39, 39, createStructInit(
+        expectedIntervals.add(new Interval(
+                39, 40, createStructInit(
                         new VariableInitialization("GRAY"),
                         gammaInit
-                )
+                ))
         );
+        RepeatedInitialization expectedArrayInitialValue = new RepeatedInitialization(40, expectedIntervals);
 
         assertSymbol(st, "MAIN#PIXELS", new LexemeInfoBuilder()
                 .type(Type.ARRAY)
@@ -98,12 +106,12 @@ public class ArrayVariableIT extends ParserTestSupport {
     }
 
     /**
-     * Helper to create a StructInitialization surrogate.
+     * Helper to create a parser.initializations.nodes.StructInitialization surrogate.
      */
     private static Initialization createStructInit(Initialization v1, Initialization v2) {
         StructInitialization structInit = new StructInitialization();
-        structInit.setFieldInitialization("CLASSIFICATION", v1);
-        structInit.setFieldInitialization("GAMMA", v2);
+        structInit.put("CLASSIFICATION", v1);
+        structInit.put("GAMMA", v2);
         return structInit;
     }
 }

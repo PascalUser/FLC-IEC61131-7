@@ -12,7 +12,6 @@ classDiagram
             +current()
             +publish()
             +createSubcontext()
-            +cloneTop()
         }
         class ParsingContext {
             +declaredIdentifiers: List
@@ -23,13 +22,6 @@ classDiagram
             +index: int
             +symbolTable(): SymbolTable
             +incrementIndex(int)
-        }
-        class NameMangler {
-            +prefix: StringBuilder
-            +addScope()
-            +popScope()
-            +getNameMangled()
-            +getCurrentScope()
         }
     }
     namespace parser_utils {
@@ -55,38 +47,56 @@ classDiagram
         }
         class Initialization {
             <<interface>>
-            +selectVariable(String) Initialization
-            +getVariableValue() String
+            +find(String) Optional~Initialization~
+            +variableValue() String
             +copy() Initialization
+        }
+        class NodeInitialization {
+            <<abstract>>
+            +put(String, Initialization) Initialization
+            +find(String) Optional~Initialization~
+            #breakStringPath(String) String[]
+        }
+        class LeafInitialization {
+            <<abstract>>
+            +find(String) Optional~Initialization~
+            +copy() Initialization
+        }
+        class DefaultInitialization {
+            -literal: String
+            +bool(SymbolTable) DefaultInitialization
+            +real(SymbolTable) DefaultInitialization
+            +integer(SymbolTable) DefaultInitialization
+            +string(SymbolTable) DefaultInitialization
+            +wstring(SymbolTable) DefaultInitialization
         }
         class VariableInitialization
         class EnumeratedInitialization
         class MacroInitialization
         class SubrangeInitialization
+    }
+    namespace parser_initializations_nodes {
         class StructInitialization
         class RepeatedInitialization
-        class AbstractPrimitiveInitialization {
-            <<abstract>>
-            +symbolTable: SymbolTable
-        }
-        class StringInitialization
-        class WStringInitialization
-        class BooleanInitialization
-        class RealInitialization
-        class IntInitialization
     }
-    Initialization <|-- VariableInitialization
-    Initialization <|-- AbstractPrimitiveInitialization
-    AbstractPrimitiveInitialization <|-- StringInitialization
-    AbstractPrimitiveInitialization <|-- WStringInitialization
-    AbstractPrimitiveInitialization <|-- BooleanInitialization
-    AbstractPrimitiveInitialization <|-- RealInitialization
-    AbstractPrimitiveInitialization <|-- IntInitialization
-    Initialization <|-- EnumeratedInitialization
-    Initialization <|-- MacroInitialization
-    Initialization <|-- SubrangeInitialization
-    Initialization <|-- StructInitialization
-    Initialization <|-- RepeatedInitialization
+    namespace parser_initializations_leafs {
+        class VariableInitialization
+        class EnumeratedInitialization
+        class MacroInitialization
+        class SubrangeInitialization
+        class DefaultInitialization
+        class LeafInitialization
+    }
+    Initialization <|.. NodeInitialization
+    Initialization <|.. LeafInitialization
+    NodeInitialization <|-- StructInitialization
+    NodeInitialization <|-- RepeatedInitialization
+    LeafInitialization <|-- VariableInitialization
+    LeafInitialization <|-- DefaultInitialization
+    LeafInitialization <|-- EnumeratedInitialization
+    LeafInitialization <|-- MacroInitialization
+    LeafInitialization <|-- SubrangeInitialization
+    Factory ..> DefaultInitialization : creates
     Parser --> ContextHandler : uses
     ContextHandler --> ParsingContext : manages
     ParsingContext --> NameMangler : uses

@@ -3,7 +3,7 @@ package integration.lexer.parser.symboltable;
 import utils.ParserTestSupport;
 
 import org.junit.jupiter.api.Test;
-import parser.initializations.VariableInitialization;
+import parser.initializations.leafs.VariableInitialization;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;

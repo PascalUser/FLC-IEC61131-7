@@ -114,13 +114,18 @@ def generate_lexer_class_diagram():
         "lexer": ["Lexer"],
         "lexer_internals": ["LexicalPreprocessors", "LexicalAnalyzers"],
         "lexer_transformers": ["Transformer", "UnderscoreRemover", "UpperCaseConverter",
-                               "StripLeadingZeros", "StripTrailingZeros", "StringEscapeResolver", "Nothing"],
+                               "StripLeadingZeros", "StripTrailingZeros", "StripBaseNumberLeadingZeros",
+                               "StringEscapeResolver", "Nothing",
+                               "OmitLeadingZeroMagnitudes", "OmitTrailingZeroMagnitudes",
+                               "OmitLeadingZerosInMagnitudes", "OmitTrailingZerosInMagnitudes"],
         "lexer_transformers_hex_resolvers": ["HexResolver", "StringHexResolver", "WStringHexResolver"],
+        "lexer_transformers_utils": ["ExponentFinder"],
         "lexer_semantics": ["SemanticAnalyzer", "Identifiers", "Intervals", "Dates",
                             "DayTimes", "DateAndDayTimes"],
         "lexer_semantics_numbers": ["NumbersAnalyzer", "Naturals", "Integers", "Reals"],
         "lexer_semantics_numbers_bases": ["BaseNumbersAnalyzer", "Binary", "Octal", "Hexadecimal"],
         "lexer_semantics_strings": ["StringsAnalyzer", "Strings", "WStrings"],
+        "lexer_semantics_utils": ["ReservedWords"],
     }
     lines = ["classDiagram"]
     known = {name for group in selected.values() for name in group}
@@ -191,7 +196,7 @@ def generate_parser_class_diagram():
                 "        class EnumeratedInitialization",
                 "        class MacroInitialization",
                 "        class SubrangeInitialization",
-                "        class StructInitialization",
+                "        class parser.initializations.nodes.StructInitialization",
                 "        class RepeatedInitialization",
                 "    }",
                 "    Initialization <|-- VariableInitialization",
@@ -201,7 +206,7 @@ def generate_parser_class_diagram():
                 "    Initialization <|-- EnumeratedInitialization",
                 "    Initialization <|-- MacroInitialization",
                 "    Initialization <|-- SubrangeInitialization",
-                "    Initialization <|-- StructInitialization",
+                "    Initialization <|-- parser.initializations.nodes.StructInitialization",
                 "    Initialization <|-- RepeatedInitialization",
                 "    Parser --> ContextHandler : uses",
                 "    ContextHandler --> ParsingContext : manages",
@@ -272,7 +277,7 @@ def generate_symboltable_storage_object():
                 # Notes reflect metadataBuilder() calls in src/main/java/parser/Parser.y
                 "    note for LexemeInfo \"SIMPLE\\ntype=SIMPLE, subtype=REAL/BOOL/STRING/WSTRING/CUSTOM\\nuse=VARIABLE/TYPE/LITERAL\\ninitialValue=Initialization\"",
                 "    note for LexemeInfo \"ARRAY\\ntype=ARRAY, subtype=element type\\ninferiorLimits=[0], superiorLimits=[9]\\ninitialValue=RepeatedInitialization\"",
-                "    note for LexemeInfo \"STRUCT\\ntype=STRUCT, subtype=NONE\\nparameters=[field1, field2]\\ninitialValue=StructInitialization\"",
+                "    note for LexemeInfo \"STRUCT\\ntype=STRUCT, subtype=NONE\\nparameters=[field1, field2]\\ninitialValue=parser.initializations.nodes.StructInitialization\"",
                 "    note for LexemeInfo \"ENUMERATE\\ntype=ENUMERATE, subtype=INT\\nparameters=[A, B, C]\\nuse=MACRO for each value\"",
                 "    note for LexemeInfo \"SUBRANGE\\ntype=SUBRANGE\\ninferiorLimits=[0], superiorLimits=[100]\\ninitialValue=SubrangeInitialization\""]
     return "\n".join(mermaid)
@@ -306,7 +311,7 @@ def generate_architecture_evolution():
                "        D1[Repository pattern]", "        D2[LexemeInfo DTO with 9 fields]",
                "        D3[NameMangler for nested scopes]", "        D4[Publisher defers population]", "    end",
                "    subgraph Phase5[Initializations]", "        E1[Polymorphic Initialization hierarchy]",
-               "        E2[StructInitialization: nested maps]",
+               "        E2[parser.initializations.nodes.StructInitialization: nested maps]",
                "        E3[RepeatedInitialization: interval partition]", "    end",
                "    Phase1 --> Phase2 --> Phase3 --> Phase4 --> Phase5"]
     return "\n".join(mermaid)

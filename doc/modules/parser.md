@@ -2,7 +2,7 @@
 
 Módulo de análisis sintáctico generado con **GNU Bison 3.8.2** (LALR(1)) a partir de `src/main/java/parser/Parser.y`; implementa la gramática de **IEC 61131-7** y el **Anexo B de IEC 61131-3**.
 
-*Última actualización: 2026-10-08 (Documentación actualizada: estructura de paquetes corregida, Publisher eliminado, Factory/Facades reubicados)*
+*Última actualización: 2026-10-09 (Jerarquía de inicializaciones refactorizada: NodeInitialization/LeafInitialization/DefaultInitialization; clases primitivas consolidadas)*
 
 ## Diagrama de paquetes
 
@@ -36,7 +36,6 @@ classDiagram
             +current()
             +publish()
             +createSubcontext()
-            +cloneTop()
         }
         class ParsingContext {
             +declaredIdentifiers: List
@@ -47,13 +46,6 @@ classDiagram
             +index: int
             +symbolTable(): SymbolTable
             +incrementIndex(int)
-        }
-        class NameMangler {
-            +prefix: StringBuilder
-            +addScope()
-            +popScope()
-            +getNameMangled()
-            +getCurrentScope()
         }
     }
     namespace parser_utils {
@@ -79,9 +71,28 @@ classDiagram
         }
         class Initialization {
             <<interface>>
-            +selectVariable(String) Initialization
-            +getVariableValue() String
+            +find(String) Optional~Initialization~
+            +variableValue() String
             +copy() Initialization
+        }
+        class NodeInitialization {
+            <<abstract>>
+            +put(String, Initialization) Initialization
+            +find(String) Optional~Initialization~
+            +breakStringPath(String) String[]
+        }
+        class LeafInitialization {
+            <<abstract>>
+            +find(String) Optional~Initialization~
+            +copy() Initialization
+        }
+        class DefaultInitialization {
+            -literal: String
+            +bool(SymbolTable) DefaultInitialization
+            +real(SymbolTable) DefaultInitialization
+            +integer(SymbolTable) DefaultInitialization
+            +string(SymbolTable) DefaultInitialization
+            +wstring(SymbolTable) DefaultInitialization
         }
         class VariableInitialization
         class EnumeratedInitialization
@@ -89,28 +100,30 @@ classDiagram
         class SubrangeInitialization
         class StructInitialization
         class RepeatedInitialization
-        class AbstractPrimitiveInitialization {
-            <<abstract>>
-            +symbolTable: SymbolTable
-        }
-        class StringInitialization
-        class WStringInitialization
-        class BooleanInitialization
-        class RealInitialization
-        class IntInitialization
     }
-    Initialization <|-- VariableInitialization
-    Initialization <|-- AbstractPrimitiveInitialization
-    Initialization <|-- EnumeratedInitialization
-    Initialization <|-- MacroInitialization
-    Initialization <|-- SubrangeInitialization
-    Initialization <|-- StructInitialization
-    Initialization <|-- RepeatedInitialization
-    AbstractPrimitiveInitialization <|-- StringInitialization
-    AbstractPrimitiveInitialization <|-- WStringInitialization
-    AbstractPrimitiveInitialization <|-- BooleanInitialization
-    AbstractPrimitiveInitialization <|-- RealInitialization
-    AbstractPrimitiveInitialization <|-- IntInitialization
+    namespace parser_initializations_leafs {
+        class VariableInitialization
+        class EnumeratedInitialization
+        class MacroInitialization
+        class SubrangeInitialization
+        class DefaultInitialization
+        class LeafInitialization
+    }
+    namespace parser_initializations_nodes {
+        class StructInitialization
+        class RepeatedInitialization
+        class NodeInitialization
+    }
+    Initialization <|.. NodeInitialization
+    Initialization <|.. LeafInitialization
+    LeafInitialization <|-- VariableInitialization
+    LeafInitialization <|-- EnumeratedInitialization
+    LeafInitialization <|-- MacroInitialization
+    LeafInitialization <|-- SubrangeInitialization
+    LeafInitialization <|-- DefaultInitialization
+    NodeInitialization <|-- StructInitialization
+    NodeInitialization <|-- RepeatedInitialization
+    Factory ..> DefaultInitialization : creates
     Parser --> ContextHandler : uses
     ContextHandler --> ParsingContext : manages
     ParsingContext --> NameMangler : uses
@@ -126,24 +139,22 @@ Diagrama de clases: `doc/diagrams/parser_class_diagram.mmd` (generado por `scrip
 | Clase                                           | Responsabilidad                                                                                       | Patrón                  |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------------|-------------------------|
 | `parser.Parser`                                 | Analizador LALR(1) generado por Bison; punto de entrada `parse()`                                     | Generated Parser        |
-| `parser.internals.ContextHandler`               | Pila LIFO de contextos de análisis anidados; operaciones `add`, `pop`, `current`, `publish`, `createSubcontext`, `cloneTop` | Stack / Context Manager |
+| `parser.internals.ContextHandler`               | Pila LIFO de contextos de análisis anidados; operaciones `add`, `pop`, `current`, `publish`, `createSubcontext` | Stack / Context Manager |
 | `parser.internals.ParsingContext`               | Contexto mutable por ámbito: identificadores declarados, builder semántico, tres `NameMangler` e índice de array | Context Object   |
-| `parser.utils.NameMangler`                  | Prefijos jerárquicos con separador `#` (`FB#TYPE#FIELD`) para resolución de nombres                    | Name Mangling           |
-| `parser.initializations.Factory`                | Crea inicializaciones por defecto de **todos** los tipos primitivos (BOOL, INT, REAL, LREAL, STRING, WSTRING y variantes) | Factory                 |
-| `parser.facades.DimensionCalculator`              | Calcula la cardinalidad total de arrays multidimensionales desde `inferiorLimits`/`superiorLimits`     | Calculator              |
-| `parser.facades.UnderlyingScopeSearcher`          | Sigue la cadena de tipos custom hasta el ámbito raíz que contiene campos/enums                          | Searcher                |
-| `parser.initializations.Initialization`         | Interfaz de valores iniciales polimórficos (`selectVariable`, `getVariableValue`, `copy`)              | Composite / Strategy    |
-| `parser.initializations.VariableInitialization` | Envuelve un literal o identificador como valor inicial explícito                                       | Value Object            |
-| `parser.initializations.primitives.StringInitialization`   | Valor por defecto de STRING registrado perezosamente en `SymbolTable` vía `Director`                   | Value Object            |
-| `parser.initializations.primitives.WStringInitialization`  | Valor por defecto de WSTRING registrado perezosamente en `SymbolTable` vía `Director`                  | Value Object            |
-| `parser.initializations.primitives.BooleanInitialization`  | Valor por defecto BOOL `FALSE` registrado perezosamente                                                | Value Object            |
-| `parser.initializations.primitives.RealInitialization`     | Valor por defecto REAL/LREAL `0.0` registrado perezosamente                                            | Value Object            |
-| `parser.initializations.primitives.IntInitialization`      | Valor por defecto INT/SINT/DINT/LINT/USINT/UINT/UDINT/ULINT `0` registrado perezosamente               | Value Object            |
-| `parser.initializations.EnumeratedInitialization` | Primer valor de un enumerado como valor por defecto                                                  | Value Object            |
-| `parser.initializations.MacroInitialization`    | Valor ordinal de un literal de enumerado registrado como `Subtype.INT`                                 | Value Object            |
-| `parser.initializations.SubrangeInitialization` | Cota inferior como valor por defecto; conserva inferior y superior                                     | Value Object            |
-| `parser.initializations.StructInitialization`   | Mapa `field → Initialization` con claves compuestas para structs anidados                              | Composite               |
-| `parser.initializations.RepeatedInitialization` | Partición en intervalos `[start, end] → Initialization` para arrays con repetición                     | Interval Map            |
+| `parser.utils.NameMangler`                      | Prefijos jerárquicos con separador `#` (`FB#TYPE#FIELD`) para resolución de nombres                    | Name Mangling           |
+| `parser.initializations.Factory`                | Crea inicializaciones por defecto de **todos** los tipos primitivos (BOOL, INT, REAL, LREAL, STRING, WSTRING y variantes) vía `DefaultInitialization` | Factory                 |
+| `parser.facades.DimensionCalculator`            | Calcula la cardinalidad total de arrays multidimensionales desde `inferiorLimits`/`superiorLimits`     | Calculator              |
+| `parser.facades.UnderlyingScopeSearcher`        | Sigue la cadena de tipos custom hasta el ámbito raíz que contiene campos/enums                          | Searcher                |
+| `parser.initializations.Initialization`         | Interfaz de valores iniciales polimórficos (`find`, `variableValue`, `copy`)                           | Composite / Strategy    |
+| `parser.initializations.nodes.NodeInitialization` | Base abstracta para inicializaciones compuestas (structs, arrays); operaciones `put`/`find` por ruta      | Composite               |
+| `parser.initializations.nodes.StructInitialization` | Mapa `field → Initialization` con claves compuestas para structs anidados                              | Composite               |
+| `parser.initializations.nodes.RepeatedInitialization` | Partición en intervalos `[start, end] → Initialization` para arrays con repetición                     | Interval Map            |
+| `parser.initializations.leafs.LeafInitialization` | Base abstracta para inicializaciones hoja (sin hijos); `find` solo resuelve ruta vacía, `copy` retorna `this` | Leaf                    |
+| `parser.initializations.leafs.VariableInitialization` | Envuelve un literal o identificador como valor inicial explícito                                       | Value Object            |
+| `parser.initializations.leafs.EnumeratedInitialization` | Primer valor de un enumerado como valor por defecto                                                  | Value Object            |
+| `parser.initializations.leafs.MacroInitialization`    | Valor ordinal de un literal de enumerado registrado como `Subtype.INT`                                 | Value Object            |
+| `parser.initializations.leafs.SubrangeInitialization` | Cota inferior como valor por defecto; conserva inferior y superior                                     | Value Object            |
+| `parser.initializations.leafs.DefaultInitialization`  | Valores por defecto perezosos para primitivos (BOOL, INT, REAL, STRING, WSTRING) registrados en `SymbolTable` vía `Director` | Value Object / Lazy Init |
 
 Fuentes por subpaquete:
 
@@ -154,9 +165,10 @@ Fuentes por subpaquete:
 | `parser.utils`                   | `src/main/java/parser/utils/`                      |
 | `parser.facades`                 | `src/main/java/parser/facades/`                    |
 | `parser.initializations`         | `src/main/java/parser/initializations/`            |
-| `parser.initializations.primitives` | `src/main/java/parser/initializations/primitives/` |
+| `parser.initializations.leafs`   | `src/main/java/parser/initializations/leafs/`      |
+| `parser.initializations.nodes`   | `src/main/java/parser/initializations/nodes/`      |
 
-`StringInitialization`, `WStringInitialization`, `IntInitialization`, `BooleanInitialization`, `RealInitialization` (`src/main/java/parser/initializations/primitives/`) implementan `AbstractPrimitiveInitialization`. `Factory.createPrimitiveInitialization` en `parser.initializations` crea instancias de todas ellas. `IntInitialization` cubre todos los enteros (SINT..ULINT).
+`DefaultInitialization` (`parser.initializations.leafs`) implementa valores por defecto para **todos** los subtipos primitivos: BOOL, STRING, WSTRING, REAL/LREAL, y todos los enteros (SINT..ULINT). `Factory.createPrimitiveInitialization` en `parser.initializations` delega en `DefaultInitialization`. Las clases `StringInitialization`, `WStringInitialization`, `BooleanInitialization`, `RealInitialization`, `IntInitialization` y `AbstractPrimitiveInitialization` **ya no existen**.
 
 ## Gramática soportada — resumen
 
@@ -165,13 +177,13 @@ Fuentes por subpaquete:
 | Métrica              | Valor | Origen                                                  |
 |----------------------|-------|---------------------------------------------------------|
 | Tokens declarados    | 82    | directivas `%token` de `src/main/java/parser/Parser.y`   |
-| No-terminales        | 137   | constantes de `enum SymbolKind` en `src/main/java/parser/Parser.java` con índice ≥ `S_YYACCEPT`; incluye `$accept` |
-| Tipos de inicialización | 11  | clases concretas en `src/main/java/parser/initializations/` y `primitives/` (excluye `Initialization.java` interfaz y `AbstractPrimitiveInitialization.java` abstracta) |
+| No-terminales        | 139   | constantes de `enum SymbolKind` en `src/main/java/parser/Parser.java` con índice ≥ `S_YYACCEPT`; incluye `$accept` |
+| Tipos de inicialización | 7   | clases concretas en `src/main/java/parser/initializations/leafs/` y `nodes/` (excluye `Initialization.java` interfaz, `NodeInitialization.java` y `LeafInitialization.java` abstractas) |
 
 Chart: `assets/parser_grammar_stats.png` — tokens declarados, no-terminales y tipos de inicialización de la gramática Bison (generado por `scripts/extract_stats.py`).
 
 El conteo de no-terminales coincide con la sección "Nonterminals" del reporte de Bison. Valores anteriores de 231 contaban todas las constantes de `SymbolKind`, incluidos los terminales.
-Los 11 tipos de inicialización son: `VariableInitialization`, `EnumeratedInitialization`, `MacroInitialization`, `RepeatedInitialization`, `StructInitialization`, `SubrangeInitialization`, `StringInitialization`, `WStringInitialization`, `RealInitialization`, `IntInitialization`, `BooleanInitialization`.
+Los 7 tipos de inicialización concretos son: `VariableInitialization`, `EnumeratedInitialization`, `MacroInitialization`, `RepeatedInitialization`, `StructInitialization`, `SubrangeInitialization`, `DefaultInitialization`.
 
 ### Bloques principales IEC 61131-7
 
@@ -331,7 +343,7 @@ Extracto de `src/main/java/parser/Parser.y`:
 | `array_specification`              | `type=ARRAY, initialValue=RepeatedInitialization(dimension, defaultInit)` para elemento custom o primitivo            |
 | `array_initial_elements`           | Consolida intervalos con `RepeatedInitialization.addInterval(start, end, init)` y reinicia el índice                  |
 | `structure_field_declaration`      | Nuevo contexto por campo, `use=FIELD, source=NONE`, publica y hace `pop` al reducir                                  |
-| `structure_specification`          | `type=STRUCT, subtype=NONE, parameters=campos`; construye `StructInitialization` con el `initialValue` de cada campo  |
+| `structure_specification`          | `type=STRUCT, subtype=NONE, parameters=campos`; construye `parser.initializations.nodes.StructInitialization` con el `initialValue` de cada campo  |
 | `type_string_specification`        | Fija `subtype=STRING` o `subtype=WSTRING` en el builder                                                              |
 | `string_specification`             | `type=SIMPLE`, `initialValue=Factory.createPrimitiveInitialization(symbolTable, subtype)`                            |
 | `string_specification` con `[n]`   | Igual que la anterior y además `superiorLimits=[n]` con la longitud declarada                                        |
@@ -340,9 +352,8 @@ Extracto de `src/main/java/parser/Parser.y`:
 
 Notas:
 
-* `Factory.createPrimitiveInitialization` (en `parser.initializations`) soporta **todos** los subtipos primitivos: BOOL, STRING, WSTRING, REAL/LREAL, y todos los enteros (SINT..ULINT) vía `IntInitialization`. Lanza `IllegalArgumentException` para subtipos no soportados.
-* BOOL usa `BooleanInitialization` directamente en `boolean_specification` (no pasa por `Factory`).
-* STRING/WSTRING usan `StringInitialization`/`WStringInitialization` directamente en `string_specification` (no pasan por `Factory` en la regla, aunque `Factory` ahora también los crea).
+* `Factory.createPrimitiveInitialization` (en `parser.initializations`) delega en `DefaultInitialization` (en `parser.initializations.leafs`) que soporta **todos** los subtipos primitivos: BOOL, STRING, WSTRING, REAL/LREAL, y todos los enteros (SINT..ULINT). Lanza `IllegalArgumentException` para subtipos no soportados.
+* Las clases `StringInitialization`, `WStringInitialization`, `IntInitialization`, `BooleanInitialization`, `RealInitialization` y `AbstractPrimitiveInitialization` **han sido eliminadas**; sus funciones las cubre `DefaultInitialization`.
 * La publicación en `SymbolTable` la realiza `ContextHandler.publish()`, no una clase `Publisher` separada.
 
 ## Inicializaciones — jerarquía y uso
@@ -351,92 +362,86 @@ Notas:
 classDiagram
     class Initialization {
         <<interface>>
-        +selectVariable(String) Initialization
-        +getVariableValue() String
+        +find(String) Optional~Initialization~
+        +variableValue() String
+        +copy() Initialization
+    }
+    class NodeInitialization {
+        <<abstract>>
+        +put(String, Initialization) Initialization
+        +find(String) Optional~Initialization~
+        #breakStringPath(String) String[]
+    }
+    class LeafInitialization {
+        <<abstract>>
+        +find(String) Optional~Initialization~
         +copy() Initialization
     }
     class VariableInitialization {
         +value: String
     }
-    class AbstractPrimitiveInitialization {
-        <<abstract>>
-        +symbolTable: SymbolTable
-    }
-    class StringInitialization {
-        +symbolTable: SymbolTable
-    }
-    class WStringInitialization {
-        +symbolTable: SymbolTable
-    }
-    class BooleanInitialization {
-        +symbolTable: SymbolTable
-    }
-    class RealInitialization {
-        +symbolTable: SymbolTable
-    }
-    class IntInitialization {
-        +symbolTable: SymbolTable
+    class DefaultInitialization {
+        -literal: String
+        +bool(SymbolTable) DefaultInitialization
+        +real(SymbolTable) DefaultInitialization
+        +integer(SymbolTable) DefaultInitialization
+        +string(SymbolTable) DefaultInitialization
+        +wstring(SymbolTable) DefaultInitialization
     }
     class EnumeratedInitialization {
         +enumeratedValue: String
     }
     class MacroInitialization {
-        +symbolTable: SymbolTable
-        +replaceValue: String
+        +replaceValue: Integer
     }
     class SubrangeInitialization {
         +ilimit: String
-        +slimit: String
     }
     class StructInitialization {
         +map: Map
-        +setFieldInitialization(String, Initialization)
-        +selectVariable(String) Initialization
+        +put(String, Initialization) Initialization
+        +find(String) Optional~Initialization~
         +copy() Initialization
     }
     class RepeatedInitialization {
         +dimension: int
         +intervals: List
-        +addInterval(int, int, Initialization)
-        +getRepetitionsList() List
+        +put(String, Initialization) Initialization
+        +find(String) Optional~Initialization~
+        +copy() Initialization
     }
     class Factory {
         +createPrimitiveInitialization(SymbolTable, Subtype) Initialization
     }
-    Initialization <|-- VariableInitialization
-    Initialization <|-- AbstractPrimitiveInitialization
-    AbstractPrimitiveInitialization <|-- StringInitialization
-    AbstractPrimitiveInitialization <|-- WStringInitialization
-    AbstractPrimitiveInitialization <|-- BooleanInitialization
-    AbstractPrimitiveInitialization <|-- RealInitialization
-    AbstractPrimitiveInitialization <|-- IntInitialization
-    Initialization <|-- EnumeratedInitialization
-    Initialization <|-- MacroInitialization
-    Initialization <|-- SubrangeInitialization
-    Initialization <|-- StructInitialization
-    Initialization <|-- RepeatedInitialization
-    Factory ..> Initialization : creates
+    Initialization <|.. NodeInitialization
+    Initialization <|.. LeafInitialization
+    NodeInitialization <|-- StructInitialization
+    NodeInitialization <|-- RepeatedInitialization
+    LeafInitialization <|-- VariableInitialization
+    LeafInitialization <|-- DefaultInitialization
+    LeafInitialization <|-- EnumeratedInitialization
+    LeafInitialization <|-- MacroInitialization
+    LeafInitialization <|-- SubrangeInitialization
+    Factory ..> DefaultInitialization : creates
 ```
 
-Comportamiento por defecto de `getVariableValue`:
+Comportamiento por defecto de `variableValue`:
 
 | Clase                        | Valor por defecto                                | Registro en `SymbolTable`                                |
 |------------------------------|--------------------------------------------------|----------------------------------------------------------|
 | `VariableInitialization`     | literal o identificador asignado                 | no registra (solo envuelve)                              |
-| `StringInitialization`       | literal por defecto STRING `''`                  | `putIfAbsent` vía `Director.makeDefaultString`           |
-| `WStringInitialization`      | literal por defecto WSTRING `L''`                | `putIfAbsent` vía `Director.makeDefaultWString`          |
-| `BooleanInitialization`      | `FALSE`                                          | `putIfAbsent` vía `Director.makeDefaultBoolean`          |
-| `RealInitialization`         | `0.0`                                            | `putIfAbsent` vía `Director.makeDefaultReal`             |
-| `IntInitialization`          | `0`                                              | `putIfAbsent` vía `Director.makeDefaultInt`              |
+| `DefaultInitialization` BOOL | `FALSE`                                          | `putIfAbsent` vía `Director.makeDefaultBoolean`          |
+| `DefaultInitialization` REAL | `0.0`                                            | `putIfAbsent` vía `Director.makeDefaultReal`             |
+| `DefaultInitialization` INT  | `0`                                              | `putIfAbsent` vía `Director.makeDefaultInteger`          |
+| `DefaultInitialization` STRING | `''`                                           | `putIfAbsent` vía `Director.makeDefaultString`           |
+| `DefaultInitialization` WSTRING | `""`                                          | `putIfAbsent` vía `Director.makeDefaultWString`          |
 | `EnumeratedInitialization`   | primer valor del enumerado                       | no registra (selecciona el valor)                        |
 | `MacroInitialization`        | ordinal del literal de enum                      | `putIfAbsent` con `subtype=INT`                          |
 | `SubrangeInitialization`     | cota inferior                                    | no registra                                              |
 | `StructInitialization`       | mapa campo → `Initialization`                    | no registra                                              |
 | `RepeatedInitialization`     | partición de intervalos `[start, end]`            | no registra                                              |
 
-Todos los valores por defecto perezosos usan un campo `static DEFAULT` y `SymbolTable.putIfAbsent`, de modo que una misma tabla no duplica la entrada del literal.
-
-`StringInitialization` y `WStringInitialization` tienen cada una su propio `static DEFAULT`; `equals` compara solo la clase.
+Todos los valores por defecto perezosos usan un campo `static DEFAULT` (en `Director`) y `SymbolTable.putIfAbsent`, de modo que una misma tabla no duplica la entrada del literal.
 
 ## Flujo Lexer → Parser → SymbolTable
 
@@ -525,7 +530,7 @@ classDiagram
 
     note for LexemeInfo "SIMPLE\ntype=SIMPLE, subtype=REAL/BOOL/STRING/WSTRING/CUSTOM\nuse=VARIABLE/TYPE/LITERAL\ninitialValue=Initialization"
     note for LexemeInfo "ARRAY\ntype=ARRAY, subtype=element type\ninferiorLimits=[0], superiorLimits=[9]\ninitialValue=RepeatedInitialization"
-    note for LexemeInfo "STRUCT\ntype=STRUCT, subtype=NONE\nparameters=[field1, field2]\ninitialValue=StructInitialization"
+    note for LexemeInfo "STRUCT\ntype=STRUCT, subtype=NONE\nparameters=[field1, field2]\ninitialValue=parser.initializations.nodes.StructInitialization"
     note for LexemeInfo "ENUMERATE\ntype=ENUMERATE, subtype=INT\nparameters=[A, B, C]\nuse=MACRO for each value"
     note for LexemeInfo "SUBRANGE\ntype=SUBRANGE\ninferiorLimits=[0], superiorLimits=[100]\ninitialValue=SubrangeInitialization"
 ```
@@ -536,15 +541,15 @@ Las claves quedan en mayúsculas porque el lexer normaliza los identificadores; 
 
 | Tipo                  | Cuándo se publica                      | Clave en SymbolTable | LexemeInfo destacado                                                                         |
 |-----------------------|----------------------------------------|----------------------|----------------------------------------------------------------------------------------------|
-| Variable simple       | `var_init_decl` (simple_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=REAL o BOOL, initialValue=RealInitialization o BooleanInitialization       |
-| Variable string       | `var_init_decl` (string_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=STRING/WSTRING, superiorLimits=[n] si hay longitud, initialValue=StringInitialization |
+| Variable simple       | `var_init_decl` (simple_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=REAL o BOOL, initialValue=DefaultInitialization                          |
+| Variable string       | `var_init_decl` (string_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=STRING/WSTRING, superiorLimits=[n] si hay longitud, initialValue=DefaultInitialization |
 | String inicializado   | `initialized_string`                   | `FB#varName`         | initialValue=VariableInitialization(string_constant)                                          |
 | Tipo string           | `type_declaration` (string_spec_init)  | `TypeName`           | use=TYPE, source=NONE, subtype=STRING/WSTRING, superiorLimits=[n]                              |
 | Variable custom       | `var_init_decl` (custom_spec_init)     | `FB#varName`         | type=SIMPLE, subtype=CUSTOM, customType=TypeName, initialValue=Type.initialValue              |
 | Variable inicializada | `initialized_simple/custom/boolean/string` | `FB#varName`         | initialValue=VariableInitialization(literal)                                                  |
 | Array                 | `var_init_decl` (array_spec_init)      | `FB#arrName`         | type=ARRAY, subtype=elementType, initialValue=RepeatedInitialization(dimension, defaultInit)  |
 | Array inicializado    | `initialized_array`                    | `FB#arrName`         | initialValue=RepeatedInitialization con intervalos                                            |
-| Struct                | `type_declaration` tras `structure_specification` | `TypeName` | type=STRUCT, subtype=NONE, parameters=[field1..], initialValue=StructInitialization       |
+| Struct                | `type_declaration` tras `structure_specification` | `TypeName` | type=STRUCT, subtype=NONE, parameters=[field1..], initialValue=parser.initializations.nodes.StructInitialization       |
 | Campo struct          | `structure_field_declaration`          | `TypeName#fieldName` | use=FIELD, type/subtype del campo                                                             |
 | Enum (tipo)           | `enumerated_specification`             | `FB#enumName`        | type=ENUMERATE, subtype=INT, parameters=[A,B,C]                                               |
 | Enum valor (macro)    | `enumerated_values_list`               | `TypeName#VALUE`     | use=MACRO, initialValue=MacroInitialization(index)                                            |
@@ -559,6 +564,7 @@ Las claves quedan en mayúsculas porque el lexer normaliza los identificadores; 
 |--------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | `src/test/java/unit/parser/ParserTest.java`                                    | `Parse_ForSyntacticallyValidPrograms_IsTrue`: prueba parametrizada sobre `src/test/resources/examples/program01.txt` … `program04.txt`; exige `parse() == true` y ausencia de errores |
 | `src/test/java/unit/parser/initializations/RepeatedInitializationTest.java`    | 8 métodos `@Test`: constructor, inserción de intervalos al medio, al inicio, fuera de rango, recorte, fusión de adyacentes, cobertura múltiple y `copy()` |
+| `src/test/java/unit/parser/initializations/StructInitializationTest.java`      | 9 métodos `@Test`: `find` (vacío, existente, anidado, faltante, idempotente), `put` (retorno, anidado, error), `variableValue`, `copy`, `equals` |
 
 ### Tests de integración Lexer → Parser → SymbolTable
 
@@ -578,7 +584,7 @@ Ubicados en `src/test/java/integration/lexer/parser/symboltable/`. Todos extiend
 `StringTypeIT` contiene 6 métodos: 2 `@ParameterizedTest` sobre `Subtype.STRING` y `Subtype.WSTRING` y 4 `@Test`. Verifica:
 
 * `superiorLimits=["8"]` para `STRING[8]` y `WSTRING[8]`.
-* `initialValue=StringInitialization` sin inicializador.
+* `initialValue=DefaultInitialization` sin inicializador.
 * `initialValue=VariableInitialization` con el literal entre comillas simples o dobles.
 * `use=TYPE, source=NONE` en `TYPE` y `use=VARIABLE, source=INTERNAL` en `VAR`.
 
@@ -603,7 +609,7 @@ mvn test -Dtest='*IT'
 
 ### Cobertura
 
-Detalle por subpaquete, calculado desde `target/site/jacoco/jacoco.xml` (reporte JaCoCo 2026-10-07):
+Detalle por subpaquete, calculado desde `target/site/jacoco/jacoco.xml` (reporte JaCoCo 2026-10-09):
 
 | Subpaquete                      | Instrucciones cubiertas | Líneas cubiertas | Ramas cubiertas |
 |-------------------------------|-------------------------|------------------|-----------------|
@@ -611,28 +617,28 @@ Detalle por subpaquete, calculado desde `target/site/jacoco/jacoco.xml` (reporte
 | `parser.internals`            | 98.8%                   | 100.0%           | 75.0%           |
 | `parser.utils`                | 80.9%                   | 84.6%            | 71.4%           |
 | `parser.initializations`      | 54.0%                   | 61.7%            | 48.4%           |
-| `parser.initializations.primitives` | 85.2%             | 89.2%            | 58.3%           |
+| `parser.initializations.leafs` | 85.2%                  | 89.2%            | 58.3%           |
 | **total `parser.*`**          | ~90%                    | ~79%             | ~48%            |
 
 Cobertura de líneas (LINE) por módulo desde JaCoCo:
 
 | Módulo | Cobertura |
 |--------|-----------|
-| `parser` | 82% |
-| `lexer`  | 80% |
-| `utils`  | 39% |
-| **global** | 66% |
+| `parser` | 31% |
+| `lexer`  | 100% |
+| `utils`  | 47% |
+| **global** | 71% |
 
 `assets/test_coverage.png` y `doc/stats.json → test_coverage` ahora reflejan datos reales de `jacoco.xml` (actualizado por `scripts/extract_stats.py`).
 
 ### Métricas estáticas
 
-Fuente: `doc/stats.json`, generado por `scripts/extract_stats.py` (2026-10-07).
+Fuente: `doc/stats.json`, generado por `scripts/extract_stats.py` (2026-10-09).
 
 | Métrica | Valor | Nota |
 |---------|-------|------|
-| LOC | 3919 en 20 archivos | Líneas no vacías ni `//`; incluye `Parser.java` generado (2699 LOC) |
-| Complejidad ciclomática | Promedio 6.1; total 442; 72 métodos estimados | Estimación heurística por conteo de palabras clave |
+| LOC | 3138 en 6 archivos | Líneas no vacías ni `//`; incluye `Parser.java` generado (2699 LOC) |
+| Complejidad ciclomática | Promedio 9.3; total 362; 39 métodos estimados | Estimación heurística por conteo de palabras clave |
 | Acoplamiento | Afferent 1, efferent 1, inestabilidad 0.5 | `parser → utils` (efferent=1) |
 
 Chart: `assets/loc_per_module.png` — líneas de código por módulo.
@@ -652,7 +658,6 @@ src/main/java/parser/
 │   ├── package-info.java
 │   ├── ContextHandler.java
 │   ├── ParsingContext.java
-│   └── NameMangler.java
 ├── utils/
 │   ├── package-info.java
 │   └── NameMangler.java
@@ -664,25 +669,26 @@ src/main/java/parser/
     ├── package-info.java
     ├── Factory.java
     ├── Initialization.java
-    ├── VariableInitialization.java
-    ├── EnumeratedInitialization.java
-    ├── MacroInitialization.java
-    ├── RepeatedInitialization.java
-    ├── StructInitialization.java
-    ├── SubrangeInitialization.java
-    └── primitives/
+    ├── leafs/
+    │   ├── package-info.java
+    │   ├── LeafInitialization.java
+    │   ├── VariableInitialization.java
+    │   ├── EnumeratedInitialization.java
+    │   ├── MacroInitialization.java
+    │   ├── SubrangeInitialization.java
+    │   └── DefaultInitialization.java
+    └── nodes/
         ├── package-info.java
-        ├── AbstractPrimitiveInitialization.java
-        ├── StringInitialization.java
-        ├── WStringInitialization.java
-        ├── BooleanInitialization.java
-        ├── RealInitialization.java
-        └── IntInitialization.java
+        ├── NodeInitialization.java
+        ├── StructInitialization.java
+        └── RepeatedInitialization.java
 
 src/test/java/
 ├── unit/parser/
 │   ├── ParserTest.java
-│   └── initializations/RepeatedInitializationTest.java
+│   └── initializations/
+│       ├── RepeatedInitializationTest.java
+│       └── StructInitializationTest.java
 ├── integration/lexer/parser/symboltable/
 │   ├── *IT.java
 │   ├── *TypeErrorIT.java

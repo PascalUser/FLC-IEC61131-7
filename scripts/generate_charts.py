@@ -143,7 +143,7 @@ def chart_parser_grammar_stats():
         "EnumeratedInitialization": 1,
         "MacroInitialization": 1,
         "VariableInitialization": 1,
-        "StructInitialization": 1,
+        "parser.initializations.nodes.StructInitialization": 1,
         "RepeatedInitialization": 1,
     }
 

@@ -3,8 +3,8 @@ package integration.lexer.parser.symboltable;
 import org.junit.jupiter.api.Test;
 import utils.ParserTestSupport;
 
-import parser.initializations.EnumeratedInitialization;
-import parser.initializations.MacroInitialization;
+import parser.initializations.leafs.EnumeratedInitialization;
+import parser.initializations.leafs.MacroInitialization;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -49,7 +49,7 @@ public class EnumerateTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "0"))
+                .initialValue(new MacroInitialization(st, 0))
                 .build()
         );
 
@@ -58,7 +58,7 @@ public class EnumerateTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(st, "1"))
+                .initialValue(new MacroInitialization(st, 1))
                 .build()
         );
     }

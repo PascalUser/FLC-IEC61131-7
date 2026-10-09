@@ -1,53 +1,60 @@
 package parser.initializations;
 
-import parser.initializations.primitives.BooleanInitialization;
-import parser.initializations.primitives.RealInitialization;
+import java.util.Optional;
 
 /**
- * Interface for polymorphic initialization values in IEC 61131-7.
+ * Represents a variable initialization value in the IEC 61131-7 parser.
  * <p>
- * The initialization hierarchy supports all IEC 61131-7 initialization forms:
+ * Initializations form a tree structure where leaf nodes hold literal values
+ * (integers, reals, booleans, strings, enumerated values, subranges) and
+ * internal nodes represent structured types (structs, repeated arrays).
+ * The {@link #find(String)} method allows path-based navigation using
+ * {@code #} as a separator (e.g., {@code "RGB#R"} or {@code "2#X"}).
  * </p>
- * <ul>
- *   <li>{@link VariableInitialization} — explicit user assignments</li>
- *   <li>{@link BooleanInitialization} — default BOOL (FALSE)</li>
- *   <li>{@link RealInitialization} — default REAL (0.0)</li>
- *   <li>{@link EnumeratedInitialization} — default enum (first value)</li>
- *   <li>{@link MacroInitialization} — explicit enum literal reference</li>
- *   <li>{@link SubrangeInitialization} — default subrange (lower bound)</li>
- *   <li>{@link RepeatedInitialization} — arrays with repetition factors</li>
- *   <li>{@link StructInitialization} — structs with named field initialization</li>
- * </ul>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
+ * @see parser.initializations.leafs.LeafInitialization
+ * @see parser.initializations.nodes.NodeInitialization
  */
 public interface Initialization {
+
     /**
-     * Selects a nested variable/field for multi-level initialization.
+     * Looks up a nested initialization by path, without modifying anything.
      * <p>
-     * For simple initializations, returns {@code this}. For struct/array
-     * initializations, navigates to the nested initialization.
-     * </p>
+     * A path is a sequence of field names (structs) or indices (arrays) separated by
+     * {@code '#'}, e.g. {@code "RGB#GAMMA_R"} or {@code "2#X"}. The empty path designates
+     * this very initialization. Leaf initializations have no children, so for them only the
+     * empty path resolves.
      *
-     * @param variable the variable or field name (or array index)
-     * @return the initialization for the selected variable
+     * @param path the path to the nested initialization; {@code ""} for this one
+     * @return the initialization found at {@code path}, or empty if the path does not exist
      */
-    Initialization selectVariable(String variable);
+    Optional<Initialization> find(String path);
 
     /**
      * Returns the string representation of this initialization's value.
-     *
-     * @return the value as string
      */
-    String getVariableValue();
+    String variableValue();
 
     /**
-     * Creates a deep copy of this initialization.
+     * Creates a copy of this initialization that can be modified independently.
+     * <p>
+     * Immutable initializations may return {@code this}.
+     * </p>
      *
-     * @return a new independent copy
+     * @return an independent copy (or {@code this} if immutable)
      */
     Initialization copy();
+
+    @Override
+    boolean equals(Object o);
+
+    @Override
+    int hashCode();
+
+    @Override
+    String toString();
 }

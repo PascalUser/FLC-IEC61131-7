@@ -13,12 +13,12 @@ classDiagram
         class StripLeadingZeros
         class StripTrailingZeros
         class StripBaseNumberLeadingZeros
+        class StringEscapeResolver
+        class Nothing
         class OmitLeadingZeroMagnitudes
         class OmitTrailingZeroMagnitudes
         class OmitLeadingZerosInMagnitudes
         class OmitTrailingZerosInMagnitudes
-        class StringEscapeResolver
-        class Nothing
     }
     namespace lexer_transformers_hex_resolvers {
         class HexResolver
@@ -73,16 +73,16 @@ classDiagram
     SemanticAnalyzer <|-- StringsAnalyzer
     StringsAnalyzer <|-- WStrings
     Transformer <|-- Nothing
+    Transformer <|-- OmitLeadingZeroMagnitudes
+    Transformer <|-- OmitLeadingZerosInMagnitudes
+    Transformer <|-- OmitTrailingZeroMagnitudes
+    Transformer <|-- OmitTrailingZerosInMagnitudes
     Transformer <|-- StringEscapeResolver
+    Transformer <|-- StripBaseNumberLeadingZeros
     Transformer <|-- StripLeadingZeros
     Transformer <|-- StripTrailingZeros
-    Transformer <|-- StripBaseNumberLeadingZeros
     Transformer <|-- UnderscoreRemover
     Transformer <|-- UpperCaseConverter
-    Transformer <|-- OmitLeadingZeroMagnitudes
-    Transformer <|-- OmitTrailingZeroMagnitudes
-    Transformer <|-- OmitLeadingZerosInMagnitudes
-    Transformer <|-- OmitTrailingZerosInMagnitudes
     Transformer <|-- HexResolver
     HexResolver <|-- StringHexResolver
     HexResolver <|-- WStringHexResolver

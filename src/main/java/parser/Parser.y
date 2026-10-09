@@ -18,7 +18,9 @@
     import parser.facades.*;
     import parser.internals.*;
     import parser.initializations.*;
-    import parser.initializations.primitives.*;
+    import parser.initializations.leafs.*;
+    import parser.initializations.nodes.*;
+    import parser.initializations.nodes.RepeatedInitialization.Interval;
 }
 
 %code {
@@ -86,6 +88,12 @@
     enumerated_values
     structure_field_declaration_list
     linguistic_term_list
+
+%type <List<Interval>>
+    array_initial_elements_list
+
+%type <Interval>
+    _actionAfterElement_
 
 %%
 
@@ -636,7 +644,7 @@ boolean_specification:
             .type(Type.SIMPLE)
             .subtype(Subtype.BOOL)
             .initialValue(
-                new BooleanInitialization(this.symbolTable)
+                Factory.createPrimitiveInitialization(this.symbolTable, Subtype.BOOL)
             );
     }
 ;
@@ -932,7 +940,7 @@ enumerated_values:
 
         ctx.declaredIdentifiers().add($1);
         Director.makeMacro(ctx.metadataBuilder());
-        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, "0"));
+        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, ctx.index()));
         this.contexts.publish();
 
         List<String> enumeratedValues = new ArrayList<>();
@@ -941,7 +949,6 @@ enumerated_values:
     }
     | enumerated_values ',' IDENTIFIER
     {
-        Integer replaceValue = $1.size();
         String declaredEnumerated = this.contexts.current().declaredIdentifiers().get(0);
 
         this.contexts.createSubcontext();
@@ -955,7 +962,7 @@ enumerated_values:
 
         ctx.declaredIdentifiers().add($3);
         Director.makeMacro(ctx.metadataBuilder());
-        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, replaceValue.toString()));
+        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, $1.size()));
         this.contexts.publish();
 
         $1.add($3);
@@ -983,11 +990,15 @@ array_type:
         LexemeInfo typeMetadata = this.symbolTable.get($1);
 
         int dimension = DimensionCalculator.calculate(ctx);
+        List<Interval> interval = Collections.singletonList(
+            new Interval(0, dimension - 1, (Initialization) typeMetadata.initialValue)
+        );
+
         ctx.metadataBuilder()
             .subtype(Subtype.CUSTOM)
             .customType($1)
             .initialValue(
-                new RepeatedInitialization(dimension, (Initialization) typeMetadata.initialValue)
+                new RepeatedInitialization(dimension, interval)
             );
 
         String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, $1);
@@ -996,13 +1007,17 @@ array_type:
     | non_generic_type_name
     {
         ParsingContext ctx = this.contexts.current();
+        Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $1);
 
         int dimension = DimensionCalculator.calculate(ctx);
-        Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $1);
+        List<Interval> interval = Collections.singletonList(
+            new Interval(0, dimension - 1, defaultInit)
+        );
+
         ctx.metadataBuilder()
             .subtype($1)
             .initialValue(
-                new RepeatedInitialization(dimension, defaultInit)
+                new RepeatedInitialization(dimension, interval)
             );
     }
 ;
@@ -1022,11 +1037,27 @@ non_generic_type_name:
 
 array_initialization:
     '[' array_initial_elements_list ']'
+    {
+        ParsingContext ctx = this.contexts.current();
+        int dimension = DimensionCalculator.calculate(ctx);
+        ctx.metadataBuilder().initialValue(
+            new RepeatedInitialization(dimension, $2)
+        );
+    }
 ;
 
 array_initial_elements_list:
     array_initial_elements _actionAfterElement_
+    {
+        List<Interval> intervals = new ArrayList<>();
+        intervals.add($2);
+        $$ = intervals;
+    }
     | array_initial_elements_list ',' array_initial_elements _actionAfterElement_
+    {
+        $1.add($4);
+        $$ = $1;
+    }
 ;
 
 array_initial_elements:
@@ -1049,14 +1080,7 @@ _actionAfterElement_:
         arrayContext.incrementIndex(initContext.index());
 
         LexemeInfo initMetadata = initContext.metadataBuilder().build();
-        LexemeInfo arrayMetadata = arrayContext.metadataBuilder().build();
-
-        RepeatedInitialization arrayInitialValue = (RepeatedInitialization) arrayMetadata.initialValue;
-        arrayInitialValue.addInterval(
-            start,
-            arrayContext.index() - 1,
-            (Initialization) initMetadata.initialValue
-        );
+        $$ = new Interval(start, arrayContext.index() - 1, (Initialization) initMetadata.initialValue);
     }
 ;
 
@@ -1184,10 +1208,11 @@ initialized_field_with_constant:
         String completeFieldName = ctx.nestedFields().getCurrentScope();
         
         StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
-        if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
+        if (!structValue.find(completeFieldName).isPresent()) {
             // TODO: error control. field does not exist
         }
-        structValue.setFieldInitialization(completeFieldName, new VariableInitialization($3));
+
+        structValue.put(completeFieldName, new VariableInitialization($3));
         ctx.nestedFields().popScope();
     }
 ;
@@ -1203,13 +1228,13 @@ initialized_field_with_identifier:
         String completeFieldName = ctx.nestedFields().getCurrentScope();
 
         StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
-        if (structValue.selectVariable(completeFieldName).getVariableValue() == "") {
+        if (!structValue.find(completeFieldName).isPresent()) {
             // TODO: error control. field does not exist
         }
         // TODO: error control, verify enum is reachable
         String completeEnumeratedValue = ctx.searchScope().getNameMangled($3);
 
-        structValue.setFieldInitialization(completeFieldName, new VariableInitialization(completeEnumeratedValue));
+        structValue.put(completeFieldName, new VariableInitialization(completeEnumeratedValue));
         ctx.nestedFields().popScope();
     }
 ;
@@ -1410,7 +1435,7 @@ structure_specification:
         for (String field : structParameters) {
             String fieldName = ctx.searchScope().getNameMangled(field);
             LexemeInfo fieldMetadata = this.symbolTable.get(fieldName);
-            initialization.setFieldInitialization(field, (Initialization) fieldMetadata.initialValue);
+            initialization.put(field, (Initialization) fieldMetadata.initialValue);
         }
 
         // Modifies the context

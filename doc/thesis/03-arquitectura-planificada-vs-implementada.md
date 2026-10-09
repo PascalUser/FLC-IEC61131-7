@@ -42,7 +42,7 @@ Jerarquía `Initialization` (Composite/Strategy) con 8 subclases:
 
 * `VariableInitialization`, `BooleanInitialization`, `RealInitialization`
 * `EnumeratedInitialization`, `MacroInitialization`, `SubrangeInitialization`
-* `StructInitialization` (mapa recursivo `field → Initialization`)
+* `parser.initializations.nodes.StructInitialization` (mapa recursivo `field → Initialization`)
 * `RepeatedInitialization` (particiona arrays en intervalos `[start,end]`)
 
 ## Decisiones de diseño favoreciendo QA: Mantenibilidad

@@ -1,12 +1,11 @@
 package integration.lexer.parser.symboltable;
 
+import parser.initializations.leafs.DefaultInitialization;
+import parser.initializations.nodes.StructInitialization;
 import utils.ParserTestSupport;
 
 import org.junit.jupiter.api.Test;
-import parser.initializations.primitives.BooleanInitialization;
-import parser.initializations.primitives.RealInitialization;
-import parser.initializations.StructInitialization;
-import parser.initializations.VariableInitialization;
+import parser.initializations.leafs.VariableInitialization;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
@@ -41,16 +40,13 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
         SymbolTable st = parse(sourceCode);
 
         StructInitialization rgbTypeValue = new StructInitialization();
-        rgbTypeValue.setFieldInitialization("GAMMA_R", new RealInitialization(st));
-        rgbTypeValue.setFieldInitialization("GAMMA_G", new RealInitialization(st));
-        rgbTypeValue.setFieldInitialization("GAMMA_B", new RealInitialization(st));
+        rgbTypeValue.put("GAMMA_R", DefaultInitialization.real(st));
+        rgbTypeValue.put("GAMMA_G", DefaultInitialization.real(st));
+        rgbTypeValue.put("GAMMA_B", DefaultInitialization.real(st));
 
         StructInitialization colorTypeValue = new StructInitialization();
-        colorTypeValue.setFieldInitialization("WHITE", new BooleanInitialization(st));
-        colorTypeValue.setFieldInitialization("RGB", new StructInitialization());
-        colorTypeValue.setFieldInitialization("RGB#GAMMA_R", new RealInitialization(st));
-        colorTypeValue.setFieldInitialization("RGB#GAMMA_G", new RealInitialization(st));
-        colorTypeValue.setFieldInitialization("RGB#GAMMA_B", new RealInitialization(st));
+        colorTypeValue.put("WHITE", DefaultInitialization.bool(st));
+        colorTypeValue.put("RGB", rgbTypeValue);
 
         assertSymbol(st, "RGB_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
@@ -66,7 +62,7 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
-                .initialValue(new RealInitialization(st))
+                .initialValue(DefaultInitialization.real(st))
                 .build());
 
         assertSymbol(st, "RGB_TYPE#GAMMA_G", new LexemeInfoBuilder()
@@ -74,7 +70,7 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
-                .initialValue(new RealInitialization(st))
+                .initialValue(DefaultInitialization.real(st))
                 .build());
 
         assertSymbol(st, "RGB_TYPE#GAMMA_B", new LexemeInfoBuilder()
@@ -82,7 +78,7 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .subtype(Subtype.REAL)
                 .use(Use.FIELD)
                 .source(Source.NONE)
-                .initialValue(new RealInitialization(st))
+                .initialValue(DefaultInitialization.real(st))
                 .build());
 
         assertSymbol(st, "COLOR_TYPE", new LexemeInfoBuilder()
@@ -117,16 +113,14 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
         SymbolTable st = parse(sourceCode);
 
         StructInitialization rgbTypeValue = new StructInitialization();
-        rgbTypeValue.setFieldInitialization("GAMMA_R", new RealInitialization(st));
-        rgbTypeValue.setFieldInitialization("GAMMA_G", new RealInitialization(st));
-        rgbTypeValue.setFieldInitialization("GAMMA_B", new RealInitialization(st));
+        rgbTypeValue.put("GAMMA_R", DefaultInitialization.real(st));
+        rgbTypeValue.put("GAMMA_G", DefaultInitialization.real(st));
+        rgbTypeValue.put("GAMMA_B", DefaultInitialization.real(st));
 
         StructInitialization colorTypeValue = new StructInitialization();
-        colorTypeValue.setFieldInitialization("WHITE", new BooleanInitialization(st));
-        colorTypeValue.setFieldInitialization("RGB", new StructInitialization());
-        colorTypeValue.setFieldInitialization("RGB#GAMMA_R", new RealInitialization(st));
-        colorTypeValue.setFieldInitialization("RGB#GAMMA_G", new VariableInitialization("3.0"));
-        colorTypeValue.setFieldInitialization("RGB#GAMMA_B", new RealInitialization(st));
+        colorTypeValue.put("WHITE", DefaultInitialization.bool(st));
+        colorTypeValue.put("RGB", rgbTypeValue.copy());
+        colorTypeValue.put("RGB#GAMMA_G", new VariableInitialization("3.0"));
 
         assertSymbol(st, "RGB_TYPE", new LexemeInfoBuilder()
                 .type(Type.STRUCT)
