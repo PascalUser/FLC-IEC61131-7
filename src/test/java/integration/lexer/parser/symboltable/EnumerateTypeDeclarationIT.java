@@ -25,6 +25,11 @@ import java.util.Arrays;
  * @since 1.0-SNAPSHOT
  */
 public class EnumerateTypeDeclarationIT extends ParserTestSupport {
+    /**
+     * Verifies that a valid enumerated type declaration registers the type
+     * with its enumerators and creates macro constants for each enumerator
+     * with correct index values.
+     */
     @Test
     public void Declaring_Valid_Enum_Type_Registers_Enumerators_And_Macros() throws Exception {
         String sourceCode = "TYPE\n"

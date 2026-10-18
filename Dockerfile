@@ -31,7 +31,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 RUN pip install --break-system-packages matplotlib
 
 # Node dependencies (global)
-RUN npm install -g @mermaid-js/mermaid-cli yauzl
+RUN npm install -g @mermaid-js/mermaid-cli yauzl remark-cli remark-gfm
 
 # Install bun (required for opencode)
 RUN npm install -g bun

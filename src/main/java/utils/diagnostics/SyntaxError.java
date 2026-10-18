@@ -24,6 +24,11 @@ public class SyntaxError extends Error {
         super(line);
     }
 
+    /**
+     * Returns a formatted syntax error message with the line prefix.
+     *
+     * @return the formatted error message
+     */
     @Override
     public String getMessage() {
         return super.getMessage() + " unexpected syntax error";

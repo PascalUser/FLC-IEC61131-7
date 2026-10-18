@@ -34,3 +34,6 @@ Tesis.docx
 node_modules
 package.json
 package-lock.json
+
+# Harness logging
+log.txt

@@ -33,12 +33,12 @@ El paquete `utils` concentra el estado compartido entre fases:
 
 Cada entrada en la `SymbolTable` es un `LexemeInfo` completo. Los campos relevantes varían según el `Type`:
 
-| Type      | Subtype                     | Campos relevantes                                                                          | Ejemplo `initialValue`              |
-|-----------|-----------------------------|--------------------------------------------------------------------------------------------|-------------------------------------|
-| SIMPLE    | INT, REAL, BOOL, TIME, etc. | subtype, initialValue                                                                      | `10`, `0.0`, `FALSE`                |
-| ENUMERATE | INT                         | parameters=\[A,B,C], use=MACRO para cada valor                                             | Cada valor publicado por separado   |
-| SUBRANGE  | INT, etc.                   | inferiorLimits, superiorLimits                                                             | `0..100`                            |
-| ARRAY     | element type                | inferiorLimits, superiorLimits, initialValue=RepeatedInitialization                        | `ARRAY[0..9] OF INT := 5(0), 3(10)` |
+| Type      | Subtype                     | Campos relevantes                                                                                                       | Ejemplo `initialValue`              |
+|-----------|-----------------------------|-------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| SIMPLE    | INT, REAL, BOOL, TIME, etc. | subtype, initialValue                                                                                                   | `10`, `0.0`, `FALSE`                |
+| ENUMERATE | INT                         | parameters=\[A,B,C], use=MACRO para cada valor                                                                          | Cada valor publicado por separado   |
+| SUBRANGE  | INT, etc.                   | inferiorLimits, superiorLimits                                                                                          | `0..100`                            |
+| ARRAY     | element type                | inferiorLimits, superiorLimits, initialValue=RepeatedInitialization                                                     | `ARRAY[0..9] OF INT := 5(0), 3(10)` |
 | STRUCT    | CUSTOM                      | parameters=nombres de campo, initialValue=parser.initializations.nodes.StructInitialization (mapa campo→Initialization) | `STRUCT(a:=10, b:=20)`              |
 
 ![Almacenamiento en SymbolTable por tipo](../assets/rendered_diagrams/diagram_76350cf1.png)

@@ -1,6 +1,5 @@
 package lexer.semantics;
 
-import lexer.Lexer;
 import utils.DiagnosticsHandler;
 import utils.SymbolTable;
 
@@ -89,7 +88,7 @@ public interface SemanticAnalyzer {
      * Performs semantic analysis on the given lexical context.
      *
      * @param currentContext the context containing lexeme and environment
-     * @return the token number on success, or {@link Lexer#YYerror} on semantic error
+     * @return the token number on success, or {@link parser.Parser.Lexer#YYerror} on semantic error
      */
     Result analyze(LexicalContext currentContext);
 }

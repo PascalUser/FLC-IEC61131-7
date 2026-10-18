@@ -19,6 +19,10 @@ import java.util.Collections;
  */
 public class SubrangeVariableIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a variable declared with a named subrange type inherits
+     * the bounds and uses the custom type's default initialization.
+     */
     @Test
     public void Declaring_Variable_Of_Subrange_Type_Inherits_Bounds() throws Exception {
         String sourceCode = "TYPE\n"
@@ -41,6 +45,10 @@ public class SubrangeVariableIT extends ParserTestSupport {
                 .build());
     }
 
+    /**
+     * Verifies that an inline subrange variable declaration registers
+     * an anonymous subrange type with the declared bounds and initial value.
+     */
     @Test
     public void Declaring_Inline_Subrange_Variable_Registers_Anonymous_Type() throws Exception {
         String sourceCode = "FUNCTION_BLOCK main\n"

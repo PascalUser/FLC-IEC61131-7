@@ -22,6 +22,10 @@ import java.util.Arrays;
  */
 public class ArrayTypeDeclarationIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a multidimensional array of a struct type registers
+     * the struct type with its bounds and default initial values.
+     */
     @Test
     public void Declaring_Multidimensional_Array_Of_Struct_Type_Registers_Bounds() throws Exception {
         String sourceCode = "TYPE\n"

@@ -27,6 +27,10 @@ import java.util.List;
  */
 public class ArrayVariableIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a multidimensional array variable with a repeated initializer
+     * correctly expands all elements with the expected initial values.
+     */
     @ParameterizedTest
     @CsvSource({
             "VAR, INTERNAL",
@@ -62,31 +66,31 @@ public class ArrayVariableIT extends ParserTestSupport {
 
         List<Interval> expectedIntervals = new ArrayList<>();
         expectedIntervals.add(new Interval(
-                0, 19, createStructInit(
+                        0, 19, createStructInit(
                         classificationInit,
                         new VariableInitialization("1.0")
                 ))
         );
         expectedIntervals.add(new Interval(
-                20, 20, createStructInit(
+                        20, 20, createStructInit(
                         new VariableInitialization("BLACK"),
                         new VariableInitialization(".0")
                 ))
         );
         expectedIntervals.add(new Interval(
-                21, 30, createStructInit(
+                        21, 30, createStructInit(
                         new VariableInitialization("WHITE"),
                         new VariableInitialization("1.0")
                 ))
         );
         expectedIntervals.add(new Interval(
-                31, 38, createStructInit(
+                        31, 38, createStructInit(
                         new VariableInitialization("BLACK"),
                         new VariableInitialization(".0")
                 ))
         );
         expectedIntervals.add(new Interval(
-                39, 40, createStructInit(
+                        39, 40, createStructInit(
                         new VariableInitialization("GRAY"),
                         gammaInit
                 ))

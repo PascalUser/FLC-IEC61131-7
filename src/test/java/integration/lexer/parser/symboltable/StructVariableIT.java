@@ -21,6 +21,10 @@ import java.util.Arrays;
  */
 public class StructVariableIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a variable declared with a struct type inherits
+     * the struct's default field values.
+     */
     @Test
     public void Declaring_Variable_Of_Struct_Type_Inherits_Default_Field_Values() throws Exception {
         String sourceCode = "TYPE\n"
@@ -51,6 +55,10 @@ public class StructVariableIT extends ParserTestSupport {
                 .build());
     }
 
+    /**
+     * Verifies that an initialized struct variable stores field overrides
+     * while keeping defaults for uninitialized fields.
+     */
     @Test
     public void Declaring_Initialized_Struct_Variable_Stores_Field_Overrides() throws Exception {
         String sourceCode = "TYPE\n"

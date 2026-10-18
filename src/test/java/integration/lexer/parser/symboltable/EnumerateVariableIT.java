@@ -21,6 +21,10 @@ import java.util.Arrays;
  */
 public class EnumerateVariableIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a variable declared with a custom enum type uses
+     * the fully qualified enumerator name as its initial value.
+     */
     @ParameterizedTest
     @CsvSource({
             "VAR, INTERNAL",
@@ -52,6 +56,11 @@ public class EnumerateVariableIT extends ParserTestSupport {
         );
     }
 
+    /**
+     * Verifies that an inline enum variable declaration registers
+     * an anonymous enum type with its enumerators as macros and the
+     * initial value using the local scope.
+     */
     @ParameterizedTest
     @CsvSource({
             "VAR, INTERNAL",

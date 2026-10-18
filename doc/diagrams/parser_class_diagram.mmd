@@ -23,8 +23,6 @@ classDiagram
             +symbolTable(): SymbolTable
             +incrementIndex(int)
         }
-    }
-    namespace parser_utils {
         class NameMangler {
             +prefix: StringBuilder
             +addScope()
@@ -62,22 +60,6 @@ classDiagram
             +find(String) Optional~Initialization~
             +copy() Initialization
         }
-        class DefaultInitialization {
-            -literal: String
-            +bool(SymbolTable) DefaultInitialization
-            +real(SymbolTable) DefaultInitialization
-            +integer(SymbolTable) DefaultInitialization
-            +string(SymbolTable) DefaultInitialization
-            +wstring(SymbolTable) DefaultInitialization
-        }
-        class VariableInitialization
-        class EnumeratedInitialization
-        class MacroInitialization
-        class SubrangeInitialization
-    }
-    namespace parser_initializations_nodes {
-        class StructInitialization
-        class RepeatedInitialization
     }
     namespace parser_initializations_leafs {
         class VariableInitialization
@@ -87,15 +69,20 @@ classDiagram
         class DefaultInitialization
         class LeafInitialization
     }
+    namespace parser_initializations_nodes {
+        class StructInitialization
+        class RepeatedInitialization
+        class NodeInitialization
+    }
     Initialization <|.. NodeInitialization
     Initialization <|.. LeafInitialization
-    NodeInitialization <|-- StructInitialization
-    NodeInitialization <|-- RepeatedInitialization
     LeafInitialization <|-- VariableInitialization
-    LeafInitialization <|-- DefaultInitialization
     LeafInitialization <|-- EnumeratedInitialization
     LeafInitialization <|-- MacroInitialization
     LeafInitialization <|-- SubrangeInitialization
+    LeafInitialization <|-- DefaultInitialization
+    NodeInitialization <|-- StructInitialization
+    NodeInitialization <|-- RepeatedInitialization
     Factory ..> DefaultInitialization : creates
     Parser --> ContextHandler : uses
     ContextHandler --> ParsingContext : manages

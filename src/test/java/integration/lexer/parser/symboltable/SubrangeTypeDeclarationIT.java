@@ -26,6 +26,11 @@ import java.util.Collections;
  */
 public class SubrangeTypeDeclarationIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a valid subrange type declaration registers the type
+     * with correct bounds and subrange initialization, and that variables
+     * of that type use the custom type reference.
+     */
     @Test
     public void Declaring_Valid_Subrange_Type_Registers_Bounds() throws Exception {
         String sourceCode = "TYPE\n"

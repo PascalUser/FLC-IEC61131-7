@@ -21,6 +21,10 @@ import java.util.Arrays;
  */
 public class NestedStructTypeDeclarationIT extends ParserTestSupport {
 
+    /**
+     * Verifies that nested struct type declarations register all hierarchical
+     * fields with correct types and default initial values.
+     */
     @Test
     public void Declaring_Nested_Struct_Type_Registers_Hierarchical_Fields() throws Exception {
         String sourceCode = "TYPE\n"
@@ -91,6 +95,10 @@ public class NestedStructTypeDeclarationIT extends ParserTestSupport {
                 .build());
     }
 
+    /**
+     * Verifies that a nested struct with an initialized inner field correctly
+     * uses the provided value for the specified field while keeping defaults for others.
+     */
     @Test
     public void Declaring_Nested_Struct_With_Initialized_Inner_Field_Uses_Default() throws Exception {
         String sourceCode = "TYPE\n"

@@ -27,7 +27,11 @@ public final class StructInitialization extends NodeInitialization {
     /**
      * Replaces a field's initialization, traversing nested structs for compound names.
      *
-     * @throws ClassCastException if an intermediate field is not a struct initialization
+     * @param path           the field path (e.g., {@code "RGB#R"} for nested fields)
+     * @param initialization the new initialization value to set
+     * @return the previous initialization value at the specified path
+     * @throws ClassCastException         if an intermediate field is not a struct initialization
+     * @throws RuntimeException           if the path is invalid or the root is targeted
      */
     public Initialization put(final String path, final Initialization initialization) {
         String[] brokenPath = breakStringPath(path);

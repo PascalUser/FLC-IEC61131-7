@@ -36,6 +36,8 @@ public interface Initialization {
 
     /**
      * Returns the string representation of this initialization's value.
+     *
+     * @return the value as a string
      */
     String variableValue();
 

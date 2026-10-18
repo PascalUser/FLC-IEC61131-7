@@ -27,6 +27,10 @@
     private ContextHandler contexts;
 }
 
+/**
+ * Parser parameter: the symbol table shared between lexer and parser
+ * for storing semantic information during parsing.
+ */
 %parse-param { SymbolTable symbolTable  }
 
 %code init {
@@ -173,6 +177,11 @@ fuzzify_block:
     linguistic_term_list
     END_FUZZIFY
     {
+        /**
+         * Publishes the fuzzify block context to the symbol table after all
+         * linguistic terms have been processed.
+        **/
+
         this.contexts.publish();
     }
 ;
@@ -180,6 +189,11 @@ fuzzify_block:
 fuzzify_block_name:
     function_block_name
     {
+        /**
+         * Marks the current context as a fuzzifier by adding the special
+         * identifier @fuzzifier and setting the source to FUZZIFY.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.declaredIdentifiers().add("@fuzzifier");
         ctx.metadataBuilder().source(Source.FUZZIFY);
@@ -199,6 +213,11 @@ defuzzify_block:
     default_value
     END_DEFUZZIFY
     {
+        /**
+         * Publishes the defuzzify block context to the symbol table after all
+         * components (range, terms, method, default) have been processed.
+        **/
+
         this.contexts.publish();
     }
 ;
@@ -206,6 +225,11 @@ defuzzify_block:
 defuzzify_block_name:
     function_block_name
     {
+        /**
+         * Marks the current context as a defuzzifier by adding the special
+         * identifier @defuzzifier and setting the source to DEFUZZIFY.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.declaredIdentifiers().add("@defuzzifier");
         ctx.metadataBuilder().source(Source.DEFUZZIFY);
@@ -216,6 +240,11 @@ opt_linguistic_term_list:
     /* empty */
     | linguistic_term_list
     {
+        /**
+         * Transfers the collected linguistic terms as parameters to the
+         * current context metadata (used for defuzzify block term lists).
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder().parameters($1);
     }
@@ -224,12 +253,20 @@ opt_linguistic_term_list:
 linguistic_term_list:
     linguistic_term
     {
+        /**
+         * Starts a new list of linguistic terms with the first term.
+        **/
+
         List<String> terms = new ArrayList<>();
         terms.add($1);
         $$ = terms;
     }
     | linguistic_term_list linguistic_term
     {
+        /**
+         * Appends another linguistic term to the existing list.
+        **/
+
         $1.add($2);
         $$ = $1;
     }
@@ -238,6 +275,11 @@ linguistic_term_list:
 linguistic_term:
     TERM IDENTIFIER ASSIGN_OP linguistic_term_value
     {
+        /**
+         * Creates a subcontext for the linguistic term's membership function
+         * definition, allowing nested attributes to be collected.
+        **/
+
         this.contexts.createSubcontext();
     }
 ;
@@ -458,10 +500,20 @@ var_retain_spec:
     /* empty */
     | RETAIN
     {
+        /**
+         * Marks the variable declaration as RETAIN (persistent across power cycles).
+         * TODO: Implement retain specification in context metadata.
+        **/
+
         // TODO: ctx with retain spec
     }
     | NON_RETAIN
     {
+        /**
+         * Marks the variable declaration as NON_RETAIN (not persistent).
+         * TODO: Implement non-retain specification in context metadata.
+        **/
+
         // TODO: ctx with non retain spec
     }
 ;
@@ -469,10 +521,20 @@ var_retain_spec:
 var_constant_spec:
     /* empty */
     {
+        /**
+         * Default variable specification (non-constant).
+         * TODO: Implement non-constant specification in context metadata.
+        **/
+
         // TODO: ctx with non constant spec
     }
     | CONSTANT
     {
+        /**
+         * Marks the variable declaration as CONSTANT (immutable value).
+         * TODO: Implement constant specification in context metadata.
+        **/
+
         // TODO: ctx with constant spec
     }
 ;
@@ -768,11 +830,17 @@ string_constant:
 
 boolean_constant:
     BOOLEAN_LITERAL { /** Propagates the boolean literal. */ $$ = $1; }
+;
 
 numeric_constant:
     NUMERIC_LITERAL { /** Propagates the numeric literal. */ $$ = $1; }
     | number_prefix NUMERIC_LITERAL
     {
+        /**
+         * Combines a base prefix (e.g., 16#) with a numeric literal to form
+         * a based numeric constant. The conversion is deferred to later processing.
+        **/
+
         // TODO: convert this constant in code
         $$ = "";
     }
@@ -786,6 +854,11 @@ number_prefix:
 
 time_constant:
     date_type_name '#' TIME_LITERAL {
+        /**
+         * Combines a date/time type prefix with a time literal.
+         * TODO: Add semantic action to verify prefix matches time_literal type.
+        **/
+
         // TODO: semantic action to verify prefix matches time_literal type
     }
 ;
@@ -949,6 +1022,11 @@ enumerated_values:
     }
     | enumerated_values ',' IDENTIFIER
     {
+        /**
+         * Adds another enumerated value to the list, creates a subcontext for it,
+         * registers it as a macro in the symbol table, and appends it to the list.
+        **/
+
         String declaredEnumerated = this.contexts.current().declaredIdentifiers().get(0);
 
         this.contexts.createSubcontext();
@@ -978,6 +1056,11 @@ array_spec_init:
 array_specification:
     ARRAY '[' range_list ']' OF array_type
     {
+        /**
+         * Sets the current context type to ARRAY, preparing for array type
+         * and dimension processing in the array_type rule.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder().type(Type.ARRAY);
     }
@@ -986,6 +1069,12 @@ array_specification:
 array_type:
     IDENTIFIER
     {
+        /**
+         * Resolves a custom element type for the array, calculates the dimension
+         * from range bounds, creates a RepeatedInitialization with the type's
+         * default values, and adds the underlying scope for field/enum lookup.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         LexemeInfo typeMetadata = this.symbolTable.get($1);
 
@@ -1006,6 +1095,11 @@ array_type:
     }
     | non_generic_type_name
     {
+        /**
+         * Sets up an array with a primitive element type, calculates the dimension,
+         * creates a RepeatedInitialization with default primitive values.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, $1);
 
@@ -1038,6 +1132,11 @@ non_generic_type_name:
 array_initialization:
     '[' array_initial_elements_list ']'
     {
+        /**
+         * Builds the RepeatedInitialization for the array from the collected
+         * interval list, using the calculated dimension.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         int dimension = DimensionCalculator.calculate(ctx);
         ctx.metadataBuilder().initialValue(
@@ -1049,12 +1148,20 @@ array_initialization:
 array_initial_elements_list:
     array_initial_elements _actionAfterElement_
     {
+        /**
+         * Starts the interval list with the first array element's interval.
+        **/
+
         List<Interval> intervals = new ArrayList<>();
         intervals.add($2);
         $$ = intervals;
     }
     | array_initial_elements_list ',' array_initial_elements _actionAfterElement_
     {
+        /**
+         * Appends another array element's interval to the interval list.
+        **/
+
         $1.add($4);
         $$ = $1;
     }
@@ -1148,6 +1255,12 @@ repeated_initial_element:
 _actionBeforeNotSimpleInitialization_:
     /* empty */
     {
+        /**
+         * Prepares a subcontext for a nested complex initialization (structure or
+         * array) within an array element, copying the parent array's custom type
+         * information so the nested initialization can resolve its structure.
+        **/
+
         ParsingContext arrayCtx = this.contexts.current();
         LexemeInfo arrayMetadata = arrayCtx.metadataBuilder().build();
 
@@ -1311,10 +1424,16 @@ standard_function_block_specification:
 string_spec_init:
     string_specification
     | initialized_string
+;
 
 string_specification:
     type_string_specification
     {
+        /**
+         * Configures the current context for a STRING/WSTRING type without
+         * explicit length, using the default primitive initialization.
+        **/
+
         ParsingContext ctx = this.contexts.current();
         ctx.metadataBuilder()
             .type(Type.SIMPLE)
@@ -1340,6 +1459,7 @@ string_specification:
                 Factory.createPrimitiveInitialization(this.symbolTable, $1)
             );
     }
+;
 
 initialized_string:
     string_specification  ASSIGN_OP string_constant
@@ -1357,8 +1477,8 @@ initialized_string:
 ;
 
 type_string_specification:
-    STRING      { $$ = Subtype.STRING;  }
-    | WSTRING   { $$ = Subtype.WSTRING; }
+    STRING      { /** Sets the subtype to STRING. */  $$ = Subtype.STRING;  }
+    | WSTRING   { /** Sets the subtype to WSTRING. */ $$ = Subtype.WSTRING; }
 ;
 
 /* ----------------------------------- Data Type ---------------------------------------- */

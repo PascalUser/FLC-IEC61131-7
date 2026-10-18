@@ -21,6 +21,10 @@ import java.util.Arrays;
  */
 public class StructTypeDeclarationIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a valid struct type declaration registers the struct
+     * with its fields and default initial values.
+     */
     @Test
     public void Declaring_Valid_Struct_Type_Registers_Fields() throws Exception {
         String sourceCode = "TYPE\n"

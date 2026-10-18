@@ -20,6 +20,10 @@ import utils.enums.Use;
  */
 public class NestedStructVariableIT extends ParserTestSupport {
 
+    /**
+     * Verifies that a variable declared with a nested struct type inherits
+     * the full hierarchy of default field values.
+     */
     @Test
     public void Declaring_Variable_Of_Nested_Struct_Type_Inherits_Full_Hierarchy() throws Exception {
         String sourceCode = "TYPE\n"
@@ -60,6 +64,11 @@ public class NestedStructVariableIT extends ParserTestSupport {
                 .build());
     }
 
+    /**
+     * Verifies that an initialized nested struct variable stores deep field
+     * overrides at multiple nesting levels while keeping defaults for
+     * uninitialized fields.
+     */
     @Test
     public void Declaring_Initialized_Nested_Struct_Variable_Stores_Deep_Field_Overrides() throws Exception {
         String sourceCode = "TYPE\n"

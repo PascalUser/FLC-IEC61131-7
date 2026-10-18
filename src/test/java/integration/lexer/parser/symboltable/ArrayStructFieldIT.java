@@ -22,6 +22,11 @@ import java.util.Arrays;
  */
 public class ArrayStructFieldIT extends ParserTestSupport {
 
+    /**
+     * Verifies that declaring a struct field with an inline enumeration type
+     * registers both the enumerators as macros and the field as an enumerated type
+     * with proper initial value.
+     */
     @Test
     public void Declaring_Struct_Field_With_Inline_Enum_Registers_Enumerators_And_Macros() throws Exception {
         String sourceCode = "TYPE\n"
@@ -69,6 +74,10 @@ public class ArrayStructFieldIT extends ParserTestSupport {
                 .build());
     }
 
+    /**
+     * Verifies that a struct field with an explicit initialization uses
+     * the provided value instead of the default for its type.
+     */
     @Test
     public void Declaring_Struct_Field_With_Initialized_Field_Uses_Default() throws Exception {
         String sourceCode = "TYPE\n"

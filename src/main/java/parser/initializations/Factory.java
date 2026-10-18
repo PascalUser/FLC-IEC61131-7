@@ -6,19 +6,13 @@ import utils.enums.Subtype;
 
 /**
  * Factory for creating default primitive initializations.
- * <p>
- * Provides static methods to create {@link Initialization} objects for
- * primitive subtypes (BOOL, integer types, REAL/LREAL, STRING, WSTRING)
- * using the {@link Director} to generate appropriate default literal values
- * and registering them in the {@link SymbolTable}.
- * </p>
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
  * @see DefaultInitialization
- * @see Director
+ * @see utils.builders.Director
  */
 public final class Factory {
 

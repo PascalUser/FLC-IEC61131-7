@@ -102,7 +102,7 @@
     },
     "parser": {
       "avg_cyclomatic": 9.3,
-      "total_complexity": 362,
+      "total_complexity": 363,
       "estimated_methods": 39
     },
     "utils": {
@@ -117,7 +117,7 @@
       "files": 21
     },
     "parser": {
-      "loc": 3138,
+      "loc": 3167,
       "files": 6
     },
     "utils": {
@@ -126,9 +126,9 @@
     }
   },
   "test_coverage": {
-    "overall": 71,
+    "overall": 86,
     "packages": {
-      "parser": 31,
+      "parser": 85,
       "lexer": 100,
       "utils": 47
     }

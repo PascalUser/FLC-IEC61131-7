@@ -20,12 +20,12 @@ La gramática (`src/main/java/parser/Parser.y`) reconoce dos grandes bloques: la
 
 ## Tipos derivados
 
-| Construcción FCL        | No terminal principal      | Resultado en `LexemeInfo`                                                                                              |
-|-------------------------|----------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `(A, B, C)`             | `enumerated_specification` | `type=ENUMERATE`, `subtype=INT`, `parameters=[A,B,C]`, cada valor publicado aparte con `use=MACRO`                     |
-| `INT (0..100)`          | `subrange_specification`   | `type=SUBRANGE`, límites en `inferiorLimits`/`superiorLimits`                                                          |
+| Construcción FCL        | No terminal principal      | Resultado en `LexemeInfo`                                                                                                                           |
+|-------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `(A, B, C)`             | `enumerated_specification` | `type=ENUMERATE`, `subtype=INT`, `parameters=[A,B,C]`, cada valor publicado aparte con `use=MACRO`                                                  |
+| `INT (0..100)`          | `subrange_specification`   | `type=SUBRANGE`, límites en `inferiorLimits`/`superiorLimits`                                                                                       |
 | `STRUCT ... END_STRUCT` | `structure_specification`  | `type=STRUCT`, `parameters` = nombres de campo, `initialValue` un `parser.initializations.nodes.StructInitialization` (mapa campo → inicialización) |
-| `ARRAY [0..9] OF T`     | `array_specification`      | `type=ARRAY`, `initialValue` un `RepeatedInitialization` particionado en intervalos disjuntos                          |
+| `ARRAY [0..9] OF T`     | `array_specification`      | `type=ARRAY`, `initialValue` un `RepeatedInitialization` particionado en intervalos disjuntos                                                       |
 
 ## Inicializaciones como jerarquía polimórfica
 
@@ -391,7 +391,7 @@ nested_field → IDENTIFIER ('.' IDENTIFIER)*
 | `enumerated_values_list`           | Crea contexto hijo por valor enum, `use=MACRO, source=NONE`, publica cada literal                                    |
 | `array_specification`              | `type=ARRAY, subtype=elementType, dimension=DimensionCalculator.calculate(ctx), initialValue=RepeatedInitialization` |
 | `structure_field_declaration`      | Nuevo contexto por campo, `use=FIELD`, publica al reducir                                                            |
-| `structure_specification`          | Recorre campos, construye `parser.initializations.nodes.StructInitialization` con `initialValue` de cada campo                                    |
+| `structure_specification`          | Recorre campos, construye `parser.initializations.nodes.StructInitialization` con `initialValue` de cada campo       |
 | `type_declaration`                 | `Publisher.publish(ctx); outerScopes.popScope()`                                                                     |
 
 ## Cobertura de la gramática (IEC 61131-7)

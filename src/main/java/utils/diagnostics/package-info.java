@@ -5,9 +5,13 @@
  * </p>
  * <ul>
  *   <li>{@link utils.diagnostics.Diagnostic} - abstract base with line number</li>
- *   <li>{@link utils.diagnostics.Error} - fatal errors (subclasses: IntegerOutOfRange, RealOutOfRange, ...)</li>
- *   <li>{@link utils.diagnostics.Warning} - non-fatal warnings (subclass: StringLengthWarning)</li>
- *   <li>{@link utils.diagnostics.SyntaxError} - lexer syntax errors</li>
+ *   <li>{@link utils.diagnostics.Error} - fatal errors (subclasses:
+ *       DateOutOfRange, DateAndTimeOutOfRange, IntervalConstructionError,
+ *       IntervalOutOfRange, TimeOfDayOutOfRange, SyntaxError)</li>
+ *   <li>{@link utils.diagnostics.Warning} - non-fatal warnings (subclasses:
+ *       StringLengthWarning, HexadecimalOutOfRange, RealOutOfRange,
+ *       NaturalOutOfRange, BinaryOutOfRange, OctalOutOfRange,
+ *       IntegerOutOfRange)</li>
  * </ul>
  * <p>
  * All diagnostics capture source line number and offending lexeme.

@@ -9,6 +9,11 @@ import java.util.Optional;
 /**
  * Represents a repeated initialization based on a list of disjoint,
  * contiguous intervals spanning an array dimension.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
  */
 public final class RepeatedInitialization extends NodeInitialization {
     private final int dimension;
@@ -83,7 +88,7 @@ public final class RepeatedInitialization extends NodeInitialization {
             if (oldInit == null) {
                 throw new RuntimeException("RepeatedInitialization: element at index " + index + " is null");
             }
-            // Si el intervalo abarcaba varios índices, se clona el objeto para no mutar los demás elementos
+            // If the interval spanned multiple indices, clone the object to avoid mutating other elements
             elementInit = (targetInterval.start == targetInterval.end) ? oldInit : oldInit.copy();
             replacements.add(new Interval(index, index, elementInit));
         }
