@@ -26,6 +26,7 @@ out
 
 # Python enviroment for generations scripts
 .venv
+__pycache__
 
 # Generated thesis document
 Tesis.docx
