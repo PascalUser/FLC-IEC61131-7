@@ -20,7 +20,6 @@
     import parser.initializations.*;
     import parser.initializations.leafs.*;
     import parser.initializations.nodes.*;
-    import parser.initializations.nodes.RepeatedInitialization.Interval;
 }
 
 %code {
