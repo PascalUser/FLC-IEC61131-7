@@ -54,7 +54,7 @@ import java.util.ArrayList;
 
     import parser.utils.*;
     import parser.facades.*;
-    import parser.internals.*;
+    import parser.publishers.*;
     import parser.initializations.*;
     import parser.initializations.leafs.*;
     import parser.initializations.nodes.*;
@@ -181,56 +181,56 @@ public final class Parser
     S_function_block_name(96),     /* function_block_name  */
     S_opt_fb_io_var_declarations_list(97), /* opt_fb_io_var_declarations_list  */
     S_fb_io_var_declarations(98),  /* fb_io_var_declarations  */
-    S_opt_other_var_declarations_list(99), /* opt_other_var_declarations_list  */
-    S_other_var_declarations(100), /* other_var_declarations  */
-    S_opt_function_block_body(101), /* opt_function_block_body  */
-    S_opt_fuzzify_block_list(102), /* opt_fuzzify_block_list  */
-    S_fuzzify_block(103),          /* fuzzify_block  */
-    S_fuzzify_block_name(104),     /* fuzzify_block_name  */
-    S_opt_defuzzify_block_list(105), /* opt_defuzzify_block_list  */
-    S_defuzzify_block(106),        /* defuzzify_block  */
-    S_defuzzify_block_name(107),   /* defuzzify_block_name  */
-    S_opt_linguistic_term_list(108), /* opt_linguistic_term_list  */
-    S_linguistic_term_list(109),   /* linguistic_term_list  */
-    S_linguistic_term(110),        /* linguistic_term  */
-    S_linguistic_term_value(111),  /* linguistic_term_value  */
-    S_membership_function(112),    /* membership_function  */
-    S_singleton(113),              /* singleton  */
-    S_point_list(114),             /* point_list  */
-    S_point(115),                  /* point  */
-    S_defuzzification_method(116), /* defuzzification_method  */
-    S_defuzz_method(117),          /* defuzz_method  */
-    S_default_value(118),          /* default_value  */
-    S_default_val(119),            /* default_val  */
-    S_opt_range(120),              /* opt_range  */
-    S_opt_rule_block_list(121),    /* opt_rule_block_list  */
-    S_rule_block(122),             /* rule_block  */
-    S_operator_definition(123),    /* operator_definition  */
-    S_opt_operator_or(124),        /* opt_operator_or  */
-    S_operator_and_opt(125),       /* operator_and_opt  */
-    S_or_type(126),                /* or_type  */
-    S_and_type(127),               /* and_type  */
-    S_activation_method_opt(128),  /* activation_method_opt  */
-    S_activation_method(129),      /* activation_method  */
-    S_act_type(130),               /* act_type  */
-    S_accumulation_method(131),    /* accumulation_method  */
-    S_accu_type(132),              /* accu_type  */
-    S_rule_list(133),              /* rule_list  */
-    S_rule(134),                   /* rule  */
-    S_opt_weighting(135),          /* opt_weighting  */
-    S_condition(136),              /* condition  */
-    S_condition_tail(137),         /* condition_tail  */
-    S_x(138),                      /* x  */
-    S_subcondition(139),           /* subcondition  */
-    S_conclusion_list(140),        /* conclusion_list  */
-    S_opt_option_block_list(141),  /* opt_option_block_list  */
-    S_option_block(142),           /* option_block  */
-    S_pragma_list(143),            /* pragma_list  */
-    S_pragma(144),                 /* pragma  */
-    S_io_var_decl(145),            /* io_var_decl  */
-    S_var_declarations(146),       /* var_declarations  */
-    S_var_id_decl(147),            /* var_id_decl  */
-    S_var_retain_spec(148),        /* var_retain_spec  */
+    S_io_var_decl(99),             /* io_var_decl  */
+    S_var_retain_spec(100),        /* var_retain_spec  */
+    S_opt_other_var_declarations_list(101), /* opt_other_var_declarations_list  */
+    S_other_var_declarations(102), /* other_var_declarations  */
+    S_opt_function_block_body(103), /* opt_function_block_body  */
+    S_opt_fuzzify_block_list(104), /* opt_fuzzify_block_list  */
+    S_fuzzify_block(105),          /* fuzzify_block  */
+    S_fuzzify_block_name(106),     /* fuzzify_block_name  */
+    S_opt_defuzzify_block_list(107), /* opt_defuzzify_block_list  */
+    S_defuzzify_block(108),        /* defuzzify_block  */
+    S_defuzzify_block_name(109),   /* defuzzify_block_name  */
+    S_opt_linguistic_term_list(110), /* opt_linguistic_term_list  */
+    S_linguistic_term_list(111),   /* linguistic_term_list  */
+    S_linguistic_term(112),        /* linguistic_term  */
+    S_linguistic_term_value(113),  /* linguistic_term_value  */
+    S_membership_function(114),    /* membership_function  */
+    S_singleton(115),              /* singleton  */
+    S_point_list(116),             /* point_list  */
+    S_point(117),                  /* point  */
+    S_defuzzification_method(118), /* defuzzification_method  */
+    S_defuzz_method(119),          /* defuzz_method  */
+    S_default_value(120),          /* default_value  */
+    S_default_val(121),            /* default_val  */
+    S_opt_range(122),              /* opt_range  */
+    S_opt_rule_block_list(123),    /* opt_rule_block_list  */
+    S_rule_block(124),             /* rule_block  */
+    S_operator_definition(125),    /* operator_definition  */
+    S_opt_operator_or(126),        /* opt_operator_or  */
+    S_operator_and_opt(127),       /* operator_and_opt  */
+    S_or_type(128),                /* or_type  */
+    S_and_type(129),               /* and_type  */
+    S_activation_method_opt(130),  /* activation_method_opt  */
+    S_activation_method(131),      /* activation_method  */
+    S_act_type(132),               /* act_type  */
+    S_accumulation_method(133),    /* accumulation_method  */
+    S_accu_type(134),              /* accu_type  */
+    S_rule_list(135),              /* rule_list  */
+    S_rule(136),                   /* rule  */
+    S_opt_weighting(137),          /* opt_weighting  */
+    S_condition(138),              /* condition  */
+    S_condition_tail(139),         /* condition_tail  */
+    S_x(140),                      /* x  */
+    S_subcondition(141),           /* subcondition  */
+    S_conclusion_list(142),        /* conclusion_list  */
+    S_opt_option_block_list(143),  /* opt_option_block_list  */
+    S_option_block(144),           /* option_block  */
+    S_pragma_list(145),            /* pragma_list  */
+    S_pragma(146),                 /* pragma  */
+    S_var_declarations(147),       /* var_declarations  */
+    S_var_id_decl(148),            /* var_id_decl  */
     S_var_constant_spec(149),      /* var_constant_spec  */
     S_var_init_decl_list(150),     /* var_init_decl_list  */
     S_var_init_decl(151),          /* var_init_decl  */
@@ -242,78 +242,71 @@ public final class Parser
     S_initialized_custom_with_constant(157), /* initialized_custom_with_constant  */
     S_initialized_custom_with_identifier(158), /* initialized_custom_with_identifier  */
     S_initialized_custom_with_structure(159), /* initialized_custom_with_structure  */
-    S_custom_type_name(160),       /* custom_type_name  */
-    S_boolean_spec_init(161),      /* boolean_spec_init  */
-    S_boolean_specification(162),  /* boolean_specification  */
-    S_initialized_boolean(163),    /* initialized_boolean  */
-    S_edge(164),                   /* edge  */
-    S_simple_spec_init(165),       /* simple_spec_init  */
-    S_simple_specification(166),   /* simple_specification  */
-    S_initialized_simple(167),     /* initialized_simple  */
-    S_elementary_type_name(168),   /* elementary_type_name  */
-    S_numeric_type_name(169),      /* numeric_type_name  */
-    S_integer_type_name(170),      /* integer_type_name  */
-    S_signed_integer_type_name(171), /* signed_integer_type_name  */
-    S_unsigned_integer_type_name(172), /* unsigned_integer_type_name  */
-    S_real_type_name(173),         /* real_type_name  */
-    S_date_type_name(174),         /* date_type_name  */
-    S_constant(175),               /* constant  */
-    S_string_constant(176),        /* string_constant  */
-    S_boolean_constant(177),       /* boolean_constant  */
-    S_numeric_constant(178),       /* numeric_constant  */
-    S_number_prefix(179),          /* number_prefix  */
-    S_time_constant(180),          /* time_constant  */
-    S_bit_string_type_name(181),   /* bit_string_type_name  */
-    S_subrange_spec_init(182),     /* subrange_spec_init  */
-    S_subrange_specification(183), /* subrange_specification  */
-    S_subrange_type_decl(184),     /* subrange_type_decl  */
-    S_initialized_subrange(185),   /* initialized_subrange  */
-    S_range(186),                  /* range  */
-    S_enumerated_spec_init(187),   /* enumerated_spec_init  */
-    S_enumerated_specification(188), /* enumerated_specification  */
-    S_initialized_enumerated(189), /* initialized_enumerated  */
-    S_enumerated_values(190),      /* enumerated_values  */
-    S_array_spec_init(191),        /* array_spec_init  */
-    S_array_specification(192),    /* array_specification  */
-    S_array_type(193),             /* array_type  */
-    S_initialized_array(194),      /* initialized_array  */
-    S_range_list(195),             /* range_list  */
-    S_non_generic_type_name(196),  /* non_generic_type_name  */
-    S_array_initialization(197),   /* array_initialization  */
-    S_array_initial_elements_list(198), /* array_initial_elements_list  */
-    S_array_initial_elements(199), /* array_initial_elements  */
-    S__actionAfterElement_(200),   /* _actionAfterElement_  */
-    S_array_initial_element(201),  /* array_initial_element  */
-    S_repeated_initial_element(202), /* repeated_initial_element  */
-    S__actionBeforeNotSimpleInitialization_(203), /* _actionBeforeNotSimpleInitialization_  */
-    S_structure_initialization(204), /* structure_initialization  */
-    S__actionAfterParenthesis_(205), /* _actionAfterParenthesis_  */
-    S_structure_field_initialization_list(206), /* structure_field_initialization_list  */
-    S_initialized_structure_field(207), /* initialized_structure_field  */
-    S_initialized_field_with_constant(208), /* initialized_field_with_constant  */
-    S_initialized_field_with_identifier(209), /* initialized_field_with_identifier  */
-    S_initialized_field_with_array(210), /* initialized_field_with_array  */
-    S_initialized_field_with_structure(211), /* initialized_field_with_structure  */
-    S_nested_field(212),           /* nested_field  */
-    S_identifier_with_opt_mangling(213), /* identifier_with_opt_mangling  */
-    S_standard_function_block_spec_init(214), /* standard_function_block_spec_init  */
-    S_initialized_standard_function_block(215), /* initialized_standard_function_block  */
-    S_standard_function_block_specification(216), /* standard_function_block_specification  */
-    S_string_spec_init(217),       /* string_spec_init  */
-    S_string_specification(218),   /* string_specification  */
-    S_initialized_string(219),     /* initialized_string  */
-    S_type_string_specification(220), /* type_string_specification  */
-    S_opt_data_type_declaration(221), /* opt_data_type_declaration  */
-    S_data_type_declaration(222),  /* data_type_declaration  */
-    S_type_declaration_list(223),  /* type_declaration_list  */
-    S_type_declaration(224),       /* type_declaration  */
-    S_type_name_declaration(225),  /* type_name_declaration  */
-    S_type_spec_init(226),         /* type_spec_init  */
-    S_structure_specification(227), /* structure_specification  */
-    S_structure_field_declaration_list(228), /* structure_field_declaration_list  */
-    S_structure_field_declaration(229), /* structure_field_declaration  */
-    S_field_name(230),             /* field_name  */
-    S_structure_field_spec_init(231); /* structure_field_spec_init  */
+    S_boolean_spec_init(160),      /* boolean_spec_init  */
+    S_boolean_specification(161),  /* boolean_specification  */
+    S_initialized_boolean(162),    /* initialized_boolean  */
+    S_edge(163),                   /* edge  */
+    S_simple_spec_init(164),       /* simple_spec_init  */
+    S_simple_specification(165),   /* simple_specification  */
+    S_initialized_simple(166),     /* initialized_simple  */
+    S_elementary_type(167),        /* elementary_type  */
+    S_numeric_type(168),           /* numeric_type  */
+    S_integer_type(169),           /* integer_type  */
+    S_signed_integer_type(170),    /* signed_integer_type  */
+    S_unsigned_integer_type(171),  /* unsigned_integer_type  */
+    S_real_type(172),              /* real_type  */
+    S_date_type(173),              /* date_type  */
+    S_constant(174),               /* constant  */
+    S_string_constant(175),        /* string_constant  */
+    S_boolean_constant(176),       /* boolean_constant  */
+    S_numeric_constant(177),       /* numeric_constant  */
+    S_prefix_type(178),            /* prefix_type  */
+    S_time_constant(179),          /* time_constant  */
+    S_bit_string_type(180),        /* bit_string_type  */
+    S_subrange_spec_init(181),     /* subrange_spec_init  */
+    S_subrange_specification(182), /* subrange_specification  */
+    S_subrange_type_decl(183),     /* subrange_type_decl  */
+    S_initialized_subrange(184),   /* initialized_subrange  */
+    S_range(185),                  /* range  */
+    S_enumerated_spec_init(186),   /* enumerated_spec_init  */
+    S_enumerated_specification(187), /* enumerated_specification  */
+    S_initialized_enumerated(188), /* initialized_enumerated  */
+    S_array_spec_init(189),        /* array_spec_init  */
+    S_array_specification(190),    /* array_specification  */
+    S_initialized_array(191),      /* initialized_array  */
+    S_range_list(192),             /* range_list  */
+    S_non_generic_type(193),       /* non_generic_type  */
+    S_array_initialization(194),   /* array_initialization  */
+    S_array_initial_elements_list(195), /* array_initial_elements_list  */
+    S_array_initial_elements(196), /* array_initial_elements  */
+    S_array_initial_element(197),  /* array_initial_element  */
+    S_repeated_initial_element(198), /* repeated_initial_element  */
+    S_structure_initialization(199), /* structure_initialization  */
+    S_structure_field_init_list(200), /* structure_field_init_list  */
+    S_initialized_struct_field(201), /* initialized_struct_field  */
+    S_initialized_field_with_constant(202), /* initialized_field_with_constant  */
+    S_initialized_field_with_identifier(203), /* initialized_field_with_identifier  */
+    S_initialized_field_with_array(204), /* initialized_field_with_array  */
+    S_initialized_field_with_structure(205), /* initialized_field_with_structure  */
+    S_referenced_identifier(206),  /* referenced_identifier  */
+    S_standard_function_block_spec_init(207), /* standard_function_block_spec_init  */
+    S_initialized_standard_function_block(208), /* initialized_standard_function_block  */
+    S_standard_function_block_specification(209), /* standard_function_block_specification  */
+    S_string_spec_init(210),       /* string_spec_init  */
+    S_string_specification(211),   /* string_specification  */
+    S_initialized_string(212),     /* initialized_string  */
+    S_string_type(213),            /* string_type  */
+    S_opt_data_type_declaration(214), /* opt_data_type_declaration  */
+    S_data_type_declaration(215),  /* data_type_declaration  */
+    S_type_declaration_list(216),  /* type_declaration_list  */
+    S_type_declaration(217),       /* type_declaration  */
+    S_type_name_declaration(218),  /* type_name_declaration  */
+    S_type_spec_init(219),         /* type_spec_init  */
+    S_structure_specification(220), /* structure_specification  */
+    S_structure_field_init_decl_list(221), /* structure_field_init_decl_list  */
+    S_structure_field_init_decl(222), /* structure_field_init_decl  */
+    S_field_name(223),             /* field_name  */
+    S_structure_field_spec_init(224); /* structure_field_spec_init  */
 
 
     private final int yycode_;
@@ -422,6 +415,8 @@ public final class Parser
       SymbolKind.S_function_block_name,
       SymbolKind.S_opt_fb_io_var_declarations_list,
       SymbolKind.S_fb_io_var_declarations,
+      SymbolKind.S_io_var_decl,
+      SymbolKind.S_var_retain_spec,
       SymbolKind.S_opt_other_var_declarations_list,
       SymbolKind.S_other_var_declarations,
       SymbolKind.S_opt_function_block_body,
@@ -468,10 +463,8 @@ public final class Parser
       SymbolKind.S_option_block,
       SymbolKind.S_pragma_list,
       SymbolKind.S_pragma,
-      SymbolKind.S_io_var_decl,
       SymbolKind.S_var_declarations,
       SymbolKind.S_var_id_decl,
-      SymbolKind.S_var_retain_spec,
       SymbolKind.S_var_constant_spec,
       SymbolKind.S_var_init_decl_list,
       SymbolKind.S_var_init_decl,
@@ -483,7 +476,6 @@ public final class Parser
       SymbolKind.S_initialized_custom_with_constant,
       SymbolKind.S_initialized_custom_with_identifier,
       SymbolKind.S_initialized_custom_with_structure,
-      SymbolKind.S_custom_type_name,
       SymbolKind.S_boolean_spec_init,
       SymbolKind.S_boolean_specification,
       SymbolKind.S_initialized_boolean,
@@ -491,20 +483,20 @@ public final class Parser
       SymbolKind.S_simple_spec_init,
       SymbolKind.S_simple_specification,
       SymbolKind.S_initialized_simple,
-      SymbolKind.S_elementary_type_name,
-      SymbolKind.S_numeric_type_name,
-      SymbolKind.S_integer_type_name,
-      SymbolKind.S_signed_integer_type_name,
-      SymbolKind.S_unsigned_integer_type_name,
-      SymbolKind.S_real_type_name,
-      SymbolKind.S_date_type_name,
+      SymbolKind.S_elementary_type,
+      SymbolKind.S_numeric_type,
+      SymbolKind.S_integer_type,
+      SymbolKind.S_signed_integer_type,
+      SymbolKind.S_unsigned_integer_type,
+      SymbolKind.S_real_type,
+      SymbolKind.S_date_type,
       SymbolKind.S_constant,
       SymbolKind.S_string_constant,
       SymbolKind.S_boolean_constant,
       SymbolKind.S_numeric_constant,
-      SymbolKind.S_number_prefix,
+      SymbolKind.S_prefix_type,
       SymbolKind.S_time_constant,
-      SymbolKind.S_bit_string_type_name,
+      SymbolKind.S_bit_string_type,
       SymbolKind.S_subrange_spec_init,
       SymbolKind.S_subrange_specification,
       SymbolKind.S_subrange_type_decl,
@@ -513,37 +505,31 @@ public final class Parser
       SymbolKind.S_enumerated_spec_init,
       SymbolKind.S_enumerated_specification,
       SymbolKind.S_initialized_enumerated,
-      SymbolKind.S_enumerated_values,
       SymbolKind.S_array_spec_init,
       SymbolKind.S_array_specification,
-      SymbolKind.S_array_type,
       SymbolKind.S_initialized_array,
       SymbolKind.S_range_list,
-      SymbolKind.S_non_generic_type_name,
+      SymbolKind.S_non_generic_type,
       SymbolKind.S_array_initialization,
       SymbolKind.S_array_initial_elements_list,
       SymbolKind.S_array_initial_elements,
-      SymbolKind.S__actionAfterElement_,
       SymbolKind.S_array_initial_element,
       SymbolKind.S_repeated_initial_element,
-      SymbolKind.S__actionBeforeNotSimpleInitialization_,
       SymbolKind.S_structure_initialization,
-      SymbolKind.S__actionAfterParenthesis_,
-      SymbolKind.S_structure_field_initialization_list,
-      SymbolKind.S_initialized_structure_field,
+      SymbolKind.S_structure_field_init_list,
+      SymbolKind.S_initialized_struct_field,
       SymbolKind.S_initialized_field_with_constant,
       SymbolKind.S_initialized_field_with_identifier,
       SymbolKind.S_initialized_field_with_array,
       SymbolKind.S_initialized_field_with_structure,
-      SymbolKind.S_nested_field,
-      SymbolKind.S_identifier_with_opt_mangling,
+      SymbolKind.S_referenced_identifier,
       SymbolKind.S_standard_function_block_spec_init,
       SymbolKind.S_initialized_standard_function_block,
       SymbolKind.S_standard_function_block_specification,
       SymbolKind.S_string_spec_init,
       SymbolKind.S_string_specification,
       SymbolKind.S_initialized_string,
-      SymbolKind.S_type_string_specification,
+      SymbolKind.S_string_type,
       SymbolKind.S_opt_data_type_declaration,
       SymbolKind.S_data_type_declaration,
       SymbolKind.S_type_declaration_list,
@@ -551,8 +537,8 @@ public final class Parser
       SymbolKind.S_type_name_declaration,
       SymbolKind.S_type_spec_init,
       SymbolKind.S_structure_specification,
-      SymbolKind.S_structure_field_declaration_list,
-      SymbolKind.S_structure_field_declaration,
+      SymbolKind.S_structure_field_init_decl_list,
+      SymbolKind.S_structure_field_init_decl,
       SymbolKind.S_field_name,
       SymbolKind.S_structure_field_spec_init
     };
@@ -620,54 +606,50 @@ public final class Parser
   "ARRAY", "';'", "'('", "','", "')'", "':'", "'#'", "'['", "']'",
   "$accept", "program", "function_block_declaration",
   "function_block_name", "opt_fb_io_var_declarations_list",
-  "fb_io_var_declarations", "opt_other_var_declarations_list",
-  "other_var_declarations", "opt_function_block_body",
-  "opt_fuzzify_block_list", "fuzzify_block", "fuzzify_block_name",
-  "opt_defuzzify_block_list", "defuzzify_block", "defuzzify_block_name",
-  "opt_linguistic_term_list", "linguistic_term_list", "linguistic_term",
-  "linguistic_term_value", "membership_function", "singleton",
-  "point_list", "point", "defuzzification_method", "defuzz_method",
-  "default_value", "default_val", "opt_range", "opt_rule_block_list",
-  "rule_block", "operator_definition", "opt_operator_or",
-  "operator_and_opt", "or_type", "and_type", "activation_method_opt",
-  "activation_method", "act_type", "accumulation_method", "accu_type",
-  "rule_list", "rule", "opt_weighting", "condition", "condition_tail", "x",
-  "subcondition", "conclusion_list", "opt_option_block_list",
-  "option_block", "pragma_list", "pragma", "io_var_decl",
-  "var_declarations", "var_id_decl", "var_retain_spec",
-  "var_constant_spec", "var_init_decl_list", "var_init_decl",
-  "identifier_list", "var_spec_init", "custom_spec_init",
-  "custom_specification", "initialized_custom",
-  "initialized_custom_with_constant", "initialized_custom_with_identifier",
-  "initialized_custom_with_structure", "custom_type_name",
-  "boolean_spec_init", "boolean_specification", "initialized_boolean",
-  "edge", "simple_spec_init", "simple_specification", "initialized_simple",
-  "elementary_type_name", "numeric_type_name", "integer_type_name",
-  "signed_integer_type_name", "unsigned_integer_type_name",
-  "real_type_name", "date_type_name", "constant", "string_constant",
-  "boolean_constant", "numeric_constant", "number_prefix", "time_constant",
-  "bit_string_type_name", "subrange_spec_init", "subrange_specification",
-  "subrange_type_decl", "initialized_subrange", "range",
-  "enumerated_spec_init", "enumerated_specification",
-  "initialized_enumerated", "enumerated_values", "array_spec_init",
-  "array_specification", "array_type", "initialized_array", "range_list",
-  "non_generic_type_name", "array_initialization",
-  "array_initial_elements_list", "array_initial_elements",
-  "_actionAfterElement_", "array_initial_element",
-  "repeated_initial_element", "_actionBeforeNotSimpleInitialization_",
-  "structure_initialization", "_actionAfterParenthesis_",
-  "structure_field_initialization_list", "initialized_structure_field",
+  "fb_io_var_declarations", "io_var_decl", "var_retain_spec",
+  "opt_other_var_declarations_list", "other_var_declarations",
+  "opt_function_block_body", "opt_fuzzify_block_list", "fuzzify_block",
+  "fuzzify_block_name", "opt_defuzzify_block_list", "defuzzify_block",
+  "defuzzify_block_name", "opt_linguistic_term_list",
+  "linguistic_term_list", "linguistic_term", "linguistic_term_value",
+  "membership_function", "singleton", "point_list", "point",
+  "defuzzification_method", "defuzz_method", "default_value",
+  "default_val", "opt_range", "opt_rule_block_list", "rule_block",
+  "operator_definition", "opt_operator_or", "operator_and_opt", "or_type",
+  "and_type", "activation_method_opt", "activation_method", "act_type",
+  "accumulation_method", "accu_type", "rule_list", "rule", "opt_weighting",
+  "condition", "condition_tail", "x", "subcondition", "conclusion_list",
+  "opt_option_block_list", "option_block", "pragma_list", "pragma",
+  "var_declarations", "var_id_decl", "var_constant_spec",
+  "var_init_decl_list", "var_init_decl", "identifier_list",
+  "var_spec_init", "custom_spec_init", "custom_specification",
+  "initialized_custom", "initialized_custom_with_constant",
+  "initialized_custom_with_identifier",
+  "initialized_custom_with_structure", "boolean_spec_init",
+  "boolean_specification", "initialized_boolean", "edge",
+  "simple_spec_init", "simple_specification", "initialized_simple",
+  "elementary_type", "numeric_type", "integer_type", "signed_integer_type",
+  "unsigned_integer_type", "real_type", "date_type", "constant",
+  "string_constant", "boolean_constant", "numeric_constant", "prefix_type",
+  "time_constant", "bit_string_type", "subrange_spec_init",
+  "subrange_specification", "subrange_type_decl", "initialized_subrange",
+  "range", "enumerated_spec_init", "enumerated_specification",
+  "initialized_enumerated", "array_spec_init", "array_specification",
+  "initialized_array", "range_list", "non_generic_type",
+  "array_initialization", "array_initial_elements_list",
+  "array_initial_elements", "array_initial_element",
+  "repeated_initial_element", "structure_initialization",
+  "structure_field_init_list", "initialized_struct_field",
   "initialized_field_with_constant", "initialized_field_with_identifier",
   "initialized_field_with_array", "initialized_field_with_structure",
-  "nested_field", "identifier_with_opt_mangling",
-  "standard_function_block_spec_init",
+  "referenced_identifier", "standard_function_block_spec_init",
   "initialized_standard_function_block",
   "standard_function_block_specification", "string_spec_init",
-  "string_specification", "initialized_string",
-  "type_string_specification", "opt_data_type_declaration",
-  "data_type_declaration", "type_declaration_list", "type_declaration",
-  "type_name_declaration", "type_spec_init", "structure_specification",
-  "structure_field_declaration_list", "structure_field_declaration",
+  "string_specification", "initialized_string", "string_type",
+  "opt_data_type_declaration", "data_type_declaration",
+  "type_declaration_list", "type_declaration", "type_name_declaration",
+  "type_spec_init", "structure_specification",
+  "structure_field_init_decl_list", "structure_field_init_decl",
   "field_name", "structure_field_spec_init", null
     };
   }
@@ -904,12 +886,6 @@ public final class Parser
    */
   public Parser(Lexer yylexer, SymbolTable symbolTable)
   {
-/* "%code init" blocks.  */
-/* "src/main/java/parser/Parser.y":32  */
-
-    this.contexts = new ContextHandler();
-
-/* "src/main/java/parser/Parser.java":913  */
 
     this.yylexer = yylexer;
 this.symbolTable = symbolTable;
@@ -1062,88 +1038,103 @@ this.symbolTable = symbolTable;
 
     switch (yyn)
       {
-          case 3: /* function_block_declaration: FUNCTION_BLOCK function_block_name opt_fb_io_var_declarations_list opt_other_var_declarations_list opt_function_block_body END_FUNCTION_BLOCK  */
-  if (yyn == 3)
-    /* "src/main/java/parser/Parser.y":117  */
-    {
-        /**
-         * Pops the function block context
-        **/
-
-        this.contexts.pop();
-    };
-  break;
-
-
-  case 4: /* function_block_name: IDENTIFIER  */
+          case 4: /* function_block_name: IDENTIFIER  */
   if (yyn == 4)
-    /* "src/main/java/parser/Parser.y":128  */
+    /* "src/main/java/parser/Parser.y":174  */
+    {
+        this.programName = ((String)(yystack.valueAt (0)));
+    };
+  break;
+
+
+  case 7: /* fb_io_var_declarations: io_var_decl var_retain_spec var_init_decl_list ';' END_VAR  */
+  if (yyn == 7)
+    /* "src/main/java/parser/Parser.y":186  */
+    {
+        ((DeclarationBlock)(yystack.valueAt (2))).source(((Source)(yystack.valueAt (4)))).use(Use.VARIABLE).setDeclarationScope(programName);
+        ((DeclarationBlock)(yystack.valueAt (2))).publish();
+    };
+  break;
+
+
+  case 8: /* io_var_decl: VAR_INPUT  */
+  if (yyn == 8)
+    /* "src/main/java/parser/Parser.y":194  */
+    {
+        yyval = Source.IN;
+    };
+  break;
+
+
+  case 9: /* io_var_decl: VAR_OUTPUT  */
+  if (yyn == 9)
+    /* "src/main/java/parser/Parser.y":198  */
+    {
+        yyval = Source.OUT;
+    };
+  break;
+
+
+  case 11: /* var_retain_spec: RETAIN  */
+  if (yyn == 11)
+    /* "src/main/java/parser/Parser.y":206  */
     {
         /**
-         * Builds a new context and adds the function block name to the outer scope
+         * Marks the variable declaration as RETAIN (persistent across power cycles).
+         * TODO: Implement retain specification in context metadata.
         **/
 
-        ParsingContext ctx = new ParsingContext(this.symbolTable);
-        ctx.outerScopes().addScope(((String)(yystack.valueAt (0))));
-        this.contexts.add(ctx);
+        // TODO: ctx with retain spec
     };
   break;
 
 
-  case 14: /* fuzzify_block: FUZZIFY fuzzify_block_name linguistic_term_list END_FUZZIFY  */
-  if (yyn == 14)
-    /* "src/main/java/parser/Parser.y":175  */
+  case 12: /* var_retain_spec: NON_RETAIN  */
+  if (yyn == 12)
+    /* "src/main/java/parser/Parser.y":215  */
     {
-        this.contexts.publish();
+        /**
+         * Marks the variable declaration as NON_RETAIN (not persistent).
+         * TODO: Implement non-retain specification in context metadata.
+        **/
+
+        // TODO: ctx with non retain spec
     };
   break;
 
 
-  case 15: /* fuzzify_block_name: function_block_name  */
-  if (yyn == 15)
-    /* "src/main/java/parser/Parser.y":182  */
+  case 20: /* fuzzify_block_name: function_block_name  */
+  if (yyn == 20)
+    /* "src/main/java/parser/Parser.y":256  */
     {
-        ParsingContext ctx = this.contexts.current();
-        ctx.declaredIdentifiers().add("@fuzzifier");
-        ctx.metadataBuilder().source(Source.FUZZIFY);
     };
   break;
 
 
-  case 18: /* defuzzify_block: DEFUZZIFY defuzzify_block_name opt_range opt_linguistic_term_list defuzzification_method default_value END_DEFUZZIFY  */
-  if (yyn == 18)
-    /* "src/main/java/parser/Parser.y":201  */
+  case 24: /* defuzzify_block_name: function_block_name  */
+  if (yyn == 24)
+    /* "src/main/java/parser/Parser.y":276  */
     {
-        this.contexts.publish();
     };
   break;
 
 
-  case 19: /* defuzzify_block_name: function_block_name  */
-  if (yyn == 19)
-    /* "src/main/java/parser/Parser.y":208  */
+  case 26: /* opt_linguistic_term_list: linguistic_term_list  */
+  if (yyn == 26)
+    /* "src/main/java/parser/Parser.y":283  */
     {
-        ParsingContext ctx = this.contexts.current();
-        ctx.declaredIdentifiers().add("@defuzzifier");
-        ctx.metadataBuilder().source(Source.DEFUZZIFY);
     };
   break;
 
 
-  case 21: /* opt_linguistic_term_list: linguistic_term_list  */
-  if (yyn == 21)
-    /* "src/main/java/parser/Parser.y":218  */
+  case 27: /* linguistic_term_list: linguistic_term  */
+  if (yyn == 27)
+    /* "src/main/java/parser/Parser.y":289  */
     {
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().parameters(((List<String>)(yystack.valueAt (0))));
-    };
-  break;
+        /**
+         * Starts a new list of linguistic terms with the first term.
+        **/
 
-
-  case 22: /* linguistic_term_list: linguistic_term  */
-  if (yyn == 22)
-    /* "src/main/java/parser/Parser.y":226  */
-    {
         List<String> terms = new ArrayList<>();
         terms.add(((String)(yystack.valueAt (0))));
         yyval = terms;
@@ -1151,1083 +1142,1058 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 23: /* linguistic_term_list: linguistic_term_list linguistic_term  */
-  if (yyn == 23)
-    /* "src/main/java/parser/Parser.y":232  */
+  case 28: /* linguistic_term_list: linguistic_term_list linguistic_term  */
+  if (yyn == 28)
+    /* "src/main/java/parser/Parser.y":299  */
     {
+        /**
+         * Appends another linguistic term to the existing list.
+        **/
+
         ((List<String>)(yystack.valueAt (1))).add(((String)(yystack.valueAt (0))));
         yyval = ((List<String>)(yystack.valueAt (1)));
     };
   break;
 
 
-  case 24: /* linguistic_term: TERM IDENTIFIER ASSIGN_OP linguistic_term_value  */
-  if (yyn == 24)
-    /* "src/main/java/parser/Parser.y":240  */
+  case 29: /* linguistic_term: TERM IDENTIFIER ASSIGN_OP linguistic_term_value  */
+  if (yyn == 29)
+    /* "src/main/java/parser/Parser.y":311  */
     {
-        this.contexts.createSubcontext();
+        yyval = null;
     };
   break;
 
 
-  case 98: /* io_var_decl: VAR_INPUT  */
-  if (yyn == 98)
-    /* "src/main/java/parser/Parser.y":422  */
-    {
-        /**
-         * Adds to the current context the source and use of the inner block declared identifiers
-        **/
-
-        ParsingContext ctx = contexts.current();
-        ctx.metadataBuilder().source(Source.IN).use(Use.VARIABLE);
-    };
-  break;
-
-
-  case 99: /* io_var_decl: VAR_OUTPUT  */
-  if (yyn == 99)
-    /* "src/main/java/parser/Parser.y":431  */
-    {
-        /**
-         * Adds to the current context the source and use of the inner block declared identifiers
-        **/
-
-        ParsingContext ctx = contexts.current();
-        ctx.metadataBuilder().source(Source.OUT).use(Use.VARIABLE);
-    };
-  break;
-
-
-  case 101: /* var_id_decl: VAR  */
-  if (yyn == 101)
-    /* "src/main/java/parser/Parser.y":447  */
-    {
-        /**
-         * Adds to the current context the source and use of the inner block declared identifiers
-        **/
-
-        ParsingContext ctx = contexts.current();
-        ctx.metadataBuilder().source(Source.INTERNAL).use(Use.VARIABLE);
-    };
-  break;
-
-
-  case 103: /* var_retain_spec: RETAIN  */
+  case 103: /* var_declarations: var_id_decl var_constant_spec var_init_decl_list ';' END_VAR  */
   if (yyn == 103)
-    /* "src/main/java/parser/Parser.y":460  */
+    /* "src/main/java/parser/Parser.y":493  */
     {
-        // TODO: ctx with retain spec
-    };
-  break;
-
-
-  case 104: /* var_retain_spec: NON_RETAIN  */
-  if (yyn == 104)
-    /* "src/main/java/parser/Parser.y":464  */
-    {
-        // TODO: ctx with non retain spec
+        ((DeclarationBlock)(yystack.valueAt (2))).source(Source.INTERNAL).use(((Use)(yystack.valueAt (3)))).setDeclarationScope(programName);
+        ((DeclarationBlock)(yystack.valueAt (2))).publish();
     };
   break;
 
 
   case 105: /* var_constant_spec: %empty  */
   if (yyn == 105)
-    /* "src/main/java/parser/Parser.y":471  */
+    /* "src/main/java/parser/Parser.y":505  */
     {
-        // TODO: ctx with non constant spec
+        /**
+         * Default variable specification (non-constant).
+         * TODO: Implement non-constant specification in context metadata.
+        **/
+
+        yyval = Use.VARIABLE;
     };
   break;
 
 
   case 106: /* var_constant_spec: CONSTANT  */
   if (yyn == 106)
-    /* "src/main/java/parser/Parser.y":475  */
+    /* "src/main/java/parser/Parser.y":514  */
     {
-        // TODO: ctx with constant spec
+        /**
+         * Marks the variable declaration as CONSTANT (immutable value).
+         * TODO: Implement constant specification in context metadata.
+        **/
+
+        yyval = Use.CONSTANT;
+    };
+  break;
+
+
+  case 107: /* var_init_decl_list: var_init_decl  */
+  if (yyn == 107)
+    /* "src/main/java/parser/Parser.y":526  */
+    {
+        DeclarationBlock block = new DeclarationBlock();
+        block.addDeclaration(((MultipleDeclaration)(yystack.valueAt (0))));
+        yyval = block;
+    };
+  break;
+
+
+  case 108: /* var_init_decl_list: var_init_decl_list ';' var_init_decl  */
+  if (yyn == 108)
+    /* "src/main/java/parser/Parser.y":532  */
+    {
+        ((DeclarationBlock)(yystack.valueAt (2))).addDeclaration(((MultipleDeclaration)(yystack.valueAt (0))));
+        yyval = ((DeclarationBlock)(yystack.valueAt (2)));
     };
   break;
 
 
   case 109: /* var_init_decl: identifier_list ':' var_spec_init  */
   if (yyn == 109)
-    /* "src/main/java/parser/Parser.y":487  */
+    /* "src/main/java/parser/Parser.y":540  */
     {
-        /**
-         * Publishes the variables into the symbol table using the loaded context
-        **/
+        ((MultipleDeclaration)(yystack.valueAt (0))).identifiers(((List<String>)(yystack.valueAt (2))));
+        yyval = ((MultipleDeclaration)(yystack.valueAt (0)));
+    };
+  break;
 
-        this.contexts.publish();
+
+  case 110: /* var_init_decl: identifier_list ':' standard_function_block_spec_init  */
+  if (yyn == 110)
+    /* "src/main/java/parser/Parser.y":545  */
+    {
+        // TODO: remove null
+        yyval = null;
     };
   break;
 
 
   case 111: /* identifier_list: IDENTIFIER  */
   if (yyn == 111)
-    /* "src/main/java/parser/Parser.y":499  */
+    /* "src/main/java/parser/Parser.y":553  */
     {
-        /**
-         * Starts the list of declared identifiers for the current context.
-        **/
-
-        this.contexts.createSubcontext();
-        ParsingContext ctx = this.contexts.current();
-        ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
+        List<String> identifiers = new ArrayList<>();
+        identifiers.add(((String)(yystack.valueAt (0))));
+        yyval = identifiers;
     };
   break;
 
 
   case 112: /* identifier_list: identifier_list ',' IDENTIFIER  */
   if (yyn == 112)
-    /* "src/main/java/parser/Parser.y":509  */
+    /* "src/main/java/parser/Parser.y":559  */
     {
-        /**
-         * Appends another identifier to the declared identifiers list.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
-    };
-  break;
-
-
-  case 122: /* custom_specification: IDENTIFIER  */
-  if (yyn == 122)
-    /* "src/main/java/parser/Parser.y":536  */
-    {
-        /**
-         * Loads the left identifiers type, subtype and initialValue
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.CUSTOM)
-            .customType(((String)(yystack.valueAt (0))))
-            .initialValue(this.symbolTable.get(((String)(yystack.valueAt (0)))).initialValue);
-    };
-  break;
-
-
-  case 126: /* initialized_custom_with_constant: custom_type_name ASSIGN_OP constant  */
-  if (yyn == 126)
-    /* "src/main/java/parser/Parser.y":558  */
-    {
-        /**
-         * Adds to the context the left identifiers initial value and drops the search scope added
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
-        ctx.searchScope().popScope();
-    };
-  break;
-
-
-  case 127: /* initialized_custom_with_identifier: custom_type_name ASSIGN_OP identifier_with_opt_mangling  */
-  if (yyn == 127)
-    /* "src/main/java/parser/Parser.y":571  */
-    {
-        /**
-         * Searches if the enumerated value is valid and in that cases loads the initial value and drops the search
-         * scope added
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-
-        int octothorpeIdx = ((String)(yystack.valueAt (0))).indexOf('#');
-        String completeTypeName = (octothorpeIdx != -1)
-            ? ((String)(yystack.valueAt (0))) // Has already name mangling
-            : ctx.searchScope().getNameMangled(((String)(yystack.valueAt (0))));
-
-        if (this.symbolTable.get(completeTypeName) == null) {
-            // TODO: error control. Enumerated literal does not exist
-        }
-        ctx.metadataBuilder().initialValue(new VariableInitialization(completeTypeName));
-        ctx.searchScope().popScope();
-    };
-  break;
-
-
-  case 128: /* initialized_custom_with_structure: custom_type_name ASSIGN_OP structure_initialization  */
-  if (yyn == 128)
-    /* "src/main/java/parser/Parser.y":594  */
-    {
-        /**
-         * Drops the search scope after reducing the assignment
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.searchScope().popScope();
-    };
-  break;
-
-
-  case 129: /* custom_type_name: IDENTIFIER  */
-  if (yyn == 129)
-    /* "src/main/java/parser/Parser.y":606  */
-    {
-        /**
-         * Builds the LexemeInfo associated to the identifier and appends the underlying scope to the search scope.
-         *
-         * If an identifier is used and it's subtype is custom, then it's hiding information. That's why we search for
-         * the underlying scope, so that we can look it up later.
-        **/
-
-        LexemeInfo metadata = this.symbolTable.get(((String)(yystack.valueAt (0))));
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.CUSTOM)
-            .customType(((String)(yystack.valueAt (0))))
-            .initialValue(metadata.initialValue);
-
-        String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, ((String)(yystack.valueAt (0))));
-        ctx.searchScope().addScope(underlyingScope);
-    };
-  break;
-
-
-  case 132: /* boolean_specification: BOOL  */
-  if (yyn == 132)
-    /* "src/main/java/parser/Parser.y":637  */
-    {
-        /**
-         * Loads the left identifiers type and subtype
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(Subtype.BOOL)
-            .initialValue(
-                Factory.createPrimitiveInitialization(this.symbolTable, Subtype.BOOL)
-            );
-    };
-  break;
-
-
-  case 134: /* initialized_boolean: boolean_specification ASSIGN_OP boolean_constant  */
-  if (yyn == 134)
-    /* "src/main/java/parser/Parser.y":656  */
-    {
-        /**
-         * Builds a boolean variable initialization from the assigned constant
-         * and stores it in the current parsing context.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .initialValue(
-                new VariableInitialization(((String)(yystack.valueAt (0))))
-            );
-    };
-  break;
-
-
-  case 139: /* simple_specification: elementary_type_name  */
-  if (yyn == 139)
-    /* "src/main/java/parser/Parser.y":683  */
-    {
-        /**
-         * Loads the left identifiers type and subtype
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(((Subtype)(yystack.valueAt (0))))
-            .initialValue(
-                Factory.createPrimitiveInitialization(this.symbolTable, ((Subtype)(yystack.valueAt (0))))
-            );
-    };
-  break;
-
-
-  case 140: /* initialized_simple: simple_specification ASSIGN_OP constant  */
-  if (yyn == 140)
-    /* "src/main/java/parser/Parser.y":700  */
-    {
-        /**
-         * Loads the left identifiers type, subtype and initialValue
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .initialValue(new VariableInitialization(((String)(yystack.valueAt (0))))
-        );
-    };
-  break;
-
-
-  case 141: /* elementary_type_name: numeric_type_name  */
-  if (yyn == 141)
-    /* "src/main/java/parser/Parser.y":715  */
-                                    { /** Propagates the numeric type name. */    yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 142: /* elementary_type_name: date_type_name  */
-  if (yyn == 142)
-    /* "src/main/java/parser/Parser.y":716  */
-                                    { /** Propagates the date type name. */       yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 143: /* elementary_type_name: bit_string_type_name  */
-  if (yyn == 143)
-    /* "src/main/java/parser/Parser.y":717  */
-                                    { /** Propagates the bit string type name. */ yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 144: /* numeric_type_name: integer_type_name  */
-  if (yyn == 144)
-    /* "src/main/java/parser/Parser.y":721  */
-                                    { /** Propagates the integer type name. */ yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 145: /* numeric_type_name: real_type_name  */
-  if (yyn == 145)
-    /* "src/main/java/parser/Parser.y":722  */
-                                    { /** Propagates the real type name. */    yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 146: /* integer_type_name: signed_integer_type_name  */
-  if (yyn == 146)
-    /* "src/main/java/parser/Parser.y":726  */
-                                    { /** Propagates the signed integer type name.   */ yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 147: /* integer_type_name: unsigned_integer_type_name  */
-  if (yyn == 147)
-    /* "src/main/java/parser/Parser.y":727  */
-                                    { /** Propagates the unsigned integer type name. */ yyval = ((Subtype)(yystack.valueAt (0))); };
-  break;
-
-
-  case 148: /* signed_integer_type_name: SINT  */
-  if (yyn == 148)
-    /* "src/main/java/parser/Parser.y":731  */
-           { /** Sets the subtype to SINT. */ yyval = Subtype.SINT; };
-  break;
-
-
-  case 149: /* signed_integer_type_name: INT  */
-  if (yyn == 149)
-    /* "src/main/java/parser/Parser.y":732  */
-           { /** Sets the subtype to INT.  */ yyval = Subtype.INT;  };
-  break;
-
-
-  case 150: /* signed_integer_type_name: DINT  */
-  if (yyn == 150)
-    /* "src/main/java/parser/Parser.y":733  */
-           { /** Sets the subtype to DINT. */ yyval = Subtype.DINT; };
-  break;
-
-
-  case 151: /* signed_integer_type_name: LINT  */
-  if (yyn == 151)
-    /* "src/main/java/parser/Parser.y":734  */
-           { /** Sets the subtype to LINT. */ yyval = Subtype.LINT; };
-  break;
-
-
-  case 152: /* unsigned_integer_type_name: USINT  */
-  if (yyn == 152)
-    /* "src/main/java/parser/Parser.y":738  */
-            { /** Sets the subtype to USINT. */ yyval = Subtype.USINT; };
-  break;
-
-
-  case 153: /* unsigned_integer_type_name: UINT  */
-  if (yyn == 153)
-    /* "src/main/java/parser/Parser.y":739  */
-            { /** Sets the subtype to UINT.  */ yyval = Subtype.UINT;  };
-  break;
-
-
-  case 154: /* unsigned_integer_type_name: UDINT  */
-  if (yyn == 154)
-    /* "src/main/java/parser/Parser.y":740  */
-            { /** Sets the subtype to UDINT. */ yyval = Subtype.UDINT; };
-  break;
-
-
-  case 155: /* unsigned_integer_type_name: ULINT  */
-  if (yyn == 155)
-    /* "src/main/java/parser/Parser.y":741  */
-            { /** Sets the subtype to ULINT. */ yyval = Subtype.ULINT; };
-  break;
-
-
-  case 156: /* real_type_name: REAL  */
-  if (yyn == 156)
-    /* "src/main/java/parser/Parser.y":745  */
-            { /** Sets the subtype to REAL.  */ yyval = Subtype.REAL;  };
-  break;
-
-
-  case 157: /* real_type_name: LREAL  */
-  if (yyn == 157)
-    /* "src/main/java/parser/Parser.y":746  */
-            { /** Sets the subtype to LREAL. */ yyval = Subtype.LREAL; };
-  break;
-
-
-  case 158: /* date_type_name: TIME  */
-  if (yyn == 158)
-    /* "src/main/java/parser/Parser.y":750  */
-                    { /** Sets the subtype to TIME. */ yyval = Subtype.TIME; };
-  break;
-
-
-  case 159: /* date_type_name: DATE  */
-  if (yyn == 159)
-    /* "src/main/java/parser/Parser.y":751  */
-                    { /** Sets the subtype to DATE. */ yyval = Subtype.DATE; };
-  break;
-
-
-  case 160: /* date_type_name: TIME_OF_DAY  */
-  if (yyn == 160)
-    /* "src/main/java/parser/Parser.y":752  */
-                    { /** Sets the subtype to TIME_OF_DAY.   */ yyval = Subtype.TIME_OF_DAY;   };
-  break;
-
-
-  case 161: /* date_type_name: DATE_AND_TIME  */
-  if (yyn == 161)
-    /* "src/main/java/parser/Parser.y":753  */
-                    { /** Sets the subtype to DATE_AND_TIME. */ yyval = Subtype.DATE_AND_TIME; };
-  break;
-
-
-  case 162: /* constant: string_constant  */
-  if (yyn == 162)
-    /* "src/main/java/parser/Parser.y":759  */
-                       { /** Propagates the string constant.  */ yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 163: /* constant: boolean_constant  */
-  if (yyn == 163)
-    /* "src/main/java/parser/Parser.y":760  */
-                       { /** Propagates the boolean constant. */ yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 164: /* constant: time_constant  */
-  if (yyn == 164)
-    /* "src/main/java/parser/Parser.y":761  */
-                       { /** Propagates the time constant.    */ yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 165: /* constant: numeric_constant  */
-  if (yyn == 165)
-    /* "src/main/java/parser/Parser.y":762  */
-                       { /** Propagates the numeric constant. */ yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 166: /* string_constant: STRING_LITERAL  */
-  if (yyn == 166)
-    /* "src/main/java/parser/Parser.y":766  */
-                   { /** Propagates the string literal. */   yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 167: /* boolean_constant: BOOLEAN_LITERAL  */
-  if (yyn == 167)
-    /* "src/main/java/parser/Parser.y":770  */
-                    { /** Propagates the boolean literal. */ yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 168: /* numeric_constant: NUMERIC_LITERAL  */
-  if (yyn == 168)
-    /* "src/main/java/parser/Parser.y":773  */
-                    { /** Propagates the numeric literal. */ yyval = ((String)(yystack.valueAt (0))); };
-  break;
-
-
-  case 169: /* numeric_constant: number_prefix NUMERIC_LITERAL  */
-  if (yyn == 169)
-    /* "src/main/java/parser/Parser.y":775  */
-    {
-        // TODO: convert this constant in code
-        yyval = "";
-    };
-  break;
-
-
-  case 170: /* number_prefix: integer_type_name '#'  */
-  if (yyn == 170)
-    /* "src/main/java/parser/Parser.y":782  */
-                          { /** Propagates the integer type name prefix. */ yyval = ((Subtype)(yystack.valueAt (1))); };
-  break;
-
-
-  case 171: /* number_prefix: real_type_name '#'  */
-  if (yyn == 171)
-    /* "src/main/java/parser/Parser.y":783  */
-                          { /** Propagates the real type name prefix.    */ yyval = ((Subtype)(yystack.valueAt (1))); };
-  break;
-
-
-  case 172: /* number_prefix: bit_string_type_name '#'  */
-  if (yyn == 172)
-    /* "src/main/java/parser/Parser.y":784  */
-                               { /** Propagates the bit string type name prefix. */ yyval = ((Subtype)(yystack.valueAt (1))); };
-  break;
-
-
-  case 173: /* time_constant: date_type_name '#' TIME_LITERAL  */
-  if (yyn == 173)
-    /* "src/main/java/parser/Parser.y":788  */
-                                    {
-        // TODO: semantic action to verify prefix matches time_literal type
-    };
-  break;
-
-
-  case 174: /* bit_string_type_name: BYTE  */
-  if (yyn == 174)
-    /* "src/main/java/parser/Parser.y":794  */
-            { /** Sets the subtype to BYTE.  */ yyval = Subtype.BYTE;  };
-  break;
-
-
-  case 175: /* bit_string_type_name: WORD  */
-  if (yyn == 175)
-    /* "src/main/java/parser/Parser.y":795  */
-            { /** Sets the subtype to WORD.  */ yyval = Subtype.WORD;  };
-  break;
-
-
-  case 176: /* bit_string_type_name: DWORD  */
-  if (yyn == 176)
-    /* "src/main/java/parser/Parser.y":796  */
-            { /** Sets the subtype to DWORD. */ yyval = Subtype.DWORD; };
-  break;
-
-
-  case 177: /* bit_string_type_name: LWORD  */
-  if (yyn == 177)
-    /* "src/main/java/parser/Parser.y":797  */
-            { /** Sets the subtype to LWORD. */ yyval = Subtype.LWORD; };
-  break;
-
-
-  case 180: /* subrange_specification: subrange_type_decl '(' range ')'  */
-  if (yyn == 180)
-    /* "src/main/java/parser/Parser.y":809  */
-    {
-        /**
-         * Creates a SubrangeInitialization from the lower and upper limits already
-         * collected in the current context metadata and stores it there.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        LexemeInfo metadata = ctx.metadataBuilder().build();
-        String ilimit = metadata.inferiorLimits.get(0);
-        String slimit = metadata.superiorLimits.get(0);
-
-        ctx.metadataBuilder()
-            .initialValue(new SubrangeInitialization(ilimit, slimit));
-    };
-  break;
-
-
-  case 181: /* subrange_type_decl: integer_type_name  */
-  if (yyn == 181)
-    /* "src/main/java/parser/Parser.y":827  */
-    {
-        /**
-         * Loads the left identifiers subrange subtype
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().type(Type.SUBRANGE).subtype(((Subtype)(yystack.valueAt (0))));
-    };
-  break;
-
-
-  case 182: /* initialized_subrange: subrange_specification ASSIGN_OP numeric_constant  */
-  if (yyn == 182)
-    /* "src/main/java/parser/Parser.y":839  */
-    {
-        /**
-         * Loads the left identifiers subrange initialization
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
-    };
-  break;
-
-
-  case 183: /* range: numeric_constant RANGE_OP numeric_constant  */
-  if (yyn == 183)
-    /* "src/main/java/parser/Parser.y":851  */
-    {
-        /**
-         * Loads the left identifiers subrange numeric range
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        LexemeInfo metadata = ctx.metadataBuilder().build();
-
-        if (metadata.inferiorLimits == null) {
-            metadata.inferiorLimits = new ArrayList<>();
-            metadata.superiorLimits = new ArrayList<>();
-        }
-
-        // TODO: semantic check of ranges
-        metadata.inferiorLimits.add(((String)(yystack.valueAt (2))));
-        metadata.superiorLimits.add(((String)(yystack.valueAt (0))));
-
-        ctx.metadataBuilder()
-            .inferiorLimits(metadata.inferiorLimits)
-            .superiorLimits(metadata.superiorLimits);
-    };
-  break;
-
-
-  case 186: /* enumerated_specification: '(' enumerated_values ')'  */
-  if (yyn == 186)
-    /* "src/main/java/parser/Parser.y":881  */
-    {
-        /**
-         * Loads the enumerated metadata to the current context.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.ENUMERATE)
-            .subtype(Subtype.INT)
-            .parameters(((List<String>)(yystack.valueAt (1))))
-            .initialValue(
-                new EnumeratedInitialization(((List<String>)(yystack.valueAt (1))))
-            );
-    };
-  break;
-
-
-  case 187: /* initialized_enumerated: enumerated_specification ASSIGN_OP identifier_with_opt_mangling  */
-  if (yyn == 187)
-    /* "src/main/java/parser/Parser.y":899  */
-    {
-        /**
-         * Verifies that the initializer value is correct and loads it to the context.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        if (((String)(yystack.valueAt (0))).indexOf('#') != -1) {
-            // TODO: error control. Anonymous enum cannot be initialized with mangling
-        }
-        List<String> enumeratedValues = ctx.metadataBuilder().build().parameters;
-        Integer indexValue = enumeratedValues.indexOf(((String)(yystack.valueAt (0))));
-        if (indexValue == -1) {
-            // TODO: error control. Anonymous enum cannot be initialized with non-existent value
-        }
-        // TODO: verify how to check index is in lexicon
-        ctx.metadataBuilder().initialValue(
-            new VariableInitialization(
-                ctx.outerScopes().getNameMangled(((String)(yystack.valueAt (0))))
-            )
-        );
-    };
-  break;
-
-
-  case 188: /* enumerated_values: IDENTIFIER  */
-  if (yyn == 188)
-    /* "src/main/java/parser/Parser.y":924  */
-    {
-        /**
-         * Creates a new context with the data associated to the enums value list and then publish the identifier found
-         * to the symbol table.
-        **/
-
-        String declaredEnumerated = this.contexts.current().declaredIdentifiers().get(0);
-
-        this.contexts.createSubcontext();
-        ParsingContext ctx = this.contexts.current();
-
-        // This is necessary so that it can be disambiguated
-        Use currentUse = this.contexts.current().metadataBuilder().build().use;
-        if (currentUse == Use.TYPE) {
-            ctx.outerScopes().addScope(declaredEnumerated);
-        }
-
-        ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
-        Director.makeMacro(ctx.metadataBuilder());
-        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, ctx.index()));
-        this.contexts.publish();
-
-        List<String> enumeratedValues = new ArrayList<>();
-        enumeratedValues.add(((String)(yystack.valueAt (0))));
-        yyval = enumeratedValues;
-    };
-  break;
-
-
-  case 189: /* enumerated_values: enumerated_values ',' IDENTIFIER  */
-  if (yyn == 189)
-    /* "src/main/java/parser/Parser.y":951  */
-    {
-        String declaredEnumerated = this.contexts.current().declaredIdentifiers().get(0);
-
-        this.contexts.createSubcontext();
-        ParsingContext ctx = this.contexts.current();
-
-        // This is necessary so that it can be disambiguated
-        Use currentUse = this.contexts.current().metadataBuilder().build().use;
-        if (currentUse == Use.TYPE) {
-            ctx.outerScopes().addScope(declaredEnumerated);
-        }
-
-        ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
-        Director.makeMacro(ctx.metadataBuilder());
-        ctx.metadataBuilder().initialValue(new MacroInitialization(this.symbolTable, ((List<String>)(yystack.valueAt (2))).size()));
-        this.contexts.publish();
-
         ((List<String>)(yystack.valueAt (2))).add(((String)(yystack.valueAt (0))));
         yyval = ((List<String>)(yystack.valueAt (2)));
     };
   break;
 
 
-  case 192: /* array_specification: ARRAY '[' range_list ']' OF array_type  */
+  case 113: /* var_spec_init: custom_spec_init  */
+  if (yyn == 113)
+    /* "src/main/java/parser/Parser.y":566  */
+                            { /** Wraps the custom type builder in a MultipleDeclaration for variable list handling. */ yyval = new MultipleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 114: /* var_spec_init: boolean_spec_init  */
+  if (yyn == 114)
+    /* "src/main/java/parser/Parser.y":567  */
+                            { /** Wraps the boolean builder in a MultipleDeclaration for variable list handling. */ yyval = new MultipleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 115: /* var_spec_init: simple_spec_init  */
+  if (yyn == 115)
+    /* "src/main/java/parser/Parser.y":568  */
+                            { /** Wraps the simple type builder in a MultipleDeclaration for variable list handling. */ yyval = new MultipleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 116: /* var_spec_init: subrange_spec_init  */
+  if (yyn == 116)
+    /* "src/main/java/parser/Parser.y":569  */
+                            { /** Subrange not yet supported for variable lists; returns null. */ yyval = null; };
+  break;
+
+
+  case 117: /* var_spec_init: enumerated_spec_init  */
+  if (yyn == 117)
+    /* "src/main/java/parser/Parser.y":570  */
+                            { /** Wraps the enumerated builder in an AnonymousEnumeratedVariable for variable list handling. */ yyval = new AnnonymousEnumeratedVariable(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 118: /* var_spec_init: array_spec_init  */
+  if (yyn == 118)
+    /* "src/main/java/parser/Parser.y":571  */
+                            { /** Wraps the array builder in a MultipleDeclaration for variable list handling. */ yyval = new MultipleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 119: /* var_spec_init: string_spec_init  */
+  if (yyn == 119)
+    /* "src/main/java/parser/Parser.y":572  */
+                            { /** String not yet supported for variable lists; returns null. */ yyval = null; };
+  break;
+
+
+  case 120: /* custom_spec_init: custom_specification  */
+  if (yyn == 120)
+    /* "src/main/java/parser/Parser.y":576  */
+                            { /** Propagates the custom type specification builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 121: /* custom_spec_init: initialized_custom  */
+  if (yyn == 121)
+    /* "src/main/java/parser/Parser.y":577  */
+                            { /** Propagates the initialized custom builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 122: /* custom_specification: IDENTIFIER  */
+  if (yyn == 122)
+    /* "src/main/java/parser/Parser.y":582  */
+    {
+        /**
+         * Loads the left identifiers type, subtype and initialValue
+        **/
+
+        LexemeInfoBuilder customDeclaration = new LexemeInfoBuilder();
+        Director.makeCustom(customDeclaration, this.symbolTable, ((String)(yystack.valueAt (0))));
+        yyval = customDeclaration;
+    };
+  break;
+
+
+  case 123: /* initialized_custom: initialized_custom_with_constant  */
+  if (yyn == 123)
+    /* "src/main/java/parser/Parser.y":594  */
+                                            { /** Propagates the custom initialization with constant value. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 124: /* initialized_custom: initialized_custom_with_identifier  */
+  if (yyn == 124)
+    /* "src/main/java/parser/Parser.y":595  */
+                                            { /** Propagates the custom initialization with identifier reference. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 125: /* initialized_custom: initialized_custom_with_structure  */
+  if (yyn == 125)
+    /* "src/main/java/parser/Parser.y":596  */
+                                            { /** Propagates the custom initialization with structure value. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 126: /* initialized_custom_with_constant: custom_specification ASSIGN_OP constant  */
+  if (yyn == 126)
+    /* "src/main/java/parser/Parser.y":601  */
+    {
+       ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
+       yyval = ((LexemeInfoBuilder)(yystack.valueAt (2)));
+    };
+  break;
+
+
+  case 127: /* initialized_custom_with_identifier: custom_specification ASSIGN_OP referenced_identifier  */
+  if (yyn == 127)
+    /* "src/main/java/parser/Parser.y":609  */
+    {
+        /**
+         * Searches if the enumerated value is valid and in that cases loads the initial value and drops the search
+         * scope added
+        **/
+
+        // TODO: check if it the referenced identifier is valid
+        // In order to do that, the custom type from custom specification needs to be retrieved, then, the referenced
+        // identifier needs to be in it's parameters list and the custom type has to be an enumerated.
+
+        LexemeInfo metadata = this.symbolTable.get(((LexemeInfoBuilder)(yystack.valueAt (2))).customType());
+        if (metadata.type.equals(Type.ENUMERATE) && metadata.parameters.contains(((String)(yystack.valueAt (0))))) {
+            ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue(new VariableInitialization(((LexemeInfoBuilder)(yystack.valueAt (2))).customType() + "#" + ((String)(yystack.valueAt (0)))));
+        }
+
+        yyval = ((LexemeInfoBuilder)(yystack.valueAt (2)));
+    };
+  break;
+
+
+  case 128: /* initialized_custom_with_structure: custom_specification ASSIGN_OP structure_initialization  */
+  if (yyn == 128)
+    /* "src/main/java/parser/Parser.y":630  */
+    {
+        StructInitialization structInit = (StructInitialization) ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue();
+
+        for (PathInitializationInfo fieldInfo : ((List<PathInitializationInfo>)(yystack.valueAt (0)))) {
+            if (structInit.find(fieldInfo.name()).isPresent()) {
+                structInit.put(fieldInfo.name(), fieldInfo.initialValue());
+            }
+            // TODO: error handling
+        }
+        yyval = ((LexemeInfoBuilder)(yystack.valueAt (2)));
+    };
+  break;
+
+
+  case 129: /* boolean_spec_init: boolean_specification  */
+  if (yyn == 129)
+    /* "src/main/java/parser/Parser.y":644  */
+                            { /** Propagates the boolean type specification builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 130: /* boolean_spec_init: initialized_boolean  */
+  if (yyn == 130)
+    /* "src/main/java/parser/Parser.y":645  */
+                            { /** Propagates the initialized boolean builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 131: /* boolean_specification: BOOL  */
+  if (yyn == 131)
+    /* "src/main/java/parser/Parser.y":650  */
+    {
+        /**
+         * Loads the left identifiers type and subtype
+        **/
+
+        LexemeInfoBuilder primitiveBuilder = new LexemeInfoBuilder();
+        Director.makePrimitive(primitiveBuilder, symbolTable, Subtype.BOOL);
+        yyval = primitiveBuilder;
+    };
+  break;
+
+
+  case 132: /* initialized_boolean: boolean_specification edge  */
+  if (yyn == 132)
+    /* "src/main/java/parser/Parser.y":663  */
+    {
+        // TODO: add the edge specification
+        yyval = null;
+    };
+  break;
+
+
+  case 133: /* initialized_boolean: boolean_specification ASSIGN_OP boolean_constant  */
+  if (yyn == 133)
+    /* "src/main/java/parser/Parser.y":668  */
+    {
+        /**
+         * Builds a boolean variable initialization from the assigned constant
+         * and stores it in the current parsing context.
+        **/
+
+        ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
+        yyval = ((LexemeInfoBuilder)(yystack.valueAt (2)));
+    };
+  break;
+
+
+  case 136: /* simple_spec_init: simple_specification  */
+  if (yyn == 136)
+    /* "src/main/java/parser/Parser.y":686  */
+                            { /** Propagates the simple type specification builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 137: /* simple_spec_init: initialized_simple  */
+  if (yyn == 137)
+    /* "src/main/java/parser/Parser.y":687  */
+                            { /** Propagates the initialized simple builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 138: /* simple_specification: elementary_type  */
+  if (yyn == 138)
+    /* "src/main/java/parser/Parser.y":692  */
+    {
+        /**
+         * Loads the left identifiers type and subtype
+        **/
+
+        LexemeInfoBuilder primitiveBuilder = new LexemeInfoBuilder();
+        Director.makePrimitive(primitiveBuilder, this.symbolTable, ((Subtype)(yystack.valueAt (0))));
+        yyval = primitiveBuilder;
+    };
+  break;
+
+
+  case 139: /* initialized_simple: simple_specification ASSIGN_OP constant  */
+  if (yyn == 139)
+    /* "src/main/java/parser/Parser.y":705  */
+    {
+        /**
+         * Loads the left identifiers type, subtype and initialValue
+        **/
+
+        ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
+    };
+  break;
+
+
+  case 140: /* elementary_type: numeric_type  */
+  if (yyn == 140)
+    /* "src/main/java/parser/Parser.y":717  */
+                        { /** Propagates the numeric type name. */    yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 141: /* elementary_type: date_type  */
+  if (yyn == 141)
+    /* "src/main/java/parser/Parser.y":718  */
+                        { /** Propagates the date type name. */       yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 142: /* elementary_type: bit_string_type  */
+  if (yyn == 142)
+    /* "src/main/java/parser/Parser.y":719  */
+                        { /** Propagates the bit string type name. */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 143: /* numeric_type: integer_type  */
+  if (yyn == 143)
+    /* "src/main/java/parser/Parser.y":723  */
+                    { /** Propagates the integer type name. */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 144: /* numeric_type: real_type  */
+  if (yyn == 144)
+    /* "src/main/java/parser/Parser.y":724  */
+                    { /** Propagates the real type name. */    yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 145: /* integer_type: signed_integer_type  */
+  if (yyn == 145)
+    /* "src/main/java/parser/Parser.y":728  */
+                                { /** Propagates the signed integer type name.   */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 146: /* integer_type: unsigned_integer_type  */
+  if (yyn == 146)
+    /* "src/main/java/parser/Parser.y":729  */
+                                { /** Propagates the unsigned integer type name. */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 147: /* signed_integer_type: SINT  */
+  if (yyn == 147)
+    /* "src/main/java/parser/Parser.y":733  */
+            { /** Sets the subtype to SINT. */ yyval = Subtype.SINT; };
+  break;
+
+
+  case 148: /* signed_integer_type: INT  */
+  if (yyn == 148)
+    /* "src/main/java/parser/Parser.y":734  */
+            { /** Sets the subtype to INT.  */ yyval = Subtype.INT;  };
+  break;
+
+
+  case 149: /* signed_integer_type: DINT  */
+  if (yyn == 149)
+    /* "src/main/java/parser/Parser.y":735  */
+            { /** Sets the subtype to DINT. */ yyval = Subtype.DINT; };
+  break;
+
+
+  case 150: /* signed_integer_type: LINT  */
+  if (yyn == 150)
+    /* "src/main/java/parser/Parser.y":736  */
+            { /** Sets the subtype to LINT. */ yyval = Subtype.LINT; };
+  break;
+
+
+  case 151: /* unsigned_integer_type: USINT  */
+  if (yyn == 151)
+    /* "src/main/java/parser/Parser.y":740  */
+            { /** Sets the subtype to USINT. */ yyval = Subtype.USINT; };
+  break;
+
+
+  case 152: /* unsigned_integer_type: UINT  */
+  if (yyn == 152)
+    /* "src/main/java/parser/Parser.y":741  */
+            { /** Sets the subtype to UINT.  */ yyval = Subtype.UINT;  };
+  break;
+
+
+  case 153: /* unsigned_integer_type: UDINT  */
+  if (yyn == 153)
+    /* "src/main/java/parser/Parser.y":742  */
+            { /** Sets the subtype to UDINT. */ yyval = Subtype.UDINT; };
+  break;
+
+
+  case 154: /* unsigned_integer_type: ULINT  */
+  if (yyn == 154)
+    /* "src/main/java/parser/Parser.y":743  */
+            { /** Sets the subtype to ULINT. */ yyval = Subtype.ULINT; };
+  break;
+
+
+  case 155: /* real_type: REAL  */
+  if (yyn == 155)
+    /* "src/main/java/parser/Parser.y":747  */
+            { /** Sets the subtype to REAL.  */ yyval = Subtype.REAL;  };
+  break;
+
+
+  case 156: /* real_type: LREAL  */
+  if (yyn == 156)
+    /* "src/main/java/parser/Parser.y":748  */
+            { /** Sets the subtype to LREAL. */ yyval = Subtype.LREAL; };
+  break;
+
+
+  case 157: /* date_type: TIME  */
+  if (yyn == 157)
+    /* "src/main/java/parser/Parser.y":752  */
+                    { /** Sets the subtype to TIME. */ yyval = Subtype.TIME; };
+  break;
+
+
+  case 158: /* date_type: DATE  */
+  if (yyn == 158)
+    /* "src/main/java/parser/Parser.y":753  */
+                    { /** Sets the subtype to DATE. */ yyval = Subtype.DATE; };
+  break;
+
+
+  case 159: /* date_type: TIME_OF_DAY  */
+  if (yyn == 159)
+    /* "src/main/java/parser/Parser.y":754  */
+                    { /** Sets the subtype to TIME_OF_DAY.   */ yyval = Subtype.TIME_OF_DAY;   };
+  break;
+
+
+  case 160: /* date_type: DATE_AND_TIME  */
+  if (yyn == 160)
+    /* "src/main/java/parser/Parser.y":755  */
+                    { /** Sets the subtype to DATE_AND_TIME. */ yyval = Subtype.DATE_AND_TIME; };
+  break;
+
+
+  case 161: /* constant: string_constant  */
+  if (yyn == 161)
+    /* "src/main/java/parser/Parser.y":761  */
+                       { /** Propagates the string constant.  */ yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 162: /* constant: boolean_constant  */
+  if (yyn == 162)
+    /* "src/main/java/parser/Parser.y":762  */
+                       { /** Propagates the boolean constant. */ yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 163: /* constant: time_constant  */
+  if (yyn == 163)
+    /* "src/main/java/parser/Parser.y":763  */
+                       { /** Propagates the time constant.    */ yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 164: /* constant: numeric_constant  */
+  if (yyn == 164)
+    /* "src/main/java/parser/Parser.y":764  */
+                       { /** Propagates the numeric constant. */ yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 165: /* string_constant: STRING_LITERAL  */
+  if (yyn == 165)
+    /* "src/main/java/parser/Parser.y":768  */
+                    { /** Propagates the string literal. */   yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 166: /* boolean_constant: BOOLEAN_LITERAL  */
+  if (yyn == 166)
+    /* "src/main/java/parser/Parser.y":772  */
+                    { /** Propagates the boolean literal. */ yyval = ((String)(yystack.valueAt (0))); };
+  break;
+
+
+  case 167: /* numeric_constant: NUMERIC_LITERAL  */
+  if (yyn == 167)
+    /* "src/main/java/parser/Parser.y":777  */
+    {
+        /** Propagates the numeric literal. */
+
+        yyval = ((String)(yystack.valueAt (0)));
+    };
+  break;
+
+
+  case 168: /* numeric_constant: prefix_type '#' NUMERIC_LITERAL  */
+  if (yyn == 168)
+    /* "src/main/java/parser/Parser.y":783  */
+    {
+        /**
+         * Combines a base prefix (e.g., 16#) with a numeric literal to form
+         * a based numeric constant. The conversion is deferred to later processing.
+        **/
+
+        // TODO: convert this constant in code
+        yyval = "";
+    };
+  break;
+
+
+  case 169: /* prefix_type: integer_type  */
+  if (yyn == 169)
+    /* "src/main/java/parser/Parser.y":795  */
+                        { /** Propagates the integer type name prefix. */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 170: /* prefix_type: real_type  */
+  if (yyn == 170)
+    /* "src/main/java/parser/Parser.y":796  */
+                        { /** Propagates the real type name prefix.    */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 171: /* prefix_type: bit_string_type  */
+  if (yyn == 171)
+    /* "src/main/java/parser/Parser.y":797  */
+                        { /** Propagates the bit string type name prefix. */ yyval = ((Subtype)(yystack.valueAt (0))); };
+  break;
+
+
+  case 172: /* time_constant: date_type '#' TIME_LITERAL  */
+  if (yyn == 172)
+    /* "src/main/java/parser/Parser.y":802  */
+    {
+        /**
+         * Combines a date/time type prefix with a time literal.
+         * TODO: Add semantic action to verify prefix matches time_literal type.
+        **/
+
+        // TODO: semantic action to verify prefix matches time_literal type
+    };
+  break;
+
+
+  case 173: /* bit_string_type: BYTE  */
+  if (yyn == 173)
+    /* "src/main/java/parser/Parser.y":813  */
+            { /** Sets the subtype to BYTE.  */ yyval = Subtype.BYTE;  };
+  break;
+
+
+  case 174: /* bit_string_type: WORD  */
+  if (yyn == 174)
+    /* "src/main/java/parser/Parser.y":814  */
+            { /** Sets the subtype to WORD.  */ yyval = Subtype.WORD;  };
+  break;
+
+
+  case 175: /* bit_string_type: DWORD  */
+  if (yyn == 175)
+    /* "src/main/java/parser/Parser.y":815  */
+            { /** Sets the subtype to DWORD. */ yyval = Subtype.DWORD; };
+  break;
+
+
+  case 176: /* bit_string_type: LWORD  */
+  if (yyn == 176)
+    /* "src/main/java/parser/Parser.y":816  */
+            { /** Sets the subtype to LWORD. */ yyval = Subtype.LWORD; };
+  break;
+
+
+  case 179: /* subrange_specification: subrange_type_decl '(' range ')'  */
+  if (yyn == 179)
+    /* "src/main/java/parser/Parser.y":828  */
+    {
+        /**
+         * Creates a SubrangeInitialization from the lower and upper limits already
+         * collected in the current context metadata and stores it there.
+        **/
+
+        // ParsingContext ctx = this.contexts.current();
+        // LexemeInfo metadata = ctx.metadataBuilder().build();
+        // String ilimit = metadata.inferiorLimits.get(0);
+        // String slimit = metadata.superiorLimits.get(0);
+
+        // ctx.metadataBuilder()
+        //     .initialValue(new SubrangeInitialization(ilimit, slimit));
+    };
+  break;
+
+
+  case 180: /* subrange_type_decl: integer_type  */
+  if (yyn == 180)
+    /* "src/main/java/parser/Parser.y":846  */
+    {
+        /**
+         * Loads the left identifiers subrange subtype
+        **/
+
+        // ParsingContext ctx = this.contexts.current();
+        // ctx.metadataBuilder()
+        //     .type(Type.SUBRANGE)
+        //     .subtype($1)
+        //     .inferiorLimits(new ArrayList<>())
+        //     .superiorLimits(new ArrayList<>());
+    };
+  break;
+
+
+  case 181: /* initialized_subrange: subrange_specification ASSIGN_OP numeric_constant  */
+  if (yyn == 181)
+    /* "src/main/java/parser/Parser.y":862  */
+    {
+        /**
+         * Loads the left identifiers subrange initialization
+        **/
+
+        // ParsingContext ctx = this.contexts.current();
+        //  ctx.metadataBuilder().initialValue(new VariableInitialization($3));
+    };
+  break;
+
+
+  case 182: /* range: numeric_constant RANGE_OP numeric_constant  */
+  if (yyn == 182)
+    /* "src/main/java/parser/Parser.y":874  */
+    {
+        List<String> ranges = new ArrayList<>();
+        ranges.add(((String)(yystack.valueAt (2))));
+        ranges.add(((String)(yystack.valueAt (0))));
+        yyval = ranges;
+    };
+  break;
+
+
+  case 183: /* enumerated_spec_init: enumerated_specification  */
+  if (yyn == 183)
+    /* "src/main/java/parser/Parser.y":883  */
+                                { /** Propagates the enumerated type specification builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 184: /* enumerated_spec_init: initialized_enumerated  */
+  if (yyn == 184)
+    /* "src/main/java/parser/Parser.y":884  */
+                                { /** Propagates the initialized enumerated builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 185: /* enumerated_specification: '(' identifier_list ')'  */
+  if (yyn == 185)
+    /* "src/main/java/parser/Parser.y":889  */
+    {
+        /**
+         * Loads the enumerated metadata to the current context.
+        **/
+
+        LexemeInfoBuilder enumBuilder = new LexemeInfoBuilder();
+        Director.makeEnumerated(enumBuilder, ((List<String>)(yystack.valueAt (1))));
+        yyval = enumBuilder;
+    };
+  break;
+
+
+  case 186: /* initialized_enumerated: enumerated_specification ASSIGN_OP referenced_identifier  */
+  if (yyn == 186)
+    /* "src/main/java/parser/Parser.y":902  */
+    {
+        // TODO: semantic check over initial value
+        // Note: it has to be in the enumerated_specification parameters. The initial value can't be global because
+        // it's in a new enumerated specification declaration (type incompatible). However, another enumerated
+        // declaration could have declared the same "<programName>#<enumeratedValue>", so, it's important to check that
+        // there's no redeclaration.
+
+        ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue(new VariableInitialization(programName + "#" + ((String)(yystack.valueAt (0)))));
+        yyval = ((LexemeInfoBuilder)(yystack.valueAt (2)));
+    };
+  break;
+
+
+  case 187: /* array_spec_init: array_specification  */
+  if (yyn == 187)
+    /* "src/main/java/parser/Parser.y":915  */
+                        { /** Propagates the array type specification builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 188: /* array_spec_init: initialized_array  */
+  if (yyn == 188)
+    /* "src/main/java/parser/Parser.y":916  */
+                        { /** Propagates the initialized array builder. */ yyval = ((LexemeInfoBuilder)(yystack.valueAt (0))); };
+  break;
+
+
+  case 189: /* array_specification: ARRAY '[' range_list ']' OF IDENTIFIER  */
+  if (yyn == 189)
+    /* "src/main/java/parser/Parser.y":921  */
+    {
+        /**
+         * Sets the current context type to ARRAY, preparing for array type
+         * and dimension processing in the array_type rule.
+        **/
+
+        ArrayMetadata arrayMetadata = new ArrayMetadata(Subtype.CUSTOM, ((String)(yystack.valueAt (0))), ((List<String>)(yystack.valueAt (3))));
+
+        LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
+        Director.makeArray(arrayBuilder, this.symbolTable, arrayMetadata);
+        yyval = arrayBuilder;
+    };
+  break;
+
+
+  case 190: /* array_specification: ARRAY '[' range_list ']' OF non_generic_type  */
+  if (yyn == 190)
+    /* "src/main/java/parser/Parser.y":934  */
+    {
+        ArrayMetadata arrayMetadata = new ArrayMetadata(((Subtype)(yystack.valueAt (0))), null, ((List<String>)(yystack.valueAt (3))));
+
+        LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
+        Director.makeArray(arrayBuilder, this.symbolTable, arrayMetadata);
+        yyval = arrayBuilder;
+    };
+  break;
+
+
+  case 191: /* initialized_array: array_specification ASSIGN_OP array_initialization  */
+  if (yyn == 191)
+    /* "src/main/java/parser/Parser.y":945  */
+    {
+        RepeatedInitialization arrayInitialValue = (RepeatedInitialization) ((LexemeInfoBuilder)(yystack.valueAt (2))).initialValue();
+        for (PathInitializationInfo rangeInfo : ((List<PathInitializationInfo>)(yystack.valueAt (0)))) {
+            String range = rangeInfo.name();
+            Initialization initialValue = rangeInfo.initialValue();
+            arrayInitialValue.put(range, initialValue);
+        }
+        yyval = ((LexemeInfoBuilder)(yystack.valueAt (2)));
+    };
+  break;
+
+
+  case 192: /* range_list: range  */
   if (yyn == 192)
-    /* "src/main/java/parser/Parser.y":980  */
+    /* "src/main/java/parser/Parser.y":958  */
     {
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().type(Type.ARRAY);
+        yyval = ((List<String>)(yystack.valueAt (0)));
     };
   break;
 
 
-  case 193: /* array_type: IDENTIFIER  */
+  case 193: /* range_list: range_list ',' range  */
   if (yyn == 193)
-    /* "src/main/java/parser/Parser.y":988  */
+    /* "src/main/java/parser/Parser.y":962  */
     {
-        ParsingContext ctx = this.contexts.current();
-        LexemeInfo typeMetadata = this.symbolTable.get(((String)(yystack.valueAt (0))));
-
-        int dimension = DimensionCalculator.calculate(ctx);
-        List<Interval> interval = Collections.singletonList(
-            new Interval(0, dimension - 1, (Initialization) typeMetadata.initialValue)
-        );
-
-        ctx.metadataBuilder()
-            .subtype(Subtype.CUSTOM)
-            .customType(((String)(yystack.valueAt (0))))
-            .initialValue(
-                new RepeatedInitialization(dimension, interval)
-            );
-
-        String underlyingScope = UnderlyingScopeSearcher.search(this.symbolTable, ((String)(yystack.valueAt (0))));
-        ctx.searchScope().addScope(underlyingScope);
+        ((List<String>)(yystack.valueAt (2))).addAll(((List<String>)(yystack.valueAt (0))));
     };
   break;
 
 
-  case 194: /* array_type: non_generic_type_name  */
-  if (yyn == 194)
-    /* "src/main/java/parser/Parser.y":1008  */
+  case 195: /* array_initialization: '[' array_initial_elements_list ']'  */
+  if (yyn == 195)
+    /* "src/main/java/parser/Parser.y":972  */
+                                        { yyval = ((ParsingRepeatedArrayContext)(yystack.valueAt (1))).getPathsInfo(); };
+  break;
+
+
+  case 196: /* array_initial_elements_list: array_initial_elements  */
+  if (yyn == 196)
+    /* "src/main/java/parser/Parser.y":977  */
     {
-        ParsingContext ctx = this.contexts.current();
-        Initialization defaultInit = Factory.createPrimitiveInitialization(this.symbolTable, ((Subtype)(yystack.valueAt (0))));
+        int endIdx = ((ParsingRepeatedArrayContext)(yystack.valueAt (0))).getMaxValue() - 1;
 
-        int dimension = DimensionCalculator.calculate(ctx);
-        List<Interval> interval = Collections.singletonList(
-            new Interval(0, dimension - 1, defaultInit)
-        );
-
-        ctx.metadataBuilder()
-            .subtype(((Subtype)(yystack.valueAt (0))))
-            .initialValue(
-                new RepeatedInitialization(dimension, interval)
-            );
+        List<PathInitializationInfo> newPathsInfo = new ArrayList<>();
+        for (PathInitializationInfo oldPathInfo : ((ParsingRepeatedArrayContext)(yystack.valueAt (0))).getPathsInfo()) {
+            newPathsInfo.add(new PathInitializationInfo(
+                "0.." + endIdx + "#" + oldPathInfo.name(),
+                oldPathInfo.initialValue()
+            ));
+        }
+        yyval = new ParsingRepeatedArrayContext(endIdx, newPathsInfo);
     };
   break;
 
 
-  case 199: /* array_initialization: '[' array_initial_elements_list ']'  */
+  case 197: /* array_initial_elements_list: array_initial_elements_list ',' array_initial_elements  */
+  if (yyn == 197)
+    /* "src/main/java/parser/Parser.y":990  */
+    {
+        int lastIdx = ((ParsingRepeatedArrayContext)(yystack.valueAt (2))).getMaxValue();
+        int startIdx = lastIdx + 1;
+        int endIdx = lastIdx + ((ParsingRepeatedArrayContext)(yystack.valueAt (0))).getMaxValue();
+
+        List<PathInitializationInfo> newPathsInfo = ((ParsingRepeatedArrayContext)(yystack.valueAt (2))).getPathsInfo();
+        for (PathInitializationInfo oldPathInfo : ((ParsingRepeatedArrayContext)(yystack.valueAt (0))).getPathsInfo()) {
+            newPathsInfo.add(new PathInitializationInfo(
+                startIdx + ".." + endIdx + "#" + oldPathInfo.name(),
+                oldPathInfo.initialValue()
+            ));
+        }
+        yyval = new ParsingRepeatedArrayContext(endIdx, newPathsInfo);
+    };
+  break;
+
+
+  case 198: /* array_initial_elements: array_initial_element  */
+  if (yyn == 198)
+    /* "src/main/java/parser/Parser.y":1007  */
+                                { /** Creates a ParsingRepeatedArrayContext for a single array element. */ yyval = new ParsingRepeatedArrayContext(1, ((List<PathInitializationInfo>)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 199: /* array_initial_elements: repeated_initial_element  */
   if (yyn == 199)
-    /* "src/main/java/parser/Parser.y":1040  */
-    {
-        ParsingContext ctx = this.contexts.current();
-        int dimension = DimensionCalculator.calculate(ctx);
-        ctx.metadataBuilder().initialValue(
-            new RepeatedInitialization(dimension, ((List<Interval>)(yystack.valueAt (1))))
-        );
-    };
+    /* "src/main/java/parser/Parser.y":1008  */
+                                { /** Propagates the repeated element context. */ yyval = ((ParsingRepeatedArrayContext)(yystack.valueAt (0))); };
   break;
 
 
-  case 200: /* array_initial_elements_list: array_initial_elements _actionAfterElement_  */
+  case 200: /* array_initial_element: constant  */
   if (yyn == 200)
-    /* "src/main/java/parser/Parser.y":1051  */
+    /* "src/main/java/parser/Parser.y":1013  */
     {
-        List<Interval> intervals = new ArrayList<>();
-        intervals.add(((Interval)(yystack.valueAt (0))));
-        yyval = intervals;
+        /**
+         * Creates the initialization and adds the context counter by one
+        **/
+
+        List<PathInitializationInfo> pathsInfo = new ArrayList<>();
+        pathsInfo.add(new PathInitializationInfo("", new VariableInitialization(((String)(yystack.valueAt (0))))));
+        yyval = pathsInfo;
     };
   break;
 
 
-  case 201: /* array_initial_elements_list: array_initial_elements_list ',' array_initial_elements _actionAfterElement_  */
+  case 201: /* array_initial_element: referenced_identifier  */
   if (yyn == 201)
-    /* "src/main/java/parser/Parser.y":1057  */
+    /* "src/main/java/parser/Parser.y":1023  */
     {
-        ((List<Interval>)(yystack.valueAt (3))).add(((Interval)(yystack.valueAt (0))));
-        yyval = ((List<Interval>)(yystack.valueAt (3)));
+        // TODO: see how to check semantics
+        List<PathInitializationInfo> pathsInfo = new ArrayList<>();
+        pathsInfo.add(new PathInitializationInfo("", new VariableInitialization(((String)(yystack.valueAt (0))))));
+        yyval = pathsInfo;
     };
   break;
 
 
-  case 204: /* _actionAfterElement_: %empty  */
+  case 202: /* array_initial_element: structure_initialization  */
+  if (yyn == 202)
+    /* "src/main/java/parser/Parser.y":1029  */
+                                { /** Propagates the structure initialization paths. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0))); };
+  break;
+
+
+  case 203: /* array_initial_element: array_initialization  */
+  if (yyn == 203)
+    /* "src/main/java/parser/Parser.y":1030  */
+                                { /** Propagates the array initialization paths. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0))); };
+  break;
+
+
+  case 204: /* repeated_initial_element: numeric_constant '(' array_initial_element ')'  */
   if (yyn == 204)
-    /* "src/main/java/parser/Parser.y":1070  */
+    /* "src/main/java/parser/Parser.y":1035  */
     {
-        /**
-         * Retrieves the relevant information of the initialization and copies it into the array declaration context
-         * (arrayContext)
-        **/
-
-        ParsingContext initContext = this.contexts.pop();
-        ParsingContext arrayContext = this.contexts.current();
-
-        int start = arrayContext.index();
-        arrayContext.incrementIndex(initContext.index());
-
-        LexemeInfo initMetadata = initContext.metadataBuilder().build();
-        yyval = new Interval(start, arrayContext.index() - 1, (Initialization) initMetadata.initialValue);
+        yyval = new ParsingRepeatedArrayContext(Integer.parseInt(((String)(yystack.valueAt (3)))), ((List<PathInitializationInfo>)(yystack.valueAt (1))));
     };
   break;
 
 
-  case 205: /* array_initial_element: constant  */
+  case 205: /* structure_initialization: '(' structure_field_init_list ')'  */
   if (yyn == 205)
-    /* "src/main/java/parser/Parser.y":1089  */
-    {
-        /**
-         * Creates the initialization and adds the context counter by one
-        **/
-
-        ParsingContext constantContext = new ParsingContext(this.symbolTable);
-        this.contexts.add(constantContext);
-        constantContext.metadataBuilder().initialValue(new VariableInitialization(((String)(yystack.valueAt (0)))));
-        constantContext.incrementIndex(1);
-    };
+    /* "src/main/java/parser/Parser.y":1041  */
+                                        { /** Propagates the structure field initialization list. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (1))); };
   break;
 
 
-  case 206: /* array_initial_element: identifier_with_opt_mangling  */
+  case 206: /* structure_field_init_list: initialized_struct_field  */
   if (yyn == 206)
-    /* "src/main/java/parser/Parser.y":1100  */
+    /* "src/main/java/parser/Parser.y":1046  */
     {
-        /**
-         * Creates the initialization and adds the context counter by one
-        **/
-
-        ParsingContext constantContext = new ParsingContext(this.symbolTable);
-        this.contexts.add(constantContext);
-        constantContext.incrementIndex(1);
-
-        // TODO: verify enum as in initialized_custom_with_identifier rule
-        String completeEnumerateName = constantContext.searchScope().getNameMangled(((String)(yystack.valueAt (0))));
-        constantContext.metadataBuilder().initialValue(new VariableInitialization(completeEnumerateName));
+        yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0)));
     };
   break;
 
 
-  case 207: /* array_initial_element: _actionBeforeNotSimpleInitialization_ structure_initialization  */
+  case 207: /* structure_field_init_list: structure_field_init_list ',' initialized_struct_field  */
   if (yyn == 207)
-    /* "src/main/java/parser/Parser.y":1114  */
+    /* "src/main/java/parser/Parser.y":1050  */
     {
-        /**
-         * Only adds the context counter by one because the initialization is created inside the rule.
-        **/
-
-        ParsingContext complexContext = this.contexts.current();
-        complexContext.incrementIndex(1);
+        ((List<PathInitializationInfo>)(yystack.valueAt (2))).addAll(((List<PathInitializationInfo>)(yystack.valueAt (0))));
+        yyval = ((List<PathInitializationInfo>)(yystack.valueAt (2)));
     };
   break;
 
 
-  case 208: /* array_initial_element: _actionBeforeNotSimpleInitialization_ array_initialization  */
+  case 208: /* initialized_struct_field: initialized_field_with_constant  */
   if (yyn == 208)
-    /* "src/main/java/parser/Parser.y":1123  */
-    {
-        /**
-         * Only adds the context counter by one because the initialization is created inside the rule.
-        **/
-
-        ParsingContext complexContext = this.contexts.current();
-        complexContext.incrementIndex(1);
-    };
+    /* "src/main/java/parser/Parser.y":1057  */
+                                        { /** Propagates the field initialization with constant value. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0))); };
   break;
 
 
-  case 209: /* repeated_initial_element: numeric_constant '(' array_initial_element ')'  */
+  case 209: /* initialized_struct_field: initialized_field_with_identifier  */
   if (yyn == 209)
-    /* "src/main/java/parser/Parser.y":1135  */
-    {
-        /**
-         * Repeats N times the inner initialization.
-        **/
-
-        // TODO: verify that numeric_constant is additive (non negative)
-        int multiplier = Integer.parseInt(((String)(yystack.valueAt (3))));
-
-        ParsingContext initContext = this.contexts.current();
-        initContext.incrementIndex(multiplier * initContext.index() - 1);
-    };
+    /* "src/main/java/parser/Parser.y":1058  */
+                                        { /** Propagates the field initialization with identifier reference. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0))); };
   break;
 
 
-  case 210: /* _actionBeforeNotSimpleInitialization_: %empty  */
+  case 210: /* initialized_struct_field: initialized_field_with_array  */
   if (yyn == 210)
-    /* "src/main/java/parser/Parser.y":1150  */
-    {
-        ParsingContext arrayCtx = this.contexts.current();
-        LexemeInfo arrayMetadata = arrayCtx.metadataBuilder().build();
-
-        this.contexts.createSubcontext();
-        ParsingContext compxCtx = this.contexts.current();
-
-        // So that a structure can find it's copy data
-        compxCtx.metadataBuilder().customType(
-            arrayMetadata.customType
-        );
-    };
+    /* "src/main/java/parser/Parser.y":1059  */
+                                        { /** Propagates the field initialization with array value. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0))); };
   break;
 
 
-  case 212: /* _actionAfterParenthesis_: %empty  */
+  case 211: /* initialized_struct_field: initialized_field_with_structure  */
+  if (yyn == 211)
+    /* "src/main/java/parser/Parser.y":1060  */
+                                        { /** Propagates the field initialization with structure value. */ yyval = ((List<PathInitializationInfo>)(yystack.valueAt (0))); };
+  break;
+
+
+  case 212: /* initialized_field_with_constant: field_name ASSIGN_OP constant  */
   if (yyn == 212)
-    /* "src/main/java/parser/Parser.y":1170  */
+    /* "src/main/java/parser/Parser.y":1065  */
     {
-        /**
-         * Copies the initialization of the custom type to overwrite the fields later if it's the first time
-        **/
+        List<PathInitializationInfo> fieldsInfo = new ArrayList<>();
+        fieldsInfo.add(new PathInitializationInfo(((String)(yystack.valueAt (2))), new VariableInitialization(((String)(yystack.valueAt (0))))));
+        yyval = fieldsInfo;
+    };
+  break;
 
-        ParsingContext ctx = this.contexts.current();
 
-        // If there are no nested fields it means that it's the first time
-        if (ctx.nestedFields().getCurrentScope() == "") {
-            LexemeInfo metadata = ctx.metadataBuilder().build();
-            String typeName = metadata.customType;
-            Initialization typeInitialValues = (Initialization) this.symbolTable.get(typeName).initialValue;
-            ctx.metadataBuilder().initialValue(typeInitialValues.copy());
+  case 213: /* initialized_field_with_identifier: field_name ASSIGN_OP referenced_identifier  */
+  if (yyn == 213)
+    /* "src/main/java/parser/Parser.y":1074  */
+    {
+        List<PathInitializationInfo> fieldsInfo = new ArrayList<>();
+        fieldsInfo.add(new PathInitializationInfo(((String)(yystack.valueAt (2))), new VariableInitialization(((String)(yystack.valueAt (0))))));
+        yyval = fieldsInfo;
+    };
+  break;
+
+
+  case 214: /* initialized_field_with_array: field_name ASSIGN_OP array_initialization  */
+  if (yyn == 214)
+    /* "src/main/java/parser/Parser.y":1083  */
+    {
+        List<PathInitializationInfo> fieldsInfo = new ArrayList<>();
+        for (PathInitializationInfo fieldInfo : ((List<PathInitializationInfo>)(yystack.valueAt (0)))) {
+            String fieldName = ((String)(yystack.valueAt (2))) + "#" + fieldInfo.name();
+            fieldsInfo.add(new PathInitializationInfo(fieldName, fieldInfo.initialValue()));
         }
+        yyval = fieldsInfo;
     };
   break;
 
 
-  case 219: /* initialized_field_with_constant: nested_field ASSIGN_OP constant  */
-  if (yyn == 219)
-    /* "src/main/java/parser/Parser.y":1202  */
+  case 215: /* initialized_field_with_structure: field_name ASSIGN_OP structure_initialization  */
+  if (yyn == 215)
+    /* "src/main/java/parser/Parser.y":1095  */
     {
-        /**
-         * Overwrites the field with a constant.
-        **/
-        
-        ParsingContext ctx = this.contexts.current();
-        String completeFieldName = ctx.nestedFields().getCurrentScope();
-        
-        StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
-        if (!structValue.find(completeFieldName).isPresent()) {
-            // TODO: error control. field does not exist
+        List<PathInitializationInfo> fieldsInfo = new ArrayList<>();
+        for (PathInitializationInfo fieldInfo : ((List<PathInitializationInfo>)(yystack.valueAt (0)))) {
+            String fieldName = ((String)(yystack.valueAt (2))) + "#" + fieldInfo.name();
+            fieldsInfo.add(new PathInitializationInfo(fieldName, fieldInfo.initialValue()));
         }
-
-        structValue.put(completeFieldName, new VariableInitialization(((String)(yystack.valueAt (0)))));
-        ctx.nestedFields().popScope();
+        yyval = fieldsInfo;
     };
   break;
 
 
-  case 220: /* initialized_field_with_identifier: nested_field ASSIGN_OP identifier_with_opt_mangling  */
-  if (yyn == 220)
-    /* "src/main/java/parser/Parser.y":1222  */
+  case 216: /* referenced_identifier: IDENTIFIER  */
+  if (yyn == 216)
+    /* "src/main/java/parser/Parser.y":1107  */
     {
         /**
-         * Overwrites the field with an enumerated value.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        String completeFieldName = ctx.nestedFields().getCurrentScope();
-
-        StructInitialization structValue = (StructInitialization) ctx.metadataBuilder().build().initialValue;
-        if (!structValue.find(completeFieldName).isPresent()) {
-            // TODO: error control. field does not exist
-        }
-        // TODO: error control, verify enum is reachable
-        String completeEnumeratedValue = ctx.searchScope().getNameMangled(((String)(yystack.valueAt (0))));
-
-        structValue.put(completeFieldName, new VariableInitialization(completeEnumeratedValue));
-        ctx.nestedFields().popScope();
-    };
-  break;
-
-
-  case 221: /* initialized_field_with_array: nested_field ASSIGN_OP array_initialization  */
-  if (yyn == 221)
-    /* "src/main/java/parser/Parser.y":1244  */
-    {
-        /**
-         * Overwrites the field with an array initialization.
-        **/
-        ParsingContext ctx = this.contexts.current();
-        ctx.nestedFields().popScope();
-    };
-  break;
-
-
-  case 222: /* initialized_field_with_structure: nested_field ASSIGN_OP structure_initialization  */
-  if (yyn == 222)
-    /* "src/main/java/parser/Parser.y":1255  */
-    {
-        /**
-         * Closes the nested field scope that was opened while scanning the
-         * field name, once its structure initialization is complete.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.nestedFields().popScope();
-    };
-  break;
-
-
-  case 223: /* nested_field: IDENTIFIER  */
-  if (yyn == 223)
-    /* "src/main/java/parser/Parser.y":1268  */
-    {
-        /**
-         * Needs to expand the nested scope to keep overwriting.
-        **/
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.nestedFields().addScope(((String)(yystack.valueAt (0))));
-    };
-  break;
-
-
-  case 224: /* identifier_with_opt_mangling: IDENTIFIER  */
-  if (yyn == 224)
-    /* "src/main/java/parser/Parser.y":1280  */
-    {
-        /**
-         * Simple identifier: keeps the lexeme as-is.
+         * Simple identifier: keeps the lexeme as-is if it's global, else assumes it is local.
         **/
 
         yyval = ((String)(yystack.valueAt (0)));
@@ -2235,9 +2201,9 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 225: /* identifier_with_opt_mangling: IDENTIFIER '#' IDENTIFIER  */
-  if (yyn == 225)
-    /* "src/main/java/parser/Parser.y":1288  */
+  case 217: /* referenced_identifier: IDENTIFIER '#' IDENTIFIER  */
+  if (yyn == 217)
+    /* "src/main/java/parser/Parser.y":1115  */
     {
         /**
          * Mangled identifier: joins both identifiers with '#'.
@@ -2248,207 +2214,263 @@ this.symbolTable = symbolTable;
   break;
 
 
-  case 232: /* string_specification: type_string_specification  */
-  if (yyn == 232)
-    /* "src/main/java/parser/Parser.y":1317  */
+  case 224: /* string_specification: string_type  */
+  if (yyn == 224)
+    /* "src/main/java/parser/Parser.y":1145  */
     {
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(((Subtype)(yystack.valueAt (0))))
-            .initialValue(
-                Factory.createPrimitiveInitialization(this.symbolTable, ((Subtype)(yystack.valueAt (0))))
-            );
+        /**
+         * Configures the current context for a STRING/WSTRING type without
+         * explicit length, using the default primitive initialization.
+        **/
+
+        // ParsingContext ctx = this.contexts.current();
+        // ctx.metadataBuilder()
+        //     .type(Type.SIMPLE)
+        //     .subtype($1)
+        //     .initialValue(
+        //         Factory.createPrimitiveInitialization(this.symbolTable, $1)
+        //     );
     };
   break;
 
 
-  case 233: /* string_specification: type_string_specification '[' numeric_constant ']'  */
-  if (yyn == 233)
-    /* "src/main/java/parser/Parser.y":1327  */
+  case 225: /* string_specification: string_type '[' numeric_constant ']'  */
+  if (yyn == 225)
+    /* "src/main/java/parser/Parser.y":1160  */
     {
         /**
          * Stores the explicit string length as the superior limit and creates
          * a StringInitialization for the declared subtype.
         **/
 
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder()
-            .type(Type.SIMPLE)
-            .subtype(((Subtype)(yystack.valueAt (3))))
-            .superiorLimits(
-                Collections.singletonList(((String)(yystack.valueAt (1))))
-            ).initialValue(
-                Factory.createPrimitiveInitialization(this.symbolTable, ((Subtype)(yystack.valueAt (3))))
-            );
+        // ParsingContext ctx = this.contexts.current();
+        // ctx.metadataBuilder()
+        //     .type(Type.SIMPLE)
+        //     .subtype($1)
+        //     .superiorLimits(
+        //         Collections.singletonList($3)
+        //     ).initialValue(
+        //         Factory.createPrimitiveInitialization(this.symbolTable, $1)
+        //     );
     };
   break;
 
 
-  case 234: /* initialized_string: string_specification ASSIGN_OP string_constant  */
-  if (yyn == 234)
-    /* "src/main/java/parser/Parser.y":1346  */
+  case 226: /* initialized_string: string_specification ASSIGN_OP string_constant  */
+  if (yyn == 226)
+    /* "src/main/java/parser/Parser.y":1180  */
     {
         /**
          * Wraps the assigned string literal as a VariableInitialization and
          * stores it in the current context metadata.
         **/
 
-        ParsingContext ctx = this.contexts.current();
-        ctx.metadataBuilder().initialValue(
-            new VariableInitialization(((String)(yystack.valueAt (0))))
-        );
+        // ParsingContext ctx = this.contexts.current();
+        // ctx.metadataBuilder().initialValue(
+        //     new VariableInitialization($3)
+        // );
     };
   break;
 
 
-  case 235: /* type_string_specification: STRING  */
+  case 227: /* string_type: STRING  */
+  if (yyn == 227)
+    /* "src/main/java/parser/Parser.y":1194  */
+                { /** Sets the subtype to STRING. */  yyval = Subtype.STRING;  };
+  break;
+
+
+  case 228: /* string_type: WSTRING  */
+  if (yyn == 228)
+    /* "src/main/java/parser/Parser.y":1195  */
+                { /** Sets the subtype to WSTRING. */ yyval = Subtype.WSTRING; };
+  break;
+
+
+  case 234: /* type_declaration: type_name_declaration ':' type_spec_init  */
+  if (yyn == 234)
+    /* "src/main/java/parser/Parser.y":1216  */
+    {
+        ((SingleDeclaration)(yystack.valueAt (0))).identifier(((String)(yystack.valueAt (2)))).use(Use.TYPE).source(Source.NONE);
+        ((SingleDeclaration)(yystack.valueAt (0))).publish();
+    };
+  break;
+
+
+  case 235: /* type_name_declaration: IDENTIFIER  */
   if (yyn == 235)
-    /* "src/main/java/parser/Parser.y":1360  */
-                { yyval = Subtype.STRING;  };
+    /* "src/main/java/parser/Parser.y":1224  */
+    {
+        yyval = ((String)(yystack.valueAt (0)));
+    };
   break;
 
 
-  case 236: /* type_string_specification: WSTRING  */
+  case 236: /* type_spec_init: custom_spec_init  */
   if (yyn == 236)
-    /* "src/main/java/parser/Parser.y":1361  */
-                { yyval = Subtype.WSTRING; };
+    /* "src/main/java/parser/Parser.y":1230  */
+                                { /** Wraps the custom type builder in a SingleDeclaration for type declaration. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
   break;
 
 
-  case 242: /* type_declaration: type_name_declaration ':' type_spec_init  */
+  case 237: /* type_spec_init: simple_spec_init  */
+  if (yyn == 237)
+    /* "src/main/java/parser/Parser.y":1231  */
+                                { /** Wraps the simple type builder in a SingleDeclaration for type declaration. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 238: /* type_spec_init: enumerated_spec_init  */
+  if (yyn == 238)
+    /* "src/main/java/parser/Parser.y":1232  */
+                                { /** Wraps the enumerated builder in an EnumeratedTypeDeclaration for type declaration. */ yyval = new EnumeratedTypeDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0))));  };
+  break;
+
+
+  case 239: /* type_spec_init: subrange_spec_init  */
+  if (yyn == 239)
+    /* "src/main/java/parser/Parser.y":1233  */
+                                { /** Subrange not yet supported for type declarations; returns null. */ yyval = null; };
+  break;
+
+
+  case 240: /* type_spec_init: array_spec_init  */
+  if (yyn == 240)
+    /* "src/main/java/parser/Parser.y":1234  */
+                                { /** Wraps the array builder in a SingleDeclaration for type declaration. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 241: /* type_spec_init: structure_specification  */
+  if (yyn == 241)
+    /* "src/main/java/parser/Parser.y":1235  */
+                                { /** Propagates the structure declaration. */ yyval = ((SingleDeclaration)(yystack.valueAt (0))); };
+  break;
+
+
+  case 242: /* type_spec_init: string_spec_init  */
   if (yyn == 242)
-    /* "src/main/java/parser/Parser.y":1382  */
-    {
-        /**
-         * The type declaration is published after being reduced and it's outerScopes unappended.
-        **/
-
-        this.contexts.publish();
-    };
+    /* "src/main/java/parser/Parser.y":1236  */
+                                { /** String not yet supported for type declarations; returns null. */ yyval = null; };
   break;
 
 
-  case 243: /* type_name_declaration: IDENTIFIER  */
+  case 243: /* structure_specification: STRUCT structure_field_init_decl_list END_STRUCT  */
   if (yyn == 243)
-    /* "src/main/java/parser/Parser.y":1393  */
-    {
-        /**
-         * Adds the identifier as the current scope so that everything declared inside this scope belongs to the outer
-         * scope.
-        **/
-
-        ParsingContext ctx = new ParsingContext(this.symbolTable);
-        Director.makeType(ctx.metadataBuilder());
-        ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
-        this.contexts.add(ctx);
-    };
-  break;
-
-
-  case 251: /* structure_specification: STRUCT structure_field_declaration_list END_STRUCT  */
-  if (yyn == 251)
-    /* "src/main/java/parser/Parser.y":1418  */
+    /* "src/main/java/parser/Parser.y":1241  */
     {
         /**
          * Builds the declaration of the structure and publishes it to the symbol table. For that to happen every field
          * needs to be searched to get their initial values and appended to the structure initial value.
         **/
 
-        ParsingContext ctx = this.contexts.current();
+        StructureDeclaration structDeclaration = new StructureDeclaration(this.symbolTable, ((StructureBlock)(yystack.valueAt (1))));
+        Director.makeStructure(structDeclaration, ((StructureBlock)(yystack.valueAt (1))));
 
-        // Builds the search scope to look up his fields
-        String structName = ctx.declaredIdentifiers().get(0);
-        ctx.searchScope().addScope(structName);
-
-        // Builds the structure parameters
-        List<String> structParameters = ((List<String>)(yystack.valueAt (1)));
-
-        // Builds the structure initial value
-        StructInitialization initialization = new StructInitialization();
-        for (String field : structParameters) {
-            String fieldName = ctx.searchScope().getNameMangled(field);
-            LexemeInfo fieldMetadata = this.symbolTable.get(fieldName);
-            initialization.put(field, (Initialization) fieldMetadata.initialValue);
-        }
-
-        // Modifies the context
-        ctx.metadataBuilder()
-            .type(Type.STRUCT)
-            .subtype(Subtype.NONE)
-            .parameters(structParameters)
-            .initialValue(initialization);
+        yyval = structDeclaration;
     };
   break;
 
 
-  case 252: /* structure_field_declaration_list: structure_field_declaration ';'  */
-  if (yyn == 252)
-    /* "src/main/java/parser/Parser.y":1452  */
+  case 244: /* structure_field_init_decl_list: structure_field_init_decl ';'  */
+  if (yyn == 244)
+    /* "src/main/java/parser/Parser.y":1256  */
     {
         /**
          * Starts the structure field list with the first declared field.
         **/
 
-        List<String> structParameters = new ArrayList<>();
-        structParameters.add(((String)(yystack.valueAt (1))));
-        yyval = structParameters;
+        StructureBlock structBlock = new StructureBlock();
+        structBlock.addField(((SingleDeclaration)(yystack.valueAt (1))));
+        yyval = structBlock;
     };
   break;
 
 
-  case 253: /* structure_field_declaration_list: structure_field_declaration_list structure_field_declaration ';'  */
-  if (yyn == 253)
-    /* "src/main/java/parser/Parser.y":1462  */
+  case 245: /* structure_field_init_decl_list: structure_field_init_decl_list structure_field_init_decl ';'  */
+  if (yyn == 245)
+    /* "src/main/java/parser/Parser.y":1266  */
     {
         /**
          * Appends the next declared field to the structure field list.
         **/
 
-        ((List<String>)(yystack.valueAt (2))).add(((String)(yystack.valueAt (1))));
-        yyval = ((List<String>)(yystack.valueAt (2)));
+        ((StructureBlock)(yystack.valueAt (2))).addField(((SingleDeclaration)(yystack.valueAt (1))));
+        yyval = ((StructureBlock)(yystack.valueAt (2)));
     };
   break;
 
 
-  case 254: /* structure_field_declaration: field_name ':' structure_field_spec_init  */
-  if (yyn == 254)
-    /* "src/main/java/parser/Parser.y":1474  */
+  case 246: /* structure_field_init_decl: field_name ':' structure_field_spec_init  */
+  if (yyn == 246)
+    /* "src/main/java/parser/Parser.y":1278  */
     {
-        /**
-         * Publishes the field to the symbol table.
-        **/
-
-        this.contexts.publish();
-
-        yyval = ((String)(yystack.valueAt (2)));
+        ((SingleDeclaration)(yystack.valueAt (0))).identifier(((String)(yystack.valueAt (2)))).use(Use.FIELD).source(Source.NONE);
+        yyval = ((SingleDeclaration)(yystack.valueAt (0)));
     };
   break;
 
 
-  case 255: /* field_name: IDENTIFIER  */
-  if (yyn == 255)
-    /* "src/main/java/parser/Parser.y":1487  */
+  case 247: /* field_name: IDENTIFIER  */
+  if (yyn == 247)
+    /* "src/main/java/parser/Parser.y":1286  */
     {
-        /**
-         * Builds the new field context
-        **/
-
-        String newScope = this.contexts.current().declaredIdentifiers().get(0);
-        this.contexts.createSubcontext();
-
-        ParsingContext ctx = this.contexts.current();
-        ctx.declaredIdentifiers().add(((String)(yystack.valueAt (0))));
-        ctx.metadataBuilder().use(Use.FIELD);
-        ctx.outerScopes().addScope(newScope);
-
         yyval = ((String)(yystack.valueAt (0)));
     };
   break;
 
 
+  case 248: /* structure_field_spec_init: custom_spec_init  */
+  if (yyn == 248)
+    /* "src/main/java/parser/Parser.y":1292  */
+                            { /** Wraps the custom type builder in a SingleDeclaration for structure field. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
 
-/* "src/main/java/parser/Parser.java":2452  */
+
+  case 249: /* structure_field_spec_init: boolean_spec_init  */
+  if (yyn == 249)
+    /* "src/main/java/parser/Parser.y":1293  */
+                            { /** Wraps the boolean builder in a SingleDeclaration for structure field. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 250: /* structure_field_spec_init: simple_spec_init  */
+  if (yyn == 250)
+    /* "src/main/java/parser/Parser.y":1294  */
+                            { /** Wraps the simple type builder in a SingleDeclaration for structure field. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 251: /* structure_field_spec_init: enumerated_spec_init  */
+  if (yyn == 251)
+    /* "src/main/java/parser/Parser.y":1295  */
+                            { /** Wraps the enumerated builder in an AnonymousEnumeratedField for structure field. */ yyval = new AnnonymousEnumeratedField(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 252: /* structure_field_spec_init: subrange_spec_init  */
+  if (yyn == 252)
+    /* "src/main/java/parser/Parser.y":1296  */
+                            { /** Subrange not yet supported for structure fields; returns null. */ yyval = null; };
+  break;
+
+
+  case 253: /* structure_field_spec_init: array_spec_init  */
+  if (yyn == 253)
+    /* "src/main/java/parser/Parser.y":1297  */
+                            { /** Wraps the array builder in a SingleDeclaration for structure field. */ yyval = new SingleDeclaration(this.symbolTable, ((LexemeInfoBuilder)(yystack.valueAt (0)))); };
+  break;
+
+
+  case 254: /* structure_field_spec_init: string_spec_init  */
+  if (yyn == 254)
+    /* "src/main/java/parser/Parser.y":1298  */
+                            { /** String not yet supported for structure fields; returns null. */ yyval = null; };
+  break;
+
+
+
+/* "src/main/java/parser/Parser.java":2474  */
 
         default: break;
       }
@@ -2801,8 +2823,8 @@ this.symbolTable = symbolTable;
     return yyvalue == yytable_ninf_;
   }
 
-  private static final short yypact_ninf_ = -334;
-  private static final short yytable_ninf_ = -182;
+  private static final short yypact_ninf_ = -322;
+  private static final short yytable_ninf_ = -181;
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
@@ -2811,47 +2833,46 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-      69,    58,   113,   111,  -334,  -334,    20,    36,    35,  -334,
-      83,  -334,  -334,    62,  -334,    33,  -334,  -334,  -334,   114,
-     103,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,
-    -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,
-    -334,    80,   129,  -334,  -334,  -334,  -334,  -334,  -334,   128,
-    -334,   142,  -334,  -334,  -334,   106,  -334,  -334,  -334,  -334,
-    -334,  -334,   143,   107,  -334,  -334,   145,  -334,  -334,   148,
-    -334,  -334,   149,  -334,   108,  -334,  -334,    25,  -334,    21,
-     120,   117,   473,  -334,   -55,   264,   450,   473,   473,   152,
-     109,   116,   473,  -334,  -334,  -334,   151,    84,  -334,   122,
-    -334,   228,  -334,   119,   121,   163,   132,   123,   133,   127,
-     177,  -334,   153,  -334,  -334,  -334,   155,  -334,  -334,  -334,
-    -334,  -334,  -334,  -334,  -334,  -334,   135,  -334,   339,  -334,
-    -334,   147,  -334,  -334,   232,   233,  -334,   183,  -334,  -334,
-     203,  -334,  -334,  -334,  -334,   -15,  -334,  -334,  -334,  -334,
-    -334,  -334,  -334,  -334,  -334,   473,  -334,  -334,   473,   179,
-    -334,   205,   216,   192,  -334,  -334,   187,    -1,  -334,  -334,
-    -334,    -6,  -334,  -334,  -334,    83,  -334,   265,  -334,   203,
-    -334,   193,  -334,   -44,   196,  -334,  -334,  -334,  -334,  -334,
-     406,  -334,  -334,   -30,  -334,  -334,  -334,  -334,  -334,   234,
-    -334,   339,   339,  -334,  -334,  -334,  -334,  -334,   266,    83,
-    -334,   269,   199,    11,   241,   191,  -334,  -334,  -334,  -334,
-    -334,  -334,   216,  -334,    89,   198,  -334,   253,   105,  -334,
-    -334,   289,   271,  -334,   295,    15,  -334,  -334,  -334,  -334,
-    -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,   267,
-    -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,   270,  -334,
-    -334,   231,   266,   288,   272,  -334,  -334,   235,   302,   473,
-     301,   266,   244,   297,   294,   280,    13,  -334,  -334,   263,
-     364,  -334,   268,  -334,   273,  -334,  -334,   304,   260,   333,
-      30,   278,   328,  -334,   279,   275,   425,  -334,  -334,  -334,
-     274,   282,  -334,  -334,   473,   150,   309,   344,  -334,  -334,
-    -334,  -334,    19,   281,  -334,    95,  -334,  -334,   277,   473,
-     473,   283,  -334,  -334,  -334,  -334,  -334,   299,   154,  -334,
-    -334,  -334,   300,   100,   102,  -334,  -334,  -334,  -334,  -334,
-     298,   303,   305,  -334,  -334,   307,  -334,  -334,  -334,  -334,
-    -334,   308,  -334,   473,  -334,  -334,  -334,  -334,  -334,  -334,
-     306,   335,    -8,    -7,   112,    -8,   366,   115,  -334,   331,
-    -334,     7,    -3,    -2,  -334,   310,   343,  -334,   350,  -334,
-     112,   115,   112,   115,  -334,   369,    -5,  -334,  -334,  -334,
-    -334,  -334,   353,   385,   355,   336,  -334,  -334,  -334,   396,
-    -334,   380,  -334
+      55,    36,    38,    78,  -322,  -322,    19,    13,    25,  -322,
+      86,  -322,  -322,    42,  -322,    73,  -322,  -322,  -322,    98,
+    -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,
+    -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,
+    -322,    79,   134,  -322,   129,  -322,  -322,  -322,  -322,  -322,
+     137,  -322,  -322,  -322,    99,  -322,  -322,  -322,  -322,  -322,
+    -322,   138,   100,  -322,  -322,   142,  -322,  -322,   147,  -322,
+    -322,   148,  -322,   104,  -322,  -322,    62,  -322,    23,   111,
+     108,   459,  -322,    67,   290,   436,   459,   459,   154,   109,
+     120,   459,  -322,  -322,  -322,   117,   145,  -322,   114,  -322,
+     254,  -322,  -322,  -322,   157,   115,  -322,  -322,   -48,   162,
+    -322,   119,  -322,  -322,    98,   122,  -322,  -322,  -322,  -322,
+    -322,  -322,  -322,  -322,  -322,   125,  -322,   175,  -322,  -322,
+     116,  -322,  -322,   134,  -322,  -322,   199,   201,  -322,   156,
+    -322,  -322,  -322,  -322,    -1,  -322,  -322,  -322,  -322,  -322,
+    -322,  -322,   459,   135,   459,   149,  -322,   172,    84,  -322,
+    -322,  -322,  -322,  -322,   171,   140,  -322,  -322,   143,  -322,
+     -26,  -322,  -322,  -322,  -322,  -322,  -322,   136,  -322,    39,
+    -322,    86,  -322,   209,  -322,   134,   141,  -322,  -322,  -322,
+    -322,  -322,  -322,   392,  -322,    98,  -322,   175,  -322,   175,
+     175,  -322,     7,   218,  -322,   206,    86,  -322,   212,   146,
+    -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,
+     169,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,
+    -322,  -322,  -322,  -322,   182,  -322,   186,    47,  -322,  -322,
+     213,   188,  -322,   219,    16,  -322,   158,   221,  -322,  -322,
+     173,   206,   234,   217,  -322,  -322,  -322,   328,   459,   250,
+     206,   180,   245,   243,   229,    14,  -322,   189,   349,  -322,
+     190,  -322,   215,  -322,  -322,   240,   187,   280,    56,   214,
+     279,  -322,   220,   223,   411,  -322,  -322,  -322,   224,   225,
+    -322,  -322,   459,   131,   260,   298,  -322,  -322,  -322,  -322,
+      35,   246,  -322,    33,  -322,  -322,   238,   459,   459,   248,
+    -322,  -322,  -322,  -322,  -322,   252,    29,  -322,  -322,  -322,
+     256,   118,   139,  -322,  -322,  -322,  -322,  -322,   251,   255,
+     257,  -322,  -322,   259,  -322,  -322,  -322,  -322,  -322,   261,
+    -322,   459,  -322,  -322,  -322,  -322,  -322,  -322,   258,   323,
+      -9,    -7,    83,    -9,   325,   144,  -322,   322,  -322,     8,
+      -4,    -3,  -322,   262,   315,  -322,   330,  -322,    83,   144,
+      83,   144,  -322,   348,    -6,  -322,  -322,  -322,  -322,  -322,
+     333,   371,   334,   294,  -322,  -322,  -322,   353,  -322,   337,
+    -322
     };
   }
 
@@ -2863,47 +2884,46 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-     237,     0,     0,     0,   238,   243,     0,     0,     0,     1,
-       0,     2,   239,     0,   240,     0,     4,     5,   241,     0,
-     122,   235,   236,   174,   175,   176,   177,   158,   160,   159,
-     161,   148,   149,   150,   151,   152,   153,   154,   155,   156,
-     157,     0,     0,   244,   120,   121,   123,   124,   125,     0,
-     245,   137,   138,   139,   141,   144,   146,   147,   145,   142,
-     143,   247,   178,     0,   179,   246,   184,   185,   248,   190,
-     191,   250,   230,   231,   232,   242,   249,     8,   255,     0,
-       0,     0,     0,   188,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    98,    99,     6,    12,   102,   251,     0,
-     252,     0,   168,     0,     0,     0,     0,     0,   196,     0,
-       0,   186,   224,   166,   167,   212,     0,   126,   162,   163,
-     165,   164,   128,   127,   140,   182,     0,   187,   210,   195,
-     234,     0,   101,     9,     0,    16,    10,   105,   103,   104,
-       0,   253,   132,   256,   257,   130,   131,   258,   260,   259,
-     261,   262,   254,   170,   171,     0,   169,   172,     0,     0,
-     189,     0,     0,     0,   180,   205,   165,     0,   204,   202,
-     203,     0,   206,   233,     3,     0,    13,    45,   106,     0,
-     111,     0,   107,     0,     0,   135,   136,   133,   183,   197,
-       0,   225,   223,     0,   213,   215,   216,   217,   218,     0,
-     173,   210,   210,   199,   200,   208,   207,    15,     0,     0,
-      17,    91,     0,     0,     0,     0,   134,   193,   198,   144,
-     192,   194,     0,   211,     0,     0,   204,     0,     0,    22,
-      19,    43,     0,    46,    11,     0,     7,   108,   112,   229,
-     109,   113,   114,   115,   116,   117,   118,   110,   227,   226,
-     119,   214,   219,   221,   222,   220,   209,   201,     0,    14,
-      23,     0,    20,    49,     0,    92,   100,     0,     0,     0,
-       0,    21,     0,    59,    51,     0,     0,    94,   228,     0,
-       0,    24,     0,    27,    28,    30,    29,     0,     0,     0,
-       0,     0,     0,    60,     0,     0,     0,    93,    95,    25,
-       0,     0,    26,    31,     0,     0,     0,     0,    53,    54,
-      55,    50,     0,     0,    68,     0,    48,    96,     0,     0,
-       0,     0,    35,    36,    37,    38,    39,     0,     0,    18,
-      63,    62,     0,     0,     0,    56,    57,    58,    52,    97,
-       0,     0,     0,    34,    42,     0,    41,    61,    65,    66,
-      67,     0,    47,     0,    69,    33,    32,    44,    40,    64,
-       0,     0,     0,     0,    76,     0,     0,    76,    83,    82,
-      81,     0,     0,     0,    75,     0,     0,    74,     0,    85,
-      76,    76,    76,    76,    84,    88,    71,    86,    77,    79,
-      78,    80,     0,     0,     0,     0,    87,    73,    72,    90,
-      70,     0,    89
+     229,     0,     0,     0,   230,   235,     0,     0,     0,     1,
+       0,     2,   231,     0,   232,     0,     4,     5,   233,     0,
+     122,   227,   228,   173,   174,   175,   176,   157,   159,   158,
+     160,   147,   148,   149,   150,   151,   152,   153,   154,   155,
+     156,     0,     0,   236,   120,   121,   123,   124,   125,   237,
+     136,   137,   138,   140,   143,   145,   146,   144,   141,   142,
+     239,   177,     0,   178,   238,   183,   184,   240,   187,   188,
+     242,   222,   223,   224,   234,   241,    13,   247,     0,     0,
+       0,     0,   111,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     8,     9,     6,    10,    17,   243,     0,   244,
+       0,   167,   169,   170,     0,     0,   171,   192,     0,     0,
+     185,   216,   165,   166,     0,     0,   126,   161,   162,   164,
+     163,   128,   127,   139,   181,     0,   186,     0,   191,   226,
+       0,    11,    12,     0,   104,    14,     0,    21,    15,   105,
+     245,   131,   248,   249,   129,   130,   250,   252,   251,   253,
+     254,   246,     0,     0,     0,     0,   112,     0,     0,   206,
+     208,   209,   210,   211,     0,     0,   179,   200,   164,   203,
+       0,   196,   198,   199,   202,   201,   225,     0,   107,     0,
+       3,     0,    18,    50,   106,     0,     0,   134,   135,   132,
+     182,   168,   193,     0,   217,     0,   205,     0,   172,     0,
+       0,   195,     0,     0,    20,     0,     0,    22,    96,     0,
+     133,   189,   194,   143,   190,   207,   212,   214,   215,   213,
+       0,   197,     7,   108,   221,   109,   113,   114,   115,   116,
+     117,   118,   110,   219,   218,   119,     0,     0,    27,    24,
+      48,     0,    51,    16,     0,   204,     0,     0,    19,    28,
+       0,    25,    54,     0,    97,   103,   220,     0,     0,     0,
+      26,     0,    64,    56,     0,     0,    99,     0,     0,    29,
+       0,    32,    33,    35,    34,     0,     0,     0,     0,     0,
+       0,    65,     0,     0,     0,    98,   100,    30,     0,     0,
+      31,    36,     0,     0,     0,     0,    58,    59,    60,    55,
+       0,     0,    73,     0,    53,   101,     0,     0,     0,     0,
+      40,    41,    42,    43,    44,     0,     0,    23,    68,    67,
+       0,     0,     0,    61,    62,    63,    57,   102,     0,     0,
+       0,    39,    47,     0,    46,    66,    70,    71,    72,     0,
+      52,     0,    74,    38,    37,    49,    45,    69,     0,     0,
+       0,     0,    81,     0,     0,    81,    88,    87,    86,     0,
+       0,     0,    80,     0,     0,    79,     0,    90,    81,    81,
+      81,    81,    89,    93,    76,    91,    82,    84,    83,    85,
+       0,     0,     0,     0,    92,    78,    77,    95,    75,     0,
+      94
     };
   }
 
@@ -2913,20 +2933,20 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-    -334,  -334,  -334,  -147,  -334,  -334,  -334,  -334,  -334,  -334,
-    -334,  -334,  -334,  -334,  -334,  -334,   168,  -205,  -334,  -334,
-    -334,  -334,   161,  -334,  -334,  -334,  -334,  -334,  -334,  -334,
-    -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,  -334,
-    -334,  -334,  -334,    66,  -333,  -319,  -334,  -334,  -334,  -334,
-    -334,   156,  -334,  -334,  -334,  -334,  -334,   254,  -183,  -334,
-    -334,   -90,  -334,  -334,  -334,  -334,  -334,  -334,   236,  -334,
-    -334,  -334,   -89,  -334,  -334,   262,  -334,   -14,  -334,  -334,
-     -13,   -12,   -78,   362,   291,   -82,  -334,  -334,   -11,   -87,
-    -334,  -334,  -334,   378,   -86,  -334,  -334,  -334,   -85,  -334,
-    -334,  -334,   296,  -334,  -149,  -334,   290,   293,   292,  -334,
-    -334,  -153,  -334,  -334,   284,  -334,  -334,  -334,  -334,  -334,
-     -76,  -334,  -334,  -334,   -84,  -334,  -334,  -334,  -334,  -334,
-    -334,   484,  -334,  -334,  -334,  -334,   412,  -334,  -334
+    -322,  -322,  -322,  -150,  -322,  -322,  -322,  -322,  -322,  -322,
+    -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,   132,  -205,
+    -322,  -322,  -322,  -322,   110,  -322,  -322,  -322,  -322,  -322,
+    -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,  -322,
+    -322,  -322,  -322,  -322,  -322,    31,  -321,  -318,  -322,  -322,
+    -322,  -322,  -322,   121,  -322,  -322,  -322,   200,  -175,   345,
+    -322,   -88,  -322,  -322,  -322,  -322,  -322,   185,  -322,  -322,
+    -322,   -87,  -322,  -322,   202,  -322,   -14,  -322,  -322,   -13,
+     -12,   -76,   304,   210,   -81,  -322,  -322,   -11,   -80,  -322,
+    -322,  -322,   -70,   -78,  -322,  -322,   -74,  -322,  -322,  -322,
+    -322,   -75,  -322,   197,   231,  -322,   -77,  -322,   222,  -322,
+    -322,  -322,  -322,   -73,  -322,  -322,  -322,   -72,  -322,  -322,
+    -322,  -322,  -322,  -322,   403,  -322,  -322,  -322,  -322,   338,
+     -98,  -322
     };
   }
 
@@ -2936,20 +2956,20 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-       0,     2,    11,    17,    77,    95,    96,   133,   134,   135,
-     176,   208,   177,   210,   231,   270,   228,   229,   281,   282,
-     283,   284,   285,   289,   327,   307,   345,   262,   211,   233,
-     273,   274,   295,   311,   338,   292,   293,   332,   314,   351,
-     334,   354,   395,   366,   374,   367,   368,   386,   234,   265,
-     276,   277,    97,   136,   137,   140,   179,   181,   182,   183,
-     240,    43,    44,    45,    46,    47,    48,    49,   144,   145,
-     146,   187,    50,    51,    52,    53,    54,   103,    56,    57,
-     104,   116,   165,   118,   119,   120,   106,   121,   107,    61,
-      62,    63,    64,   108,    65,    66,    67,    84,    68,    69,
-     220,    70,   109,   221,   129,   167,   168,   204,   169,   170,
-     171,   122,   162,   193,   194,   195,   196,   197,   198,   199,
-     172,   247,   248,   249,    71,    72,    73,    74,     3,     4,
-       6,     7,     8,    75,    76,    79,    80,    81,   152
+       0,     2,    11,    17,    76,    94,    95,   133,    96,   135,
+     136,   137,   182,   205,   183,   207,   240,   259,   237,   238,
+     269,   270,   271,   272,   273,   277,   315,   295,   333,   251,
+     208,   242,   262,   263,   283,   299,   326,   280,   281,   320,
+     302,   339,   322,   342,   383,   354,   362,   355,   356,   374,
+     243,   254,   265,   266,   138,   139,   185,   177,   178,   179,
+     225,    43,    44,    45,    46,    47,    48,   143,   144,   145,
+     189,    49,    50,    51,    52,    53,   102,    55,    56,   103,
+     115,   167,   117,   118,   119,   105,   120,   106,    60,    61,
+      62,    63,   107,    64,    65,    66,    67,    68,    69,   108,
+     214,   169,   170,   171,   172,   173,   174,   158,   159,   160,
+     161,   162,   163,   175,   232,   233,   234,    70,    71,    72,
+      73,     3,     4,     6,     7,     8,    74,    75,    78,    79,
+      80,   151
     };
   }
 
@@ -2961,62 +2981,60 @@ this.symbolTable = symbolTable;
   {
     return new short[]
     {
-     105,    55,    58,    59,    60,   125,   105,   117,   124,   123,
-     131,   143,   147,   127,   148,   149,   150,   151,   206,   393,
-     363,   363,   205,   260,    12,   363,   363,    98,   207,   297,
-     237,   184,   110,   111,   377,   378,   364,   369,    19,   185,
-     186,   380,   382,   214,   370,   215,   166,   388,   389,   390,
-     391,   379,   237,   381,   383,   180,   330,   222,   223,   180,
-     331,   275,   230,   236,     5,    78,   260,   266,   308,   309,
-     310,   254,     1,   188,    93,   253,   105,    20,   365,   365,
-     115,    94,   394,   365,   365,   128,   202,    55,    58,    59,
-      60,   203,    21,    22,    23,    24,    25,    26,    27,    28,
-      29,    30,     5,    31,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,     9,   278,   259,   352,    41,    10,    42,
-     166,    14,   227,   353,    15,   241,   243,    16,   244,   245,
-     246,   250,   335,   112,   138,   139,   336,   337,   348,   371,
-     349,   372,   373,   350,   372,   373,   252,    18,   255,  -129,
-      23,    24,    25,    26,    27,    28,    29,    30,    78,    31,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,   102,
-     113,    82,   114,    83,    85,   115,   219,    58,    59,    60,
-     128,   322,   323,   324,   325,   326,   286,   287,    86,    87,
-     344,    89,  -181,    88,    90,    91,   112,   113,   301,    92,
-     128,    55,    58,    59,    60,   100,   101,   141,   132,   153,
-     155,   154,   156,   157,   318,    23,    24,    25,    26,   159,
-     158,   160,   321,   164,    31,    32,    33,    34,    35,    36,
-      37,    38,    39,    40,   102,    20,   239,   340,   341,   173,
-     174,   178,   175,   161,   142,   163,   346,   180,   190,   191,
-      21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
-     192,    31,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,   360,    20,   201,   200,    41,   209,    42,   213,   114,
-     224,   142,   232,   227,   235,   238,   256,    21,    22,    23,
-      24,    25,    26,    27,    28,    29,    30,   258,    31,    32,
-      33,    34,    35,    36,    37,    38,    39,    40,   112,   261,
-     264,   398,    41,   267,    42,   263,   268,   269,   272,   288,
-     275,   115,   291,   294,   296,    23,    24,    25,    26,    27,
-      28,    29,    30,   290,    31,    32,    33,    34,    35,    36,
-      37,    38,    39,    40,   102,   113,   279,   114,   299,   305,
-     115,   304,   306,   302,   313,   328,   329,   362,   371,   280,
-     316,   319,   339,    23,    24,    25,    26,   312,   315,   320,
-     333,   342,    31,    32,    33,    34,    35,    36,    37,    38,
-      39,    40,   102,   112,   343,   347,   355,   385,   280,   376,
-     357,   356,   358,   359,   387,   361,   392,   396,   384,   399,
-      23,    24,    25,    26,    27,    28,    29,    30,   300,    31,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,   102,
-     113,   400,   114,   401,   402,    23,    24,    25,    26,   397,
-     271,   375,   298,   212,    31,    32,    33,    34,    35,    36,
-      37,    38,    39,    40,   102,   303,    23,    24,    25,    26,
-     217,   242,   218,   130,   189,    31,    32,    33,    34,    35,
-      36,    37,    38,    39,    40,   102,   126,    23,    24,    25,
-      26,    27,    28,    29,    30,   216,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    40,    23,    24,    25,    26,
-      13,    99,   226,   225,     0,    31,    32,    33,    34,    35,
-      36,    37,    38,    39,    40,   102,   251,     0,     0,     0,
-     317,    23,    24,    25,    26,    27,    28,    29,    30,   257,
+     104,    54,    57,    58,    59,   124,   104,   121,   116,   123,
+     130,   122,   142,   146,   128,   126,   164,   125,   381,   351,
+     147,   351,   148,    12,   351,   351,   149,   223,   150,    97,
+     285,   204,   249,   358,   365,   352,   366,   357,     9,   154,
+     368,   370,   369,   371,   155,   186,   168,   376,   377,   378,
+     379,    82,   367,   187,   188,   249,   239,   248,     1,   222,
+      82,   200,   264,     5,   236,   332,   201,    77,   255,   223,
+     323,   190,   318,   104,   324,   325,   319,   353,    19,   353,
+       5,   382,   353,   353,   192,    10,    54,    57,    58,    59,
+      23,    24,    25,    26,   296,   297,   298,   164,    14,    31,
+      32,    33,    34,    35,    36,    37,    38,    39,    40,   101,
+     359,    92,   360,   361,    15,   226,   228,    20,    93,   168,
+     218,   216,   217,   229,   219,   230,   109,    18,   203,   231,
+      16,   235,    21,    22,    23,    24,    25,    26,    27,    28,
+      29,    30,    77,    31,    32,    33,    34,    35,    36,    37,
+      38,    39,    40,   340,   109,   110,   336,    41,   337,    42,
+     341,   338,   310,   311,   312,   313,   314,   131,   132,   256,
+      81,   195,   196,   360,   361,    84,   274,   275,    82,   213,
+      57,    58,    59,    85,    86,  -180,    87,   289,    88,    54,
+      57,    58,    59,    89,    90,    91,    99,   100,   111,   140,
+     127,   112,   134,   306,   152,   153,   156,   180,   176,   157,
+     181,   309,   165,   166,   184,   191,   194,   197,   193,   111,
+     206,   202,   198,   236,   113,   241,   328,   329,   246,   199,
+     247,   244,   252,   250,   253,   334,    23,    24,    25,    26,
+      27,    28,    29,    30,   114,    31,    32,    33,    34,    35,
+      36,    37,    38,    39,    40,   101,   112,   245,   113,   258,
+     348,   114,    20,   224,   261,   264,   127,   257,   276,   278,
+     279,   141,   282,   284,   287,   290,   293,    21,    22,    23,
+      24,    25,    26,    27,    28,    29,    30,   292,    31,    32,
+      33,    34,    35,    36,    37,    38,    39,    40,    20,   294,
+     386,   268,    41,   300,    42,   301,   316,   141,   304,   303,
+     317,   307,   308,    21,    22,    23,    24,    25,    26,    27,
+      28,    29,    30,   327,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,    40,   111,   321,   330,   331,    41,   343,
+      42,   335,   345,   344,   346,   350,   347,   349,   364,   359,
+     372,    23,    24,    25,    26,    27,    28,    29,    30,   373,
       31,    32,    33,    34,    35,    36,    37,    38,    39,    40,
-     102,   113,     0,   114,    23,    24,    25,    26,     0,     0,
-       0,     0,     0,    31,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,   102
+     101,   112,   267,   113,   375,   380,   114,   384,   387,   388,
+     389,   390,   291,   260,   363,   209,   286,    83,   227,    23,
+      24,    25,    26,   288,   129,   212,   210,   221,    31,    32,
+      33,    34,    35,    36,    37,    38,    39,    40,   101,    13,
+      23,    24,    25,    26,   268,   385,    98,   215,     0,    31,
+      32,    33,    34,    35,    36,    37,    38,    39,    40,   101,
+     220,     0,    23,    24,    25,    26,   211,     0,     0,     0,
+       0,    31,    32,    33,    34,    35,    36,    37,    38,    39,
+      40,   101,     0,    23,    24,    25,    26,    27,    28,    29,
+      30,     0,    31,    32,    33,    34,    35,    36,    37,    38,
+      39,    40,    23,    24,    25,    26,     0,     0,     0,     0,
+       0,    31,    32,    33,    34,    35,    36,    37,    38,    39,
+      40,   101,     0,     0,     0,     0,   305,    23,    24,    25,
+      26,    27,    28,    29,    30,     0,    31,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,   101,   112,     0,   113,
+      23,    24,    25,    26,     0,     0,     0,     0,     0,    31,
+      32,    33,    34,    35,    36,    37,    38,    39,    40,   101
     };
   }
 
@@ -3025,62 +3043,60 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new short[]
     {
-      82,    15,    15,    15,    15,    87,    88,    85,    86,    85,
-      92,   101,   101,    89,   101,   101,   101,   101,   171,    24,
-      28,    28,   171,   228,     4,    28,    28,     6,   175,    16,
-     213,    46,    87,    88,   367,    28,    44,    44,     5,    54,
-      55,    44,    44,    87,   363,    89,   128,   380,   381,   382,
-     383,    44,   235,   372,   373,    44,    37,    87,    88,    44,
-      41,    48,   209,    52,    44,    44,   271,    52,    38,    39,
-      40,   224,     3,   155,    49,   224,   158,    44,    86,    86,
-      86,    56,    87,    86,    86,    91,    87,   101,   101,   101,
-     101,    92,    59,    60,    61,    62,    63,    64,    65,    66,
+      81,    15,    15,    15,    15,    86,    87,    84,    84,    85,
+      91,    84,   100,   100,    89,    88,   114,    87,    24,    28,
+     100,    28,   100,     4,    28,    28,   100,   202,   100,     6,
+      16,   181,   237,   351,   355,    44,    28,    44,     0,    87,
+      44,    44,   360,   361,    92,    46,   127,   368,   369,   370,
+     371,    44,    44,    54,    55,   260,   206,    10,     3,    52,
+      44,    87,    48,    44,    17,    36,    92,    44,    52,   244,
+      37,   152,    37,   154,    41,    42,    41,    86,     5,    86,
+      44,    87,    86,    86,   154,     7,   100,   100,   100,   100,
+      61,    62,    63,    64,    38,    39,    40,   195,    85,    70,
+      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
+      27,    49,    29,    30,    89,   203,   203,    44,    56,   200,
+     197,   197,   197,   203,   197,   203,    87,    85,    89,   203,
+      44,   203,    59,    60,    61,    62,    63,    64,    65,    66,
       67,    68,    44,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,     0,   267,    10,    14,    84,     7,    86,
-     202,    85,    17,    21,    89,   215,   215,    44,   215,   215,
-     215,   215,    37,    44,    50,    51,    41,    42,    38,    27,
-      40,    29,    30,    43,    29,    30,   224,    85,   224,    46,
-      61,    62,    63,    64,    65,    66,    67,    68,    44,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-      81,    91,    83,    44,    46,    86,   190,   190,   190,   190,
-      91,    31,    32,    33,    34,    35,   268,   269,    46,    46,
-      36,    46,    86,    86,    46,    46,    44,    81,   280,    91,
-      91,   215,   215,   215,   215,    85,    89,    85,    57,    90,
-      47,    90,    80,    90,   296,    61,    62,    63,    64,    92,
-      87,    44,   304,    88,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    80,    44,    45,   319,   320,    92,
-       8,    58,     9,    90,    53,    90,   328,    44,    69,    44,
-      59,    60,    61,    62,    63,    64,    65,    66,    67,    68,
-      44,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,   353,    44,    86,    82,    84,    11,    86,    85,    83,
-      46,    53,    13,    17,    85,    44,    88,    59,    60,    61,
-      62,    63,    64,    65,    66,    67,    68,    44,    70,    71,
-      72,    73,    74,    75,    76,    77,    78,    79,    44,    20,
-      15,   393,    84,    46,    86,    44,    46,    86,    30,    18,
-      48,    86,    25,    29,    44,    61,    62,    63,    64,    65,
-      66,    67,    68,    89,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    80,    81,    44,    83,    85,    89,
-      86,    47,    19,    85,    26,    46,    12,    22,    27,    86,
-      85,    87,    85,    61,    62,    63,    64,    89,    89,    87,
-      89,    88,    70,    71,    72,    73,    74,    75,    76,    77,
-      78,    79,    80,    44,    85,    85,    88,    44,    86,    23,
-      85,    88,    85,    85,    44,    89,    27,    44,    88,    44,
-      61,    62,    63,    64,    65,    66,    67,    68,    44,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-      81,    85,    83,    27,    44,    61,    62,    63,    64,    44,
-     262,   365,   276,   179,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    80,   284,    61,    62,    63,    64,
-      44,   215,   190,    91,   158,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,    88,    61,    62,    63,
-      64,    65,    66,    67,    68,   184,    70,    71,    72,    73,
-      74,    75,    76,    77,    78,    79,    61,    62,    63,    64,
-       6,    79,   202,   201,    -1,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,   222,    -1,    -1,    -1,
-      85,    61,    62,    63,    64,    65,    66,    67,    68,   226,
+      77,    78,    79,    14,    87,    88,    38,    84,    40,    86,
+      21,    43,    31,    32,    33,    34,    35,    50,    51,   246,
+      91,    87,    88,    29,    30,    46,   257,   258,    44,   193,
+     193,   193,   193,    46,    46,    86,    86,   268,    46,   203,
+     203,   203,   203,    46,    46,    91,    85,    89,    44,    85,
+      91,    81,    57,   284,    47,    90,    44,     8,    92,    90,
+       9,   292,    90,    88,    58,    80,    44,    46,    69,    44,
+      11,    85,    82,    17,    83,    13,   307,   308,    46,    86,
+      44,    85,    44,    20,    15,   316,    61,    62,    63,    64,
+      65,    66,    67,    68,    86,    70,    71,    72,    73,    74,
+      75,    76,    77,    78,    79,    80,    81,    88,    83,    86,
+     341,    86,    44,    45,    30,    48,    91,    46,    18,    89,
+      25,    53,    29,    44,    85,    85,    89,    59,    60,    61,
+      62,    63,    64,    65,    66,    67,    68,    47,    70,    71,
+      72,    73,    74,    75,    76,    77,    78,    79,    44,    19,
+     381,    86,    84,    89,    86,    26,    46,    53,    85,    89,
+      12,    87,    87,    59,    60,    61,    62,    63,    64,    65,
+      66,    67,    68,    85,    70,    71,    72,    73,    74,    75,
+      76,    77,    78,    79,    44,    89,    88,    85,    84,    88,
+      86,    85,    85,    88,    85,    22,    85,    89,    23,    27,
+      88,    61,    62,    63,    64,    65,    66,    67,    68,    44,
       70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
-      80,    81,    -1,    83,    61,    62,    63,    64,    -1,    -1,
-      -1,    -1,    -1,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    80
+      80,    81,    44,    83,    44,    27,    86,    44,    44,    85,
+      27,    44,   272,   251,   353,   185,   265,    42,   203,    61,
+      62,    63,    64,    44,    90,   193,   186,   200,    70,    71,
+      72,    73,    74,    75,    76,    77,    78,    79,    80,     6,
+      61,    62,    63,    64,    86,    44,    78,   195,    -1,    70,
+      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
+     199,    -1,    61,    62,    63,    64,    44,    -1,    -1,    -1,
+      -1,    70,    71,    72,    73,    74,    75,    76,    77,    78,
+      79,    80,    -1,    61,    62,    63,    64,    65,    66,    67,
+      68,    -1,    70,    71,    72,    73,    74,    75,    76,    77,
+      78,    79,    61,    62,    63,    64,    -1,    -1,    -1,    -1,
+      -1,    70,    71,    72,    73,    74,    75,    76,    77,    78,
+      79,    80,    -1,    -1,    -1,    -1,    85,    61,    62,    63,
+      64,    65,    66,    67,    68,    -1,    70,    71,    72,    73,
+      74,    75,    76,    77,    78,    79,    80,    81,    -1,    83,
+      61,    62,    63,    64,    -1,    -1,    -1,    -1,    -1,    70,
+      71,    72,    73,    74,    75,    76,    77,    78,    79,    80
     };
   }
 
@@ -3091,47 +3107,46 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new short[]
     {
-       0,     3,    94,   221,   222,    44,   223,   224,   225,     0,
-       7,    95,     4,   224,    85,    89,    44,    96,    85,     5,
+       0,     3,    94,   214,   215,    44,   216,   217,   218,     0,
+       7,    95,     4,   217,    85,    89,    44,    96,    85,     5,
       44,    59,    60,    61,    62,    63,    64,    65,    66,    67,
       68,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,    84,    86,   154,   155,   156,   157,   158,   159,   160,
-     165,   166,   167,   168,   169,   170,   171,   172,   173,   174,
-     181,   182,   183,   184,   185,   187,   188,   189,   191,   192,
-     194,   217,   218,   219,   220,   226,   227,    97,    44,   228,
-     229,   230,    91,    44,   190,    46,    46,    46,    86,    46,
-      46,    46,    91,    49,    56,    98,    99,   145,     6,   229,
-      85,    89,    80,   170,   173,   178,   179,   181,   186,   195,
-      87,    88,    44,    81,    83,    86,   174,   175,   176,   177,
-     178,   180,   204,   213,   175,   178,   186,   213,    91,   197,
-     176,   178,    57,   100,   101,   102,   146,   147,    50,    51,
-     148,    85,    53,   154,   161,   162,   163,   165,   182,   187,
-     191,   217,   231,    90,    90,    47,    80,    90,    87,    92,
-      44,    90,   205,    90,    88,   175,   178,   198,   199,   201,
-     202,   203,   213,    92,     8,     9,   103,   105,    58,   149,
-      44,   150,   151,   152,    46,    54,    55,   164,   178,   195,
-      69,    44,    44,   206,   207,   208,   209,   210,   211,   212,
-      82,    86,    87,    92,   200,   197,   204,    96,   104,    11,
-     106,   121,   150,    85,    87,    89,   177,    44,   168,   170,
-     193,   196,    87,    88,    46,   201,   199,    17,   109,   110,
-      96,   107,    13,   122,   141,    85,    52,   151,    44,    45,
-     153,   154,   161,   165,   182,   187,   191,   214,   215,   216,
-     217,   207,   175,   197,   204,   213,    88,   200,    44,    10,
-     110,    20,   120,    44,    15,   142,    52,    46,    46,    86,
-     108,   109,    30,   123,   124,    48,   143,   144,   204,    44,
-      86,   111,   112,   113,   114,   115,   178,   178,    18,   116,
-      89,    25,   128,   129,    29,   125,    44,    16,   144,    85,
-      44,   178,    85,   115,    47,    89,    19,   118,    38,    39,
-      40,   126,    89,    26,   131,    89,    85,    85,   178,    87,
-      87,   178,    31,    32,    33,    34,    35,   117,    46,    12,
-      37,    41,   130,    89,   133,    37,    41,    42,   127,    85,
-     178,   178,    88,    85,    36,   119,   178,    85,    38,    40,
-      43,   132,    14,    21,   134,    88,    88,    85,    85,    85,
-     178,    89,    22,    28,    44,    86,   136,   138,   139,    44,
-     138,    27,    29,    30,   137,   136,    23,   137,    28,    44,
-      44,   138,    44,   138,    88,    44,   140,    44,   137,   137,
-     137,   137,    27,    24,    87,   135,    44,    44,   178,    44,
-      85,    27,    44
+      79,    84,    86,   154,   155,   156,   157,   158,   159,   164,
+     165,   166,   167,   168,   169,   170,   171,   172,   173,   180,
+     181,   182,   183,   184,   186,   187,   188,   189,   190,   191,
+     210,   211,   212,   213,   219,   220,    97,    44,   221,   222,
+     223,    91,    44,   152,    46,    46,    46,    86,    46,    46,
+      46,    91,    49,    56,    98,    99,   101,     6,   222,    85,
+      89,    80,   169,   172,   177,   178,   180,   185,   192,    87,
+      88,    44,    81,    83,    86,   173,   174,   175,   176,   177,
+     179,   199,   206,   174,   177,   185,   206,    91,   194,   175,
+     177,    50,    51,   100,    57,   102,   103,   104,   147,   148,
+      85,    53,   154,   160,   161,   162,   164,   181,   186,   189,
+     210,   224,    47,    90,    87,    92,    44,    90,   200,   201,
+     202,   203,   204,   205,   223,    90,    88,   174,   177,   194,
+     195,   196,   197,   198,   199,   206,    92,   150,   151,   152,
+       8,     9,   105,   107,    58,   149,    46,    54,    55,   163,
+     177,    80,   185,    69,    44,    87,    88,    46,    82,    86,
+      87,    92,    85,    89,    96,   106,    11,   108,   123,   150,
+     176,    44,   167,   169,   193,   201,   174,   194,   199,   206,
+     197,   196,    52,   151,    45,   153,   154,   160,   164,   181,
+     186,   189,   207,   208,   209,   210,    17,   111,   112,    96,
+     109,    13,   124,   143,    85,    88,    46,    44,    10,   112,
+      20,   122,    44,    15,   144,    52,   199,    46,    86,   110,
+     111,    30,   125,   126,    48,   145,   146,    44,    86,   113,
+     114,   115,   116,   117,   177,   177,    18,   118,    89,    25,
+     130,   131,    29,   127,    44,    16,   146,    85,    44,   177,
+      85,   117,    47,    89,    19,   120,    38,    39,    40,   128,
+      89,    26,   133,    89,    85,    85,   177,    87,    87,   177,
+      31,    32,    33,    34,    35,   119,    46,    12,    37,    41,
+     132,    89,   135,    37,    41,    42,   129,    85,   177,   177,
+      88,    85,    36,   121,   177,    85,    38,    40,    43,   134,
+      14,    21,   136,    88,    88,    85,    85,    85,   177,    89,
+      22,    28,    44,    86,   138,   140,   141,    44,   140,    27,
+      29,    30,   139,   138,    23,   139,    28,    44,    44,   140,
+      44,   140,    88,    44,   142,    44,   139,   139,   139,   139,
+      27,    24,    87,   137,    44,    44,   177,    44,    85,    27,
+      44
     };
   }
 
@@ -3142,32 +3157,31 @@ private static final short[] yycheck_ = yycheck_init();
     return new short[]
     {
        0,    93,    94,    95,    96,    97,    97,    98,    99,    99,
-     100,   101,   102,   102,   103,   104,   105,   105,   106,   107,
-     108,   108,   109,   109,   110,   111,   111,   112,   112,   113,
-     114,   114,   115,   115,   116,   117,   117,   117,   117,   117,
-     118,   119,   119,   120,   120,   121,   121,   122,   123,   124,
-     124,   125,   125,   126,   126,   126,   127,   127,   127,   128,
-     128,   129,   130,   130,   131,   132,   132,   132,   133,   133,
-     134,   135,   135,   135,   136,   136,   137,   137,   137,   137,
-     137,   138,   138,   138,   138,   139,   139,   140,   140,   140,
-     140,   141,   141,   142,   143,   143,   144,   144,   145,   145,
-     146,   147,   148,   148,   148,   149,   149,   150,   150,   151,
+     100,   100,   100,   101,   101,   102,   103,   104,   104,   105,
+     106,   107,   107,   108,   109,   110,   110,   111,   111,   112,
+     113,   113,   114,   114,   115,   116,   116,   117,   117,   118,
+     119,   119,   119,   119,   119,   120,   121,   121,   122,   122,
+     123,   123,   124,   125,   126,   126,   127,   127,   128,   128,
+     128,   129,   129,   129,   130,   130,   131,   132,   132,   133,
+     134,   134,   134,   135,   135,   136,   137,   137,   137,   138,
+     138,   139,   139,   139,   139,   139,   140,   140,   140,   140,
+     141,   141,   142,   142,   142,   142,   143,   143,   144,   145,
+     145,   146,   146,   147,   148,   149,   149,   150,   150,   151,
      151,   152,   152,   153,   153,   153,   153,   153,   153,   153,
      154,   154,   155,   156,   156,   156,   157,   158,   159,   160,
-     161,   161,   162,   163,   163,   164,   164,   165,   165,   166,
-     167,   168,   168,   168,   169,   169,   170,   170,   171,   171,
-     171,   171,   172,   172,   172,   172,   173,   173,   174,   174,
-     174,   174,   175,   175,   175,   175,   176,   177,   178,   178,
-     179,   179,   179,   180,   181,   181,   181,   181,   182,   182,
-     183,   184,   185,   186,   187,   187,   188,   189,   190,   190,
-     191,   191,   192,   193,   193,   194,   195,   195,   196,   197,
-     198,   198,   199,   199,   200,   201,   201,   201,   201,   202,
-     203,   204,   205,   206,   206,   207,   207,   207,   207,   208,
-     209,   210,   211,   212,   213,   213,   214,   214,   215,   216,
-     217,   217,   218,   218,   219,   220,   220,   221,   221,   222,
-     223,   223,   224,   225,   226,   226,   226,   226,   226,   226,
-     226,   227,   228,   228,   229,   230,   231,   231,   231,   231,
-     231,   231,   231
+     160,   161,   162,   162,   163,   163,   164,   164,   165,   166,
+     167,   167,   167,   168,   168,   169,   169,   170,   170,   170,
+     170,   171,   171,   171,   171,   172,   172,   173,   173,   173,
+     173,   174,   174,   174,   174,   175,   176,   177,   177,   178,
+     178,   178,   179,   180,   180,   180,   180,   181,   181,   182,
+     183,   184,   185,   186,   186,   187,   188,   189,   189,   190,
+     190,   191,   192,   192,   193,   194,   195,   195,   196,   196,
+     197,   197,   197,   197,   198,   199,   200,   200,   201,   201,
+     201,   201,   202,   203,   204,   205,   206,   206,   207,   207,
+     208,   209,   210,   210,   211,   211,   212,   213,   213,   214,
+     214,   215,   216,   216,   217,   218,   219,   219,   219,   219,
+     219,   219,   219,   220,   221,   221,   222,   223,   224,   224,
+     224,   224,   224,   224,   224
     };
   }
 
@@ -3177,33 +3191,32 @@ private static final short[] yycheck_ = yycheck_init();
   {
     return new byte[]
     {
-       0,     2,     2,     6,     1,     0,     2,     5,     0,     2,
-       1,     4,     0,     2,     4,     1,     0,     2,     7,     1,
-       0,     1,     1,     2,     4,     2,     2,     1,     1,     1,
-       1,     2,     5,     5,     4,     1,     1,     1,     1,     1,
-       4,     1,     1,     0,     7,     0,     2,     7,     3,     0,
-       3,     0,     3,     1,     1,     1,     1,     1,     1,     0,
-       1,     4,     1,     1,     4,     1,     1,     1,     0,     2,
-       9,     0,     2,     2,     2,     2,     0,     3,     3,     3,
-       3,     2,     2,     1,     3,     3,     4,     3,     1,     5,
-       3,     0,     2,     3,     1,     2,     3,     4,     1,     1,
-       5,     1,     0,     1,     1,     0,     1,     1,     3,     3,
+       0,     2,     2,     6,     1,     0,     2,     5,     1,     1,
+       0,     1,     1,     0,     2,     1,     4,     0,     2,     4,
+       1,     0,     2,     7,     1,     0,     1,     1,     2,     4,
+       2,     2,     1,     1,     1,     1,     2,     5,     5,     4,
+       1,     1,     1,     1,     1,     4,     1,     1,     0,     7,
+       0,     2,     7,     3,     0,     3,     0,     3,     1,     1,
+       1,     1,     1,     1,     0,     1,     4,     1,     1,     4,
+       1,     1,     1,     0,     2,     9,     0,     2,     2,     2,
+       2,     0,     3,     3,     3,     3,     2,     2,     1,     3,
+       3,     4,     3,     1,     5,     3,     0,     2,     3,     1,
+       2,     3,     4,     5,     1,     0,     1,     1,     3,     3,
        3,     1,     3,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     3,     3,     3,     1,
-       1,     1,     1,     2,     3,     1,     1,     1,     1,     1,
-       3,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     2,     3,     1,     1,     1,     1,     1,     3,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     2,
-       2,     2,     2,     3,     1,     1,     1,     1,     1,     1,
-       4,     1,     3,     3,     1,     1,     3,     3,     1,     3,
-       1,     1,     6,     1,     1,     3,     1,     3,     1,     3,
-       2,     4,     1,     1,     0,     1,     1,     2,     2,     4,
-       0,     4,     0,     1,     3,     1,     1,     1,     1,     3,
-       3,     3,     3,     1,     1,     3,     1,     1,     3,     1,
-       1,     1,     1,     4,     3,     1,     1,     0,     1,     3,
-       2,     3,     3,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     3,     1,
+       1,     1,     3,     1,     1,     1,     1,     1,     1,     4,
+       1,     3,     3,     1,     1,     3,     3,     1,     1,     6,
+       6,     3,     1,     3,     1,     3,     1,     3,     1,     1,
+       1,     1,     1,     1,     4,     3,     1,     3,     1,     1,
+       1,     1,     3,     3,     3,     3,     1,     3,     1,     1,
+       3,     1,     1,     1,     1,     4,     3,     1,     1,     0,
        1,     3,     2,     3,     3,     1,     1,     1,     1,     1,
-       1,     1,     1
+       1,     1,     1,     3,     2,     3,     3,     1,     1,     1,
+       1,     1,     1,     1,     1
     };
   }
 
@@ -3266,7 +3279,7 @@ private static final short[] yycheck_ = yycheck_init();
   }
 
 
-  private static final int YYLAST_ = 553;
+  private static final int YYLAST_ = 539;
   private static final int YYEMPTY_ = -2;
   private static final int YYFINAL_ = 9;
   private static final int YYNTOKENS_ = 93;
@@ -3274,9 +3287,10 @@ private static final short[] yycheck_ = yycheck_init();
 /* Unqualified %code blocks.  */
 /* "src/main/java/parser/Parser.y":26  */
 
-    private ContextHandler contexts;
+    private String programName;
 
-/* "src/main/java/parser/Parser.java":3280  */
+/* "src/main/java/parser/Parser.java":3293  */
 
 }
-/* "src/main/java/parser/Parser.y":1514  */
+/* "src/main/java/parser/Parser.y":1301  */
+
