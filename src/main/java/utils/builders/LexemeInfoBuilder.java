@@ -53,6 +53,10 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
         return this;
     }
 
+    public String customType() {
+        return customType;
+    }
+
     @Override
     public LexemeInfoBuilder source(Source source) {
         this.source = source;
@@ -83,10 +87,18 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
         return this;
     }
 
+    public List<String> parameters() {
+        return parameters;
+    }
+
     @Override
     public LexemeInfoBuilder initialValue(Object initialValue) {
         this.initialValue = initialValue;
         return this;
+    }
+
+    public Object initialValue() {
+        return initialValue;
     }
 
     /**

@@ -71,8 +71,10 @@ mvn jflex:generate
 
 ```mermaid
 flowchart LR
-    SRC[Source .fcl] --> LEX[Lexer JFlex]
-    LEX -- tokens --> PAR[Parser Bison LALR1]
+    SRC[Source .fcl] --> LEX[Lexer
+JFlex]
+    LEX -- tokens --> PAR[Parser
+Bison LALR1]
     PAR -- publishes --> ST[(SymbolTable)]
     PAR -- reports --> DIAG[DiagnosticsHandler]
 ```
@@ -83,16 +85,16 @@ The parser orchestrates compilation: invokes the lexer, executes grammar semanti
 
 | Module         | Class                              | Responsibility                                                                                                                     |
 |----------------|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| utils          | `utils.SymbolTable`                | Almacena y recupera `LexemeInfo` por nombre de lexema                                                                              |
-| utils          | `utils.LexemeInfo`                 | DTO con atributos semánticos completos (tipo, subtipo, uso, fuente, límites, parámetros, valor inicial)                            |
-| utils          | `utils.DiagnosticsHandler`         | Recolecta y gestiona diagnósticos (errores/warnings) en orden de inserción                                                         |
-| utils.builders | `utils.builders.LexemeInfoSchema`  | Contrato fluido con un setter por atributo de `LexemeInfo` (no declara `build()`)                                                  |
-| utils.builders | `utils.builders.LexemeInfoBuilder` | Implementación concreta del builder con `build()`                                                                                  |
-| utils.builders | `utils.builders.Director`          | Recetas estáticas: `makeLiteral`, `makeType`, `makeMacro`, `makeDefaultInteger` y valores por defecto REAL, BOOL, STRING y WSTRING |
-| utils.enums    | `utils.enums.Type`                 | Clasificación general: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                                         |
-| utils.enums    | `utils.enums.Subtype`              | Tipos primitivos IEC 61131-7 (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE                                                           |
-| utils.enums    | `utils.enums.Use`                  | Contexto de uso: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, UNKNOWN                                            |
-| utils.enums    | `utils.enums.Source`               | Bloque de declaración: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE, UNKNOWN                                                        |
+| utils          | `utils.SymbolTable`                | Stores and retrieves `LexemeInfo` by lexeme name                                                                                   |
+| utils          | `utils.LexemeInfo`                 | DTO with complete semantic attributes (type, subtype, use, source, limits, parameters, initial value)                              |
+| utils          | `utils.DiagnosticsHandler`         | Collects and manages diagnostics (errors/warnings) in insertion order                                                              |
+| utils.builders | `utils.builders.LexemeInfoSchema`  | Fluent contract with a setter per `LexemeInfo` attribute (does not declare `build()`)                                              |
+| utils.builders | `utils.builders.LexemeInfoBuilder` | Concrete implementation of the builder with `build()`                                                                              |
+| utils.builders | `utils.builders.Director`          | Static recipes: `makeLiteral`, `makeType`, `makeMacro`, `makeDefaultInteger` and default values REAL, BOOL, STRING, and WSTRING    |
+| utils.enums    | `utils.enums.Type`                 | General classification: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                                        |
+| utils.enums    | `utils.enums.Subtype`              | IEC 61131-7 primitive types (INT, REAL, BOOL, TIME, etc.) + CUSTOM/NONE                                                            |
+| utils.enums    | `utils.enums.Use`                  | Usage context: VARIABLE, FIELD, LITERAL, FUNCTION, RULE, TYPE, MACRO, OPTION, UNKNOWN                                              |
+| utils.enums    | `utils.enums.Source`               | Declaration block: IN, OUT, INTERNAL, FUZZIFY, DEFUZZIFY, NONE, UNKNOWN                                                            |
 
 Full technical documentation: [doc/modules/lexer.md](doc/modules/lexer.md), [doc/modules/parser.md](doc/modules/parser.md), [doc/modules/utils.md](doc/modules/utils.md).
 

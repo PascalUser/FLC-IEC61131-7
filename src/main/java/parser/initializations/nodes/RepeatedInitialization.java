@@ -19,24 +19,13 @@ public final class RepeatedInitialization extends NodeInitialization {
     private final int dimension;
     private final List<Interval> intervals;
 
-    public RepeatedInitialization(int dimension, List<Interval> intervals) {
+    public RepeatedInitialization(int dimension, Initialization defaultValue) {
         this.dimension = dimension;
-        this.intervals = new ArrayList<>(intervals);
+        this.intervals = new ArrayList<>();
+        this.intervals.add(new Interval(0, dimension - 1, defaultValue));
     }
 
-    /**
-     * Replaces or updates the initialization at the specified index or nested path.
-     * <p>
-     * If the target index belongs to an interval spanning multiple elements, the interval
-     * is automatically split so that only the targeted index is mutated.
-     * </p>
-     *
-     * @param path           the index, optionally followed by {@code #} and a nested path
-     *                       (e.g. {@code "2"} or {@code "2#X"})
-     * @param initialization the new initialization value to set
-     * @return the previous initialization value at the target position/path
-     * @throws RuntimeException if the path or index is invalid
-     */
+    @Override
     public Initialization put(final String path, final Initialization initialization) {
         String[] brokenPath = breakStringPath(path);
 
@@ -44,80 +33,81 @@ public final class RepeatedInitialization extends NodeInitialization {
             throw new RuntimeException("RepeatedInitialization: cannot insert an element in the root");
         }
 
-        int index;
-        try {
-            index = Integer.parseInt(brokenPath[0]);
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("RepeatedInitialization: index is not a valid number: " + brokenPath[0]);
-        }
+        String targetStr = brokenPath[0];
+        String childPath = brokenPath[1];
 
-        if (index < 0 || index >= dimension) {
-            throw new RuntimeException("RepeatedInitialization: index out of bounds: " + index);
-        }
-
-        // Buscar el intervalo que contiene al índice objetivo
-        int targetIntervalIdx = -1;
-        Interval targetInterval = null;
-        for (int i = 0; i < intervals.size(); i++) {
-            Interval interval = intervals.get(i);
-            if (index >= interval.start && index <= interval.end) {
-                targetIntervalIdx = i;
-                targetInterval = interval;
-                break;
-            }
-        }
-
-        if (targetInterval == null) {
-            throw new RuntimeException("RepeatedInitialization: no interval found for index " + index);
-        }
-
-        // Preparar la división (split) del intervalo en caso de que cubra múltiples elementos
-        List<Interval> replacements = new ArrayList<>();
-
-        if (targetInterval.start < index) {
-            replacements.add(new Interval(targetInterval.start, index - 1, targetInterval.initialization));
-        }
-
-        Initialization oldInit = targetInterval.initialization;
-        Initialization elementInit;
-
-        if (brokenPath[1].isEmpty()) {
-            elementInit = initialization;
-            replacements.add(new Interval(index, index, elementInit));
+        // Determinar inicio y fin (soporta tanto "0..3" como "2")
+        int start, end;
+        if (targetStr.contains("..")) {
+            String[] parts = targetStr.split("\\.\\.");
+            start = Integer.parseInt(parts[0].trim());
+            end = Integer.parseInt(parts[1].trim());
         } else {
-            if (oldInit == null) {
-                throw new RuntimeException("RepeatedInitialization: element at index " + index + " is null");
+            start = Integer.parseInt(targetStr.trim());
+            end = start; // Un índice suelto es un rango de tamaño 1
+        }
+
+        int effectiveStart = Math.max(0, start);
+        int effectiveEnd = Math.min(dimension - 1, end);
+
+        if (effectiveStart > effectiveEnd) {
+            return null; // Or the default initialization you consider if out of range
+        }
+
+        List<Interval> newIntervals = new ArrayList<>();
+        Initialization oldInitialization = null;
+
+        for (Interval interval : intervals) {
+            // Fuera del rango
+            if (interval.end < effectiveStart || interval.start > effectiveEnd) {
+                newIntervals.add(interval);
+            } else {
+                // Conservar extremo izquierdo intacto
+                if (interval.start < effectiveStart) {
+                    newIntervals.add(new Interval(interval.start, effectiveStart - 1, interval.initialization));
+                }
+
+                // Determinar la zona de solapamiento (lo que vamos a modificar)
+                int overlapStart = Math.max(interval.start, effectiveStart);
+                int overlapEnd = Math.min(interval.end, effectiveEnd);
+
+                // Guardamos el primer valor viejo afectado para el return (Punto 3)
+                if (oldInitialization == null) {
+                    oldInitialization = interval.initialization;
+                }
+
+                Initialization newInitForOverlap;
+                if (childPath.isEmpty()) {
+                    // Reemplazo completo (Punto 2 - sin ruta anidada)
+                    newInitForOverlap = initialization;
+                } else {
+                    // Delegación a la ruta anidada (Punto 2 - ej. 0..3#X)
+                    if (interval.initialization == null) {
+                        throw new RuntimeException(
+                                "RepeatedInitialization: element is null, cannot delegate " + childPath
+                        );
+                    }
+                    // IMPORTANTE: Clonar para no alterar referencias si el intervalo original era más grande
+                    newInitForOverlap = interval.initialization.copy();
+                    NodeInitialization childNode = (NodeInitialization) newInitForOverlap;
+                    childNode.put(childPath, initialization);
+                }
+
+                newIntervals.add(new Interval(overlapStart, overlapEnd, newInitForOverlap));
+
+                // Conservar extremo derecho intacto
+                if (interval.end > effectiveEnd) {
+                    newIntervals.add(new Interval(effectiveEnd + 1, interval.end, interval.initialization));
+                }
             }
-            // If the interval spanned multiple indices, clone the object to avoid mutating other elements
-            elementInit = (targetInterval.start == targetInterval.end) ? oldInit : oldInit.copy();
-            replacements.add(new Interval(index, index, elementInit));
         }
 
-        if (targetInterval.end > index) {
-            replacements.add(new Interval(index + 1, targetInterval.end, targetInterval.initialization));
-        }
+        this.intervals.clear();
+        this.intervals.addAll(newIntervals);
 
-        // Reemplazar el intervalo original por los subintervalos fragmentados
-        intervals.remove(targetIntervalIdx);
-        intervals.addAll(targetIntervalIdx, replacements);
-
-        // Si la ruta terminaba en el índice, se retorna la inicialización previa
-        if (brokenPath[1].isEmpty()) {
-            return oldInit;
-        }
-
-        // Si la ruta continúa (ej. "2#X"), se delega la inserción al nodo hijo
-        NodeInitialization childNode = (NodeInitialization) elementInit;
-        return childNode.put(brokenPath[1], initialization);
+        return oldInitialization;
     }
 
-    /**
-     * Finds the initialization stored at an index, optionally followed by a path into it
-     * (e.g. {@code "2"} or {@code "2#X"} when the elements are structs).
-     *
-     * @param path the index, optionally followed by {@code #} and a path into the element
-     * @return the element initialization, or empty if the index is not a valid position
-     */
     @Override
     public Optional<Initialization> find(final String path) {
         String[] brokenPath = breakStringPath(path);
@@ -126,15 +116,25 @@ public final class RepeatedInitialization extends NodeInitialization {
             return Optional.of(this);
         }
 
+        String targetStr = brokenPath[0];
         int index;
+
         try {
-            index = Integer.parseInt(brokenPath[0]);
+            // Si nos piden buscar un rango "0..3", buscamos basándonos en el primer elemento
+            if (targetStr.contains("..")) {
+                index = Integer.parseInt(targetStr.split("\\.\\.")[0].trim());
+            } else {
+                index = Integer.parseInt(targetStr.trim());
+            }
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
+
         if (index < 0 || index >= dimension) {
             return Optional.empty();
         }
+
+        // Delegar la búsqueda (Punto 1 resuelto)
         for (Interval interval : intervals) {
             if (index >= interval.start && index <= interval.end) {
                 return interval.initialization == null
@@ -142,6 +142,7 @@ public final class RepeatedInitialization extends NodeInitialization {
                         : interval.initialization.find(brokenPath[1]);
             }
         }
+
         return Optional.empty();
     }
 
@@ -161,13 +162,9 @@ public final class RepeatedInitialization extends NodeInitialization {
     public RepeatedInitialization copy() {
         List<Interval> copiedIntervals = new ArrayList<>();
         for (Interval interval : intervals) {
-            copiedIntervals.add(new Interval(
-                    interval.start,
-                    interval.end,
-                    interval.initialization != null ? interval.initialization.copy() : null
-            ));
+            copiedIntervals.add(interval.copy());
         }
-        return new RepeatedInitialization(dimension, copiedIntervals);
+        return new RepeatedInitialization(dimension, null);
     }
 
     @Override
@@ -180,7 +177,7 @@ public final class RepeatedInitialization extends NodeInitialization {
 
     @Override
     public String toString() {
-        return "RepeatedInitialization{" + dimension + ", " + intervals;
+        return "RepeatedInitialization{" + dimension + ", " + intervals + "}";
     }
 
     public static class Interval {
@@ -192,6 +189,10 @@ public final class RepeatedInitialization extends NodeInitialization {
             this.start = start;
             this.end = end;
             this.initialization = initialization;
+        }
+
+        public Interval copy() {
+            return new Interval(start, end, initialization.copy());
         }
 
         @Override

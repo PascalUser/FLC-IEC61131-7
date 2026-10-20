@@ -31,7 +31,7 @@ def extract_classes(content):
     for match in re.finditer(r'(public\s+)?(class|interface)\s+(\w+)', content):
         class_name = match.group(3)
         classes[class_name] = {"type": match.group(2), "extends": [], "implements": [], "fields": [], "methods": []}
-    
+
     # Extends/implements
     for match in re.finditer(r'(class|interface)\s+\w+\s+(extends|implements)\s+([^{]+)', content):
         match.group(1)
@@ -39,7 +39,7 @@ def extract_classes(content):
         [t.strip() for t in match.group(3).split(',')]
         # Find which class this belongs to (simplified)
         pass
-    
+
     return classes
 
 
@@ -65,16 +65,23 @@ def extract_method_calls(content, class_name):
 
 def generate_package_flowchart():
     """Generate package dependency flowchart"""
-    packages = ["lexer", "parser", "utils"]
+    packages = ["lexer", "parser", "parser_publishers", "parser_facades", "parser_initializations", "utils"]
     edges = [
         ("lexer", "parser", "tokens"),
         ("parser", "utils", "SymbolTable"),
         ("parser", "utils", "LexemeInfo"),
         ("parser", "utils", "DiagnosticsHandler"),
+        ("parser", "parser_publishers", "publishers"),
+        ("parser_publishers", "utils", "Director"),
+        ("parser_publishers", "parser_initializations", "Factory"),
+        ("parser", "parser_facades", "facades"),
+        ("parser_facades", "utils", "DimensionCalculator"),
+        ("parser_facades", "utils", "RangesParser"),
+        ("parser_facades", "utils", "MacrosPublisher"),
         ("lexer", "utils", "SymbolTable"),
         ("lexer", "utils", "DiagnosticsHandler"),
     ]
-    
+
     mermaid = ["flowchart LR"]
     for pkg in packages:
         mermaid.append(f"    {pkg}[{pkg}]")
@@ -169,43 +176,91 @@ def generate_lexer_intervals_object():
 
 
 def generate_parser_class_diagram():
-    """Generate class diagram for parser module"""
+    """Generate class diagram for parser module (current Publisher/Director architecture)"""
     mermaid = ["classDiagram",
                 "    namespace parser {",
                 "        class Parser {",
                 "            +parse()",
                 "        }",
                 "    }",
-                "    namespace parser_internals {",
-                "        class ContextHandler {",
-                "            +stack: Stack~ParsingContext~",
-                "            +add()",
-                "            +pop()",
-                "            +current()",
+                "    namespace parser_publishers {",
+                "        class Publisher {",
+                "            <<interface>>",
+                "            +setDeclarationScope(String)",
                 "            +publish()",
-                "            +createSubcontext()",
                 "        }",
-                "        class ParsingContext {",
-                "            +declaredIdentifiers: List",
-                "            +metadataBuilder: LexemeInfoBuilder",
-                "            +outerScopes: NameMangler",
-                "            +searchScope: NameMangler",
-                "            +nestedFields: NameMangler",
-                "            +index: int",
-                "            +symbolTable(): SymbolTable",
-                "            +incrementIndex(int)",
+                "        class LexemeInfoSchema {",
+                "            <<interface>>",
+                "            +type(Type)",
+                "            +subtype(Subtype)",
+                "            +customType(String)",
+                "            +source(Source)",
+                "            +use(Use)",
+                "            +inferiorLimits(List~String~)",
+                "            +superiorLimits(List~String~)",
+                "            +parameters(List~String~)",
+                "            +initialValue(Object)",
                 "        }",
-                "        class NameMangler {",
-                "            +prefix: StringBuilder",
-                "            +addScope()",
-                "            +popScope()",
-                "            +getNameMangled()",
-                "            +getCurrentScope()",
+                "        class DeclarationGroup {",
+                "            +declarations: List~Declaration~",
+                "            +publish()",
+                "            +setDeclarationScope(String)",
+                "        }",
+                "        class Declaration {",
+                "            #builder: LexemeInfoBuilder",
+                "            #declarationScope: String",
+                "            +type(Type)",
+                "            +subtype(Subtype)",
+                "            +customType(String)",
+                "            +source(Source)",
+                "            +use(Use)",
+                "            +inferiorLimits(List~String~)",
+                "            +superiorLimits(List~String~)",
+                "            +parameters(List~String~)",
+                "            +initialValue(Object)",
+                "            +publish()",
+                "        }",
+                "        class MultipleDeclaration {",
+                "            +identifiers: List~String~",
+                "            +identifiers(List~String~)",
+                "            +publish()",
+                "        }",
+                "        class SingleDeclaration {",
+                "            +identifier: String",
+                "            +identifier(String)",
+                "            +publish()",
+                "        }",
+                "        class DeclarationBlock {",
+                "            +addDeclaration(Declaration)",
+                "        }",
+                "        class StructureBlock {",
+                "            +addField(SingleDeclaration)",
+                "            +getStructInitializationInfo() List~PathInitializationInfo~",
+                "        }",
+                "        class StructureDeclaration {",
+                "            +structBlock: StructureBlock",
+                "            +identifier(String)",
+                "            +publish()",
+                "        }",
+                "        class AnnonymousEnumeratedVariable {",
+                "            +publish()",
+                "        }",
+                "        class AnnonymousEnumeratedField {",
+                "            +publish()",
+                "        }",
+                "        class EnumeratedTypeDeclaration {",
+                "            +publish()",
                 "        }",
                 "    }",
                 "    namespace parser_facades {",
                 "        class DimensionCalculator {",
-                "            +calculate(ParsingContext) int",
+                "            +calculate(List~String~, List~String~) int",
+                "        }",
+                "        class RangesParser {",
+                "            +parse(List~String~, List~String~, List~String~)",
+                "        }",
+                "        class MacrosPublisher {",
+                "            +publish(SymbolTable, List~String~, String)",
                 "        }",
                 "        class UnderlyingScopeSearcher {",
                 "            +search(SymbolTable, String) String",
@@ -246,6 +301,63 @@ def generate_parser_class_diagram():
                 "        class RepeatedInitialization",
                 "        class NodeInitialization",
                 "    }",
+                "    namespace utils {",
+                "        class SymbolTable {",
+                "            +table: Map~String, LexemeInfo~",
+                "            +get()",
+                "            +put()",
+                "            +putIfAbsent()",
+                "        }",
+                "        class LexemeInfo {",
+                "            +type: Type",
+                "            +subtype: Subtype",
+                "            +customType: String",
+                "            +use: Use",
+                "            +source: Source",
+                "            +inferiorLimits: List~String~",
+                "            +superiorLimits: List~String~",
+                "            +parameters: List~String~",
+                "            +initialValue: Object",
+                "        }",
+                "        class LexemeInfoBuilder {",
+                "            +type(Type)",
+                "            +subtype(Subtype)",
+                "            +customType(String)",
+                "            +source(Source)",
+                "            +use(Use)",
+                "            +inferiorLimits(List~String~)",
+                "            +superiorLimits(List~String~)",
+                "            +parameters(List~String~)",
+                "            +initialValue(Object)",
+                "            +build() LexemeInfo",
+                "        }",
+                "        class Director {",
+                "            +makePrimitive(LexemeInfoSchema, SymbolTable, Subtype)",
+                "            +makeCustom(LexemeInfoSchema, SymbolTable, String)",
+                "            +makeMacro(LexemeInfoSchema, SymbolTable, Integer)",
+                "            +makeEnumerated(LexemeInfoSchema, List~String~)",
+                "            +makeStructure(LexemeInfoSchema, StructureBlock)",
+                "            +makeArray(LexemeInfoSchema, SymbolTable, ArrayMetadata)",
+                "            +makeLiteral(LexemeInfoSchema)",
+                "            +makeDefaultInteger()",
+                "            +makeDefaultReal()",
+                "            +makeDefaultBoolean()",
+                "            +makeDefaultString()",
+                "            +makeDefaultWString()",
+                "        }",
+                "    }",
+                "    DeclarationGroup ..|> Publisher",
+                "    Declaration ..|> Publisher",
+                "    Declaration ..|> LexemeInfoSchema",
+                "    DeclarationGroup ..|> LexemeInfoSchema",
+                "    MultipleDeclaration --|> Declaration",
+                "    SingleDeclaration --|> Declaration",
+                "    DeclarationBlock --|> DeclarationGroup",
+                "    StructureBlock --|> DeclarationGroup",
+                "    StructureDeclaration --|> SingleDeclaration",
+                "    AnnonymousEnumeratedVariable --|> MultipleDeclaration",
+                "    AnnonymousEnumeratedField --|> SingleDeclaration",
+                "    EnumeratedTypeDeclaration --|> SingleDeclaration",
                 "    Initialization <|.. NodeInitialization",
                 "    Initialization <|.. LeafInitialization",
                 "    LeafInitialization <|-- VariableInitialization",
@@ -256,12 +368,20 @@ def generate_parser_class_diagram():
                 "    NodeInitialization <|-- StructInitialization",
                 "    NodeInitialization <|-- RepeatedInitialization",
                 "    Factory ..> DefaultInitialization : creates",
-                "    Parser --> ContextHandler : uses",
-                "    ContextHandler --> ParsingContext : manages",
-                "    ParsingContext --> NameMangler : uses",
-                "    ParsingContext --> LexemeInfoBuilder : uses",
-                "    ContextHandler --> SymbolTable : publishes",
-                "    ContextHandler --> ParsingContext : reads"]
+                "    Parser --> Declaration : uses",
+                "    Parser --> Director : uses",
+                "    Parser --> Factory : uses",
+                "    Parser --> DimensionCalculator : uses",
+                "    Parser --> RangesParser : uses",
+                "    Parser --> MacrosPublisher : uses",
+                "    Director ..> Factory : uses",
+                "    Director ..> LexemeInfoBuilder : configures",
+                "    MultipleDeclaration ..> LexemeInfoBuilder : uses",
+                "    SingleDeclaration ..> LexemeInfoBuilder : uses",
+                "    StructureDeclaration ..> StructureBlock : uses",
+                "    AnnonymousEnumeratedVariable ..> MacrosPublisher : uses",
+                "    AnnonymousEnumeratedField ..> MacrosPublisher : uses",
+                "    EnumeratedTypeDeclaration ..> MacrosPublisher : uses"]
     return "\n".join(mermaid)
 
 
@@ -443,19 +563,33 @@ def generate_utils_class_diagram():
     return mermaid
 
 
-def generate_context_handler_sequence():
-    """Generate sequence diagram for ContextHandler stack operations"""
-    mermaid = ["sequenceDiagram", "    participant Parser as Parser (Bison)", "    participant CH as ContextHandler",
-               "    participant PC as ParsingContext", "    participant NM as NameMangler",
-               "    participant Builder as LexemeInfoBuilder", "    participant ST as SymbolTable", "",
-               "    Parser->>PC: new ParsingContext(symbolTable)", "    PC->>NM: new NameMangler() x3",
-               "    PC->>Builder: new LexemeInfoBuilder()", "    Parser->>CH: add(ctx)", "",
-               "    loop Grammar reductions", "        Parser->>CH: current()",
-               "        Parser->>Builder: metadataBuilder() attributes",
-               "        Parser->>PC: declaredIdentifiers().add(identifier)",
-               "    end", "", "    Parser->>CH: publish()", "    CH->>Builder: build() LexemeInfo",
-               "    loop For each declared identifier", "        CH->>NM: outerScopes().getNameMangled(identifier)",
-               "        CH->>ST: put(completeIdentifier, LexemeInfo)", "    end", "", "    Parser->>CH: pop()"]
+def generate_publisher_sequence():
+    """Generate sequence diagram for Publisher → SymbolTable flow"""
+    mermaid = ["sequenceDiagram",
+               "    participant Parser as Parser (Bison)",
+               "    participant Pub as Publisher (Declaration*)",
+               "    participant Builder as LexemeInfoBuilder",
+               "    participant Director as Director",
+               "    participant ST as SymbolTable",
+               "    participant MacroPub as MacrosPublisher",
+               "    participant Factory as Factory",
+               "",
+               "    Parser->>Builder: new LexemeInfoBuilder()",
+               "    Parser->>Director: makePrimitive/makeCustom/makeArray/etc.",
+               "    Director->>Factory: createPrimitiveInitialization()",
+               "    Factory-->>Director: DefaultInitialization",
+               "    Director->>Builder: configure type, subtype, initialValue",
+               "    Parser->>Pub: new Declaration*(symbolTable, builder)",
+               "    Pub->>Pub: identifiers(list) / identifier(name)",
+               "    Pub->>Pub: setDeclarationScope(programName)",
+               "    Pub->>Pub: source/use/type/subtype/limits/params",
+               "    Pub->>ST: put(key, builder.build())",
+               "",
+               "    alt Enum declaration",
+               "        Pub->>MacroPub: publish(symbolTable, macroNames, prefix)",
+               "        MacroPub->>Director: makeMacro(builder, symbolTable, ordinal)",
+               "        MacroPub->>ST: put(prefix + macroName, builder.build())",
+               "    end"]
     return "\n".join(mermaid)
 
 
@@ -470,7 +604,7 @@ DIAGRAMS = {
     "diagnostics_hierarchy": generate_diagnostics_hierarchy,
     "architecture_evolution": generate_architecture_evolution,
     "utils_class_diagram": generate_utils_class_diagram,
-    "context_handler_sequence": generate_context_handler_sequence,
+    "publisher_sequence": generate_publisher_sequence,
 }
 
 
@@ -479,18 +613,18 @@ def main():
     parser.add_argument("--list", action="store_true", help="List available diagrams")
     parser.add_argument("scope", nargs="?", default="all", help="Scope: all|lexer|parser|utils|architecture")
     args = parser.parse_args()
-    
+
     DIAGRAMS_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     # Determine which diagrams to generate based on scope
     scope = args.scope
-    
+
     if scope == "all":
         targets = list(DIAGRAMS.keys())
     elif scope == "lexer":
         targets = ["lexer_package_flowchart", "lexer_class_diagram", "lexer_intervals_object", "lexer_parser_sequence"]
     elif scope == "parser":
-        targets = ["parser_class_diagram", "context_handler_sequence", "symboltable_storage"]
+        targets = ["parser_class_diagram", "publisher_sequence", "symboltable_storage"]
     elif scope == "utils":
         targets = ["utils_class_diagram", "diagnostics_hierarchy", "symboltable_storage"]
     elif scope == "architecture":
@@ -504,15 +638,15 @@ def main():
             print(f"Available: all, lexer, parser, utils, architecture")
             print(f"Or specific: {', '.join(DIAGRAMS.keys())}")
             return
-    
+
     if args.list:
         for name in DIAGRAMS:
             print(name)
         return
-    
+
     print(f"Generating diagrams for scope: {scope}")
     generated = []
-    
+
     for name in targets:
         if name not in DIAGRAMS:
             print(f"  ! unknown diagram: {name}")
@@ -525,7 +659,7 @@ def main():
             print(f"  -> {output_file.relative_to(ROOT)}")
         except Exception as e:
             print(f"  ! Error generating {name}: {e}")
-    
+
     print(f"\nGenerated {len(generated)} diagrams in doc/diagrams/")
 
 

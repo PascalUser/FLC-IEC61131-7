@@ -27,6 +27,7 @@ public enum Subtype {
     LINT,
     LREAL,
     LWORD,
+    NONE,
     REAL,
     SINT,
     STRING,
@@ -38,6 +39,6 @@ public enum Subtype {
     UNKNOWN,
     USINT,
     WORD,
-    NONE,
     WSTRING
+
 }

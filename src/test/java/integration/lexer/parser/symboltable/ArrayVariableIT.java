@@ -1,5 +1,6 @@
 package integration.lexer.parser.symboltable;
 
+import org.jspecify.annotations.NonNull;
 import parser.initializations.leafs.EnumeratedInitialization;
 import parser.initializations.leafs.VariableInitialization;
 import parser.initializations.nodes.RepeatedInitialization;
@@ -61,41 +62,7 @@ public class ArrayVariableIT extends ParserTestSupport {
                 + "END_FUNCTION_BLOCK\n";
 
         SymbolTable st = parse(sourceCode);
-        Initialization classificationInit = new EnumeratedInitialization(Arrays.asList("WHITE", "GRAY", "BLACK"));
-        Initialization gammaInit = new VariableInitialization(".5");
-
-        List<Interval> expectedIntervals = new ArrayList<>();
-        expectedIntervals.add(new Interval(
-                        0, 19, createStructInit(
-                        classificationInit,
-                        new VariableInitialization("1.0")
-                ))
-        );
-        expectedIntervals.add(new Interval(
-                        20, 20, createStructInit(
-                        new VariableInitialization("BLACK"),
-                        new VariableInitialization(".0")
-                ))
-        );
-        expectedIntervals.add(new Interval(
-                        21, 30, createStructInit(
-                        new VariableInitialization("WHITE"),
-                        new VariableInitialization("1.0")
-                ))
-        );
-        expectedIntervals.add(new Interval(
-                        31, 38, createStructInit(
-                        new VariableInitialization("BLACK"),
-                        new VariableInitialization(".0")
-                ))
-        );
-        expectedIntervals.add(new Interval(
-                        39, 40, createStructInit(
-                        new VariableInitialization("GRAY"),
-                        gammaInit
-                ))
-        );
-        RepeatedInitialization expectedArrayInitialValue = new RepeatedInitialization(40, expectedIntervals);
+        RepeatedInitialization expectedArrayInitialValue = getRepeatedInitialization();
 
         assertSymbol(st, "MAIN#PIXELS", new LexemeInfoBuilder()
                 .type(Type.ARRAY)
@@ -109,13 +76,23 @@ public class ArrayVariableIT extends ParserTestSupport {
                 .build());
     }
 
-    /**
-     * Helper to create a parser.initializations.nodes.StructInitialization surrogate.
-     */
-    private static Initialization createStructInit(Initialization v1, Initialization v2) {
-        StructInitialization structInit = new StructInitialization();
-        structInit.put("CLASSIFICATION", v1);
-        structInit.put("GAMMA", v2);
-        return structInit;
+    private static @NonNull RepeatedInitialization getRepeatedInitialization() {
+        Initialization classificationInit = new EnumeratedInitialization(Arrays.asList("WHITE", "GRAY", "BLACK"));
+        Initialization gammaInit = new VariableInitialization(".5");
+
+        StructInitialization colorTypeInit = new StructInitialization();
+        colorTypeInit.put("CLASSIFICATION", classificationInit);
+        colorTypeInit.put("GAMMA", gammaInit);
+
+        RepeatedInitialization expectedArrayInitialValue = new RepeatedInitialization(40, colorTypeInit);
+        expectedArrayInitialValue.put("0..19#GAMMA", new VariableInitialization("1.0"));
+        expectedArrayInitialValue.put("20..20#CLASSIFICATION", new VariableInitialization("BLACK"));
+        expectedArrayInitialValue.put("20..20#GAMMA", new VariableInitialization(".0"));
+        expectedArrayInitialValue.put("21..30#CLASSIFICATION", new VariableInitialization("WHITE"));
+        expectedArrayInitialValue.put("21..30#GAMMA", new VariableInitialization("1.0"));
+        expectedArrayInitialValue.put("31..38#CLASSIFICATION", new VariableInitialization("BLACK"));
+        expectedArrayInitialValue.put("31..38#GAMMA", new VariableInitialization(".0"));
+        expectedArrayInitialValue.put("39..39#CLASSIFICATION", new VariableInitialization("GRAY"));
+        return expectedArrayInitialValue;
     }
 }

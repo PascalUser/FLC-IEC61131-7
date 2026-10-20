@@ -1,17 +1,19 @@
 /**
  * Parser utility classes.
  * <p>
- * Contains supporting classes for semantic actions:
+ * Contains supporting classes for semantic actions and scope management:
  * </p>
  * <ul>
- *   <li>{@link parser.initializations.Factory} - creates default initializations for primitive types</li>
- *   <li>{@link parser.facades.DimensionCalculator} - computes total array dimension from bounds</li>
- *   <li>{@link parser.facades.UnderlyingScopeSearcher} - resolves type alias chains to root definition</li>
+ *   <li>{@link parser.utils.NameMangler} - generates qualified (mangled) names for symbols in nested scopes</li>
+ *   <li>{@link parser.utils.ArrayMetadata} - holds array type info: element subtype, custom type, dimension ranges</li>
+ *   <li>{@link parser.utils.ParsingRepeatedArrayContext} - context for parsing repeated array initializations</li>
+ *   <li>{@link parser.utils.PathInitializationInfo} - pairs a field name with its Initialization node</li>
  * </ul>
  *
- * @see parser.initializations.Factory
- * @see parser.facades.DimensionCalculator
- * @see parser.facades.UnderlyingScopeSearcher
+ * @see parser.utils.NameMangler
+ * @see parser.utils.ArrayMetadata
+ * @see parser.utils.ParsingRepeatedArrayContext
+ * @see parser.utils.PathInitializationInfo
  * @since 1.0
  */
 package parser.utils;
