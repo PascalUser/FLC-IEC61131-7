@@ -15,6 +15,7 @@
     import utils.builders.*;
 
     import parser.utils.*;
+    import parser.utils.metadata.*;
     import parser.facades.*;
     import parser.publishers.*;
     import parser.initializations.*;
@@ -89,9 +90,15 @@
     enumerated_spec_init
     enumerated_specification
     initialized_enumerated
+    subrange_spec_init
+    subrange_specification
+    initialized_subrange
     array_spec_init
     array_specification
     initialized_array
+    string_spec_init
+    string_specification
+    initialized_string
 
 
 %type <Subtype>
@@ -565,9 +572,9 @@ var_spec_init:
         $$ = new MultipleDeclaration(this.symbolTable, $1); }
     | subrange_spec_init
     {
-        /** Subrange not yet supported for variable lists; returns null. */
+        /** Wraps the subrange builder in an MultipleDeclaration for variable list handling. */
 
-        $$ = null;
+        $$ = new MultipleDeclaration(this.symbolTable, $1);
     }
     | enumerated_spec_init
     {
@@ -583,9 +590,9 @@ var_spec_init:
     }
     | string_spec_init
     {
-        /** String not yet supported for variable lists; returns null. */
+        /** Wraps the string builder in a MultipleDeclaration for variable list handling. */
 
-        $$ = null;
+        $$ = new MultipleDeclaration(this.symbolTable, $1);
     }
 ;
 
@@ -710,7 +717,6 @@ initialized_boolean:
     }
 ;
 
-/* edge: R_EDGE | F_EDGE */
 edge:
     R_EDGE
     | F_EDGE
@@ -1029,52 +1035,29 @@ bit_string_type:
 
 subrange_spec_init:
     subrange_specification
-    | initialized_subrange
-;
-
-subrange_specification:
-    subrange_type_decl '(' range ')'
     {
-        /**
-         * Creates a SubrangeInitialization from the lower and upper limits already
-         * collected in the current context metadata and stores it there.
-        **/
-
-        // ParsingContext ctx = this.contexts.current();
-        // LexemeInfo metadata = ctx.metadataBuilder().build();
-        // String ilimit = metadata.inferiorLimits.get(0);
-        // String slimit = metadata.superiorLimits.get(0);
-
-        // ctx.metadataBuilder()
-        //     .initialValue(new SubrangeInitialization(ilimit, slimit));
+        $$ = $1;
+    }
+    | initialized_subrange
+    {
+        $$ = $1;
     }
 ;
 
-subrange_type_decl:
-    integer_type
+subrange_specification:
+    integer_type '(' range ')'
     {
-        /**
-         * Loads the left identifiers subrange subtype
-        **/
-
-        // ParsingContext ctx = this.contexts.current();
-        // ctx.metadataBuilder()
-        //     .type(Type.SUBRANGE)
-        //     .subtype($1)
-        //     .inferiorLimits(new ArrayList<>())
-        //     .superiorLimits(new ArrayList<>());
+        LexemeInfoBuilder subrangeBuilder = new LexemeInfoBuilder();
+        Director.makeSubrange(subrangeBuilder, new SubrangeMetadata($1, $3.get(0), $3.get(1)));
+        $$ = subrangeBuilder;
     }
 ;
 
 initialized_subrange:
     subrange_specification ASSIGN_OP numeric_constant
     {
-        /**
-         * Loads the left identifiers subrange initialization
-        **/
-
-        // ParsingContext ctx = this.contexts.current();
-        //  ctx.metadataBuilder().initialValue(new VariableInitialization($3));
+        $1.initialValue(new VariableInitialization($3));
+        $$ = $1;
     }
 ;
 
@@ -1107,7 +1090,7 @@ enumerated_specification:
     '(' identifier_list ')'
     {
         LexemeInfoBuilder enumBuilder = new LexemeInfoBuilder();
-        Director.makeEnumerated(enumBuilder, $2);
+        Director.makeEnumerated(enumBuilder, new EnumeratedMetadata($2));
         $$ = enumBuilder;
     }
 ;
@@ -1401,56 +1384,35 @@ standard_function_block_specification:
 
 string_spec_init:
     string_specification
+    {
+        $$ = $1;
+    }
     | initialized_string
+    {
+        $$ = $1;
+    }
 ;
 
 string_specification:
     string_type
     {
-        /**
-         * Configures the current context for a STRING/WSTRING type without
-         * explicit length, using the default primitive initialization.
-        **/
-
-        // ParsingContext ctx = this.contexts.current();
-        // ctx.metadataBuilder()
-        //     .type(Type.SIMPLE)
-        //     .subtype($1)
-        //     .initialValue(
-        //         Factory.createPrimitiveInitialization(this.symbolTable, $1)
-        //     );
+        LexemeInfoBuilder stringBuilder = new LexemeInfoBuilder();
+        Director.makePrimitive(stringBuilder, this.symbolTable, $1);
+        $$ = stringBuilder;
     }
     | string_type '[' numeric_constant ']'
     {
-        /**
-         * Stores the explicit string length as the superior limit and creates
-         * a StringInitialization for the declared subtype.
-        **/
-
-        // ParsingContext ctx = this.contexts.current();
-        // ctx.metadataBuilder()
-        //     .type(Type.SIMPLE)
-        //     .subtype($1)
-        //     .superiorLimits(
-        //         Collections.singletonList($3)
-        //     ).initialValue(
-        //         Factory.createPrimitiveInitialization(this.symbolTable, $1)
-        //     );
+        LexemeInfoBuilder stringBuilder = new LexemeInfoBuilder();
+        Director.makeFixedLengthString(stringBuilder, this.symbolTable, new StringMetadata($1, $3));
+        $$ = stringBuilder;
     }
 ;
 
 initialized_string:
-    string_specification  ASSIGN_OP string_constant
+    string_specification ASSIGN_OP string_constant
     {
-        /**
-         * Wraps the assigned string literal as a VariableInitialization and
-         * stores it in the current context metadata.
-        **/
-
-        // ParsingContext ctx = this.contexts.current();
-        // ctx.metadataBuilder().initialValue(
-        //     new VariableInitialization($3)
-        // );
+        $1.initialValue(new VariableInitialization($3));
+        $$ = $1;
     }
 ;
 
@@ -1521,9 +1483,9 @@ type_spec_init:
     }
     | subrange_spec_init
     {
-        /** Subrange not yet supported for type declarations; returns null. */
+        /** Wraps the subrange builder in an SingleDeclaration for type declaration. */
 
-        $$ = null;
+        $$ = new SingleDeclaration(this.symbolTable, $1);
     }
     | array_spec_init
     {
@@ -1539,9 +1501,9 @@ type_spec_init:
     }
     | string_spec_init
     {
-        /** String not yet supported for type declarations; returns null. */
+        /** Wraps the string builder in a SingleDeclaration for type declaration. */
 
-        $$ = null;
+        $$ = new SingleDeclaration(this.symbolTable, $1);
     }
 ;
 
@@ -1549,7 +1511,7 @@ structure_specification:
     STRUCT structure_field_init_decl_list END_STRUCT
     {
         StructureDeclaration structDeclaration = new StructureDeclaration(this.symbolTable, $2);
-        Director.makeStructure(structDeclaration, $2);
+        Director.makeStructure(structDeclaration, new StructureMetadata($2));
 
         $$ = structDeclaration;
     }
@@ -1619,9 +1581,9 @@ structure_field_spec_init:
     }
     | subrange_spec_init
     {
-        /** Subrange not yet supported for structure fields; returns null. */
+        /** Wraps the subrange builder in an SingleDeclaration for type declaration. */
 
-        $$ = null;
+        $$ = new SingleDeclaration(this.symbolTable, $1);
     }
     | array_spec_init
     {
@@ -1631,9 +1593,9 @@ structure_field_spec_init:
     }
     | string_spec_init
     {
-        /** String not yet supported for structure fields; returns null. */
+        /** Wraps the string builder in a SingleDeclaration for structure field. */
 
-        $$ = null;
+        $$ = new SingleDeclaration(this.symbolTable, $1);
     }
 ;
 

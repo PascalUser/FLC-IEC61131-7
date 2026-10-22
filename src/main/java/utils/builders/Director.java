@@ -4,13 +4,14 @@ import parser.facades.*;
 import parser.initializations.*;
 import parser.initializations.leafs.*;
 import parser.initializations.nodes.*;
-import parser.publishers.StructureBlock;
 import parser.utils.*;
+import parser.utils.metadata.*;
 import utils.LexemeInfo;
 import utils.SymbolTable;
 import utils.enums.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,20 +34,6 @@ public final class Director {
         // Utility class - not instantiable
     }
 
-    /**
-     * Configures the schema for a literal value.
-     * <p>
-     * Sets: {@code type=SIMPLE}, {@code use=LITERAL}, {@code source=NONE}.
-     * </p>
-     *
-     * @param schema the schema to configure
-     */
-    public static void makeLiteral(LexemeInfoSchema schema) {
-        schema.type(Type.SIMPLE)
-                .use(Use.LITERAL)
-                .source(Source.NONE);
-    }
-
     public static void makePrimitive(LexemeInfoSchema schema, SymbolTable symbolTable, Subtype subtype) {
         Initialization initialValue = Factory.createPrimitiveInitialization(symbolTable, subtype);
         schema.type(Type.SIMPLE)
@@ -54,33 +41,41 @@ public final class Director {
                 .initialValue(initialValue.copy());
     }
 
-    public static void makeCustom(LexemeInfoSchema schema, SymbolTable symbolTable, String type) {
-        Initialization initialValue = (Initialization) symbolTable.get(type).initialValue;
+    public static void makeCustom(LexemeInfoSchema schema, SymbolTable symbolTable, String customType) {
+        Initialization initialValue = (Initialization) symbolTable.get(customType).initialValue;
         schema.type(Type.SIMPLE)
                 .subtype(Subtype.CUSTOM)
-                .customType(type)
+                .customType(customType)
                 .initialValue(initialValue.copy());
     }
 
-    public static void makeMacro(LexemeInfoSchema schema, SymbolTable symbolTable, Integer replaceValue) {
+    public static void makeMacro(LexemeInfoSchema schema, SymbolTable symbolTable, MacroMetadata macro) {
         schema.type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.MACRO)
                 .source(Source.NONE)
-                .initialValue(new MacroInitialization(symbolTable, replaceValue));
+                .initialValue(new MacroInitialization(symbolTable, macro.replaceValue()));
     }
 
-    public static void makeEnumerated(LexemeInfoSchema schema, List<String> associatedValues) {
+    public static void makeEnumerated(LexemeInfoSchema schema, EnumeratedMetadata enumerated) {
         schema.type(Type.ENUMERATE)
                 .subtype(Subtype.INT)
-                .parameters(associatedValues)
-                .initialValue(new EnumeratedInitialization(associatedValues));
+                .parameters(enumerated.values())
+                .initialValue(new EnumeratedInitialization(enumerated.values()));
     }
 
-    public static void makeStructure(LexemeInfoSchema schema, StructureBlock structBlock) {
+    public static void makeSubrange(LexemeInfoSchema schema, SubrangeMetadata subrange) {
+        schema.type(Type.SUBRANGE)
+                .subtype(subrange.subtype())
+                .inferiorLimits(Collections.singletonList(subrange.inferiorLimit()))
+                .superiorLimits(Collections.singletonList(subrange.superiorLimit()))
+                .initialValue(new SubrangeInitialization(subrange.inferiorLimit(), subrange.superiorLimit()));
+    }
+
+    public static void makeStructure(LexemeInfoSchema schema, StructureMetadata struct) {
         List<String> structFields = new ArrayList<>();
 
-        List<PathInitializationInfo> fieldsInfo = structBlock.getStructInitializationInfo();
+        List<PathInitializationInfo> fieldsInfo = struct.block().getInitializationInfo();
         StructInitialization initialValue = new StructInitialization();
         for (PathInitializationInfo fieldInfo : fieldsInfo) {
             initialValue.put(fieldInfo.name(), fieldInfo.initialValue());
@@ -113,10 +108,41 @@ public final class Director {
                 );
     }
 
-    public static String makeDefaultInteger(LexemeInfoSchema schema) {
+    public static void makeFixedLengthString(LexemeInfoSchema schema, SymbolTable symbolTable, StringMetadata string) {
+        makePrimitive(schema, symbolTable, string.subtype());
+
+        LexemeInfoBuilder limitMetadataBuilder = new LexemeInfoBuilder();
+        String inferiorLimit = makeIntegerZeroConstant(limitMetadataBuilder);
+
+        symbolTable.putIfAbsent(inferiorLimit, limitMetadataBuilder.build());
+
+        schema.inferiorLimits(Collections.singletonList(inferiorLimit));
+        schema.superiorLimits(Collections.singletonList(string.length()));
+    }
+
+    /**
+     * Configures the schema for a literal value.
+     * <p>
+     * Sets: {@code type=SIMPLE}, {@code use=LITERAL}, {@code source=NONE}.
+     * </p>
+     *
+     * @param schema the schema to configure
+     */
+    public static void makeLiteral(LexemeInfoSchema schema) {
+        schema.type(Type.SIMPLE)
+                .use(Use.LITERAL)
+                .source(Source.NONE);
+    }
+
+    public static String makeIntegerZeroConstant(LexemeInfoSchema schema) {
         makeLiteral(schema);
         schema.subtype(Subtype.INT).initialValue(0);
         return "0";
+    }
+
+
+    public static String makeDefaultInteger(LexemeInfoSchema schema) {
+        return makeIntegerZeroConstant(schema);
     }
 
     /**

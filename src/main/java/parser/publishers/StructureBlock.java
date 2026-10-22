@@ -11,7 +11,7 @@ public final class StructureBlock extends DeclarationGroup {
         declarations.add(newDeclaration);
     }
 
-    public List<PathInitializationInfo> getStructInitializationInfo() {
+    public List<PathInitializationInfo> getInitializationInfo() {
         List<PathInitializationInfo> result = new ArrayList<>();
         for (Declaration fieldAbstractDecl : declarations) {
             SingleDeclaration fieldDeclaration = (SingleDeclaration) fieldAbstractDecl;

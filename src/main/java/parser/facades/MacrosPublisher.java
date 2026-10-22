@@ -1,5 +1,6 @@
 package parser.facades;
 
+import parser.utils.metadata.MacroMetadata;
 import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
@@ -12,7 +13,7 @@ public final class MacrosPublisher {
         LexemeInfoBuilder macroBuilder = new LexemeInfoBuilder();
         for (int i = 0; i < macroNames.size(); i++) {
             String macroName = macroNames.get(i);
-            Director.makeMacro(macroBuilder, symbolTable, i);
+            Director.makeMacro(macroBuilder, symbolTable, new MacroMetadata(i));
             symbolTable.put(prefix + macroName, macroBuilder.build());
         }
     }

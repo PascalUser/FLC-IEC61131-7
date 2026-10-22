@@ -160,11 +160,11 @@ public final class RepeatedInitialization extends NodeInitialization {
 
     @Override
     public RepeatedInitialization copy() {
-        List<Interval> copiedIntervals = new ArrayList<>();
+        RepeatedInitialization copy = new RepeatedInitialization(dimension, null);
         for (Interval interval : intervals) {
-            copiedIntervals.add(interval.copy());
+            copy.put(interval.start + ".." + interval.end, interval.initialization.copy());
         }
-        return new RepeatedInitialization(dimension, null);
+        return copy;
     }
 
     @Override
@@ -189,10 +189,6 @@ public final class RepeatedInitialization extends NodeInitialization {
             this.start = start;
             this.end = end;
             this.initialization = initialization;
-        }
-
-        public Interval copy() {
-            return new Interval(start, end, initialization.copy());
         }
 
         @Override

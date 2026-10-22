@@ -45,7 +45,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .subtype(subtype)
                 .use(Use.TYPE)
                 .source(Source.NONE)
-                .inferiorLimits(null)
+                .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(Factory.createPrimitiveInitialization(st, subtype))
                 .build());
@@ -65,7 +65,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .subtype(Subtype.STRING)
                 .use(Use.TYPE)
                 .source(Source.NONE)
-                .inferiorLimits(null)
+                .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("'STRING'"))
                 .build());
@@ -85,7 +85,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .subtype(Subtype.WSTRING)
                 .use(Use.TYPE)
                 .source(Source.NONE)
-                .inferiorLimits(null)
+                .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("\"WSTRING\""))
                 .build());
@@ -106,7 +106,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .subtype(subtype)
                 .use(Use.VARIABLE)
                 .source(Source.INTERNAL)
-                .inferiorLimits(null)
+                .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(Factory.createPrimitiveInitialization(st, subtype))
                 .build());
@@ -126,7 +126,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .subtype(Subtype.STRING)
                 .use(Use.VARIABLE)
                 .source(Source.INTERNAL)
-                .inferiorLimits(null)
+                .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("'STRING'"))
                 .build());
@@ -146,7 +146,7 @@ public class StringTypeIT extends ParserTestSupport {
                 .subtype(Subtype.WSTRING)
                 .use(Use.VARIABLE)
                 .source(Source.INTERNAL)
-                .inferiorLimits(null)
+                .inferiorLimits(Collections.singletonList("0"))
                 .superiorLimits(Collections.singletonList("8"))
                 .initialValue(new VariableInitialization("\"WSTRING\""))
                 .build());

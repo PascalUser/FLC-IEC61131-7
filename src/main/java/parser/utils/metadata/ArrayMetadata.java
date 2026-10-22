@@ -1,4 +1,4 @@
-package parser.utils;
+package parser.utils.metadata;
 
 import utils.enums.Subtype;
 
