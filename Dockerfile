@@ -1,7 +1,8 @@
 FROM maven:3.9-eclipse-temurin-8
 
-# Install system dependencies
+# 1. Install system dependencies (as ROOT)
 RUN apt-get update && apt-get install -y \
+    git \
     pandoc \
     python3 python3-pip \
     curl \
@@ -22,35 +23,37 @@ RUN apt-get update && apt-get install -y \
     libasound2t64 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 20+ (required for mermaid-cli)
+# Install Node.js 20+
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# Python dependencies
+# Global Python and Node dependencies (Removed opencode from here)
 RUN pip install --break-system-packages matplotlib
+RUN npm install -g @mermaid-js/mermaid-cli yauzl remark-cli remark-gfm bun
 
-# Node dependencies (global)
-RUN npm install -g @mermaid-js/mermaid-cli yauzl remark-cli remark-gfm
-
-# Install bun (required for opencode)
-RUN npm install -g bun
-
-# Install opencode via official install script
+# Install OpenCode CLI via official install script (as ROOT)
 RUN curl -fsSL https://opencode.ai/v2/install | bash
 
-# Pre-install puppeteer browser (chrome-headless-shell)
-ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
-RUN mkdir -p /opt/puppeteer/cache && \
-    npx puppeteer browsers install chrome-headless-shell --path=/opt/puppeteer/cache
+# 2. Create an unprivileged user (devuser)
+RUN useradd -m -s /bin/bash devuser
 
-# Set puppeteer executable path for mermaid-cli
-ENV PUPPETEER_EXECUTABLE_PATH=/opt/puppeteer/cache/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell
-ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
+# 3. Prepare directories and assign permissions to the new user
+RUN mkdir -p /opt/puppeteer/cache /workspace && \
+    chown -R devuser:devuser /opt/puppeteer /workspace
 
+# 4. DROP PRIVILEGES: Everything from here on is executed as 'devuser'
+USER devuser
 WORKDIR /workspace
 
-# Copy assets (charts and rendered diagrams) for thesis build
-COPY doc/ /workspace/doc/
+# Install Puppeteer locally in the user's cache
+ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
+RUN npx puppeteer browsers install chrome-headless-shell --path=/opt/puppeteer/cache
+
+# Puppeteer paths
+ENV PUPPETEER_EXECUTABLE_PATH=/opt/puppeteer/cache/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell
+
+# Copy assets (ensuring they belong to devuser)
+COPY --chown=devuser:devuser doc/ /workspace/doc/
 
 ENTRYPOINT ["bash"]

@@ -80,6 +80,16 @@
         "edit": true,
         "bash": true
       }
+    },
+    "java-doc-writer": {
+      "description": "Writes Javadoc for Java files according to project standards",
+      "mode": "subagent",
+      "prompt": "{file:./.opencode/agents/java-doc-writer.md}",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
     }
   },
 
@@ -128,6 +138,16 @@
       "description": "Runs mvn javadoc:javadoc and confirms zero warnings",
       "agent": "javadoc-updater",
       "template": "Run mvn javadoc:javadoc and confirm zero warnings. Report any remaining issues."
+    },
+    "java-doc-write": {
+      "description": "Writes Javadoc for a Java file",
+      "agent": "java-doc-writer",
+      "template": "Write Javadoc for $ARGUMENTS following project standards"
+    },
+    "java-doc-verify": {
+      "description": "Verifies Javadoc for a Java file",
+      "agent": "java-doc-writer",
+      "template": "Run mvn javadoc:javadoc and confirm zero warnings for $ARGUMENTS. Report any remaining issues."
     }
   }
 }

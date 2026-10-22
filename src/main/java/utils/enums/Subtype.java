@@ -24,11 +24,13 @@ public enum Subtype {
     DINT,
     DWORD,
     INT,
+    LINEAR,
     LINT,
     LREAL,
     LWORD,
     NONE,
     REAL,
+    SINGLETON,
     SINT,
     STRING,
     TIME,
@@ -40,5 +42,4 @@ public enum Subtype {
     USINT,
     WORD,
     WSTRING
-
 }

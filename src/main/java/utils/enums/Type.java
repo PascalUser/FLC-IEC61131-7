@@ -11,10 +11,10 @@ package utils.enums;
 public enum Type {
     ARRAY,
     ENUMERATE,
-    /** Simple scalar type (INT, REAL, BOOL, etc.). */
+    FUNCTION,
+    NONE,
     SIMPLE,
     STRUCT,
     SUBRANGE,
-    UNKNOWN
-
+    UNKNOWN,
 }

@@ -59,7 +59,7 @@ class SymbolTableTest {
                                 .type(Type.STRUCT)
                                 .subtype(Subtype.CUSTOM)
                                 .customType("MyStruct")
-                                .use(Use.FUNCTION)
+                                .use(Use.TERM)
                                 .source(Source.FUZZIFY)
                                 .parameters(Arrays.asList("param1", "param2"))
                                 .build()
