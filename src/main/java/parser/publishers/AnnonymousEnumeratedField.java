@@ -6,7 +6,7 @@ import utils.builders.LexemeInfoBuilder;
 
 import java.util.List;
 
-public class AnnonymousEnumeratedField extends SingleDeclaration {
+public final class AnnonymousEnumeratedField extends SingleDeclaration {
     public AnnonymousEnumeratedField(SymbolTable symbolTable, LexemeInfoBuilder initBuilder) {
         super(symbolTable, initBuilder);
     }

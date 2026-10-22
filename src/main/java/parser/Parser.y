@@ -207,8 +207,6 @@ var_retain_spec:
          * Marks the variable declaration as RETAIN (persistent across power cycles).
          * TODO: Implement retain specification in context metadata.
         **/
-
-        // TODO: ctx with retain spec
     }
     | NON_RETAIN
     {
@@ -216,8 +214,6 @@ var_retain_spec:
          * Marks the variable declaration as NON_RETAIN (not persistent).
          * TODO: Implement non-retain specification in context metadata.
         **/
-
-        // TODO: ctx with non retain spec
     }
 ;
 
@@ -502,20 +498,10 @@ var_id_decl:
 var_constant_spec:
     /* empty */
     {
-        /**
-         * Default variable specification (non-constant).
-         * TODO: Implement non-constant specification in context metadata.
-        **/
-
         $$ = Use.VARIABLE;
     }
     | CONSTANT
     {
-        /**
-         * Marks the variable declaration as CONSTANT (immutable value).
-         * TODO: Implement constant specification in context metadata.
-        **/
-
         $$ = Use.CONSTANT;
     }
 ;
@@ -562,27 +548,65 @@ identifier_list:
 ;
 
 var_spec_init:
-    custom_spec_init        { /** Wraps the custom type builder in a MultipleDeclaration for variable list handling. */ $$ = new MultipleDeclaration(this.symbolTable, $1); }
-    | boolean_spec_init     { /** Wraps the boolean builder in a MultipleDeclaration for variable list handling. */ $$ = new MultipleDeclaration(this.symbolTable, $1); }
-    | simple_spec_init      { /** Wraps the simple type builder in a MultipleDeclaration for variable list handling. */ $$ = new MultipleDeclaration(this.symbolTable, $1); }
-    | subrange_spec_init    { /** Subrange not yet supported for variable lists; returns null. */ $$ = null; }
-    | enumerated_spec_init  { /** Wraps the enumerated builder in an AnonymousEnumeratedVariable for variable list handling. */ $$ = new AnnonymousEnumeratedVariable(this.symbolTable, $1); }
-    | array_spec_init       { /** Wraps the array builder in a MultipleDeclaration for variable list handling. */ $$ = new MultipleDeclaration(this.symbolTable, $1); }
-    | string_spec_init      { /** String not yet supported for variable lists; returns null. */ $$ = null; }
+    custom_spec_init
+    {
+        /** Wraps the custom type builder in a MultipleDeclaration for variable list handling. */
+
+        $$ = new MultipleDeclaration(this.symbolTable, $1); }
+    | boolean_spec_init
+    {
+        /** Wraps the boolean builder in a MultipleDeclaration for variable list handling. */
+
+        $$ = new MultipleDeclaration(this.symbolTable, $1); }
+    | simple_spec_init
+    {
+        /** Wraps the simple type builder in a MultipleDeclaration for variable list handling. */
+
+        $$ = new MultipleDeclaration(this.symbolTable, $1); }
+    | subrange_spec_init
+    {
+        /** Subrange not yet supported for variable lists; returns null. */
+
+        $$ = null;
+    }
+    | enumerated_spec_init
+    {
+        /** Wraps the enumerated builder in an AnonymousEnumeratedVariable for variable list handling. */
+
+        $$ = new AnnonymousEnumeratedVariable(this.symbolTable, $1);
+    }
+    | array_spec_init
+    {
+        /** Wraps the array builder in a MultipleDeclaration for variable list handling. */
+
+        $$ = new MultipleDeclaration(this.symbolTable, $1);
+    }
+    | string_spec_init
+    {
+        /** String not yet supported for variable lists; returns null. */
+
+        $$ = null;
+    }
 ;
 
 custom_spec_init:
-    custom_specification    { /** Propagates the custom type specification builder. */ $$ = $1; }
-    | initialized_custom    { /** Propagates the initialized custom builder. */ $$ = $1; }
+    custom_specification
+    {
+        /** Propagates the custom type specification builder. */
+
+        $$ = $1;
+    }
+    | initialized_custom
+    {
+        /** Propagates the initialized custom builder. */
+
+        $$ = $1;
+    }
 ;
 
 custom_specification:
     IDENTIFIER
     {
-        /**
-         * Loads the left identifiers type, subtype and initialValue
-        **/
-
         LexemeInfoBuilder customDeclaration = new LexemeInfoBuilder();
         Director.makeCustom(customDeclaration, this.symbolTable, $1);
         $$ = customDeclaration;
@@ -590,9 +614,24 @@ custom_specification:
 ;
 
 initialized_custom:
-    initialized_custom_with_constant        { /** Propagates the custom initialization with constant value. */ $$ = $1; }
-    | initialized_custom_with_identifier    { /** Propagates the custom initialization with identifier reference. */ $$ = $1; }
-    | initialized_custom_with_structure     { /** Propagates the custom initialization with structure value. */ $$ = $1; }
+    initialized_custom_with_constant
+    {
+        /** Propagates the custom initialization with constant value. */
+
+        $$ = $1;
+    }
+    | initialized_custom_with_identifier
+    {
+        /** Propagates the custom initialization with identifier reference. */
+
+        $$ = $1;
+    }
+    | initialized_custom_with_structure
+    {
+        /** Propagates the custom initialization with structure value. */
+
+        $$ = $1;
+    }
 ;
 
 initialized_custom_with_constant:
@@ -606,11 +645,6 @@ initialized_custom_with_constant:
 initialized_custom_with_identifier:
     custom_specification ASSIGN_OP referenced_identifier
     {
-        /**
-         * Searches if the enumerated value is valid and in that cases loads the initial value and drops the search
-         * scope added
-        **/
-
         // TODO: check if it the referenced identifier is valid
         // In order to do that, the custom type from custom specification needs to be retrieved, then, the referenced
         // identifier needs to be in it's parameters list and the custom type has to be an enumerated.
@@ -640,17 +674,23 @@ initialized_custom_with_structure:
 ;
 
 boolean_spec_init:
-    boolean_specification   { /** Propagates the boolean type specification builder. */ $$ = $1; }
-    | initialized_boolean   { /** Propagates the initialized boolean builder. */ $$ = $1; }
+    boolean_specification
+    {
+        /** Propagates the boolean type specification builder. */
+
+        $$ = $1;
+    }
+    | initialized_boolean
+    {
+        /** Propagates the initialized boolean builder. */
+
+        $$ = $1;
+    }
 ;
 
 boolean_specification:
     BOOL
     {
-        /**
-         * Loads the left identifiers type and subtype
-        **/
-
         LexemeInfoBuilder primitiveBuilder = new LexemeInfoBuilder();
         Director.makePrimitive(primitiveBuilder, symbolTable, Subtype.BOOL);
         $$ = primitiveBuilder;
@@ -665,11 +705,6 @@ initialized_boolean:
     }
     | boolean_specification ASSIGN_OP boolean_constant
     {
-        /**
-         * Builds a boolean variable initialization from the assigned constant
-         * and stores it in the current parsing context.
-        **/
-
         $1.initialValue(new VariableInitialization($3));
         $$ = $1;
     }
@@ -682,17 +717,23 @@ edge:
 ;
 
 simple_spec_init:
-    simple_specification    { /** Propagates the simple type specification builder. */ $$ = $1; }
-    | initialized_simple    { /** Propagates the initialized simple builder. */ $$ = $1; }
+    simple_specification
+    {
+        /** Propagates the simple type specification builder. */
+
+        $$ = $1;
+    }
+    | initialized_simple
+    {
+        /** Propagates the initialized simple builder. */
+
+        $$ = $1;
+    }
 ;
 
 simple_specification:
     elementary_type
     {
-        /**
-         * Loads the left identifiers type and subtype
-        **/
-
         LexemeInfoBuilder primitiveBuilder = new LexemeInfoBuilder();
         Director.makePrimitive(primitiveBuilder, this.symbolTable, $1);
         $$ = primitiveBuilder;
@@ -702,10 +743,6 @@ simple_specification:
 initialized_simple:
     simple_specification ASSIGN_OP constant
     {
-        /**
-         * Loads the left identifiers type, subtype and initialValue
-        **/
-
         $1.initialValue(new VariableInitialization($3));
     }
 ;
@@ -713,62 +750,200 @@ initialized_simple:
 /* -------------------------------- Elementary Types ------------------------------------ */
 
 elementary_type:
-    numeric_type        { /** Propagates the numeric type name. */    $$ = $1; }
-    | date_type         { /** Propagates the date type name. */       $$ = $1; }
-    | bit_string_type   { /** Propagates the bit string type name. */ $$ = $1; }
+    numeric_type
+    {
+        /** Propagates the numeric type name. */
+
+        $$ = $1;
+    }
+    | date_type
+    {
+        /** Propagates the date type name. */
+
+        $$ = $1;
+    }
+    | bit_string_type
+    {
+        /** Propagates the bit string type name. */
+
+        $$ = $1;
+    }
 ;
 
 numeric_type:
-    integer_type    { /** Propagates the integer type name. */ $$ = $1; }
-    | real_type     { /** Propagates the real type name. */    $$ = $1; }
+    integer_type
+    {
+        /** Propagates the integer type name. */
+
+        $$ = $1;
+    }
+    | real_type
+    {
+        /** Propagates the real type name. */
+
+        $$ = $1;
+    }
 ;
 
 integer_type:
-    signed_integer_type         { /** Propagates the signed integer type name.   */ $$ = $1; }
-    | unsigned_integer_type     { /** Propagates the unsigned integer type name. */ $$ = $1; }
+    signed_integer_type
+    {
+        /** Propagates the signed integer type name.   */
+
+        $$ = $1;
+    }
+    | unsigned_integer_type
+    {
+        /** Propagates the unsigned integer type name. */
+
+        $$ = $1;
+    }
 ;
 
 signed_integer_type:
-    SINT    { /** Sets the subtype to SINT. */ $$ = Subtype.SINT; }
-    | INT   { /** Sets the subtype to INT.  */ $$ = Subtype.INT;  }
-    | DINT  { /** Sets the subtype to DINT. */ $$ = Subtype.DINT; }
-    | LINT  { /** Sets the subtype to LINT. */ $$ = Subtype.LINT; }
+    SINT
+    {
+        /** Sets the subtype to SINT. */
+
+        $$ = Subtype.SINT;
+    }
+    | INT
+    {
+        /** Sets the subtype to INT.  */
+
+        $$ = Subtype.INT;
+    }
+    | DINT
+    {
+        /** Sets the subtype to DINT. */
+
+        $$ = Subtype.DINT;
+    }
+    | LINT
+    {
+        /** Sets the subtype to LINT. */
+
+        $$ = Subtype.LINT;
+    }
+
 ;
 
 unsigned_integer_type:
-    USINT   { /** Sets the subtype to USINT. */ $$ = Subtype.USINT; }
-    | UINT  { /** Sets the subtype to UINT.  */ $$ = Subtype.UINT;  }
-    | UDINT { /** Sets the subtype to UDINT. */ $$ = Subtype.UDINT; }
-    | ULINT { /** Sets the subtype to ULINT. */ $$ = Subtype.ULINT; }
+    USINT
+    {
+        /** Sets the subtype to USINT. */
+
+        $$ = Subtype.USINT;
+    }
+    | UINT
+    {
+        /** Sets the subtype to UINT.  */
+
+        $$ = Subtype.UINT;
+    }
+    | UDINT
+    {
+        /** Sets the subtype to UDINT. */
+
+        $$ = Subtype.UDINT;
+    }
+    | ULINT
+    {
+        /** Sets the subtype to ULINT. */
+
+        $$ = Subtype.ULINT;
+    }
+
 ;
 
 real_type:
-    REAL    { /** Sets the subtype to REAL.  */ $$ = Subtype.REAL;  }
-    | LREAL { /** Sets the subtype to LREAL. */ $$ = Subtype.LREAL; }
+    REAL
+    {
+        /** Sets the subtype to REAL.  */
+
+        $$ = Subtype.REAL;
+    }
+    | LREAL
+    {
+        /** Sets the subtype to LREAL. */
+
+        $$ = Subtype.LREAL;
+    }
+
 ;
 
 date_type:
-    TIME            { /** Sets the subtype to TIME. */ $$ = Subtype.TIME; }
-    | DATE          { /** Sets the subtype to DATE. */ $$ = Subtype.DATE; }
-    | TIME_OF_DAY   { /** Sets the subtype to TIME_OF_DAY.   */ $$ = Subtype.TIME_OF_DAY;   }
-    | DATE_AND_TIME { /** Sets the subtype to DATE_AND_TIME. */ $$ = Subtype.DATE_AND_TIME; }
+    TIME
+    {
+        /** Sets the subtype to TIME. */
+
+        $$ = Subtype.TIME;
+    }
+    | DATE
+    {
+        /** Sets the subtype to DATE. */
+
+        $$ = Subtype.DATE;
+    }
+    | TIME_OF_DAY
+    {
+        /** Sets the subtype to TIME_OF_DAY.   */
+
+        $$ = Subtype.TIME_OF_DAY;
+    }
+    | DATE_AND_TIME
+    {
+        /** Sets the subtype to DATE_AND_TIME. */
+
+        $$ = Subtype.DATE_AND_TIME;
+    }
 ;
 
 /* ----------------------------------- Literals ----------------------------------------- */
 
 constant:
-    string_constant    { /** Propagates the string constant.  */ $$ = $1; }
-    | boolean_constant { /** Propagates the boolean constant. */ $$ = $1; }
-    | time_constant    { /** Propagates the time constant.    */ $$ = $1; }
-    | numeric_constant { /** Propagates the numeric constant. */ $$ = $1; }
+    string_constant
+    {
+        /** Propagates the string constant.  */
+
+        $$ = $1;
+    }
+    | boolean_constant
+    {
+        /** Propagates the boolean constant. */
+
+        $$ = $1;
+    }
+    | time_constant
+    {
+        /** Propagates the time constant.    */
+
+        $$ = $1;
+    }
+    | numeric_constant
+    {
+        /** Propagates the numeric constant. */
+
+        $$ = $1;
+    }
 ;
 
 string_constant:
-    STRING_LITERAL  { /** Propagates the string literal. */   $$ = $1; }
+    STRING_LITERAL
+    {
+        /** Propagates the string literal. */
+
+        $$ = $1;
+    }
 ;
 
 boolean_constant:
-    BOOLEAN_LITERAL { /** Propagates the boolean literal. */ $$ = $1; }
+    BOOLEAN_LITERAL
+    {
+        /** Propagates the boolean literal. */
+
+        $$ = $1;
+    }
 ;
 
 numeric_constant:
@@ -791,9 +966,24 @@ numeric_constant:
 ;
 
 prefix_type:
-    integer_type        { /** Propagates the integer type name prefix. */ $$ = $1; }
-    | real_type         { /** Propagates the real type name prefix.    */ $$ = $1; }
-    | bit_string_type   { /** Propagates the bit string type name prefix. */ $$ = $1; }
+    integer_type
+    {
+        /** Propagates the integer type name prefix. */
+
+        $$ = $1;
+    }
+    | real_type
+    {
+        /** Propagates the real type name prefix.    */
+
+        $$ = $1;
+    }
+    | bit_string_type
+    {
+        /** Propagates the bit string type name prefix. */
+
+        $$ = $1;
+    }
 ;
 
 time_constant:
@@ -809,10 +999,30 @@ time_constant:
 ;
 
 bit_string_type:
-    BYTE    { /** Sets the subtype to BYTE.  */ $$ = Subtype.BYTE;  }
-    | WORD  { /** Sets the subtype to WORD.  */ $$ = Subtype.WORD;  }
-    | DWORD { /** Sets the subtype to DWORD. */ $$ = Subtype.DWORD; }
-    | LWORD { /** Sets the subtype to LWORD. */ $$ = Subtype.LWORD; }
+    BYTE
+    {
+        /** Sets the subtype to BYTE.  */
+
+        $$ = Subtype.BYTE;
+    }
+    | WORD
+    {
+        /** Sets the subtype to WORD.  */
+
+        $$ = Subtype.WORD;
+    }
+    | DWORD
+    {
+        /** Sets the subtype to DWORD. */
+
+        $$ = Subtype.DWORD;
+    }
+    | LWORD
+    {
+        /** Sets the subtype to LWORD. */
+
+        $$ = Subtype.LWORD;
+    }
 ;
 
 /* --------------------------------- Derived Types  ------------------------------------- */
@@ -879,17 +1089,23 @@ range:
 ;
 
 enumerated_spec_init:
-    enumerated_specification    { /** Propagates the enumerated type specification builder. */ $$ = $1; }
-    | initialized_enumerated    { /** Propagates the initialized enumerated builder. */ $$ = $1; }
+    enumerated_specification
+    {
+        /** Propagates the enumerated type specification builder. */
+
+        $$ = $1;
+    }
+    | initialized_enumerated
+    {
+        /** Propagates the initialized enumerated builder. */
+
+        $$ = $1;
+    }
 ;
 
 enumerated_specification:
     '(' identifier_list ')'
     {
-        /**
-         * Loads the enumerated metadata to the current context.
-        **/
-
         LexemeInfoBuilder enumBuilder = new LexemeInfoBuilder();
         Director.makeEnumerated(enumBuilder, $2);
         $$ = enumBuilder;
@@ -911,18 +1127,23 @@ initialized_enumerated:
 ;
 
 array_spec_init:
-    array_specification { /** Propagates the array type specification builder. */ $$ = $1; }
-    | initialized_array { /** Propagates the initialized array builder. */ $$ = $1; }
+    array_specification
+    {
+        /** Propagates the array type specification builder. */
+
+        $$ = $1;
+    }
+    | initialized_array
+    {
+        /** Propagates the initialized array builder. */
+
+        $$ = $1;
+    }
 ;
 
 array_specification:
     ARRAY '[' range_list ']' OF IDENTIFIER
     {
-        /**
-         * Sets the current context type to ARRAY, preparing for array type
-         * and dimension processing in the array_type rule.
-        **/
-
         ArrayMetadata arrayMetadata = new ArrayMetadata(Subtype.CUSTOM, $6, $3);
 
         LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
@@ -968,7 +1189,10 @@ non_generic_type:
 ;
 
 array_initialization:
-    '[' array_initial_elements_list ']' { $$ = $2.getPathsInfo(); }
+    '[' array_initial_elements_list ']'
+    {
+        $$ = $2.getPathsInfo();
+    }
 ;
 
 array_initial_elements_list:
@@ -1003,17 +1227,23 @@ array_initial_elements_list:
 ;
 
 array_initial_elements:
-    array_initial_element       { /** Creates a ParsingRepeatedArrayContext for a single array element. */ $$ = new ParsingRepeatedArrayContext(1, $1); }
-    | repeated_initial_element  { /** Propagates the repeated element context. */ $$ = $1; }
+    array_initial_element
+    {
+        /** Creates a ParsingRepeatedArrayContext for a single array element. */
+
+        $$ = new ParsingRepeatedArrayContext(1, $1);
+    }
+    | repeated_initial_element
+    {
+        /** Propagates the repeated element context. */
+
+        $$ = $1;
+    }
 ;
 
 array_initial_element:
     constant
     {
-        /**
-         * Creates the initialization and adds the context counter by one
-        **/
-
         List<PathInitializationInfo> pathsInfo = new ArrayList<>();
         pathsInfo.add(new PathInitializationInfo("", new VariableInitialization($1)));
         $$ = pathsInfo;
@@ -1025,8 +1255,18 @@ array_initial_element:
         pathsInfo.add(new PathInitializationInfo("", new VariableInitialization($1)));
         $$ = pathsInfo;
     }
-    | structure_initialization  { /** Propagates the structure initialization paths. */ $$ = $1; }
-    | array_initialization      { /** Propagates the array initialization paths. */ $$ = $1; }
+    | structure_initialization
+    {
+        /** Propagates the structure initialization paths. */
+
+        $$ = $1;
+    }
+    | array_initialization
+    {
+        /** Propagates the array initialization paths. */
+
+        $$ = $1;
+    }
 ;
 
 repeated_initial_element:
@@ -1037,7 +1277,12 @@ repeated_initial_element:
 ;
 
 structure_initialization:
-    '(' structure_field_init_list ')'   { /** Propagates the structure field initialization list. */ $$ = $2; }
+    '(' structure_field_init_list ')'
+    {
+        /** Propagates the structure field initialization list. */
+
+        $$ = $2;
+    }
 ;
 
 structure_field_init_list:
@@ -1053,10 +1298,30 @@ structure_field_init_list:
 ;
 
 initialized_struct_field:
-    initialized_field_with_constant     { /** Propagates the field initialization with constant value. */ $$ = $1; }
-    | initialized_field_with_identifier { /** Propagates the field initialization with identifier reference. */ $$ = $1; }
-    | initialized_field_with_array      { /** Propagates the field initialization with array value. */ $$ = $1; }
-    | initialized_field_with_structure  { /** Propagates the field initialization with structure value. */ $$ = $1; }
+    initialized_field_with_constant
+    {
+        /** Propagates the field initialization with constant value. */
+
+        $$ = $1;
+    }
+    | initialized_field_with_identifier
+    {
+        /** Propagates the field initialization with identifier reference. */
+
+        $$ = $1;
+    }
+    | initialized_field_with_array
+    {
+        /** Propagates the field initialization with array value. */
+
+        $$ = $1;
+    }
+    | initialized_field_with_structure
+    {
+        /** Propagates the field initialization with structure value. */
+
+        $$ = $1;
+    }
 ;
 
 initialized_field_with_constant:
@@ -1190,8 +1455,18 @@ initialized_string:
 ;
 
 string_type:
-    STRING      { /** Sets the subtype to STRING. */  $$ = Subtype.STRING;  }
-    | WSTRING   { /** Sets the subtype to WSTRING. */ $$ = Subtype.WSTRING; }
+    STRING
+    {
+        /** Sets the subtype to STRING. */
+
+        $$ = Subtype.STRING;
+    }
+    | WSTRING
+    {
+        /** Sets the subtype to WSTRING. */
+
+        $$ = Subtype.WSTRING;
+    }
 ;
 
 /* ----------------------------------- Data Type ---------------------------------------- */
@@ -1226,23 +1501,53 @@ type_name_declaration:
 ;
 
 type_spec_init:
-    custom_spec_init            { /** Wraps the custom type builder in a SingleDeclaration for type declaration. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | simple_spec_init          { /** Wraps the simple type builder in a SingleDeclaration for type declaration. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | enumerated_spec_init      { /** Wraps the enumerated builder in an EnumeratedTypeDeclaration for type declaration. */ $$ = new EnumeratedTypeDeclaration(this.symbolTable, $1);  }
-    | subrange_spec_init        { /** Subrange not yet supported for type declarations; returns null. */ $$ = null; }
-    | array_spec_init           { /** Wraps the array builder in a SingleDeclaration for type declaration. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | structure_specification   { /** Propagates the structure declaration. */ $$ = $1; }
-    | string_spec_init          { /** String not yet supported for type declarations; returns null. */ $$ = null; }
+    custom_spec_init
+    {
+        /** Wraps the custom type builder in a SingleDeclaration for type declaration. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | simple_spec_init
+    {
+        /** Wraps the simple type builder in a SingleDeclaration for type declaration. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | enumerated_spec_init
+    {
+        /** Wraps the enumerated builder in an EnumeratedTypeDeclaration for type declaration. */
+
+        $$ = new EnumeratedTypeDeclaration(this.symbolTable, $1);
+    }
+    | subrange_spec_init
+    {
+        /** Subrange not yet supported for type declarations; returns null. */
+
+        $$ = null;
+    }
+    | array_spec_init
+    {
+        /** Wraps the array builder in a SingleDeclaration for type declaration. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | structure_specification
+    {
+        /** Propagates the structure declaration. */
+
+        $$ = $1;
+    }
+    | string_spec_init
+    {
+        /** String not yet supported for type declarations; returns null. */
+
+        $$ = null;
+    }
 ;
 
 structure_specification:
     STRUCT structure_field_init_decl_list END_STRUCT
     {
-        /**
-         * Builds the declaration of the structure and publishes it to the symbol table. For that to happen every field
-         * needs to be searched to get their initial values and appended to the structure initial value.
-        **/
-
         StructureDeclaration structDeclaration = new StructureDeclaration(this.symbolTable, $2);
         Director.makeStructure(structDeclaration, $2);
 
@@ -1254,7 +1559,7 @@ structure_field_init_decl_list:
     structure_field_init_decl ';'
     {
         /**
-         * Starts the structure field list with the first declared field.
+         * Starts the structure block with the first declared field.
         **/
 
         StructureBlock structBlock = new StructureBlock();
@@ -1264,7 +1569,7 @@ structure_field_init_decl_list:
     | structure_field_init_decl_list structure_field_init_decl ';'
     {
         /**
-         * Appends the next declared field to the structure field list.
+         * Appends the next declared field to the structure block.
         **/
 
         $1.addField($2);
@@ -1288,13 +1593,48 @@ field_name:
 ;
 
 structure_field_spec_init:
-    custom_spec_init        { /** Wraps the custom type builder in a SingleDeclaration for structure field. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | boolean_spec_init     { /** Wraps the boolean builder in a SingleDeclaration for structure field. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | simple_spec_init      { /** Wraps the simple type builder in a SingleDeclaration for structure field. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | enumerated_spec_init  { /** Wraps the enumerated builder in an AnonymousEnumeratedField for structure field. */ $$ = new AnnonymousEnumeratedField(this.symbolTable, $1); }
-    | subrange_spec_init    { /** Subrange not yet supported for structure fields; returns null. */ $$ = null; }
-    | array_spec_init       { /** Wraps the array builder in a SingleDeclaration for structure field. */ $$ = new SingleDeclaration(this.symbolTable, $1); }
-    | string_spec_init      { /** String not yet supported for structure fields; returns null. */ $$ = null; }
+    custom_spec_init
+    {
+        /** Wraps the custom type builder in a SingleDeclaration for structure field. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | boolean_spec_init
+    {
+        /** Wraps the boolean builder in a SingleDeclaration for structure field. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | simple_spec_init
+    {
+        /** Wraps the simple type builder in a SingleDeclaration for structure field. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | enumerated_spec_init
+    {
+        /** Wraps the enumerated builder in an AnonymousEnumeratedField for structure field. */
+
+        $$ = new AnnonymousEnumeratedField(this.symbolTable, $1);
+    }
+    | subrange_spec_init
+    {
+        /** Subrange not yet supported for structure fields; returns null. */
+
+        $$ = null;
+    }
+    | array_spec_init
+    {
+        /** Wraps the array builder in a SingleDeclaration for structure field. */
+
+        $$ = new SingleDeclaration(this.symbolTable, $1);
+    }
+    | string_spec_init
+    {
+        /** String not yet supported for structure fields; returns null. */
+
+        $$ = null;
+    }
 ;
 
 %%

@@ -2,7 +2,7 @@ package parser.facades;
 
 import java.util.List;
 
-public class RangesParser {
+public final class RangesParser {
     public static void parse(List<String> ranges, List<String> inferiorLimits, List<String> superiorLimits) {
         boolean toInferior = true;
         for (String rangeLimit : ranges) {

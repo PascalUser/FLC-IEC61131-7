@@ -6,7 +6,7 @@ import utils.builders.LexemeInfoBuilder;
 
 import java.util.List;
 
-public class MacrosPublisher {
+public final class MacrosPublisher {
 
     public static void publish(SymbolTable symbolTable, List<String> macroNames, String prefix) {
         LexemeInfoBuilder macroBuilder = new LexemeInfoBuilder();

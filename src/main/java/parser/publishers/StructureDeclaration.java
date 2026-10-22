@@ -2,7 +2,7 @@ package parser.publishers;
 
 import utils.SymbolTable;
 
-public class StructureDeclaration extends SingleDeclaration {
+public final class StructureDeclaration extends SingleDeclaration {
     private final StructureBlock structBlock;
 
     public StructureDeclaration(SymbolTable initTable, StructureBlock initStructBlock) {
