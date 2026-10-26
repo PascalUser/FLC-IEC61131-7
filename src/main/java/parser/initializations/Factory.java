@@ -28,7 +28,7 @@ public final class Factory {
      * @return a default initialization object
      * @throws IllegalArgumentException if the subtype is not supported
      */
-    public static Initialization createPrimitiveInitialization(SymbolTable symbolTable, Subtype subtype) {
+    public static DefaultInitialization createPrimitiveInitialization(SymbolTable symbolTable, Subtype subtype) {
         switch (subtype) {
             case BOOL:
                 return DefaultInitialization.bool(symbolTable);

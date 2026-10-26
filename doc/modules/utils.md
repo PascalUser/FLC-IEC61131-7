@@ -125,7 +125,7 @@ classDiagram
 | `utils.SymbolTable`                | Stores and retrieves `LexemeInfo` by lexeme name                                                                                | Repository          |
 | `utils.LexemeInfo`                 | DTO with complete semantic attributes (type, subtype, use, source, limits, parameters, initial value)                           | Value Object        |
 | `utils.DiagnosticsHandler`         | Collects and manages diagnostics (errors/warnings) in insertion order                                                           | Collector           |
-| `utils.builders.LexemeInfoSchema`  | Fluent contract with a setter per `LexemeInfo` attribute (does not declare `build()`)                                           | Builder (interface) |
+| `utils.builders.LexemeInfoMutator`  | Fluent contract with a setter per `LexemeInfo` attribute (does not declare `build()`)                                           | Builder (interface) |
 | `utils.builders.LexemeInfoBuilder` | Concrete implementation of the builder with `build()`                                                                           | Builder             |
 | `utils.builders.Director`          | Static recipes: `makeLiteral`, `makeType`, `makeMacro`, `makeDefaultInteger` and default values REAL, BOOL, STRING, and WSTRING | Director            |
 | `utils.enums.Type`                 | General classification: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                                     | Enum                |

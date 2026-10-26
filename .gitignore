@@ -1,4 +1,4 @@
-# Debugging YACC files
+    # Debugging YACC files
 *.output
 *.tab.c
 *.yy.c
@@ -29,7 +29,7 @@ out
 __pycache__
 
 # Generated thesis document
-Tesis.docx
+output/
 
 # Node stack
 node_modules
@@ -38,3 +38,6 @@ package-lock.json
 
 # Harness logging
 log.txt
+
+# Sensible Data
+.env

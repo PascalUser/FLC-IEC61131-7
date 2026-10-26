@@ -1,10 +1,20 @@
 flowchart LR
     lexer[lexer]
     parser[parser]
+    parser_publishers[parser_publishers]
+    parser_facades[parser_facades]
+    parser_initializations[parser_initializations]
     utils[utils]
     lexer -->|tokens| parser
     parser -->|SymbolTable| utils
     parser -->|LexemeInfo| utils
     parser -->|DiagnosticsHandler| utils
+    parser -->|publishers| parser_publishers
+    parser_publishers -->|Director| utils
+    parser_publishers -->|Factory| parser_initializations
+    parser -->|facades| parser_facades
+    parser_facades -->|DimensionCalculator| utils
+    parser_facades -->|RangesParser| utils
+    parser_facades -->|MacrosPublisher| utils
     lexer -->|SymbolTable| utils
     lexer -->|DiagnosticsHandler| utils

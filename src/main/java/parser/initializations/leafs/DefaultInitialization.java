@@ -3,7 +3,7 @@ package parser.initializations.leafs;
 import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;
-import utils.builders.LexemeInfoSchema;
+import utils.builders.LexemeInfoMutator;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -82,7 +82,7 @@ public final class DefaultInitialization extends LeafInitialization {
     }
 
     private static DefaultInitialization create(
-            final SymbolTable symbolTable, final Function<LexemeInfoSchema, String> recipe
+            final SymbolTable symbolTable, final Function<LexemeInfoMutator, String> recipe
     ) {
         Objects.requireNonNull(symbolTable, "symbolTable");
         LexemeInfoBuilder builder = new LexemeInfoBuilder();

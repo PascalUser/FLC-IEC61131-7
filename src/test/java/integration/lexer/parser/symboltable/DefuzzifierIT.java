@@ -50,23 +50,21 @@ public class DefuzzifierIT extends ParserTestSupport {
      * pasted by mistake), and the default is "0.0" although the source says {@code DEFAULT:= 0}.
      */
     @Test
-    @NotYetImplemented
     void Anonymous_defuzzifier_is_published_with_its_term_names_and_default_value() throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(DT1));
 
         assertSymbol(st, ANONYMOUS_DEFUZZIFIER, new LexemeInfoBuilder()
-                .type(Type.NONE)
-                .subtype(Subtype.NONE)
+                .type(Type.SIMPLE)
+                .subtype(Subtype.COGS)
                 .use(Use.COMPONENT)
                 .source(Source.DEFUZZIFY)
                 .parameters(Arrays.asList("NEGATIVE", "ZERO", "POSITIVE"))
-                .initialValue(new VariableInitialization("0.0"))
+                .initialValue(new VariableInitialization("0"))
                 .build());
     }
 
     @ParameterizedTest(name = "{0}")
     @CsvSource({"NEGATIVE, -5", "ZERO, 0", "POSITIVE, 5"})
-    @NotYetImplemented
     void Singleton_term_publishes_its_value_as_the_only_inferior_limit(String term, String value)
             throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(DT1));
@@ -77,6 +75,7 @@ public class DefuzzifierIT extends ParserTestSupport {
                 .use(Use.TERM)
                 .source(Source.DEFUZZIFY)
                 .inferiorLimits(Collections.singletonList(value))
+                .superiorLimits(Collections.singletonList("1"))
                 .build());
     }
 }

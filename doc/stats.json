@@ -1,9 +1,9 @@
 {
   "enum_sizes": {
-    "Type": 6,
+    "Type": 8,
     "Source": 7,
     "Use": 10,
-    "Subtype": 24
+    "Subtype": 34
   },
   "transformer_chains": {
     "DATE_AND_TIMES": 1,
@@ -97,37 +97,41 @@
   "cyclomatic_complexity": {
     "lexer": {
       "avg_cyclomatic": 5.4,
-      "total_complexity": 302,
+      "total_complexity": 304,
       "estimated_methods": 56
     },
     "parser": {
-      "avg_cyclomatic": 11.5,
-      "total_complexity": 425,
-      "estimated_methods": 37
+      "avg_cyclomatic": 13.9,
+      "total_complexity": 487,
+      "estimated_methods": 35
     },
     "utils": {
-      "avg_cyclomatic": 2.6,
-      "total_complexity": 118,
-      "estimated_methods": 46
+      "avg_cyclomatic": 2.4,
+      "total_complexity": 117,
+      "estimated_methods": 48
     }
   },
   "loc": {
     "lexer": {
-      "loc": 1996,
+      "loc": 2002,
       "files": 21
     },
     "parser": {
-      "loc": 2952,
-      "files": 7
+      "loc": 3275,
+      "files": 6
     },
     "utils": {
-      "loc": 1225,
-      "files": 27
+      "loc": 1228,
+      "files": 28
     }
   },
   "test_coverage": {
-    "overall": 0,
-    "packages": {}
+    "overall": 74,
+    "packages": {
+      "parser": 42,
+      "lexer": 100,
+      "utils": 47
+    }
   },
   "coupling": {
     "lexer": {

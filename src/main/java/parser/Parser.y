@@ -115,10 +115,15 @@
 %type <DeclarationBlock>
     var_init_decl_list
 
+%type <TermBlock>
+    opt_linguistic_term_list
+    linguistic_term_list
+
 %type <StructureBlock>
     structure_field_init_decl_list
 
 %type <SingleDeclaration>
+    linguistic_term
     type_spec_init
     structure_specification
     structure_field_init_decl
@@ -129,6 +134,7 @@
     var_spec_init
 
 %type <LexemeInfoBuilder>
+    linguistic_term_value
     simple_spec_init
     simple_specification
     initialized_simple
@@ -156,6 +162,8 @@
 
 
 %type <Subtype>
+    defuzzification_method
+    defuzz_method
     signed_integer_type
     unsigned_integer_type
     integer_type
@@ -176,12 +184,18 @@
 
 %type <List<String>>
     identifier_list
-    linguistic_term_list
+    opt_range
     range
     range_list
+    point
+    point_list
+    singleton
+    membership_function
 
 %type <String>
      // names
+     fuzzify_block_name
+     defuzzify_block_name
      type_name_declaration
      field_name
      // constants
@@ -192,7 +206,6 @@
      numeric_constant
      // other
      referenced_identifier
-     linguistic_term
 
 %type <List<PathInitializationInfo>>
     structure_initialization
@@ -209,6 +222,10 @@
     array_initial_elements_list
     array_initial_elements
     repeated_initial_element
+
+%type<VariableInitialization>
+    default_value
+    default_val
 
 %%
 
@@ -381,39 +398,45 @@ opt_fuzzify_block_list:
     | opt_fuzzify_block_list fuzzify_block
 ;
 
-fuzzify_block:
-    FUZZIFY fuzzify_block_name
-    linguistic_term_list
-    END_FUZZIFY
-;
-
 /**
  * Fuzzify Block (IEC 61131-7)
  * ---------------------------
  * Defines input variable fuzzification: mapping crisp values to linguistic terms
  * with membership functions.
- * 
+ *
  * Syntax:
  *   FUZZIFY <variable_name>
  *     TERM <term_name> := <membership_function> ;
  *     ...
  *   END_FUZZIFY
- * 
+ *
  * Membership Functions:
  * - Singleton: TERM name := <numeric_constant> ;
  * - Piecewise-linear: TERM name := (x1,y1) (x2,y2) ... ;
- * 
+ *
  * The variable_name must match a VAR_INPUT declared in the function block.
  * Each term defines a fuzzy set used in rule conditions.
- * 
+ *
  * @see #linguistic_term_list
  * @see #membership_function
  * @see #singleton
  * @see #point_list
  */
-fuzzify_block_name:
-    function_block_name
+fuzzify_block:
+    FUZZIFY fuzzify_block_name
+    linguistic_term_list
     {
+        ComponentDeclaration fuzzifierDeclaration = new ComponentDeclaration(this.symbolTable, $3);
+        Director.makeWithMetadata(fuzzifierDeclaration, new FuzzifierMetadata($3));
+        fuzzifierDeclaration.identifier($2).publish();
+    }
+    END_FUZZIFY
+;
+
+fuzzify_block_name:
+    IDENTIFIER
+    {
+        $$ = $1;
     }
 ;
 
@@ -429,6 +452,11 @@ defuzzify_block:
     defuzzification_method
     default_value
     END_DEFUZZIFY
+    {
+         ComponentDeclaration defuzzifierDeclaration = new ComponentDeclaration(this.symbolTable, $4);
+         Director.makeWithMetadata(defuzzifierDeclaration, new DefuzzifierMetadata($3, $4, $5, $6));
+         defuzzifierDeclaration.identifier($2).publish();
+    }
 ;
 
 /**
@@ -464,36 +492,33 @@ defuzzify_block:
  * @see #opt_linguistic_term_list
  */
 defuzzify_block_name:
-    function_block_name
+    IDENTIFIER
     {
+        $$ = $1;
     }
 ;
 
 opt_linguistic_term_list:
     /* empty */
+    {
+        $$ = null;
+    }
     | linguistic_term_list
     {
+        $$ = $1;
     }
 ;
 
 linguistic_term_list:
     linguistic_term
     {
-        /**
-         * Starts a new list of linguistic terms with the first term.
-        **/
-
-        List<String> terms = new ArrayList<>();
-        terms.add($1);
-        $$ = terms;
+        TermBlock block = new TermBlock();
+        block.addTerm($1);
+        $$ = block;
     }
     | linguistic_term_list linguistic_term
     {
-        /**
-         * Appends another linguistic term to the existing list.
-        **/
-
-        $1.add($2);
+        $1.addTerm($2);
         $$ = $1;
     }
 ;
@@ -526,7 +551,7 @@ linguistic_term_list:
 linguistic_term:
     TERM IDENTIFIER ASSIGN_OP linguistic_term_value
     {
-        $$ = null;
+        $$ = new SingleDeclaration(this.symbolTable, $4).identifier($2);
     }
 ;
 
@@ -540,7 +565,17 @@ linguistic_term:
  */
 linguistic_term_value:
     IDENTIFIER ';'
+    {
+        LexemeInfoBuilder customTermBuilder = new LexemeInfoBuilder();
+        Director.makeWithMetadata(customTermBuilder, new CustomMetadata(this.symbolTable, $1));
+        $$ = customTermBuilder;
+    }
     | membership_function ';'
+    {
+        LexemeInfoBuilder termBuilder = new LexemeInfoBuilder();
+        Director.makeWithMetadata(termBuilder, new TermMetadata($1));
+        $$ = termBuilder;
+    }
 ;
 
 /**
@@ -559,43 +594,116 @@ linguistic_term_value:
  */
 membership_function:
     singleton
+    {
+        $$ = $1;
+    }
     | point_list
+    {
+        $$ = $1;
+    }
 ;
 
 singleton:
     numeric_constant
+    {
+        List<String> point = new ArrayList<>();
+        point.add($1);
+        // TODO: Make 1 constant
+        point.add("1");
+        $$ = point;
+    }
 ;
 
 point_list:
     point
+    {
+        $$ = $1;
+    }
     | point_list point
+    {
+        $1.addAll($2);
+        $$ = $1;
+    }
 ;
 
 point:
     '(' numeric_constant ',' numeric_constant ')'
+    {
+        List<String> point = new ArrayList<>();
+        point.add($2);
+        point.add($4);
+        $$ = point;
+    }
     | '(' IDENTIFIER ',' numeric_constant ')'
+    {
+        List<String> point = new ArrayList<>();
+        point.add($2);
+        point.add($4);
+        $$ = point;
+    }
 ;
 
 defuzzification_method:
     METHOD ':' defuzz_method ';'
+    {
+        $$ = $3;
+    }
 ;
 
 defuzz_method:
-    COG | COGS | COA | LM | RM
+    COG
+    {
+        $$ = Subtype.COG;
+    }
+    | COGS
+    {
+        $$ = Subtype.COGS;
+    }
+    | COA
+    {
+        $$ = Subtype.COA;
+    }
+    | LM
+    {
+        $$ = Subtype.LM;
+    }
+    | RM
+    {
+        $$ = Subtype.RM;
+    }
 ;
 
 default_value:
     DEFAULT ASSIGN_OP default_val ';'
+    {
+        $$ = $3;
+    }
 ;
 
 default_val:
     numeric_constant
+    {
+        $$ = new VariableInitialization($1);
+    }
     | NC
+    {
+        $$ = null;
+    }
 ;
 
 opt_range:
     /* empty */
+    {
+        $$ = null;
+    }
     | RANGE '(' numeric_constant RANGE_OP numeric_constant ')' ';'
+    {
+        List<String> range = new ArrayList<>();
+        range.add($3);
+        range.add($5);
+        $$ = range;
+    }
+
 ;
 
 opt_rule_block_list:
@@ -1049,7 +1157,7 @@ custom_specification:
     IDENTIFIER
     {
         LexemeInfoBuilder customDeclaration = new LexemeInfoBuilder();
-        Director.makeCustom(customDeclaration, this.symbolTable, $1);
+        Director.makeWithMetadata(customDeclaration, new CustomMetadata(this.symbolTable, $1));
         $$ = customDeclaration;
     }
 ;
@@ -1135,7 +1243,7 @@ boolean_specification:
     BOOL
     {
         LexemeInfoBuilder primitiveBuilder = new LexemeInfoBuilder();
-        Director.makePrimitive(primitiveBuilder, symbolTable, Subtype.BOOL);
+        Director.makeWithMetadata(primitiveBuilder, new PrimitiveMetadata(symbolTable, Subtype.BOOL));
         $$ = primitiveBuilder;
     }
 ;
@@ -1177,7 +1285,7 @@ simple_specification:
     elementary_type
     {
         LexemeInfoBuilder primitiveBuilder = new LexemeInfoBuilder();
-        Director.makePrimitive(primitiveBuilder, this.symbolTable, $1);
+        Director.makeWithMetadata(primitiveBuilder, new PrimitiveMetadata(this.symbolTable, $1));
         $$ = primitiveBuilder;
     }
 ;
@@ -1193,7 +1301,7 @@ initialized_simple:
  * Elementary Type Definitions
  * ---------------------------
  * Core primitive types per IEC 61131-3. Each rule returns a {@link utils.enums.Subtype}
- * enum value used by {@link utils.builders.Director#makePrimitive} to create type metadata.
+ * enum value used by {@link utils.builders.Director#makeWithMetadata} to create type metadata.
  * 
  * Categories:
  * - Signed Integers: SINT (8-bit), INT (16-bit), DINT (32-bit), LINT (64-bit)
@@ -1204,7 +1312,7 @@ initialized_simple:
  * - Boolean: BOOL
  * 
  * @see utils.enums.Subtype
- * @see utils.builders.Director#makePrimitive
+ * @see utils.builders.Director#makeWithMetadata
  */
 elementary_type:
     numeric_type
@@ -1499,7 +1607,7 @@ subrange_specification:
     integer_type '(' range ')'
     {
         LexemeInfoBuilder subrangeBuilder = new LexemeInfoBuilder();
-        Director.makeSubrange(subrangeBuilder, new SubrangeMetadata($1, $3.get(0), $3.get(1)));
+        Director.makeWithMetadata(subrangeBuilder, new SubrangeMetadata($1, $3.get(0), $3.get(1)));
         $$ = subrangeBuilder;
     }
 ;
@@ -1541,7 +1649,7 @@ enumerated_specification:
     '(' identifier_list ')'
     {
         LexemeInfoBuilder enumBuilder = new LexemeInfoBuilder();
-        Director.makeEnumerated(enumBuilder, new EnumeratedMetadata($2));
+        Director.makeWithMetadata(enumBuilder, new EnumeratedMetadata($2));
         $$ = enumBuilder;
     }
 ;
@@ -1583,18 +1691,18 @@ array_spec_init:
 array_specification:
     ARRAY '[' range_list ']' OF IDENTIFIER
     {
-        ArrayMetadata arrayMetadata = new ArrayMetadata(Subtype.CUSTOM, $6, $3);
+        ArrayMetadata arrayMetadata = new ArrayMetadata(this.symbolTable, Subtype.CUSTOM, $6, $3);
 
         LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
-        Director.makeArray(arrayBuilder, this.symbolTable, arrayMetadata);
+        Director.makeWithMetadata(arrayBuilder, arrayMetadata);
         $$ = arrayBuilder;
     }
     | ARRAY '[' range_list ']' OF non_generic_type
     {
-        ArrayMetadata arrayMetadata = new ArrayMetadata($6, null, $3);
+        ArrayMetadata arrayMetadata = new ArrayMetadata(this.symbolTable, $6, null, $3);
 
         LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
-        Director.makeArray(arrayBuilder, this.symbolTable, arrayMetadata);
+        Director.makeWithMetadata(arrayBuilder, arrayMetadata);
         $$ = arrayBuilder;
     }
 ;
@@ -1900,13 +2008,13 @@ string_specification:
     string_type
     {
         LexemeInfoBuilder stringBuilder = new LexemeInfoBuilder();
-        Director.makePrimitive(stringBuilder, this.symbolTable, $1);
+        Director.makeWithMetadata(stringBuilder, new PrimitiveMetadata(this.symbolTable, $1));
         $$ = stringBuilder;
     }
     | string_type '[' numeric_constant ']'
     {
         LexemeInfoBuilder stringBuilder = new LexemeInfoBuilder();
-        Director.makeFixedLengthString(stringBuilder, this.symbolTable, new StringMetadata($1, $3));
+        Director.makeWithMetadata(stringBuilder, new StringMetadata(this.symbolTable, $1, $3));
         $$ = stringBuilder;
     }
 ;
@@ -2092,7 +2200,7 @@ structure_specification:
     STRUCT structure_field_init_decl_list END_STRUCT
     {
         StructureDeclaration structDeclaration = new StructureDeclaration(this.symbolTable, $2);
-        Director.makeStructure(structDeclaration, new StructureMetadata($2));
+        Director.makeWithMetadata(structDeclaration, new StructureMetadata($2));
 
         $$ = structDeclaration;
     }

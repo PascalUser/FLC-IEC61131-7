@@ -28,23 +28,33 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# Global Python and Node dependencies (Removed opencode from here)
+# Global Python and Node dependencies
 RUN pip install --break-system-packages matplotlib
 RUN npm install -g @mermaid-js/mermaid-cli yauzl remark-cli remark-gfm bun
 
-# Install OpenCode CLI via official install script (as ROOT)
-RUN curl -fsSL https://opencode.ai/v2/install | bash
+# 2. Create/configure unprivileged user (devuser) with configurable UID/GID
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN if [ "$USER_ID" = "1000" ] && [ "$GROUP_ID" = "1000" ] && getent passwd ubuntu >/dev/null 2>&1; then \
+        usermod -l devuser ubuntu && \
+        usermod -d /home/devuser -m devuser && \
+        groupmod -n devgroup ubuntu; \
+    else \
+        groupadd -g $GROUP_ID devgroup 2>/dev/null || true && \
+        useradd -m -s /bin/bash -u $USER_ID -g $GROUP_ID devuser; \
+    fi
 
-# 2. Create an unprivileged user (devuser)
-RUN useradd -m -s /bin/bash devuser
-
-# 3. Prepare directories and assign permissions to the new user
-RUN mkdir -p /opt/puppeteer/cache /workspace && \
-    chown -R devuser:devuser /opt/puppeteer /workspace
+# 3. Prepare directories and assign permissions to the user
+RUN mkdir -p /opt/puppeteer/cache /workspace /workspace/output && \
+    chown -R devuser:devgroup /opt/puppeteer /workspace
 
 # 4. DROP PRIVILEGES: Everything from here on is executed as 'devuser'
 USER devuser
 WORKDIR /workspace
+
+# Install OpenCode CLI specifically for devuser and expose its binary path
+RUN curl -fsSL https://opencode.ai/v2/install | bash
+ENV PATH="/home/devuser/.bun/bin:${PATH}"
 
 # Install Puppeteer locally in the user's cache
 ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
@@ -54,6 +64,6 @@ RUN npx puppeteer browsers install chrome-headless-shell --path=/opt/puppeteer/c
 ENV PUPPETEER_EXECUTABLE_PATH=/opt/puppeteer/cache/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell
 
 # Copy assets (ensuring they belong to devuser)
-COPY --chown=devuser:devuser doc/ /workspace/doc/
+COPY --chown=devuser:devgroup doc/ /workspace/doc/
 
 ENTRYPOINT ["bash"]

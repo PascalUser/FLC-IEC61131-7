@@ -58,12 +58,11 @@ public class FuzzifierIT extends ParserTestSupport {
     }
 
     @Test
-    @NotYetImplemented
     void Anonymous_fuzzifier_is_published_with_the_names_of_its_terms() throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
 
         assertSymbol(st, ANONYMOUS_FUZZIFIER, new LexemeInfoBuilder()
-                .type(Type.NONE)
+                .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.COMPONENT)
                 .source(Source.FUZZIFY)
@@ -86,7 +85,6 @@ public class FuzzifierIT extends ParserTestSupport {
      * the limits (x values as inferior, y values as superior, as in "low") are asserted.
      */
     @Test
-    @NotYetImplemented
     void Term_with_four_points_is_published_with_its_points_as_limits() throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
 

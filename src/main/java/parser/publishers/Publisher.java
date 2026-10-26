@@ -1,11 +1,11 @@
 package parser.publishers;
 
-import utils.builders.LexemeInfoSchema;
+import utils.builders.LexemeInfoMutator;
 
 /**
  * Interface for objects that can publish symbol declarations to the symbol table.
  * <p>
- * Extends {@link LexemeInfoSchema} to allow fluent configuration of symbol
+ * Extends {@link LexemeInfoMutator} to allow fluent configuration of symbol
  * attributes before publishing. Implementations include {@link MultipleDeclaration}
  * for single declarations and {@link DeclarationBlock} for grouped declarations.
  * </p>
@@ -15,7 +15,7 @@ import utils.builders.LexemeInfoSchema;
  * @version 1.0
  * @since 1.0
  */
-public interface Publisher extends LexemeInfoSchema {
+public interface Publisher extends LexemeInfoMutator {
 
     void setDeclarationScope(String newScope);
 

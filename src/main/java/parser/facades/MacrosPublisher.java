@@ -13,7 +13,7 @@ public final class MacrosPublisher {
         LexemeInfoBuilder macroBuilder = new LexemeInfoBuilder();
         for (int i = 0; i < macroNames.size(); i++) {
             String macroName = macroNames.get(i);
-            Director.makeMacro(macroBuilder, symbolTable, new MacroMetadata(i));
+            Director.makeWithMetadata(macroBuilder, new MacroMetadata(symbolTable, i));
             symbolTable.put(prefix + macroName, macroBuilder.build());
         }
     }

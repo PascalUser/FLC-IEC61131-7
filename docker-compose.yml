@@ -1,8 +1,17 @@
 services:
   docs:
-    build: .
+    build:
+      context: .
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
+    env_file: .env
     volumes:
-      - .:/workspace
+      - .:/workspace:ro
+      - ./doc:/workspace/doc:rw
+      - ./src:/workspace/src:rw
+      - ./scripts:/workspace/scripts:rw
+      - ./output:/workspace/output:rw
     working_dir: /workspace
     entrypoint: ["tail"]
     command: ["-f", "/dev/null"]

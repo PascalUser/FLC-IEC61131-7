@@ -9,11 +9,13 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 THESIS_DIR="$ROOT_DIR/doc/thesis"
-OUT="$ROOT_DIR/Tesis.docx"
+OUT="$ROOT_DIR/output/Tesis.docx"
 
 if [[ "${1:-}" == "--out" ]]; then
   OUT="$2"
 fi
+
+mkdir -p "$(dirname "$OUT")"
 
 if ! command -v pandoc >/dev/null 2>&1; then
   echo "ERROR: pandoc not installed. Install it (e.g., apt-get install pandoc) and retry." >&2

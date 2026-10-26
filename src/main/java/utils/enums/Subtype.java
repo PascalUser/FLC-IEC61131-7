@@ -13,10 +13,13 @@ package utils.enums;
  * @version 1.0
  * @since 1.0
  */
-
 public enum Subtype {
     BOOL,
     BYTE,
+    COA,
+    COG,
+    COGS,
+    COMPLEX,
     /** Custom/user-defined type. */
     CUSTOM,
     DATE,
@@ -26,15 +29,19 @@ public enum Subtype {
     INT,
     LINEAR,
     LINT,
+    LM,
     LREAL,
     LWORD,
     NONE,
     REAL,
+    RM,
     SINGLETON,
     SINT,
     STRING,
     TIME,
     TIME_OF_DAY,
+    TRAPEZOID,
+    TRIANGLE,
     UDINT,
     UINT,
     ULINT,
@@ -42,4 +49,5 @@ public enum Subtype {
     USINT,
     WORD,
     WSTRING
+
 }

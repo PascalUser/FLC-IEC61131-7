@@ -23,8 +23,7 @@ import java.util.List;
     value = {"EI_EXPOSE_REP2"},
     justification = "LexemeInfoBuilder is a builder of a DTO with direct collection references by design"
 )
-
-public final class LexemeInfoBuilder implements LexemeInfoSchema {
+public final class LexemeInfoBuilder implements LexemeInfoMutator, LexemeInfoView {
     private Type type                   = Type.UNKNOWN;
     private Subtype subtype             = Subtype.UNKNOWN;
     private String customType           = null;
@@ -42,9 +41,19 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
     }
 
     @Override
+    public Type type() {
+        return type;
+    }
+
+    @Override
     public LexemeInfoBuilder subtype(Subtype subtype) {
         this.subtype = subtype;
         return this;
+    }
+
+    @Override
+    public Subtype subtype() {
+        return subtype;
     }
 
     @Override
@@ -53,6 +62,7 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
         return this;
     }
 
+    @Override
     public String customType() {
         return customType;
     }
@@ -64,9 +74,19 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
     }
 
     @Override
+    public Source source() {
+        return source;
+    }
+
+    @Override
     public LexemeInfoBuilder use(Use use) {
         this.use = use;
         return this;
+    }
+
+    @Override
+    public Use use() {
+        return use;
     }
 
     @Override
@@ -76,9 +96,19 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
     }
 
     @Override
+    public List<String> inferiorLimits() {
+        return inferiorLimit;
+    }
+
+    @Override
     public LexemeInfoBuilder superiorLimits(List<String> superiorLimits) {
         this.superiorLimit = superiorLimits;
         return this;
+    }
+
+    @Override
+    public List<String> superiorLimits() {
+        return superiorLimit;
     }
 
     @Override
@@ -87,6 +117,7 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
         return this;
     }
 
+    @Override
     public List<String> parameters() {
         return parameters;
     }
@@ -97,6 +128,7 @@ public final class LexemeInfoBuilder implements LexemeInfoSchema {
         return this;
     }
 
+    @Override
     public Object initialValue() {
         return initialValue;
     }

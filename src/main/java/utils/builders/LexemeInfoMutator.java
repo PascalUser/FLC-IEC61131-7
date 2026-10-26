@@ -20,7 +20,7 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
-public interface LexemeInfoSchema {
+public interface LexemeInfoMutator {
 
     /**
      * Sets the general type classification.
@@ -28,7 +28,7 @@ public interface LexemeInfoSchema {
      * @param type the type (SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT)
      * @return this builder for chaining
      */
-    LexemeInfoSchema type(Type type);
+    LexemeInfoMutator type(Type type);
 
     /**
      * Sets the specific subtype.
@@ -36,7 +36,7 @@ public interface LexemeInfoSchema {
      * @param subtype the subtype (INT, REAL, BOOL, etc.)
      * @return this builder for chaining
      */
-    LexemeInfoSchema subtype(Subtype subtype);
+    LexemeInfoMutator subtype(Subtype subtype);
 
     /**
      * Sets the custom type name.
@@ -44,7 +44,7 @@ public interface LexemeInfoSchema {
      * @param customType the custom type identifier
      * @return this builder for chaining
      */
-    LexemeInfoSchema customType(String customType);
+    LexemeInfoMutator customType(String customType);
 
     /**
      * Sets the source block.
@@ -52,7 +52,7 @@ public interface LexemeInfoSchema {
      * @param source the source (IN, OUT, FUZZIFY, DEFUZZIFY, NONE)
      * @return this builder for chaining
      */
-    LexemeInfoSchema source(Source source);
+    LexemeInfoMutator source(Source source);
 
     /**
      * Sets the usage context.
@@ -60,7 +60,7 @@ public interface LexemeInfoSchema {
      * @param use the use (VARIABLE, LITERAL, FUNCTION, RULE, etc.)
      * @return this builder for chaining
      */
-    LexemeInfoSchema use(Use use);
+    LexemeInfoMutator use(Use use);
 
     /**
      * Sets the lower bound for subrange types.
@@ -68,7 +68,7 @@ public interface LexemeInfoSchema {
      * @param inferiorLimits the lower bound as a string
      * @return this builder for chaining
      */
-    LexemeInfoSchema inferiorLimits(List<String> inferiorLimits);
+    LexemeInfoMutator inferiorLimits(List<String> inferiorLimits);
 
     /**
      * Sets the upper bound for subrange types.
@@ -76,7 +76,7 @@ public interface LexemeInfoSchema {
      * @param superiorLimits the upper bound as a string
      * @return this builder for chaining
      */
-    LexemeInfoSchema superiorLimits(List<String> superiorLimits);
+    LexemeInfoMutator superiorLimits(List<String> superiorLimits);
 
     /**
      * Sets the parameter list for function blocks.
@@ -84,7 +84,7 @@ public interface LexemeInfoSchema {
      * @param parameters list of parameter names
      * @return this builder for chaining
      */
-    LexemeInfoSchema parameters(List<String> parameters);
+    LexemeInfoMutator parameters(List<String> parameters);
 
     /**
      * Sets the initial lexeme.
@@ -92,5 +92,5 @@ public interface LexemeInfoSchema {
      * @param initialValue the initial lexeme object
      * @return this builder for chaining
      */
-    LexemeInfoSchema initialValue(Object initialValue);
+    LexemeInfoMutator initialValue(Object initialValue);
 }

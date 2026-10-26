@@ -88,7 +88,7 @@ The parser orchestrates compilation: invokes the lexer, executes grammar semanti
 | utils          | `utils.SymbolTable`                | Stores and retrieves `LexemeInfo` by lexeme name                                                                                   |
 | utils          | `utils.LexemeInfo`                 | DTO with complete semantic attributes (type, subtype, use, source, limits, parameters, initial value)                              |
 | utils          | `utils.DiagnosticsHandler`         | Collects and manages diagnostics (errors/warnings) in insertion order                                                              |
-| utils.builders | `utils.builders.LexemeInfoSchema`  | Fluent contract with a setter per `LexemeInfo` attribute (does not declare `build()`)                                              |
+| utils.builders | `utils.builders.LexemeInfoMutator`  | Fluent contract with a setter per `LexemeInfo` attribute (does not declare `build()`)                                              |
 | utils.builders | `utils.builders.LexemeInfoBuilder` | Concrete implementation of the builder with `build()`                                                                              |
 | utils.builders | `utils.builders.Director`          | Static recipes: `makeLiteral`, `makeType`, `makeMacro`, `makeDefaultInteger` and default values REAL, BOOL, STRING, and WSTRING    |
 | utils.enums    | `utils.enums.Type`                 | General classification: UNKNOWN, SIMPLE, ENUMERATE, SUBRANGE, ARRAY, STRUCT                                                        |
