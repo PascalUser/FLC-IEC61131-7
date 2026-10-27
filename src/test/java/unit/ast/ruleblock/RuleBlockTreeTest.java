@@ -29,7 +29,7 @@ class RuleBlockTreeTest {
         assertEquals(lines(
                 "rule_temperature",
                 "  MAX",
-                "    IF 1",
+                "    IF",
                 "      COND",
                 "        MIN",
                 "          IS",
@@ -48,7 +48,7 @@ class RuleBlockTreeTest {
                 "            dT2",
                 "            zero",
                 "    WITH 0.5",
-                "      IF 2",
+                "      IF",
                 "        COND",
                 "          MAX",
                 "            IS",
@@ -105,7 +105,7 @@ class RuleBlockTreeTest {
                 is("dT1", "zero"),
                 is("dT2", "zero")
         ));
-        IfNode firstRule = new IfNode("1", new CondNode(firstCondition), new BodyNode(firstAct));
+        IfNode firstRule = new IfNode(new CondNode(firstCondition), new BodyNode(firstAct));
 
         MaxNode secondCondition = new MaxNode(Arrays.asList(
                 is("humidity", "high"),
@@ -114,7 +114,7 @@ class RuleBlockTreeTest {
         ProdNode secondAct = new ProdNode(Collections.singletonList(
                 is("dT1", "positive")
         ));
-        IfNode secondRule = new IfNode("2", new CondNode(secondCondition), new BodyNode(secondAct));
+        IfNode secondRule = new IfNode(new CondNode(secondCondition), new BodyNode(secondAct));
         WithNode secondRuleWithWeight = new WithNode(Weight.numeric("0.5"), secondRule);
 
         MaxNode accumulation = new MaxNode(Arrays.asList(firstRule, secondRuleWithWeight));

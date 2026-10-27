@@ -18,10 +18,9 @@ class IfNodeTest {
 
     @Test
     void Label_ReturnsIfAndRuleNumber() {
-        IfNode node = newNode("12");
+        IfNode node = newNode();
 
-        assertEquals("IF 12", node.label());
-        assertEquals("12", node.ruleNumber());
+        assertEquals("IF", node.label());
     }
 
     @Test
@@ -33,7 +32,7 @@ class IfNodeTest {
         BodyNode body = new BodyNode(new MinNode(Collections.singletonList(
                 new IsNode(new IdentifierNode("dT1"), new IdentifierNode("zero"))
         )));
-        IfNode node = new IfNode("1", condition, body);
+        IfNode node = new IfNode(condition, body);
 
         assertEquals(2, node.children().size());
         assertSame(condition, node.children().get(0));
@@ -44,12 +43,11 @@ class IfNodeTest {
 
     @Test
     void Children_AreUnmodifiable() {
-        assertChildrenUnmodifiable(newNode("1"));
+        assertChildrenUnmodifiable(newNode());
     }
 
-    private static IfNode newNode(final String ruleNumber) {
+    private static IfNode newNode() {
         return new IfNode(
-                ruleNumber,
                 new CondNode(new IsNode(new IdentifierNode("temperature"), new IdentifierNode("high"))),
                 new BodyNode(new MinNode(Collections.singletonList(
                         new IsNode(new IdentifierNode("dT1"), new IdentifierNode("zero"))

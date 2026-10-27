@@ -21,8 +21,7 @@ public final class SourceCode {
     private final Map<Block, List<String>> variables = new EnumMap<>(Block.class);
     private final List<String> body = new ArrayList<>();
 
-    private SourceCode() {
-    }
+    private SourceCode() {}
 
     /**
      * Starts a program with an empty {@code main} function block.

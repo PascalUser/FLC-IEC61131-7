@@ -64,13 +64,19 @@
     import utils.enums.*;
     import utils.builders.*;
 
-    import parser.utils.*;
-    import parser.utils.metadata.*;
     import parser.facades.*;
-    import parser.publishers.*;
     import parser.initializations.*;
     import parser.initializations.leafs.*;
     import parser.initializations.nodes.*;
+    import parser.metadata.*;
+    import parser.publishers.*;
+    import parser.tree.*;
+    import parser.utils.*;
+
+    import ast.AbstractSyntaxTree;
+    import ast.ruleblock.RuleBlockNode;
+    import ast.ruleblock.operators.Operator;
+    import ast.ruleblock.operators.OperatorFactory;
 }
 
 %code {
@@ -79,13 +85,18 @@
      * Used to scope identifiers in the symbol table.
      */
     private String programName;
+    private AbstractSyntaxTree ast;
+
+    public AbstractSyntaxTree getAST() {
+        return ast;
+    }
 }
 
 /**
  * Parser parameter: the symbol table shared between lexer and parser
  * for storing semantic information during parsing.
  */
-%parse-param { SymbolTable symbolTable  }
+%parse-param { SymbolTable symbolTable }
 
 %token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
@@ -193,18 +204,17 @@
     membership_function
 
 %type <String>
-     // names
      fuzzify_block_name
      defuzzify_block_name
+     rule_block_name
+     opt_weighting
      type_name_declaration
      field_name
-     // constants
      constant
      string_constant
      boolean_constant
      time_constant
      numeric_constant
-     // other
      referenced_identifier
 
 %type <List<PathInitializationInfo>>
@@ -218,15 +228,56 @@
     initialized_field_with_identifier
     initialized_field_with_array
 
-%type <ParsingRepeatedArrayContext>
+%type <ArrayParsingContext>
     array_initial_elements_list
     array_initial_elements
     repeated_initial_element
 
-%type<VariableInitialization>
+%type <VariableInitialization>
     default_value
     default_val
 
+%type <List<RuleBlockNode>>
+    opt_rule_block_list
+
+%type <RuleBlockNode>
+    rule_block
+
+%type <List<TreeNode>>
+    rule_list
+    conclusion_list
+
+%type <TreeNode>
+    rules_decl
+    rule
+    condition
+    condition_head
+    conclusions
+    and_operand
+    or_operand
+    condition_operand
+    subcondition
+    identifier_operand
+    conclusion
+
+%type <ConditionParsingContext>
+    condition_tail
+    and_condition_tail
+
+%type <List<Operator>>
+    operator_definition
+
+%type <Operator>
+    opt_operator_or
+    or_type
+    opt_operator_and
+    and_type
+    opt_activation_method
+    activation_method
+    act_type
+    accumulation_method
+    accu_type
+    
 %%
 
 /* ---------------------------------- IEC61131-7 ----------------------------------------
@@ -361,6 +412,9 @@ opt_function_block_body:
     opt_defuzzify_block_list
     opt_rule_block_list
     opt_option_block_list
+    {
+        this.ast = new AbstractSyntaxTree($3);
+    }
 ;
 
 /**
@@ -436,7 +490,7 @@ fuzzify_block:
 fuzzify_block_name:
     IDENTIFIER
     {
-        $$ = $1;
+        $$ = programName + '#' + $1;
     }
 ;
 
@@ -494,7 +548,7 @@ defuzzify_block:
 defuzzify_block_name:
     IDENTIFIER
     {
-        $$ = $1;
+        $$ = programName + '#' + $1;
     }
 ;
 
@@ -537,7 +591,7 @@ linguistic_term_list:
  *   Represents a crisp value (membership = 1 at that point, 0 elsewhere)
  * - Piecewise-linear: TERM name := (x1,y1) (x2,y2) ... ;
  *   Defines a polygon membership function through (input, membership) points
- *   Points can use numeric constants or identifiers for x-coordinates
+ *   Points can use numeric constants or identifiers for condition_operand-coordinates
  * 
  * Terms are collected in linguistic_term_list and associated with their
  * parent fuzzify/defuzzify block variable.
@@ -582,7 +636,7 @@ linguistic_term_value:
  * Membership Function Alternatives
  * --------------------------------
  * - singleton: Single numeric constant (crisp singleton fuzzy set)
- * - point_list: Sequence of (x,y) points defining piecewise-linear function
+ * - point_list: Sequence of (condition_operand,y) points defining piecewise-linear function
  *
  * Point Formats:
  * - ( <numeric>, <numeric> ): Both coordinates as literals
@@ -708,74 +762,212 @@ opt_range:
 
 opt_rule_block_list:
     /* empty */
+    {
+        $$ = new ArrayList<>();
+    }
     | opt_rule_block_list rule_block
+    {
+        $1.add($2);
+        $$ = $1;
+    }
 ;
 
 rule_block:
-    RULEBLOCK IDENTIFIER
+    RULEBLOCK rule_block_name
     operator_definition
-    activation_method_opt
+    opt_activation_method
     accumulation_method
-    rule_list
+    rules_decl
     END_RULEBLOCK
+    {   
+        List<Operator> configuration = $3;
+        configuration.add($4);
+        configuration.add($5);
+        
+        List<TreeNode> componentChild = Collections.singletonList($6);
+        TreeNode componentNode = new TreeNode(Label.COMPONENT, $2, componentChild);
+
+        $$ = RuleblockASTBuilder.build(componentNode, configuration);
+    }
+;
+
+rule_block_name:
+    IDENTIFIER
+    {
+        $$ = programName + '#' + $1;
+    }
 ;
 
 operator_definition:
-    opt_operator_or operator_and_opt ';'
+    opt_operator_or opt_operator_and ';'
+    {
+        List<Operator> operators = new ArrayList<>();
+        operators.add($1);
+        operators.add($2);
+        $$ = operators;
+    }
 ;
 
 opt_operator_or:
     /* empty */
+    {
+        $$ = OperatorFactory.orDefault();
+    }
     | OR ':' or_type
+    {
+        $$ = $3;
+    }
 ;
 
-operator_and_opt:
+opt_operator_and:
     /* empty */
+    {
+        $$ = OperatorFactory.andDefault();
+    }
     | AND ':' and_type
+    {
+        $$ = $3;
+    }
 ;
 
 or_type:
-    MAX | ASUM | BSUM
+    MAX
+    {
+        $$ = Operator.MAX;
+    }
+    | ASUM
+    {
+        $$ = Operator.ASUM;
+    }
+    | BSUM
+    {
+        $$ = Operator.BSUM;
+    }
 ;
 
 and_type:
-    MIN | PROD | BDIF
+    MIN
+    {
+        $$ = Operator.MIN;
+    }
+    | PROD
+    {
+        $$ = Operator.PROD;
+    }
+    | BDIF
+    {
+        $$ = Operator.BDIF;
+    }
 ;
 
-activation_method_opt:
+opt_activation_method:
     /* empty */
+    {
+        $$ = OperatorFactory.actDefault();
+    }
     | activation_method
+    {
+        $$ = $1;
+    }
 ;
 
 activation_method:
     ACT ':' act_type ';'
+    {
+        $$ = $3;
+    }
 ;
 
 act_type:
-    PROD | MIN
+    PROD
+    {
+        $$ = Operator.PROD;
+    }
+    | MIN
+    {
+        $$ = Operator.MIN;
+    }
 ;
 
 accumulation_method:
     ACCU ':' accu_type ';'
+    { 
+        $$ = $3;
+    }
 ;
 
 accu_type:
-    MAX | BSUM | NSUM
+    MAX    
+    { 
+        $$ = Operator.MAX;  
+    }
+    | BSUM 
+    { 
+        $$ = Operator.BSUM; 
+    }
+    | NSUM 
+    { 
+        $$ = Operator.NSUM; 
+    }
+;
+
+rules_decl:
+    rule_list
+    { 
+        $$ = new TreeNode(Label.ACCUMULATION, $1);
+    }
 ;
 
 rule_list:
     /* empty */
+    { 
+        $$ = Collections.emptyList();
+    }
     | rule_list rule
+    { 
+        List<TreeNode> rules = $1;
+        if (rules == null) { 
+            rules = new ArrayList<>();
+        }
+        rules.add($2);
+    }
 ;
 
 rule:
-    RULE numeric_constant ':' IF condition THEN conclusion_list opt_weighting ';'
+    RULE numeric_constant ':' IF condition THEN conclusions opt_weighting ';'
+    {
+        List<TreeNode> condChild = Collections.singletonList($5);
+        List<TreeNode> bodyChild = Collections.singletonList($7);
+        TreeNode condNode = new TreeNode(Label.CONDITION, condChild);
+        TreeNode bodyNode = new TreeNode(Label.BODY, bodyChild);
+
+        List<TreeNode> ifChildren = new ArrayList<>();
+        ifChildren.add(condNode);
+        ifChildren.add(bodyNode);
+        TreeNode ifNode = new TreeNode(Label.IF, ifChildren);
+
+        if ($8.isEmpty()) { 
+            $$ = ifNode;
+        } else { 
+            List<TreeNode> withChild = Collections.singletonList(ifNode);
+            $$ = new TreeNode(Label.WITH, $8, withChild);
+        }
+    }
 ;
 
 opt_weighting:
     /* empty */
+    {
+        $$ = "";
+    }
     | WITH numeric_constant
+    {
+        $$ = $2;
+    }
     | WITH IDENTIFIER
+    {
+        $$ = programName + "#" + $2;
+    }
 ;
 
 /**
@@ -784,10 +976,10 @@ opt_weighting:
  * Parses fuzzy rule antecedents (IF part) with boolean logic.
  * 
  * Grammar Structure:
- * condition ::= x condition_tail | IDENTIFIER condition_tail
- * condition_tail ::= ε | AND x condition_tail | OR x condition_tail
+ * condition ::= condition_operand condition_tail | IDENTIFIER condition_tail
+ * condition_tail ::= ε | AND condition_operand condition_tail | OR condition_operand condition_tail
  *                  | AND IDENTIFIER condition_tail | OR IDENTIFIER condition_tail
- * x ::= NOT x | NOT IDENTIFIER | subcondition | '(' condition ')'
+ * condition_operand ::= NOT condition_operand | NOT IDENTIFIER | subcondition | '(' condition ')'
  * subcondition ::= IDENTIFIER IS IDENTIFIER | IDENTIFIER IS NOT IDENTIFIER
  * 
  * This grammar supports:
@@ -798,41 +990,95 @@ opt_weighting:
  * - Parenthesized sub-conditions
  * 
  * Note: The grammar uses left-recursive condition_tail for AND/OR chains.
- * The 'x' non-terminal handles NOT and atomic conditions.
+ * The 'condition_operand' non-terminal handles NOT and atomic conditions.
  * 
  * @see #condition_tail
- * @see #x
+ * @see #condition_operand
  * @see #subcondition
  * @see #conclusion_list
  */
 condition:
-    x condition_tail
-    | IDENTIFIER condition_tail
+    condition_head condition_tail
+    {
+        $2.addOperand($1);
+        $$ = $2.getConditionNode();
+    }
+;
+
+condition_head:
+    condition_operand
+    {
+        $$ = $1;
+    }
+    | identifier_operand
+    {
+        $$ = $1;
+    }
 ;
 
 /**
  * Condition Tail - AND/OR Chains
  * ------------------------------
  * Left-recursive rule for chaining AND/OR operations.
- * Supports both simple identifiers and complex 'x' expressions
+ * Supports both simple identifiers and complex 'condition_operand' expressions
  * as operands for the logical connectives.
  * 
  * @see #condition
- * @see #x
+ * @see #condition_operand
  */
 condition_tail:
+    and_condition_tail
+    { 
+        $$ = $1;
+    }
+    | OR or_operand condition_tail
+    {
+        $3.addOperand($2);
+        $3.addOperator(Label.OR);
+        $$ = $3;
+    }
+;
+
+or_operand:
+    condition_operand
+    { 
+        $$ = $1;
+    }
+    | identifier_operand
+    { 
+        $$ = $1;
+    }
+;
+
+and_condition_tail:
     /* empty */
-    | AND IDENTIFIER condition_tail
-    | OR IDENTIFIER condition_tail
-    | AND x condition_tail
-    | OR x condition_tail
+    {
+        $$ = new ConditionParsingContext();
+    }
+    | AND and_operand and_condition_tail
+    {
+        $3.addOperand($2);
+        $3.addOperator(Label.AND);
+        $$ = $3;
+    }
+;
+
+and_operand:
+    condition_operand
+    { 
+        $$ = $1;
+    }
+    | identifier_operand
+    { 
+        $$ = $1;
+    }
 ;
 
 /**
  * Atomic Condition with Optional NOT
  * ----------------------------------
  * Handles the core atomic conditions with NOT operator support:
- * - NOT x: Recursive NOT (supports multiple NOTs)
+ * - NOT condition_operand: Recursive NOT (supports multiple NOTs)
  * - NOT IDENTIFIER: Negated simple identifier
  * - subcondition: IS/IS NOT relational condition
  * - '(' condition ')': Parenthesized sub-expression
@@ -840,11 +1086,25 @@ condition_tail:
  * @see #subcondition
  * @see #condition
  */
-x:
-    NOT x
-    | NOT IDENTIFIER
+condition_operand:
+    NOT condition_operand
+    {
+        List<TreeNode> notChild = Collections.singletonList($2);
+        $$ = new TreeNode(Label.NOT, notChild);
+    }
+    | NOT identifier_operand
+    {
+        List<TreeNode> notChild = Collections.singletonList($2);
+        $$ = new TreeNode(Label.NOT, notChild);
+    }
     | subcondition
+    {
+        $$ = $1;
+    }
     | '(' condition ')'
+    {
+        $$ = $2;
+    }
 ;
 
 /**
@@ -859,8 +1119,30 @@ x:
  * @see #condition
  */
 subcondition:
-    IDENTIFIER IS IDENTIFIER
-    | IDENTIFIER IS NOT IDENTIFIER
+    identifier_operand IS identifier_operand
+    {
+        List<TreeNode> isChildren = new ArrayList<>();
+        isChildren.add($1);
+        isChildren.add($3);
+        $$ = new TreeNode(Label.IS, isChildren);
+    }
+    | identifier_operand IS NOT identifier_operand
+    {
+        List<TreeNode> isChildren = new ArrayList<>();
+        isChildren.add($1);
+        isChildren.add($4);
+        TreeNode isNode = new TreeNode(Label.IS, isChildren);
+
+        List<TreeNode> notChild = Collections.singletonList(isNode);
+        $$ = new TreeNode(Label.NOT, notChild);
+    }
+;
+
+identifier_operand:
+    IDENTIFIER
+    {
+        $$ = new TreeNode(Label.IDENTIFIER, $1, null);
+    }
 ;
 
 /**
@@ -883,11 +1165,40 @@ subcondition:
  * @see #rule
  * @see #subcondition (similar syntax for IS/IS NOT)
  */
+ 
+conclusions:
+    conclusion_list
+    { 
+        $$ = new TreeNode(Label.ACTIVATION, $1);
+    }
+;
+ 
 conclusion_list:
-    IDENTIFIER IS IDENTIFIER
-    | IDENTIFIER
-    | conclusion_list ',' IDENTIFIER IS IDENTIFIER
-    | conclusion_list ',' IDENTIFIER
+    conclusion
+    { 
+        List<TreeNode> conclusions = new ArrayList<>();
+        conclusions.add($1);
+        $$ = conclusions; 
+    }
+    | conclusion_list ',' conclusion
+    {  
+        $1.add($3);
+        $$ = $1;
+    }
+;
+
+conclusion:
+     identifier_operand IS identifier_operand
+     { 
+        List<TreeNode> isChildren = new ArrayList<>();
+        isChildren.add($1);
+        isChildren.add($3);
+        $$ = new TreeNode(Label.IS, isChildren);
+     }
+     | identifier_operand
+     { 
+        $$ = $1;
+     }
 ;
 
 opt_option_block_list:
@@ -1751,11 +2062,11 @@ non_generic_type:
  *   <repeated_element> := <count> '(' <element> ')'
  * 
  * Semantic Processing:
- * Uses {@link parser.utils.ParsingRepeatedArrayContext} to track repeated elements
+ * Uses {@link parser.utils.ArrayParsingContext} to track repeated elements
  * and {@link parser.utils.PathInitializationInfo} to map array indices to values.
  * Indices are computed as ranges (e.g., "0..2#value" for 3 repeated values).
  * 
- * @see parser.utils.ParsingRepeatedArrayContext
+ * @see parser.utils.ArrayParsingContext
  * @see parser.utils.PathInitializationInfo
  * @see #array_initial_elements_list
  * @see #array_initial_elements
@@ -1780,7 +2091,7 @@ array_initial_elements_list:
                 oldPathInfo.initialValue()
             ));
         }
-        $$ = new ParsingRepeatedArrayContext(endIdx, newPathsInfo);
+        $$ = new ArrayParsingContext(endIdx, newPathsInfo);
     }
     | array_initial_elements_list ',' array_initial_elements
     {
@@ -1795,16 +2106,16 @@ array_initial_elements_list:
                 oldPathInfo.initialValue()
             ));
         }
-        $$ = new ParsingRepeatedArrayContext(endIdx, newPathsInfo);
+        $$ = new ArrayParsingContext(endIdx, newPathsInfo);
     }
 ;
 
 array_initial_elements:
     array_initial_element
     {
-        /** Creates a ParsingRepeatedArrayContext for a single array element. */
+        /** Creates a ArrayParsingContext for a single array element. */
 
-        $$ = new ParsingRepeatedArrayContext(1, $1);
+        $$ = new ArrayParsingContext(1, $1);
     }
     | repeated_initial_element
     {
@@ -1845,7 +2156,7 @@ array_initial_element:
 repeated_initial_element:
     numeric_constant '(' array_initial_element ')'
     {
-        $$ = new ParsingRepeatedArrayContext(Integer.parseInt($1), $3);
+        $$ = new ArrayParsingContext(Integer.parseInt($1), $3);
     }
 ;
 

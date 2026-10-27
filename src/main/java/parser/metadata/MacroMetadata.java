@@ -1,4 +1,4 @@
-package parser.utils.metadata;
+package parser.metadata;
 
 import parser.initializations.leafs.MacroInitialization;
 import utils.SymbolTable;

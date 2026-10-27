@@ -53,7 +53,6 @@ class WithNodeTest {
 
     private static IfNode newIfNode() {
         return new IfNode(
-                "1",
                 new CondNode(new IsNode(new IdentifierNode("temperature"), new IdentifierNode("high"))),
                 new BodyNode(new MinNode(Collections.singletonList(
                         new IsNode(new IdentifierNode("dT1"), new IdentifierNode("zero"))

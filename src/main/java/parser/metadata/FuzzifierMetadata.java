@@ -1,8 +1,6 @@
-package parser.utils.metadata;
+package parser.metadata;
 
-import parser.initializations.Factory;
-import parser.initializations.leafs.DefaultInitialization;
-import utils.SymbolTable;
+import parser.publishers.TermBlock;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -11,13 +9,11 @@ import utils.enums.Use;
 
 import java.util.List;
 
-public final class PrimitiveMetadata implements LexemeInfoView {
-    private final Subtype subtype;
-    private final DefaultInitialization initialValue;
+public final class FuzzifierMetadata implements LexemeInfoView {
+    List<String> terms;
 
-    public PrimitiveMetadata(SymbolTable symbolTable, Subtype subtype) {
-        this.subtype = subtype;
-        this.initialValue  = Factory.createPrimitiveInitialization(symbolTable, subtype);
+    public FuzzifierMetadata(TermBlock termBlock) {
+        this.terms = termBlock.getTermNames();
     }
 
     @Override
@@ -27,7 +23,7 @@ public final class PrimitiveMetadata implements LexemeInfoView {
 
     @Override
     public Subtype subtype() {
-        return subtype;
+        return Subtype.NONE;
     }
 
     @Override
@@ -37,12 +33,12 @@ public final class PrimitiveMetadata implements LexemeInfoView {
 
     @Override
     public Source source() {
-        return Source.UNKNOWN;
+        return Source.FUZZIFY;
     }
 
     @Override
     public Use use() {
-        return Use.UNKNOWN;
+        return Use.COMPONENT;
     }
 
     @Override
@@ -55,13 +51,12 @@ public final class PrimitiveMetadata implements LexemeInfoView {
         return null;
     }
 
-    @Override
     public List<String> parameters() {
-        return null;
+        return terms;
     }
 
     @Override
-    public DefaultInitialization initialValue() {
-        return initialValue;
+    public Object initialValue() {
+        return null;
     }
 }

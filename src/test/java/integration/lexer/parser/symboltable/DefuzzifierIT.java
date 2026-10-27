@@ -37,7 +37,7 @@ public class DefuzzifierIT extends ParserTestSupport {
             "END_DEFUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_DEFUZZIFIER = "DT1@defuzzifier";
+    private static final String ANONYMOUS_DEFUZZIFIER = "MAIN#DT1@defuzzifier";
 
     @Test
     void Defuzzify_block_with_singleton_terms_is_accepted() throws Exception {
@@ -69,7 +69,7 @@ public class DefuzzifierIT extends ParserTestSupport {
             throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(DT1));
 
-        assertSymbol(st, "DT1#" + term, new LexemeInfoBuilder()
+        assertSymbol(st, "MAIN#DT1#" + term, new LexemeInfoBuilder()
                 .type(Type.FUNCTION)
                 .subtype(Subtype.SINGLETON)
                 .use(Use.TERM)

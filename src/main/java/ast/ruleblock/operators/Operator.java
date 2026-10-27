@@ -8,5 +8,4 @@ public enum Operator {
     MIN,
     NSUM,
     PROD
-
 }

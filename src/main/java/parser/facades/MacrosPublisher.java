@@ -1,6 +1,6 @@
 package parser.facades;
 
-import parser.utils.metadata.MacroMetadata;
+import parser.metadata.MacroMetadata;
 import utils.SymbolTable;
 import utils.builders.Director;
 import utils.builders.LexemeInfoBuilder;

@@ -1,5 +1,6 @@
 package utils;
 
+import ast.AbstractSyntaxTree;
 import lexer.Lexer;
 import parser.Parser;
 import parser.initializations.Initialization;
@@ -39,6 +40,28 @@ public abstract class ParserTestSupport {
 
     protected SymbolTable parse(SourceCode sourceCode) throws Exception {
         return this.parse(sourceCode.build());
+    }
+
+    protected AbstractSyntaxTree parseAst(Reader reader) throws Exception {
+        SymbolTable symbolTable = new SymbolTable();
+        DiagnosticsHandler diagnosticHandler = new DiagnosticsHandler();
+
+        Lexer lexer = new Lexer(reader, symbolTable, diagnosticHandler);
+        Parser parser = new Parser(lexer, symbolTable);
+
+        assertTrue(parser.parse(), "Parsing should succeed");
+        assertFalse(diagnosticHandler.hasErrors());
+        AbstractSyntaxTree ast = parser.getAST();
+        assertNotNull(ast, "Parser should build an AST");
+        return ast;
+    }
+
+    protected AbstractSyntaxTree parseAst(String sourceCode) throws Exception {
+        return this.parseAst(new StringReader(sourceCode));
+    }
+
+    protected AbstractSyntaxTree parseAst(SourceCode sourceCode) throws Exception {
+        return this.parseAst(sourceCode.build());
     }
 
     /**

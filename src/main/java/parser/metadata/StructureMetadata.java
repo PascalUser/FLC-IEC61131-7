@@ -1,4 +1,4 @@
-package parser.utils.metadata;
+package parser.metadata;
 
 import parser.initializations.nodes.StructInitialization;
 import parser.publishers.StructureBlock;

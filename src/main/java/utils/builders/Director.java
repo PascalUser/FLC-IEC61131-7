@@ -1,7 +1,5 @@
 package utils.builders;
 
-import parser.initializations.*;
-import parser.utils.metadata.*;
 import utils.LexemeInfo;
 import utils.enums.*;
 

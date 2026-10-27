@@ -36,7 +36,7 @@ public class FuzzifierIT extends ParserTestSupport {
             "END_FUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_FUZZIFIER = "HUMIDITY@fuzzifier";
+    private static final String ANONYMOUS_FUZZIFIER = "MAIN#HUMIDITY@fuzzifier";
 
     private static List<String> list(String... values) {
         return Arrays.asList(values);
@@ -76,8 +76,8 @@ public class FuzzifierIT extends ParserTestSupport {
     void Term_with_two_points_is_linear_and_keeps_its_points_as_limits() throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
 
-        assertSymbol(st, "HUMIDITY#LOW", term(list("30", "50"), list("1", "0")).build());
-        assertSymbol(st, "HUMIDITY#HIGH", term(list("70", "80"), list("0", "1")).build());
+        assertSymbol(st, "MAIN#HUMIDITY#LOW",  term(list("30", "50"), list("1", "0")).build());
+        assertSymbol(st, "MAIN#HUMIDITY#HIGH", term(list("70", "80"), list("0", "1")).build());
     }
 
     /**
@@ -88,8 +88,8 @@ public class FuzzifierIT extends ParserTestSupport {
     void Term_with_four_points_is_published_with_its_points_as_limits() throws Exception {
         SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
 
-        LexemeInfo middle = st.get("HUMIDITY#MIDDLE");
-        assertNotNull(middle, "HUMIDITY#MIDDLE was not published");
+        LexemeInfo middle = st.get("MAIN#HUMIDITY#MIDDLE");
+        assertNotNull(middle, "MAIN#HUMIDITY#MIDDLE was not published");
         assertEquals(Type.FUNCTION, middle.type);
         assertEquals(Use.TERM, middle.use);
         assertEquals(Source.FUZZIFY, middle.source);

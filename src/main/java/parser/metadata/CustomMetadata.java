@@ -1,6 +1,7 @@
-package parser.utils.metadata;
+package parser.metadata;
 
-import parser.publishers.TermBlock;
+import parser.initializations.Initialization;
+import utils.SymbolTable;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -9,11 +10,13 @@ import utils.enums.Use;
 
 import java.util.List;
 
-public final class FuzzifierMetadata implements LexemeInfoView {
-    List<String> terms;
+public final class CustomMetadata implements LexemeInfoView {
+    private final String customType;
+    private final Initialization initialValue;
 
-    public FuzzifierMetadata(TermBlock termBlock) {
-        this.terms = termBlock.getTermNames();
+    public CustomMetadata(SymbolTable symbolTable, String customType) {
+        this.customType = customType;
+        this.initialValue = ((Initialization) symbolTable.get(customType).initialValue).copy();
     }
 
     @Override
@@ -23,22 +26,22 @@ public final class FuzzifierMetadata implements LexemeInfoView {
 
     @Override
     public Subtype subtype() {
-        return Subtype.NONE;
+        return Subtype.CUSTOM;
     }
 
     @Override
     public String customType() {
-        return null;
+        return customType;
     }
 
     @Override
     public Source source() {
-        return Source.FUZZIFY;
+        return Source.UNKNOWN;
     }
 
     @Override
     public Use use() {
-        return Use.COMPONENT;
+        return Use.UNKNOWN;
     }
 
     @Override
@@ -51,12 +54,13 @@ public final class FuzzifierMetadata implements LexemeInfoView {
         return null;
     }
 
+    @Override
     public List<String> parameters() {
-        return terms;
+        return null;
     }
 
     @Override
-    public Object initialValue() {
-        return null;
+    public Initialization initialValue() {
+        return initialValue;
     }
 }

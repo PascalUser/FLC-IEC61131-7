@@ -1,6 +1,8 @@
-package parser.utils.metadata;
+package parser.metadata;
 
-import parser.initializations.leafs.EnumeratedInitialization;
+import parser.initializations.Factory;
+import parser.initializations.leafs.DefaultInitialization;
+import utils.SymbolTable;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -9,23 +11,23 @@ import utils.enums.Use;
 
 import java.util.List;
 
-public final class EnumeratedMetadata implements LexemeInfoView {
-    private final List<String> values;
-    private final EnumeratedInitialization initialValue;
+public final class PrimitiveMetadata implements LexemeInfoView {
+    private final Subtype subtype;
+    private final DefaultInitialization initialValue;
 
-    public EnumeratedMetadata(List<String> initValues) {
-        values = initValues;
-        initialValue = new EnumeratedInitialization(initValues);
+    public PrimitiveMetadata(SymbolTable symbolTable, Subtype subtype) {
+        this.subtype = subtype;
+        this.initialValue  = Factory.createPrimitiveInitialization(symbolTable, subtype);
     }
 
     @Override
     public Type type() {
-        return Type.ENUMERATE;
+        return Type.SIMPLE;
     }
 
     @Override
     public Subtype subtype() {
-        return Subtype.INT;
+        return subtype;
     }
 
     @Override
@@ -35,12 +37,12 @@ public final class EnumeratedMetadata implements LexemeInfoView {
 
     @Override
     public Source source() {
-        return null;
+        return Source.UNKNOWN;
     }
 
     @Override
     public Use use() {
-        return null;
+        return Use.UNKNOWN;
     }
 
     @Override
@@ -55,10 +57,11 @@ public final class EnumeratedMetadata implements LexemeInfoView {
 
     @Override
     public List<String> parameters() {
-        return values;
+        return null;
     }
 
-    public EnumeratedInitialization initialValue() {
+    @Override
+    public DefaultInitialization initialValue() {
         return initialValue;
     }
 }
