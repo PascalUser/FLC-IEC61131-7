@@ -15,22 +15,29 @@ public class DeclarationErrorsIT extends ParserTestSupport {
     @Test
     @NotYetImplemented
     void Variable_of_an_undeclared_type_is_rejected_with_a_diagnostic() throws Exception {
-        assertRejected(SourceCode.functionBlock().var(Block.VAR, "x : undeclared_type"));
+        assertRejected(
+                SourceCode.functionBlock()
+                        .var(Block.VAR, "x : undeclared_type")
+        );
     }
 
     @Test
     @NotYetImplemented
     void Duplicate_variable_is_rejected() throws Exception {
-        assertRejected(SourceCode.functionBlock()
-                .var(Block.VAR, "x : INT")
-                .var(Block.VAR, "x : REAL"));
+        assertRejected(
+                SourceCode.functionBlock()
+                        .var(Block.VAR, "x : INT")
+                        .var(Block.VAR, "x : REAL")
+        );
     }
 
     @Test
     @NotYetImplemented
     void Duplicate_type_declaration_is_rejected() throws Exception {
-        assertRejected(SourceCode.functionBlock()
-                .type("level_type : INT (0..10)")
-                .type("level_type : INT (0..20)"));
+        assertRejected(
+                SourceCode.functionBlock()
+                        .type("level_type : INT (0..10)")
+                        .type("level_type : INT (0..20)")
+        );
     }
 }

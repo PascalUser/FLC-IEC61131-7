@@ -1,16 +1,13 @@
 package integration.lexer.parser.symboltable;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import parser.initializations.leafs.VariableInitialization;
-import utils.Block;
-import utils.LexemeInfo;
-import utils.ParserTestSupport;
-import utils.SourceCode;
-import utils.SymbolTable;
+import utils.*;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Subtype;
 import utils.enums.Type;
@@ -91,78 +88,141 @@ public class PrimitiveIT extends ParserTestSupport {
                 .source(block.source());
     }
 
-    @ParameterizedTest(name = "{0} / {1}")
-    @MethodSource("blocksAndPrimitives")
-    void Uninitialized_primitive_variable_gets_its_literal_default(Block block, Primitive primitive)
-            throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().var(block, "var1 : " + primitive.typeName));
+    @Nested
+    class AsVariable {
 
-        assertSymbolWithValue(st, SourceCode.key("var1"), variable(primitive.subtype, block), primitive.defaultValue);
-    }
+        @ParameterizedTest(name = "{0} / {1}")
+        @MethodSource("integration.lexer.parser.symboltable.PrimitiveIT#blocksAndPrimitives")
+        void Uninitialized_primitive_variable_gets_its_literal_default(Block block, Primitive primitive) throws Exception {
+            String symbol = SourceCode.key("var1");
+            LexemeInfo expectedInfo = variable(primitive.subtype, block)
+                    .initialValue(new VariableInitialization(primitive.defaultValue))
+                    .build();
 
-    @ParameterizedTest(name = "{0} / {1}")
-    @MethodSource("blocksAndPrimitives")
-    void Initialized_primitive_variable_keeps_the_normalized_literal(Block block, Primitive primitive)
-            throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock()
-                .var(block, "var1 : " + primitive.typeName + " := " + primitive.literal));
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(block, "var1 : " + primitive.typeName)
+            );
+            SymbolTable symbolTable = results.symbolTable();
 
-        assertSymbol(st, SourceCode.key("var1"), variable(primitive.subtype, block)
-                .initialValue(new VariableInitialization(primitive.storedLiteral))
-                .build());
-    }
+            assertSymbol(symbolTable, symbol, expectedInfo);
+        }
 
-    @Test
-    void Every_identifier_in_a_list_is_published_with_the_same_metadata() throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().var(Block.VAR, "first, second : INT"));
+        @ParameterizedTest(name = "{0} / {1}")
+        @MethodSource("integration.lexer.parser.symboltable.PrimitiveIT#blocksAndPrimitives")
+        void Initialized_primitive_variable_keeps_the_normalized_literal(Block block, Primitive primitive) throws Exception {
+            String symbol = SourceCode.key("var1");
+            LexemeInfo expectedInfo = variable(primitive.subtype, block)
+                    .initialValue(new VariableInitialization(primitive.storedLiteral))
+                    .build();
 
-        for (String identifier : new String[]{"first", "second"}) {
-            assertSymbolWithValue(st, SourceCode.key(identifier), variable(Subtype.INT, Block.VAR), "0");
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(block, "var1 : " + primitive.typeName + " := " + primitive.literal)
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
+        }
+
+        @Test
+        void Every_identifier_in_a_list_is_published_with_the_same_metadata() throws Exception {
+            LexemeInfo expectedInfo = variable(Subtype.INT, Block.VAR)
+                    .initialValue(new VariableInitialization("0"))
+                    .build();
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(Block.VAR, "first, second : INT")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            for (String identifier : new String[]{"first", "second"}) {
+                String symbol = SourceCode.key(identifier);
+                assertSymbol(symbolTable, symbol, expectedInfo);
+            }
+        }
+
+        @Test
+        void Variables_take_the_source_of_the_block_they_are_declared_in() throws Exception {
+            String symbolIn1 = SourceCode.key("in1");
+            LexemeInfo expectedInfoIn1 = variable(Subtype.INT, Block.VAR_INPUT)
+                    .initialValue(new VariableInitialization("0"))
+                    .build();
+
+            String symbolOut1 = SourceCode.key("out1");
+            LexemeInfo expectedInfoOut1 = variable(Subtype.REAL, Block.VAR_OUTPUT)
+                    .initialValue(new VariableInitialization("0.0"))
+                    .build();
+
+            String symbolLocal1 = SourceCode.key("local1");
+            LexemeInfo expectedInfoLocal1 = variable(Subtype.BOOL, Block.VAR)
+                    .initialValue(new VariableInitialization("FALSE"))
+                    .build();
+
+            String symbolLocal2 = SourceCode.key("local2");
+            LexemeInfo expectedInfoLocal2 = variable(Subtype.BOOL, Block.VAR)
+                    .initialValue(new VariableInitialization("FALSE"))
+                    .build();
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(Block.VAR_INPUT, "in1 : INT")
+                            .var(Block.VAR_OUTPUT, "out1 : REAL")
+                            .var(Block.VAR, "local1 : BOOL")
+                            .var(Block.VAR, "local2 : BOOL")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbolIn1, expectedInfoIn1);
+            assertSymbol(symbolTable, symbolOut1, expectedInfoOut1);
+            assertSymbol(symbolTable, symbolLocal1, expectedInfoLocal1);
+            assertSymbol(symbolTable, symbolLocal2, expectedInfoLocal2);
+        }
+
+        /**
+         * Known gap: {@code Factory.createPrimitiveInitialization} only supports BOOL, REAL, LREAL, STRING, WSTRING
+         * and integers, so declaring a TIME/DATE/bit-string variable throws IllegalArgumentException.
+         */
+        @ParameterizedTest
+        @EnumSource(value = Subtype.class, names = {
+                "TIME", "DATE", "TIME_OF_DAY", "DATE_AND_TIME", "BYTE", "WORD", "DWORD", "LWORD"
+        })
+        @NotYetImplemented
+        void Temporal_and_bit_string_variables_are_published_with_their_subtype(Subtype subtype) throws Exception {
+            String symbol = SourceCode.key("var1");
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(Block.VAR, "var1 : " + subtype.name())
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            LexemeInfo info = symbolTable.get(symbol);
+            assertNotNull(info);
+            assertEquals(subtype, info.subtype);
         }
     }
 
-    @Test
-    void Variables_take_the_source_of_the_block_they_are_declared_in() throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock()
-                .var(Block.VAR_INPUT, "in1 : INT")
-                .var(Block.VAR_OUTPUT, "out1 : REAL")
-                .var(Block.VAR, "local1 : BOOL")
-                .var(Block.VAR, "local2 : BOOL"));
+    @Nested
+    class Errors {
 
-        assertSymbolWithValue(st, SourceCode.key("in1"), variable(Subtype.INT, Block.VAR_INPUT), "0");
-        assertSymbolWithValue(st, SourceCode.key("out1"), variable(Subtype.REAL, Block.VAR_OUTPUT), "0.0");
-        assertSymbolWithValue(st, SourceCode.key("local1"), variable(Subtype.BOOL, Block.VAR), "FALSE");
-        assertSymbolWithValue(st, SourceCode.key("local2"), variable(Subtype.BOOL, Block.VAR), "FALSE");
-    }
+        @Test
+        @NotYetImplemented
+        void Real_variable_initialized_with_a_string_is_rejected() throws Exception {
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .var(Block.VAR, "var1 : REAL := 'text'")
+            );
+        }
 
-    /**
-     * Known gap: {@code Factory.createPrimitiveInitialization} only supports BOOL, REAL, LREAL, STRING, WSTRING
-     * and integers, so declaring a TIME/DATE/bit-string variable throws IllegalArgumentException.
-     */
-    @ParameterizedTest
-    @EnumSource(value = Subtype.class, names = {
-            "TIME", "DATE", "TIME_OF_DAY", "DATE_AND_TIME", "BYTE", "WORD", "DWORD", "LWORD"
-    })
-    @NotYetImplemented
-    void Temporal_and_bit_string_variables_are_published_with_their_subtype(Subtype subtype) throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().var(Block.VAR, "var1 : " + subtype.name()));
-
-        LexemeInfo info = st.get(SourceCode.key("var1"));
-        assertNotNull(info);
-        assertEquals(subtype, info.subtype);
-    }
-
-    // ---------------------------------------------------------------- errors
-
-    @Test
-    @NotYetImplemented
-    void Real_variable_initialized_with_a_string_is_rejected() throws Exception {
-        assertRejected(SourceCode.functionBlock().var(Block.VAR, "var1 : REAL := 'text'"));
-    }
-
-    /** Already enforced by the grammar: {@code initialized_boolean} only accepts a boolean constant. */
-    @Test
-    void Bool_variable_initialized_with_an_integer_is_rejected() throws Exception {
-        assertRejected(SourceCode.functionBlock().var(Block.VAR, "var1 : BOOL := 42"));
+        /** Already enforced by the grammar: {@code initialized_boolean} only accepts a boolean constant. */
+        @Test
+        void Bool_variable_initialized_with_an_integer_is_rejected() throws Exception {
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .var(Block.VAR, "var1 : BOOL := 42")
+            );
+        }
     }
 }

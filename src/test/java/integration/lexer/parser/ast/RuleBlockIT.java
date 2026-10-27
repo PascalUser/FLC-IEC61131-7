@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import utils.ParserTestSupport;
+import utils.ParsingResults;
 import utils.SourceCode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,6 +26,7 @@ import static utils.AstTestSupport.render;
 /**
  * Integration tests for RULEBLOCK AST construction, written against the architecture defined in
  * {@code Parser.y}.
+ *
  * <p>
  * Rule numbers are not represented in the AST, and operators are built as generic
  * {@link OperatorNode}s rather than as the concrete subclasses used by the AST unit tests.
@@ -60,8 +62,8 @@ public class RuleBlockIT extends ParserTestSupport {
         return "    RULE " + number + ": IF " + condition + " THEN " + conclusions + ";";
     }
 
-    private static String rule(int number, String condition, String conclusions, String weight) {
-        return "    RULE " + number + ": IF " + condition + " THEN " + conclusions + " WITH " + weight + ";";
+    private static String rule(String weight) {
+        return "    RULE " + 1 + ": IF " + "humidity IS middle" + " THEN " + "dT1 IS zero" + " WITH " + weight + ";";
     }
 
     private static RuleBlockNode onlyRuleBlock(AbstractSyntaxTree ast) {
@@ -84,7 +86,11 @@ public class RuleBlockIT extends ParserTestSupport {
     }
 
     private AbstractSyntaxTree parseRules(String... rules) throws Exception {
-        return parseAst(SourceCode.functionBlock().body(defaultRuleBlock(rules)));
+        ParsingResults results = parse(
+                SourceCode.functionBlock()
+                        .body(defaultRuleBlock(rules))
+        );
+        return results.abstractSyntaxTree();
     }
 
     @Nested
@@ -92,7 +98,8 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Empty_function_block_has_an_empty_root() throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock());
+            ParsingResults results = parse(SourceCode.functionBlock());
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
             assertEquals("root", ast.label());
             assertTrue(ast.children().isEmpty());
@@ -100,8 +107,11 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Ruleblock_is_scoped_with_the_function_block_name() throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock().body(defaultRuleBlock()));
-
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock())
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
             RuleBlockNode ruleBlock = onlyRuleBlock(ast);
 
             assertEquals("MAIN#INFERENCE", ruleBlock.label());
@@ -110,9 +120,12 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Multiple_ruleblocks_keep_source_order() throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock()
-                    .body(ruleBlock("first", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION))
-                    .body(ruleBlock("second", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION)));
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(ruleBlock("first", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION))
+                            .body(ruleBlock("second", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION))
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
             assertEquals(2, ast.children().size());
             assertEquals("MAIN#FIRST", ast.children().get(0).label());
@@ -121,8 +134,11 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Empty_ruleblock_has_an_empty_accumulation_operator() throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock().body(defaultRuleBlock()));
-
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock())
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
             OperatorNode accumulation = onlyRuleBlock(ast).accumulation();
 
             assertEquals(Operator.MAX, accumulation.operator());
@@ -131,9 +147,7 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Simple_rule_builds_accumulation_if_condition_and_body() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(7, "humidity IS middle", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedTree = lines(
                     "MAIN#INFERENCE",
                     "  MAX",
                     "    IF",
@@ -146,16 +160,16 @@ public class RuleBlockIT extends ParserTestSupport {
                     "          IS",
                     "            DT1",
                     "            ZERO"
-            ), render(ast));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(7, "humidity IS middle", "dT1 IS zero"));
+
+            assertEquals(expectedTree, render(ast));
         }
 
         @Test
         void Multiple_rules_preserve_source_order() throws Exception {
-            AbstractSyntaxTree ast = parseRules(
-                    rule(1, "humidity IS low", "dT1 IS zero"),
-                    rule(2, "humidity IS high", "dT1 IS positive"));
-
-            assertEquals(lines(
+            String expectedTree = lines(
                     "MAIN#INFERENCE",
                     "  MAX",
                     "    IF",
@@ -178,18 +192,19 @@ public class RuleBlockIT extends ParserTestSupport {
                     "          IS",
                     "            DT1",
                     "            POSITIVE"
-            ), render(ast));
+            );
+
+            AbstractSyntaxTree ast = parseRules(
+                    rule(1, "humidity IS low", "dT1 IS zero"),
+                    rule(2, "humidity IS high", "dT1 IS positive")
+            );
+
+            assertEquals(expectedTree, render(ast));
         }
 
         @Test
         void Multiple_ruleblocks_with_rules_preserve_source_order() throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock()
-                    .body(ruleBlock("first", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION,
-                            rule(1, "humidity IS low", "dT1 IS zero")))
-                    .body(ruleBlock("second", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION,
-                            rule(1, "humidity IS high", "dT1 IS positive"))));
-
-            assertEquals(lines(
+            String expectedTree = lines(
                     "root",
                     "  MAIN#FIRST",
                     "    MAX",
@@ -215,7 +230,18 @@ public class RuleBlockIT extends ParserTestSupport {
                     "            IS",
                     "              DT1",
                     "              POSITIVE"
-            ), render(ast));
+            );
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(ruleBlock("first", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION,
+                                    rule(1, "humidity IS low", "dT1 IS zero")))
+                            .body(ruleBlock("second", DEFAULT_OPERATORS, "", DEFAULT_ACCUMULATION,
+                                    rule(1, "humidity IS high", "dT1 IS positive")))
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
+
+            assertEquals(expectedTree, render(ast));
         }
     }
 
@@ -224,59 +250,64 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Simple_is_condition_builds_an_is_node() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  IS",
                     "    HUMIDITY",
                     "    MIDDLE"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Is_not_condition_builds_not_over_is() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS NOT middle", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  NOT",
                     "    IS",
                     "      HUMIDITY",
                     "      MIDDLE"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS NOT middle", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Not_condition_negates_a_subcondition() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "NOT (humidity IS middle)", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  NOT",
                     "    IS",
                     "      HUMIDITY",
                     "      MIDDLE"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "NOT (humidity IS middle)", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Bare_identifier_condition_builds_an_identifier_node() throws Exception {
+            String expectedAst = lines(
+                    "COND",
+                    "  HUMIDITY"
+            );
+
             AbstractSyntaxTree ast = parseRules(rule(1, "humidity", "dT1 IS zero"));
 
             assertInstanceOf(IdentifierNode.class, condition(ast).condition());
-            assertEquals(lines(
-                    "COND",
-                    "  HUMIDITY"
-            ), render(condition(ast)));
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void And_condition_uses_the_configured_operator() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(
-                    1, "humidity IS middle AND color IS brown", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  MIN",
                     "    IS",
@@ -285,15 +316,16 @@ public class RuleBlockIT extends ParserTestSupport {
                     "    IS",
                     "      COLOR",
                     "      BROWN"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle AND color IS brown", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Or_condition_uses_the_configured_operator() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(
-                    1, "humidity IS middle OR color IS brown", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  MAX",
                     "    IS",
@@ -302,29 +334,30 @@ public class RuleBlockIT extends ParserTestSupport {
                     "    IS",
                     "      COLOR",
                     "      BROWN"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle OR color IS brown", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Parentheses_do_not_add_a_node() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "(humidity IS middle)", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  IS",
                     "    HUMIDITY",
                     "    MIDDLE"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "(humidity IS middle)", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Or_has_lower_precedence_than_and() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(
-                    1,
-                    "humidity IS middle OR color IS brown AND temperature IS high",
-                    "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  MAX",
                     "    IS",
@@ -337,17 +370,16 @@ public class RuleBlockIT extends ParserTestSupport {
                     "      IS",
                     "        TEMPERATURE",
                     "        HIGH"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle OR color IS brown AND temperature IS high", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
 
         @Test
         void Chained_and_is_right_nested() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(
-                    1,
-                    "humidity IS low AND color IS brown AND temperature IS high",
-                    "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "COND",
                     "  MIN",
                     "    IS",
@@ -360,7 +392,11 @@ public class RuleBlockIT extends ParserTestSupport {
                     "      IS",
                     "        TEMPERATURE",
                     "        HIGH"
-            ), render(condition(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS low AND color IS brown AND temperature IS high", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(condition(ast)));
         }
     }
 
@@ -369,33 +405,34 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Explicit_conclusion_builds_an_is_node() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "MIN",
                     "  IS",
                     "    DT1",
                     "    ZERO"
-            ), render(activation(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero"));
+
+            assertEquals(expectedAst, render(activation(ast)));
         }
 
         @Test
         void Implicit_conclusion_builds_an_identifier_node() throws Exception {
+            String expectedAst = lines(
+                    "MIN",
+                    "  DT1"
+            );
+
             AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1"));
 
             assertInstanceOf(IdentifierNode.class, activation(ast).children().get(0));
-            assertEquals(lines(
-                    "MIN",
-                    "  DT1"
-            ), render(activation(ast)));
+            assertEquals(expectedAst, render(activation(ast)));
         }
 
         @Test
         void Comma_separated_conclusions_preserve_order() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(
-                    1, "humidity IS middle", "dT1 IS zero, dT2 IS positive, dT3"));
-
-            assertEquals(lines(
+            String expectedAst = lines(
                     "MIN",
                     "  IS",
                     "    DT1",
@@ -404,13 +441,16 @@ public class RuleBlockIT extends ParserTestSupport {
                     "    DT2",
                     "    POSITIVE",
                     "  DT3"
-            ), render(activation(ast)));
+            );
+
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero, dT2 IS positive, dT3"));
+
+            assertEquals(expectedAst, render(activation(ast)));
         }
 
         @Test
         void Numeric_with_builds_a_numeric_weight() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero", "0.5"));
-
+            AbstractSyntaxTree ast = parseRules(rule("0.5"));
             WithNode with = (WithNode) onlyRuleBlock(ast).accumulation().children().get(0);
 
             assertEquals(Weight.numeric(".5"), with.weight());
@@ -420,8 +460,7 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Identifier_with_preserves_the_identifier_kind() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle", "dT1 IS zero", "weight"));
-
+            AbstractSyntaxTree ast = parseRules(rule("weight"));
             WithNode with = (WithNode) onlyRuleBlock(ast).accumulation().children().get(0);
 
             assertEquals(Weight.identifier("MAIN#WEIGHT"), with.weight());
@@ -433,10 +472,7 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Default_operators_are_max_min_and_min() throws Exception {
-            AbstractSyntaxTree ast = parseRules(rule(
-                    1,
-                    "humidity IS middle OR color IS brown AND temperature IS high",
-                    "dT1 IS zero"));
+            AbstractSyntaxTree ast = parseRules(rule(1, "humidity IS middle OR color IS brown AND temperature IS high", "dT1 IS zero"));
 
             OperatorNode or = (OperatorNode) condition(ast).condition();
             OperatorNode and = (OperatorNode) or.children().get(1);
@@ -452,9 +488,13 @@ public class RuleBlockIT extends ParserTestSupport {
             String operators = String.join("\n",
                     "    OR: ASUM",
                     "    AND: PROD;");
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock().body(ruleBlock(
-                    "inference", operators, "    ACT: PROD;", "    ACCU: BSUM;",
-                    rule(1, "humidity IS middle OR color IS brown AND temperature IS high", "dT1 IS zero"))));
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(ruleBlock("inference", operators, "    ACT: PROD;", "    ACCU: BSUM;",
+                                    rule(1, "humidity IS middle OR color IS brown AND temperature IS high", "dT1 IS zero")))
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
             OperatorNode or = (OperatorNode) condition(ast).condition();
             OperatorNode and = (OperatorNode) or.children().get(1);
@@ -468,34 +508,47 @@ public class RuleBlockIT extends ParserTestSupport {
         @ParameterizedTest(name = "ACCU: {0}")
         @CsvSource({"MAX", "BSUM", "NSUM"})
         void Accumulation_operator_is_preserved(String operator) throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock().body(ruleBlock(
-                    "inference", DEFAULT_OPERATORS, "", "    ACCU: " + operator + ";")));
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(ruleBlock("inference", DEFAULT_OPERATORS, "", "    ACCU: " + operator + ";"))
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
             assertEquals(Operator.valueOf(operator), onlyRuleBlock(ast).accumulation().operator());
         }
 
         @Test
         void Operator_node_is_generic() throws Exception {
-            AbstractSyntaxTree ast = parseAst(SourceCode.functionBlock().body(defaultRuleBlock()));
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock())
+            );
+            AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
             assertEquals(OperatorNode.class, onlyRuleBlock(ast).accumulation().getClass());
         }
 
         @Test
         void Missing_accu_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(String.join("\n",
-                    "RULEBLOCK inference",
-                    "    ;",
-                    "END_RULEBLOCK")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(String.join("\n",
+                                    "RULEBLOCK inference",
+                                    "    ;",
+                                    "END_RULEBLOCK"))
+            );
         }
 
         @Test
         void Invalid_ruleblock_operator_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(String.join("\n",
-                    "RULEBLOCK inference",
-                    "    OR: MIN;",
-                    "    ACCU: MAX;",
-                    "END_RULEBLOCK")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(String.join("\n",
+                                    "RULEBLOCK inference",
+                                    "    OR: MIN;",
+                                    "    ACCU: MAX;",
+                                    "END_RULEBLOCK"))
+            );
         }
     }
 
@@ -504,34 +557,45 @@ public class RuleBlockIT extends ParserTestSupport {
 
         @Test
         void Missing_rule_number_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(defaultRuleBlock(
-                    "    RULE: IF humidity IS middle THEN dT1 IS zero;")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock("    RULE: IF humidity IS middle THEN dT1 IS zero;"))
+            );
         }
 
         @Test
         void Missing_then_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(defaultRuleBlock(
-                    "    RULE 1: IF humidity IS middle dT1 IS zero;")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock("    RULE 1: IF humidity IS middle dT1 IS zero;"))
+            );
         }
 
         @Test
         void Missing_semicolon_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(defaultRuleBlock(
-                    "    RULE 1: IF humidity IS middle THEN dT1 IS zero")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock("    RULE 1: IF humidity IS middle THEN dT1 IS zero"))
+            );
         }
 
         @Test
         void Missing_end_ruleblock_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(String.join("\n",
-                    "RULEBLOCK inference",
-                    "    ;",
-                    "    ACCU: MAX;")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(String.join("\n",
+                                    "RULEBLOCK inference",
+                                    "    ;",
+                                    "    ACCU: MAX;"))
+            );
         }
 
         @Test
         void Malformed_condition_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock().body(defaultRuleBlock(
-                    "    RULE 1: IF humidity IS THEN dT1 IS zero;")));
+            assertRejected(
+                    SourceCode.functionBlock()
+                            .body(defaultRuleBlock("    RULE 1: IF humidity IS THEN dT1 IS zero;"))
+            );
         }
     }
 }

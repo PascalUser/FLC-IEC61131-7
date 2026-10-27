@@ -1,8 +1,10 @@
 package integration.lexer.parser.symboltable;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import utils.LexemeInfo;
 import utils.ParserTestSupport;
+import utils.ParsingResults;
 import utils.SourceCode;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
@@ -13,9 +15,6 @@ import utils.enums.Use;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Integration tests for FUZZIFY blocks, written against the "Fuzzifier" page of the symbol table
@@ -52,48 +51,85 @@ public class FuzzifierIT extends ParserTestSupport {
                 .superiorLimits(superior);
     }
 
-    @Test
-    void Fuzzify_block_with_point_list_terms_is_accepted() throws Exception {
-        parse(SourceCode.functionBlock().body(HUMIDITY));
-    }
-
-    @Test
-    void Anonymous_fuzzifier_is_published_with_the_names_of_its_terms() throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
-
-        assertSymbol(st, ANONYMOUS_FUZZIFIER, new LexemeInfoBuilder()
+    private static LexemeInfoBuilder fuzzifierComponent(List<String> terms) {
+        return new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.NONE)
                 .use(Use.COMPONENT)
                 .source(Source.FUZZIFY)
-                .parameters(list("LOW", "MIDDLE", "HIGH"))
-                .build());
+                .parameters(terms);
     }
 
-    /** The documentation specifies LINEAR for "low"; "high" also has two points and is assumed alike. */
-    @Test
-    @NotYetImplemented
-    void Term_with_two_points_is_linear_and_keeps_its_points_as_limits() throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
+    @Nested
+    class AsFuzzifier {
 
-        assertSymbol(st, "MAIN#HUMIDITY#LOW",  term(list("30", "50"), list("1", "0")).build());
-        assertSymbol(st, "MAIN#HUMIDITY#HIGH", term(list("70", "80"), list("0", "1")).build());
+        @Test
+        void Fuzzify_block_with_point_list_terms_is_accepted() throws Exception {
+            parse(
+                    SourceCode.functionBlock()
+                            .body(HUMIDITY)
+            );
+        }
+
+        @Test
+        void Anonymous_fuzzifier_is_published_with_the_names_of_its_terms() throws Exception {
+            LexemeInfo expectedInfo = fuzzifierComponent(list("LOW", "MIDDLE", "HIGH")).build();
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(HUMIDITY)
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, ANONYMOUS_FUZZIFIER, expectedInfo);
+        }
     }
 
-    /**
-     * The documentation does not give the subtype of a four-point term, so only the common attributes and
-     * the limits (x values as inferior, y values as superior, as in "low") are asserted.
-     */
-    @Test
-    void Term_with_four_points_is_published_with_its_points_as_limits() throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().body(HUMIDITY));
+    @Nested
+    class AsTerms {
 
-        LexemeInfo middle = st.get("MAIN#HUMIDITY#MIDDLE");
-        assertNotNull(middle, "MAIN#HUMIDITY#MIDDLE was not published");
-        assertEquals(Type.FUNCTION, middle.type);
-        assertEquals(Use.TERM, middle.use);
-        assertEquals(Source.FUZZIFY, middle.source);
-        assertEquals(list("30", "50", "70", "80"), middle.inferiorLimits);
-        assertEquals(list("0", "1", "1", "0"), middle.superiorLimits);
+        /** The documentation specifies LINEAR for "low"; "high" also has two points and is assumed alike. */
+        @Test
+        @NotYetImplemented
+        void Term_with_two_points_is_linear_and_keeps_its_points_as_limits() throws Exception {
+            String symbolLow = "MAIN#HUMIDITY#LOW";
+            LexemeInfo expectedInfoLow = term(list("30", "50"), list("1", "0")).build();
+
+            String symbolHigh = "MAIN#HUMIDITY#HIGH";
+            LexemeInfo expectedInfoHigh = term(list("70", "80"), list("0", "1")).build();
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(HUMIDITY)
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbolLow, expectedInfoLow);
+            assertSymbol(symbolTable, symbolHigh, expectedInfoHigh);
+        }
+
+        /**
+         * The documentation does not give the subtype of a four-point term, so only the common attributes and
+         * the limits (x values as inferior, y values as superior, as in "low") are asserted.
+         */
+        @Test
+        void Term_with_four_points_is_published_with_its_points_as_limits() throws Exception {
+            String symbol = "MAIN#HUMIDITY#MIDDLE";
+            LexemeInfo expectedInfo = new LexemeInfoBuilder()
+                    .type(Type.FUNCTION)
+                    .use(Use.TERM)
+                    .source(Source.FUZZIFY)
+                    .inferiorLimits(list("30", "50", "70", "80"))
+                    .superiorLimits(list("0", "1", "1", "0"))
+                    .build();
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body(HUMIDITY)
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
+        }
     }
 }

@@ -9,10 +9,7 @@ import parser.initializations.leafs.EnumeratedInitialization;
 import parser.initializations.leafs.VariableInitialization;
 import parser.initializations.nodes.RepeatedInitialization;
 import parser.initializations.nodes.StructInitialization;
-import utils.Block;
-import utils.ParserTestSupport;
-import utils.SourceCode;
-import utils.SymbolTable;
+import utils.*;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -71,23 +68,34 @@ public class ArrayIT extends ParserTestSupport {
     class AsTypeDeclaration {
         @Test
         void Array_type_of_a_primitive_publishes_its_bounds_and_repeats_the_default() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock().type("samples_type : ARRAY [0..2] OF INT"));
-
-            assertSymbol(st, "SAMPLES_TYPE", array(Use.TYPE, Source.NONE, Subtype.INT, list("0"), list("2"))
-                    .initialValue(repeated(3, intDefault()))
-                    .build());
+            String symbol = "SAMPLES_TYPE";
+            LexemeInfoBuilder array = array(Use.TYPE, Source.NONE, Subtype.INT, list("0"), list("2"));
+            LexemeInfo expectedInfo = array.initialValue(repeated(3, intDefault())).build();
+            
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .type("samples_type : ARRAY [0..2] OF INT")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+             
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
 
         @Test
         void Array_type_of_a_struct_repeats_the_struct_default() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .type(COLOR_TYPE)
-                    .type("pixels_type : ARRAY [0..1] OF color_type"));
-
-            assertSymbol(st, "PIXELS_TYPE", array(Use.TYPE, Source.NONE, Subtype.CUSTOM, list("0"), list("1"))
-                    .customType("COLOR_TYPE")
+            String symbol = "PIXELS_TYPE";
+            LexemeInfo expectedInfo = array(Use.TYPE, Source.NONE, Subtype.CUSTOM, list("0"), list("1"))
                     .initialValue(repeated(2, colorWithDefaultClassification(".5")))
-                    .build());
+                    .build();
+            
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                        .type(COLOR_TYPE)
+                        .type("pixels_type : ARRAY [0..1] OF color_type")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
     }
 
@@ -96,68 +104,92 @@ public class ArrayIT extends ParserTestSupport {
         @ParameterizedTest
         @EnumSource(Block.class)
         void Array_of_a_primitive_publishes_its_bounds_and_repeats_the_default(Block block) throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock().var(block, "readings : ARRAY [1..3] OF REAL"));
+            String symbol = SourceCode.key("grid");
+            LexemeInfo expectedInfo = array(Use.VARIABLE, block.source(), Subtype.REAL, list("1"), list("3"))
+                    .initialValue(repeated(3, realDefault()))
+                    .build();
 
-            assertSymbol(st, SourceCode.key("readings"),
-                    array(Use.VARIABLE, block.source(), Subtype.REAL, list("1"), list("3"))
-                            .initialValue(repeated(3, realDefault()))
-                            .build());
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(block, "readings : ARRAY [1..3] OF REAL")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
 
         @Test
         void Multidimensional_array_dimension_is_the_product_of_its_ranges() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock().var(Block.VAR, "grid : ARRAY [0..1, 0..2] OF INT"));
+            String symbol = SourceCode.key("grid");
+            LexemeInfo expectedInfo = array(Use.VARIABLE, Source.INTERNAL, Subtype.INT, list("0","0"), list("1","2"))
+                    .initialValue(repeated(6, intDefault()))
+                    .build();
 
-            assertSymbol(st, SourceCode.key("grid"),
-                    array(Use.VARIABLE, Source.INTERNAL, Subtype.INT, list("0", "0"), list("1", "2"))
-                            .initialValue(repeated(6, intDefault()))
-                            .build());
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .var(Block.VAR, "grid : ARRAY [0..1, 0..2] OF INT")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
 
         @ParameterizedTest
         @EnumSource(Block.class)
         void Array_of_a_struct_type_repeats_the_struct_default(Block block) throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .type(COLOR_TYPE)
-                    .var(block, "pixels : ARRAY [0..1] OF color_type"));
+            String symbol = SourceCode.key("pixels");
+            LexemeInfo expectedInfo = array(Use.VARIABLE, block.source(), Subtype.CUSTOM, list("0"), list("1"))
+                    .customType("COLOR_TYPE")
+                    .initialValue(repeated(2, colorWithDefaultClassification(".5")))
+                    .build();
 
-            assertSymbol(st, SourceCode.key("pixels"),
-                    array(Use.VARIABLE, block.source(), Subtype.CUSTOM, list("0"), list("1"))
-                            .customType("COLOR_TYPE")
-                            .initialValue(repeated(2, colorWithDefaultClassification(".5")))
-                            .build());
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                        .type(COLOR_TYPE)
+                        .var(block, "pixels : ARRAY [0..1] OF color_type")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
 
         @Test
         void Each_initializer_element_gets_its_own_interval() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .var(Block.VAR, "values1 : ARRAY [0..3] OF INT := [1, 2, 3, 4]"));
-
+            String symbol = SourceCode.key("values1");
             RepeatedInitialization expected = repeated(4, intDefault());
             expected.put("0", new VariableInitialization("1"));
             expected.put("1", new VariableInitialization("2"));
             expected.put("2", new VariableInitialization("3"));
             expected.put("3", new VariableInitialization("4"));
+            LexemeInfo expectedInfo = array(Use.VARIABLE, Source.INTERNAL, Subtype.INT, list("0"), list("3"))
+                    .initialValue(expected)
+                    .build();
 
-            assertSymbol(st, SourceCode.key("values1"),
-                    array(Use.VARIABLE, Source.INTERNAL, Subtype.INT, list("0"), list("3"))
-                            .initialValue(expected)
-                            .build());
+            ParsingResults results = parse(SourceCode.functionBlock()
+                    .var(Block.VAR, "values1 : ARRAY [0..3] OF INT := [1, 2, 3, 4]"));
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
+
         }
 
         @Test
         void Array_element_with_a_repetition_factor_covers_that_many_positions() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .var(Block.VAR, "values1 : ARRAY [0..3] OF INT := [3(7), 9]"));
-
+            String symbol = SourceCode.key("values1");
             RepeatedInitialization expected = repeated(4, intDefault());
             expected.put("0..2", new VariableInitialization("7"));
             expected.put("3", new VariableInitialization("9"));
+            LexemeInfo expectedInfo = array(Use.VARIABLE, Source.INTERNAL, Subtype.INT, list("0"), list("3"))
+                    .initialValue(expected)
+                    .build();
 
-            assertSymbol(st, SourceCode.key("values1"),
-                    array(Use.VARIABLE, Source.INTERNAL, Subtype.INT, list("0"), list("3"))
-                            .initialValue(expected)
-                            .build());
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                        .var(Block.VAR, "values1 : ARRAY [0..3] OF INT := [3(7), 9]")
+            );
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
 
         /**
@@ -167,32 +199,40 @@ public class ArrayIT extends ParserTestSupport {
          */
         @ParameterizedTest
         @EnumSource(Block.class)
-        void Repeated_struct_overrides_fill_exactly_the_array_dimension(Block block)
-                throws Exception {
-            String initializer = String.join("\n",
+        void Repeated_struct_overrides_fill_exactly_the_array_dimension(Block block) throws Exception {
+            String symbol = SourceCode.key("pixels");
+            RepeatedInitialization expected = repeated(40, colorWithDefaultClassification(".5"));
+            expected.put("0..19",  colorWithDefaultClassification("1.0"));
+            expected.put("20",     colorWithDefaultClassification("2.0"));
+            expected.put("21..30", colorWithDefaultClassification("3.0"));
+            expected.put("31..37", colorWithDefaultClassification("4.0"));
+            expected.put("38..39", colorWithDefaultClassification("5.0"));
+            LexemeInfo expectedInfo = array(
+                    Use.VARIABLE, block.source(),
+                    Subtype.CUSTOM,
+                    list("0", "1", "3"),
+                    list("1", "10", "4"))
+                    .customType("COLOR_TYPE")
+                    .initialValue(expected)
+                    .build();
+            String strCode = String.join("pixels : ARRAY [0..1, 1..10, 3..4] OF color_type := \n",
                     "[",
                     "    20 ((gamma := 1.0)),",
                     "        (gamma := 2.0),",
                     "    10 ((gamma := 3.0)),",
                     "     7 ((gamma := 4.0)),",
                     "     2 ((gamma := 5.0))",
-                    "]");
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .type(COLOR_TYPE)
-                    .var(block, "pixels : ARRAY [0..1, 1..10, 3..4] OF color_type := " + initializer));
+                    "]"
+            );
 
-            RepeatedInitialization expected = repeated(40, colorWithDefaultClassification(".5"));
-            expected.put("0..19", colorWithDefaultClassification("1.0"));
-            expected.put("20", colorWithDefaultClassification("2.0"));
-            expected.put("21..30", colorWithDefaultClassification("3.0"));
-            expected.put("31..37", colorWithDefaultClassification("4.0"));
-            expected.put("38..39", colorWithDefaultClassification("5.0"));
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                        .type(COLOR_TYPE)
+                        .var(block, strCode)
+            );
+            SymbolTable symbolTable = results.symbolTable();
 
-            assertSymbol(st, SourceCode.key("pixels"),
-                    array(Use.VARIABLE, block.source(), Subtype.CUSTOM, list("0", "1", "3"), list("1", "10", "4"))
-                            .customType("COLOR_TYPE")
-                            .initialValue(expected)
-                            .build());
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
 
         /**
@@ -203,18 +243,21 @@ public class ArrayIT extends ParserTestSupport {
         @Test
         @NotYetImplemented
         void Enumerator_override_inside_an_array_element_is_qualified_with_the_struct_type_scope() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .type(COLOR_TYPE)
-                    .var(Block.VAR, "pixels : ARRAY [0..0] OF color_type := [(classification := BLACK)]"));
-
+            String symbol = SourceCode.key("pixels");
             RepeatedInitialization expected = repeated(1, colorWithDefaultClassification(".5"));
             expected.put("0", color(new VariableInitialization("COLOR_TYPE#BLACK"), ".5"));
+            LexemeInfo expectedInfo = array(Use.VARIABLE, Source.INTERNAL, Subtype.CUSTOM, list("0"), list("0"))
+                    .customType("COLOR_TYPE")
+                    .initialValue(expected)
+                    .build();
 
-            assertSymbol(st, SourceCode.key("pixels"),
-                    array(Use.VARIABLE, Source.INTERNAL, Subtype.CUSTOM, list("0"), list("0"))
-                            .customType("COLOR_TYPE")
-                            .initialValue(expected)
-                            .build());
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                        .type(COLOR_TYPE)
+                        .var(Block.VAR, "pixels : ARRAY [0..0] OF color_type := [(classification := BLACK)]"));
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
     }
 
@@ -222,12 +265,16 @@ public class ArrayIT extends ParserTestSupport {
     class AsStructField {
         @Test
         void Array_field_publishes_its_bounds_and_repeats_the_default() throws Exception {
-            SymbolTable st = parse(SourceCode.functionBlock()
-                    .type("signal_type : STRUCT samples : ARRAY [0..2] OF REAL; END_STRUCT"));
-
-            assertSymbol(st, "SIGNAL_TYPE#SAMPLES", array(Use.FIELD, Source.NONE, Subtype.REAL, list("0"), list("2"))
+            String symbol = "SIGNAL_TYPE#SAMPLES";
+            LexemeInfo expectedInfo = array(Use.FIELD, Source.NONE, Subtype.REAL, list("0"), list("2"))
                     .initialValue(repeated(3, realDefault()))
-                    .build());
+                    .build();
+
+            ParsingResults results = parse(SourceCode.functionBlock()
+                    .type("signal_type : STRUCT samples : ARRAY [0..2] OF REAL; END_STRUCT"));
+            SymbolTable symbolTable = results.symbolTable();
+
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
     }
 
@@ -236,22 +283,28 @@ public class ArrayIT extends ParserTestSupport {
         @Test
         @NotYetImplemented
         void Initializer_with_more_elements_than_the_dimension_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock()
-                    .var(Block.VAR, "values1 : ARRAY [1..2] OF INT := [1, 2, 3]"));
+            assertRejected(
+                SourceCode.functionBlock()
+                    .var(Block.VAR, "values1 : ARRAY [1..2] OF INT := [1, 2, 3]")
+            );
         }
 
         @Test
         @NotYetImplemented
         void Initializer_element_of_the_wrong_type_is_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock()
-                    .var(Block.VAR, "values1 : ARRAY [1..2] OF INT := ['a', 'b']"));
+            assertRejected(
+                SourceCode.functionBlock()
+                    .var(Block.VAR, "values1 : ARRAY [1..2] OF INT := ['a', 'b']")
+            );
         }
 
         @Test
         @NotYetImplemented
         void Reversed_bounds_are_rejected() throws Exception {
-            assertRejected(SourceCode.functionBlock()
-                    .var(Block.VAR, "values1 : ARRAY [5..1] OF INT"));
+            assertRejected(
+                SourceCode.functionBlock()
+                    .var(Block.VAR, "values1 : ARRAY [5..1] OF INT")
+            );
         }
     }
 }

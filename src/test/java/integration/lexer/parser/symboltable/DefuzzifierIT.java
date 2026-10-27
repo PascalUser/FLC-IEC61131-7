@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import parser.initializations.leafs.VariableInitialization;
-import utils.ParserTestSupport;
-import utils.SourceCode;
-import utils.SymbolTable;
+import utils.*;
+import utils.ParsingResults;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -37,7 +36,7 @@ public class DefuzzifierIT extends ParserTestSupport {
             "END_DEFUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_DEFUZZIFIER = "MAIN#DT1@defuzzifier";
+    private static final String ANONYMOUS_DEFUZZIFIER = "DT1@defuzzifier";
 
     @Test
     void Defuzzify_block_with_singleton_terms_is_accepted() throws Exception {
@@ -51,31 +50,44 @@ public class DefuzzifierIT extends ParserTestSupport {
      */
     @Test
     void Anonymous_defuzzifier_is_published_with_its_term_names_and_default_value() throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().body(DT1));
-
-        assertSymbol(st, ANONYMOUS_DEFUZZIFIER, new LexemeInfoBuilder()
+        String symbol = SourceCode.key(ANONYMOUS_DEFUZZIFIER);
+        LexemeInfo expectedInfo = new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.COGS)
                 .use(Use.COMPONENT)
                 .source(Source.DEFUZZIFY)
                 .parameters(Arrays.asList("NEGATIVE", "ZERO", "POSITIVE"))
                 .initialValue(new VariableInitialization("0"))
-                .build());
+                .build();
+
+        ParsingResults results = parse(
+                SourceCode.functionBlock()
+                        .body(DT1)
+        );
+        SymbolTable symbolTable = results.symbolTable();
+
+        assertSymbol(symbolTable, symbol, expectedInfo);
     }
 
     @ParameterizedTest(name = "{0}")
     @CsvSource({"NEGATIVE, -5", "ZERO, 0", "POSITIVE, 5"})
-    void Singleton_term_publishes_its_value_as_the_only_inferior_limit(String term, String value)
-            throws Exception {
-        SymbolTable st = parse(SourceCode.functionBlock().body(DT1));
-
-        assertSymbol(st, "MAIN#DT1#" + term, new LexemeInfoBuilder()
+    void Singleton_term_publishes_its_value_as_the_only_inferior_limit(String term, String value) throws Exception {
+        String symbol = SourceCode.key("DT1#" + term);
+        LexemeInfo expectedInfo = new LexemeInfoBuilder()
                 .type(Type.FUNCTION)
                 .subtype(Subtype.SINGLETON)
                 .use(Use.TERM)
                 .source(Source.DEFUZZIFY)
                 .inferiorLimits(Collections.singletonList(value))
                 .superiorLimits(Collections.singletonList("1"))
-                .build());
+                .build();
+
+        ParsingResults results = parse(
+                SourceCode.functionBlock()
+                        .body(DT1)
+        );
+        SymbolTable symbolTable = results.symbolTable();
+
+        assertSymbol(symbolTable, symbol, expectedInfo);
     }
 }
