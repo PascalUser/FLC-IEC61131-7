@@ -39,7 +39,11 @@ public final class ComponentDeclaration extends SingleDeclaration {
             termDeclarations.setDeclarationScope(identifier);
             termDeclarations.publish();
         }
-        identifier += suffix;
         super.publish();
+    }
+
+    @Override
+    protected String key() {
+        return super.key() + suffix;
     }
 }

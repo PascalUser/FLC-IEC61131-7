@@ -3,6 +3,9 @@ package parser.publishers;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 
+import java.util.Collections;
+import java.util.List;
+
 public class SingleDeclaration extends Declaration {
     protected final SymbolTable symbolTable;
     protected String identifier;
@@ -44,11 +47,20 @@ public class SingleDeclaration extends Declaration {
         if (identifier == null) {
             return;
         }
-        symbolTable.put(
-                (declarationScope == null)
-                        ? identifier
-                        : declarationScope + "#" + identifier,
-                builder.build()
-        );
+        symbolTable.put(key(), builder.build());
+    }
+
+    @Override
+    public List<String> keys() {
+        return (identifier == null) ? Collections.emptyList() : Collections.singletonList(key());
+    }
+
+    /**
+     * Key under which this declaration is published: {@code [scope#]identifier}.
+     *
+     * @return the symbol table key
+     */
+    protected String key() {
+        return (declarationScope == null) ? identifier : declarationScope + "#" + identifier;
     }
 }

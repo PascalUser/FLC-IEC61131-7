@@ -87,8 +87,24 @@
     private String programName;
     private AbstractSyntaxTree ast;
 
+    /**
+     * Keys of the VAR_INPUT and VAR_OUTPUT variables in declaration order: the interface of the
+     * function block. The symbol table is a map and does not keep that order.
+     */
+    private final List<String> interfaceVariables = new ArrayList<>();
+
     public AbstractSyntaxTree getAST() {
         return ast;
+    }
+
+    /**
+     * Returns the keys of the input and output variables in the order they are declared
+     * (e.g. [MAIN#ANGLE, MAIN#SPEED, MAIN#FORCE]). Their direction is in the symbol table (source IN/OUT).
+     *
+     * @return unmodifiable list of symbol table keys
+     */
+    public List<String> getInterfaceVariables() {
+        return Collections.unmodifiableList(interfaceVariables);
     }
 }
 
@@ -366,6 +382,7 @@ fb_io_var_declarations:
     {
         $3.source($1).use(Use.VARIABLE).setDeclarationScope(programName);
         $3.publish();
+        interfaceVariables.addAll($3.keys());
     }
 ;
 

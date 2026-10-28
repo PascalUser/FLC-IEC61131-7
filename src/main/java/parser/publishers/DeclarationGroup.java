@@ -30,6 +30,15 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
+    public List<String> keys() {
+        List<String> keys = new ArrayList<>();
+        for (Declaration declaration : declarations) {
+            keys.addAll(declaration.keys());
+        }
+        return keys;
+    }
+
+    @Override
     public DeclarationGroup type(Type newType) {
         for (Declaration declaration : declarations) {
             declaration.type(newType);

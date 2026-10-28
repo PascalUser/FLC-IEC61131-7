@@ -52,10 +52,20 @@ public class MultipleDeclaration extends Declaration {
     @Override
     public void publish() {
         for (String identifier : identifiers) {
-            symbolTable.put(
-                (declarationScope == null) ? identifier : declarationScope + "#" + identifier,
-                builder.build()
-            );
+            symbolTable.put(keyOf(identifier), builder.build());
         }
+    }
+
+    @Override
+    public List<String> keys() {
+        List<String> keys = new ArrayList<>();
+        for (String identifier : identifiers) {
+            keys.add(keyOf(identifier));
+        }
+        return keys;
+    }
+
+    private String keyOf(String identifier) {
+        return (declarationScope == null) ? identifier : declarationScope + "#" + identifier;
     }
 }
