@@ -1,0 +1,102 @@
+FUNCTION_BLOCK pendulo_invertido
+
+VAR_INPUT
+    angulo : USINT;
+    velocidad : USINT;
+END_VAR
+
+VAR_OUTPUT
+    fuerza : USINT;
+END_VAR
+
+FUZZIFY angulo
+    TERM nl := (54, 1) (78, 0);
+    TERM nm := (0, 0) (99, 1) (113, 0);
+    TERM ns := (103, 0) (117, 1) (127, 0);
+    TERM z := (120, 0) (127, 1) (132, 0);
+    TERM ps := (127, 0) (138, 1) (152, 0);
+    TERM pm := (142, 0) (156, 1) (255, 0);
+    TERM pl := (166, 0) (177, 1);
+END_FUZZIFY
+
+FUZZIFY velocidad
+    TERM nl := (25, 1) (64, 0);
+    TERM nm := (0, 0) (64, 1) (106, 0);
+    TERM ns := (64, 0) (106, 1) (127, 0);
+    TERM z := (106, 0) (127, 1) (149, 0);
+    TERM ps := (127, 0) (149, 1) (191, 0);
+    TERM pm := (149, 0) (191, 1) (255, 0);
+    TERM pl := (191, 0) (229, 1);
+END_FUZZIFY
+
+DEFUZZIFY fuerza
+    TERM nl := 0;
+    TERM nm := 51;
+    TERM ns := 106;
+    TERM z := 127;
+    TERM ps := 149;
+    TERM pm := 204;
+    TERM pl := 255;
+    METHOD : CoGS;
+    DEFAULT := NC;
+END_DEFUZZIFY
+
+RULEBLOCK reglas
+    AND : MIN;
+    ACCU : MAX;
+    RULE 1 : IF angulo IS nl AND velocidad IS nl THEN fuerza IS pl;
+    RULE 2 : IF angulo IS nm AND velocidad IS nl THEN fuerza IS pl;
+    RULE 3 : IF angulo IS ns AND velocidad IS nl THEN fuerza IS pm;
+    RULE 4 : IF angulo IS z AND velocidad IS nl THEN fuerza IS pm;
+    RULE 5 : IF angulo IS ps AND velocidad IS nl THEN fuerza IS ps;
+    RULE 6 : IF angulo IS pm AND velocidad IS nl THEN fuerza IS ps;
+    RULE 7 : IF angulo IS pl AND velocidad IS nl THEN fuerza IS z;
+    RULE 8 : IF angulo IS nl AND velocidad IS nm THEN fuerza IS pl;
+    RULE 9 : IF angulo IS nm AND velocidad IS nm THEN fuerza IS pm;
+    RULE 10 : IF angulo IS ns AND velocidad IS nm THEN fuerza IS pm;
+    RULE 11 : IF angulo IS z AND velocidad IS nm THEN fuerza IS ps;
+    RULE 12 : IF angulo IS ps AND velocidad IS nm THEN fuerza IS ps;
+    RULE 13 : IF angulo IS pm AND velocidad IS nm THEN fuerza IS z;
+    RULE 14 : IF angulo IS pl AND velocidad IS nm THEN fuerza IS ns;
+    RULE 15 : IF angulo IS nl AND velocidad IS ns THEN fuerza IS pm;
+    RULE 16 : IF angulo IS nm AND velocidad IS ns THEN fuerza IS pm;
+    RULE 17 : IF angulo IS ns AND velocidad IS ns THEN fuerza IS ps;
+    RULE 18 : IF angulo IS z AND velocidad IS ns THEN fuerza IS ps;
+    RULE 19 : IF angulo IS ps AND velocidad IS ns THEN fuerza IS z;
+    RULE 20 : IF angulo IS pm AND velocidad IS ns THEN fuerza IS ns;
+    RULE 21 : IF angulo IS pl AND velocidad IS ns THEN fuerza IS ns;
+    RULE 22 : IF angulo IS nl AND velocidad IS z THEN fuerza IS pm;
+    RULE 23 : IF angulo IS nm AND velocidad IS z THEN fuerza IS ps;
+    RULE 24 : IF angulo IS ns AND velocidad IS z THEN fuerza IS ps;
+    RULE 25 : IF angulo IS z AND velocidad IS z THEN fuerza IS z;
+    RULE 26 : IF angulo IS ps AND velocidad IS z THEN fuerza IS ns;
+    RULE 27 : IF angulo IS pm AND velocidad IS z THEN fuerza IS ns;
+    RULE 28 : IF angulo IS pl AND velocidad IS z THEN fuerza IS nm;
+    RULE 29 : IF angulo IS nl AND velocidad IS ps THEN fuerza IS ps;
+    RULE 30 : IF angulo IS nm AND velocidad IS ps THEN fuerza IS ps;
+    RULE 31 : IF angulo IS ns AND velocidad IS ps THEN fuerza IS z;
+    RULE 32 : IF angulo IS z AND velocidad IS ps THEN fuerza IS ns;
+    RULE 33 : IF angulo IS ps AND velocidad IS ps THEN fuerza IS ns;
+    RULE 34 : IF angulo IS pm AND velocidad IS ps THEN fuerza IS nm;
+    RULE 35 : IF angulo IS pl AND velocidad IS ps THEN fuerza IS nm;
+    RULE 36 : IF angulo IS nl AND velocidad IS pm THEN fuerza IS ps;
+    RULE 37 : IF angulo IS nm AND velocidad IS pm THEN fuerza IS z;
+    RULE 38 : IF angulo IS ns AND velocidad IS pm THEN fuerza IS ns;
+    RULE 39 : IF angulo IS z AND velocidad IS pm THEN fuerza IS ns;
+    RULE 40 : IF angulo IS ps AND velocidad IS pm THEN fuerza IS nm;
+    RULE 41 : IF angulo IS pm AND velocidad IS pm THEN fuerza IS nm;
+    RULE 42 : IF angulo IS pl AND velocidad IS pm THEN fuerza IS nl;
+    RULE 43 : IF angulo IS nl AND velocidad IS pl THEN fuerza IS z;
+    RULE 44 : IF angulo IS nm AND velocidad IS pl THEN fuerza IS ns;
+    RULE 45 : IF angulo IS ns AND velocidad IS pl THEN fuerza IS ns;
+    RULE 46 : IF angulo IS z AND velocidad IS pl THEN fuerza IS nm;
+    RULE 47 : IF angulo IS ps AND velocidad IS pl THEN fuerza IS nm;
+    RULE 48 : IF angulo IS pm AND velocidad IS pl THEN fuerza IS nl;
+    RULE 49 : IF angulo IS pl AND velocidad IS pl THEN fuerza IS nl;
+END_RULEBLOCK
+
+OPTION
+    PRAGMA bit_width 8;
+END_OPTION
+
+END_FUNCTION_BLOCK

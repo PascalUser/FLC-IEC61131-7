@@ -1,0 +1,127 @@
+FUNCTION_BLOCK Autoenfoque
+
+VAR_INPUT
+    izq : USINT;
+    cen : USINT;
+    der : USINT;
+END_VAR
+
+VAR_OUTPUT
+    prob_izq : USINT;
+    prob_cen : USINT;
+    prob_der : USINT;
+END_VAR
+
+FUZZIFY izq
+    TERM ce := (0, 1) (23, 0);
+    TERM me := (0, 0) (23, 1) (100, 0);
+    TERM le := (23, 0) (100, 1);
+END_FUZZIFY
+
+FUZZIFY cen
+    TERM ce := (0, 1) (23, 0);
+    TERM me := (0, 0) (23, 1) (100, 0);
+    TERM le := (23, 0) (100, 1);
+END_FUZZIFY
+
+FUZZIFY der
+    TERM ce := (0, 1) (23, 0);
+    TERM me := (0, 0) (23, 1) (100, 0);
+    TERM le := (23, 0) (100, 1);
+END_FUZZIFY
+
+DEFUZZIFY prob_izq
+    TERM po := 76;
+    TERM me := 127;
+    TERM al := 204;
+    TERM ma := 255;
+    METHOD : CoGS;
+    DEFAULT := NC;
+END_DEFUZZIFY
+
+DEFUZZIFY prob_cen
+    TERM po := 76;
+    TERM me := 127;
+    TERM al := 204;
+    TERM ma := 255;
+    METHOD : CoGS;
+    DEFAULT := NC;
+END_DEFUZZIFY
+
+DEFUZZIFY prob_der
+    TERM po := 76;
+    TERM me := 127;
+    TERM al := 204;
+    TERM ma := 255;
+    METHOD : CoGS;
+    DEFAULT := NC;
+END_DEFUZZIFY
+
+RULEBLOCK reglas
+    AND : MIN;
+    ACCU : MAX;
+    RULE 1 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS me, prob_cen IS me, prob_der IS me;
+    RULE 2 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS po, prob_cen IS me, prob_der IS me;
+    RULE 3 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS me, prob_cen IS me, prob_der IS po;
+    RULE 4 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS po, prob_cen IS me, prob_der IS po;
+    RULE 5 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS me, prob_cen IS al, prob_der IS me;
+    RULE 6 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS po, prob_cen IS al, prob_der IS me;
+    RULE 7 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS me, prob_cen IS al, prob_der IS po;
+    RULE 8 : IF izq IS ce AND cen IS ce AND der IS ce THEN prob_izq IS po, prob_cen IS al, prob_der IS po;
+    RULE 9 : IF izq IS ce AND cen IS ce AND der IS me THEN prob_izq IS me, prob_cen IS me, prob_der IS al;
+    RULE 10 : IF izq IS ce AND cen IS ce AND der IS me THEN prob_izq IS po, prob_cen IS me, prob_der IS al;
+    RULE 11 : IF izq IS ce AND cen IS ce AND der IS le THEN prob_izq IS me, prob_cen IS me, prob_der IS po;
+    RULE 12 : IF izq IS ce AND cen IS ce AND der IS le THEN prob_izq IS po, prob_cen IS me, prob_der IS po;
+    RULE 13 : IF izq IS ce AND cen IS me AND der IS ce THEN prob_izq IS me, prob_cen IS al, prob_der IS me;
+    RULE 14 : IF izq IS ce AND cen IS me AND der IS me THEN prob_izq IS me, prob_cen IS al, prob_der IS al;
+    RULE 15 : IF izq IS ce AND cen IS me AND der IS me THEN prob_izq IS me, prob_cen IS al, prob_der IS po;
+    RULE 16 : IF izq IS ce AND cen IS me AND der IS le THEN prob_izq IS me, prob_cen IS al, prob_der IS po;
+    RULE 17 : IF izq IS ce AND cen IS le AND der IS ce THEN prob_izq IS me, prob_cen IS po, prob_der IS me;
+    RULE 18 : IF izq IS ce AND cen IS le AND der IS ce THEN prob_izq IS me, prob_cen IS me, prob_der IS me;
+    RULE 19 : IF izq IS ce AND cen IS le AND der IS ce THEN prob_izq IS me, prob_cen IS al, prob_der IS me;
+    RULE 20 : IF izq IS ce AND cen IS le AND der IS ce THEN prob_izq IS me, prob_cen IS ma, prob_der IS me;
+    RULE 21 : IF izq IS ce AND cen IS le AND der IS me THEN prob_izq IS me, prob_cen IS po, prob_der IS al;
+    RULE 22 : IF izq IS ce AND cen IS le AND der IS le THEN prob_izq IS me, prob_cen IS po, prob_der IS po;
+    RULE 23 : IF izq IS ce AND cen IS le AND der IS le THEN prob_izq IS me, prob_cen IS me, prob_der IS po;
+    RULE 24 : IF izq IS ce AND cen IS le AND der IS le THEN prob_izq IS me, prob_cen IS al, prob_der IS po;
+    RULE 25 : IF izq IS ce AND cen IS le AND der IS le THEN prob_izq IS me, prob_cen IS ma, prob_der IS po;
+    RULE 26 : IF izq IS me AND cen IS ce AND der IS ce THEN prob_izq IS al, prob_cen IS me, prob_der IS me;
+    RULE 27 : IF izq IS me AND cen IS ce AND der IS ce THEN prob_izq IS al, prob_cen IS me, prob_der IS po;
+    RULE 28 : IF izq IS me AND cen IS ce AND der IS me THEN prob_izq IS al, prob_cen IS me, prob_der IS al;
+    RULE 29 : IF izq IS me AND cen IS ce AND der IS le THEN prob_izq IS al, prob_cen IS me, prob_der IS po;
+    RULE 30 : IF izq IS me AND cen IS me AND der IS ce THEN prob_izq IS al, prob_cen IS al, prob_der IS me;
+    RULE 31 : IF izq IS me AND cen IS me AND der IS ce THEN prob_izq IS po, prob_cen IS al, prob_der IS me;
+    RULE 32 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS al, prob_cen IS al, prob_der IS al;
+    RULE 33 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS po, prob_cen IS al, prob_der IS al;
+    RULE 34 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS al, prob_cen IS al, prob_der IS po;
+    RULE 35 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS po, prob_cen IS al, prob_der IS po;
+    RULE 36 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS al, prob_cen IS ma, prob_der IS al;
+    RULE 37 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS po, prob_cen IS ma, prob_der IS al;
+    RULE 38 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS al, prob_cen IS ma, prob_der IS po;
+    RULE 39 : IF izq IS me AND cen IS me AND der IS me THEN prob_izq IS po, prob_cen IS ma, prob_der IS po;
+    RULE 40 : IF izq IS me AND cen IS me AND der IS le THEN prob_izq IS al, prob_cen IS al, prob_der IS po;
+    RULE 41 : IF izq IS me AND cen IS me AND der IS le THEN prob_izq IS po, prob_cen IS al, prob_der IS po;
+    RULE 42 : IF izq IS me AND cen IS le AND der IS ce THEN prob_izq IS al, prob_cen IS po, prob_der IS me;
+    RULE 43 : IF izq IS me AND cen IS le AND der IS me THEN prob_izq IS al, prob_cen IS po, prob_der IS al;
+    RULE 44 : IF izq IS me AND cen IS le AND der IS le THEN prob_izq IS al, prob_cen IS po, prob_der IS po;
+    RULE 45 : IF izq IS le AND cen IS ce AND der IS ce THEN prob_izq IS po, prob_cen IS me, prob_der IS me;
+    RULE 46 : IF izq IS le AND cen IS ce AND der IS ce THEN prob_izq IS po, prob_cen IS me, prob_der IS po;
+    RULE 47 : IF izq IS le AND cen IS ce AND der IS me THEN prob_izq IS po, prob_cen IS me, prob_der IS al;
+    RULE 48 : IF izq IS le AND cen IS ce AND der IS le THEN prob_izq IS po, prob_cen IS me, prob_der IS po;
+    RULE 49 : IF izq IS le AND cen IS me AND der IS ce THEN prob_izq IS po, prob_cen IS al, prob_der IS me;
+    RULE 50 : IF izq IS le AND cen IS me AND der IS me THEN prob_izq IS po, prob_cen IS al, prob_der IS al;
+    RULE 51 : IF izq IS le AND cen IS me AND der IS me THEN prob_izq IS po, prob_cen IS al, prob_der IS po;
+    RULE 52 : IF izq IS le AND cen IS me AND der IS le THEN prob_izq IS po, prob_cen IS al, prob_der IS po;
+    RULE 53 : IF izq IS le AND cen IS le AND der IS ce THEN prob_izq IS po, prob_cen IS po, prob_der IS me;
+    RULE 54 : IF izq IS le AND cen IS le AND der IS ce THEN prob_izq IS po, prob_cen IS me, prob_der IS me;
+    RULE 55 : IF izq IS le AND cen IS le AND der IS ce THEN prob_izq IS po, prob_cen IS al, prob_der IS me;
+    RULE 56 : IF izq IS le AND cen IS le AND der IS ce THEN prob_izq IS po, prob_cen IS ma, prob_der IS me;
+    RULE 57 : IF izq IS le AND cen IS le AND der IS me THEN prob_izq IS po, prob_cen IS po, prob_der IS al;
+    RULE 58 : IF izq IS le AND cen IS le AND der IS le THEN prob_izq IS po, prob_cen IS al, prob_der IS po;
+END_RULEBLOCK
+
+OPTION
+    PRAGMA bit_width 8;
+END_OPTION
+
+END_FUNCTION_BLOCK

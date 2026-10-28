@@ -1,0 +1,86 @@
+FUNCTION_BLOCK EstacionamientoCamion
+
+VAR_INPUT
+    posicion : USINT;
+    anguloCamion : USINT;
+END_VAR
+
+VAR_OUTPUT
+    anguloDireccion : USINT;
+END_VAR
+
+FUZZIFY posicion
+    TERM le := (30, 1) (96, 0);
+    TERM lc := (76, 0) (102, 1) (127, 0);
+    TERM ce := (114, 0) (127, 1) (140, 0);
+    TERM rc := (127, 0) (153, 1) (178, 0);
+    TERM ri := (158, 0) (224, 1);
+END_FUZZIFY
+
+FUZZIFY anguloCamion
+    TERM rb := (0, 0) (31, 1) (70, 0);
+    TERM ru := (58, 0) (82, 1) (106, 0);
+    TERM rv := (93, 0) (110, 1) (127, 0);
+    TERM ve := (119, 0) (127, 1) (136, 0);
+    TERM lv := (127, 0) (144, 1) (161, 0);
+    TERM lu := (148, 0) (172, 1) (196, 0);
+    TERM lb := (184, 0) (223, 1) (255, 0);
+END_FUZZIFY
+
+DEFUZZIFY anguloDireccion
+    TERM nb := 29;
+    TERM nm := 63;
+    TERM ns := 99;
+    TERM ze := 127;
+    TERM ps := 155;
+    TERM pm := 191;
+    TERM pb := 225;
+    METHOD : CoGS;
+    DEFAULT := NC;
+END_DEFUZZIFY
+
+RULEBLOCK reglas
+    AND : MIN;
+    ACCU : MAX;
+    RULE 1 : IF anguloCamion IS rb AND posicion IS le THEN anguloDireccion IS ps;
+    RULE 2 : IF anguloCamion IS rb AND posicion IS lc THEN anguloDireccion IS pm;
+    RULE 3 : IF anguloCamion IS rb AND posicion IS ce THEN anguloDireccion IS pm;
+    RULE 4 : IF anguloCamion IS rb AND posicion IS rc THEN anguloDireccion IS pb;
+    RULE 5 : IF anguloCamion IS rb AND posicion IS ri THEN anguloDireccion IS pb;
+    RULE 6 : IF anguloCamion IS ru AND posicion IS le THEN anguloDireccion IS ns;
+    RULE 7 : IF anguloCamion IS ru AND posicion IS lc THEN anguloDireccion IS ps;
+    RULE 8 : IF anguloCamion IS ru AND posicion IS ce THEN anguloDireccion IS pm;
+    RULE 9 : IF anguloCamion IS ru AND posicion IS rc THEN anguloDireccion IS pb;
+    RULE 10 : IF anguloCamion IS ru AND posicion IS ri THEN anguloDireccion IS pb;
+    RULE 11 : IF anguloCamion IS rv AND posicion IS le THEN anguloDireccion IS nm;
+    RULE 12 : IF anguloCamion IS rv AND posicion IS lc THEN anguloDireccion IS ns;
+    RULE 13 : IF anguloCamion IS rv AND posicion IS ce THEN anguloDireccion IS ps;
+    RULE 14 : IF anguloCamion IS rv AND posicion IS rc THEN anguloDireccion IS pm;
+    RULE 15 : IF anguloCamion IS rv AND posicion IS ri THEN anguloDireccion IS pb;
+    RULE 16 : IF anguloCamion IS ve AND posicion IS le THEN anguloDireccion IS nm;
+    RULE 17 : IF anguloCamion IS ve AND posicion IS lc THEN anguloDireccion IS nm;
+    RULE 18 : IF anguloCamion IS ve AND posicion IS ce THEN anguloDireccion IS ze;
+    RULE 19 : IF anguloCamion IS ve AND posicion IS rc THEN anguloDireccion IS pm;
+    RULE 20 : IF anguloCamion IS ve AND posicion IS ri THEN anguloDireccion IS pm;
+    RULE 21 : IF anguloCamion IS lv AND posicion IS le THEN anguloDireccion IS nb;
+    RULE 22 : IF anguloCamion IS lv AND posicion IS lc THEN anguloDireccion IS nm;
+    RULE 23 : IF anguloCamion IS lv AND posicion IS ce THEN anguloDireccion IS ns;
+    RULE 24 : IF anguloCamion IS lv AND posicion IS rc THEN anguloDireccion IS ps;
+    RULE 25 : IF anguloCamion IS lv AND posicion IS ri THEN anguloDireccion IS pm;
+    RULE 26 : IF anguloCamion IS lu AND posicion IS le THEN anguloDireccion IS nb;
+    RULE 27 : IF anguloCamion IS lu AND posicion IS lc THEN anguloDireccion IS nb;
+    RULE 28 : IF anguloCamion IS lu AND posicion IS ce THEN anguloDireccion IS nm;
+    RULE 29 : IF anguloCamion IS lu AND posicion IS rc THEN anguloDireccion IS ns;
+    RULE 30 : IF anguloCamion IS lu AND posicion IS ri THEN anguloDireccion IS ps;
+    RULE 31 : IF anguloCamion IS lb AND posicion IS le THEN anguloDireccion IS nb;
+    RULE 32 : IF anguloCamion IS lb AND posicion IS lc THEN anguloDireccion IS nb;
+    RULE 33 : IF anguloCamion IS lb AND posicion IS ce THEN anguloDireccion IS nm;
+    RULE 34 : IF anguloCamion IS lb AND posicion IS rc THEN anguloDireccion IS nm;
+    RULE 35 : IF anguloCamion IS lb AND posicion IS ri THEN anguloDireccion IS ns;
+END_RULEBLOCK
+
+OPTION
+    PRAGMA bit_width 8;
+END_OPTION
+
+END_FUNCTION_BLOCK
