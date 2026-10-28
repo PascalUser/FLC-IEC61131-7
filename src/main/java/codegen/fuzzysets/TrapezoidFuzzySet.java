@@ -7,9 +7,8 @@ import codegen.CppWriter;
  * {@code (a, 0) (b, 1) (c, 1) (d, 0)}. Port of {@code TrapezoidFS} (Luca Sarramone, Generador-FLC
  * {@code c304c1d}).
  * <p>
- * The generated code is kept as in the original, which computes the slopes when the value is outside
- * {@code [a, d]}, 0 inside it, and uses 1 instead of the maximum degree on the plateau; see the README of the
- * reference files.
+ * Corrected with respect to the original, which computed the slopes when the value was outside {@code [a, d]},
+ * 0 inside it, and used 1 instead of the maximum degree on the plateau; see the README of the reference files.
  * </p>
  *
  * @author Luca Sarramone (original generator)
@@ -45,17 +44,17 @@ public final class TrapezoidFuzzySet extends FuzzySet {
     public void compileFuzzSet(final CppWriter out, final int converterRange, final String varName,
                                final int setNumber) {
         out.write("\tif (" + varName + " < " + a + " || " + varName + " > " + d + ") \n");
+        out.write("\t\t" + varName + "Fuzz[" + setNumber + "] = 0;\n");
+        out.write("\telse \n");
         out.write("\t\tif (" + varName + " < " + b + ") \n");
         out.write("\t\t\t" + varName + "Fuzz[" + setNumber + "] = function" + varName + setNumber + "1"
                 + " * (" + varName + "-" + a + "); \n");
-        out.write("\t\telse");
+        out.write("\t\telse \n");
         out.write("\t\t\tif (" + varName + " > " + c + ") \n");
         out.write("\t\t\t\t" + varName + "Fuzz[" + setNumber + "] = function" + varName + setNumber + "2"
                 + " * (" + d + " - " + varName + ");\n");
-        out.write("\t\t\telse");
-        out.write("\t\t\t\t" + varName + "Fuzz[" + setNumber + "] = 1;\n");
-        out.write("\telse \n");
-        out.write("\t\t" + varName + "Fuzz[" + setNumber + "] = 0;\n");
+        out.write("\t\t\telse \n");
+        out.write("\t\t\t\t" + varName + "Fuzz[" + setNumber + "] = " + converterRange + ";\n");
     }
 
     @Override

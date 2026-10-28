@@ -55,27 +55,27 @@ void fuzzifier (fixed_int posicion, fixed_int anguloCamion) {
 		posicionFuzz[1] = 0;
 	else 
 		if (posicion > 102) 
-			posicionFuzz[1] = functionposicion11 * (posicion-76); 
+			posicionFuzz[1] = functionposicion12 * (127 - posicion); 
 		else 
-			posicionFuzz[1] = functionposicion12 * (127 - posicion);
+			posicionFuzz[1] = functionposicion11 * (posicion-76);
 
 
 	if (posicion < 114 || posicion > 140) 
 		posicionFuzz[2] = 0;
 	else 
 		if (posicion > 127) 
-			posicionFuzz[2] = functionposicion21 * (posicion-114); 
+			posicionFuzz[2] = functionposicion22 * (140 - posicion); 
 		else 
-			posicionFuzz[2] = functionposicion22 * (140 - posicion);
+			posicionFuzz[2] = functionposicion21 * (posicion-114);
 
 
 	if (posicion < 127 || posicion > 178) 
 		posicionFuzz[3] = 0;
 	else 
 		if (posicion > 153) 
-			posicionFuzz[3] = functionposicion31 * (posicion-127); 
+			posicionFuzz[3] = functionposicion32 * (178 - posicion); 
 		else 
-			posicionFuzz[3] = functionposicion32 * (178 - posicion);
+			posicionFuzz[3] = functionposicion31 * (posicion-127);
 
 
 	if (posicion < 158) 
@@ -93,63 +93,63 @@ void fuzzifier (fixed_int posicion, fixed_int anguloCamion) {
 		anguloCamionFuzz[0] = 0;
 	else 
 		if (anguloCamion > 31) 
-			anguloCamionFuzz[0] = functionanguloCamion01 * (anguloCamion-0); 
+			anguloCamionFuzz[0] = functionanguloCamion02 * (70 - anguloCamion); 
 		else 
-			anguloCamionFuzz[0] = functionanguloCamion02 * (70 - anguloCamion);
+			anguloCamionFuzz[0] = functionanguloCamion01 * (anguloCamion-0);
 
 
 	if (anguloCamion < 58 || anguloCamion > 106) 
 		anguloCamionFuzz[1] = 0;
 	else 
 		if (anguloCamion > 82) 
-			anguloCamionFuzz[1] = functionanguloCamion11 * (anguloCamion-58); 
+			anguloCamionFuzz[1] = functionanguloCamion12 * (106 - anguloCamion); 
 		else 
-			anguloCamionFuzz[1] = functionanguloCamion12 * (106 - anguloCamion);
+			anguloCamionFuzz[1] = functionanguloCamion11 * (anguloCamion-58);
 
 
 	if (anguloCamion < 93 || anguloCamion > 127) 
 		anguloCamionFuzz[2] = 0;
 	else 
 		if (anguloCamion > 110) 
-			anguloCamionFuzz[2] = functionanguloCamion21 * (anguloCamion-93); 
+			anguloCamionFuzz[2] = functionanguloCamion22 * (127 - anguloCamion); 
 		else 
-			anguloCamionFuzz[2] = functionanguloCamion22 * (127 - anguloCamion);
+			anguloCamionFuzz[2] = functionanguloCamion21 * (anguloCamion-93);
 
 
 	if (anguloCamion < 119 || anguloCamion > 136) 
 		anguloCamionFuzz[3] = 0;
 	else 
 		if (anguloCamion > 127) 
-			anguloCamionFuzz[3] = functionanguloCamion31 * (anguloCamion-119); 
+			anguloCamionFuzz[3] = functionanguloCamion32 * (136 - anguloCamion); 
 		else 
-			anguloCamionFuzz[3] = functionanguloCamion32 * (136 - anguloCamion);
+			anguloCamionFuzz[3] = functionanguloCamion31 * (anguloCamion-119);
 
 
 	if (anguloCamion < 127 || anguloCamion > 161) 
 		anguloCamionFuzz[4] = 0;
 	else 
 		if (anguloCamion > 144) 
-			anguloCamionFuzz[4] = functionanguloCamion41 * (anguloCamion-127); 
+			anguloCamionFuzz[4] = functionanguloCamion42 * (161 - anguloCamion); 
 		else 
-			anguloCamionFuzz[4] = functionanguloCamion42 * (161 - anguloCamion);
+			anguloCamionFuzz[4] = functionanguloCamion41 * (anguloCamion-127);
 
 
 	if (anguloCamion < 148 || anguloCamion > 196) 
 		anguloCamionFuzz[5] = 0;
 	else 
 		if (anguloCamion > 172) 
-			anguloCamionFuzz[5] = functionanguloCamion51 * (anguloCamion-148); 
+			anguloCamionFuzz[5] = functionanguloCamion52 * (196 - anguloCamion); 
 		else 
-			anguloCamionFuzz[5] = functionanguloCamion52 * (196 - anguloCamion);
+			anguloCamionFuzz[5] = functionanguloCamion51 * (anguloCamion-148);
 
 
 	if (anguloCamion < 184 || anguloCamion > 255) 
 		anguloCamionFuzz[6] = 0;
 	else 
 		if (anguloCamion > 223) 
-			anguloCamionFuzz[6] = functionanguloCamion61 * (anguloCamion-184); 
+			anguloCamionFuzz[6] = functionanguloCamion62 * (255 - anguloCamion); 
 		else 
-			anguloCamionFuzz[6] = functionanguloCamion62 * (255 - anguloCamion);
+			anguloCamionFuzz[6] = functionanguloCamion61 * (anguloCamion-184);
 
 
 } 

@@ -57,45 +57,45 @@ void fuzzifier (fixed_int angulo, fixed_int velocidad) {
 		anguloFuzz[1] = 0;
 	else 
 		if (angulo > 99) 
-			anguloFuzz[1] = functionangulo11 * (angulo-0); 
+			anguloFuzz[1] = functionangulo12 * (113 - angulo); 
 		else 
-			anguloFuzz[1] = functionangulo12 * (113 - angulo);
+			anguloFuzz[1] = functionangulo11 * (angulo-0);
 
 
 	if (angulo < 103 || angulo > 127) 
 		anguloFuzz[2] = 0;
 	else 
 		if (angulo > 117) 
-			anguloFuzz[2] = functionangulo21 * (angulo-103); 
+			anguloFuzz[2] = functionangulo22 * (127 - angulo); 
 		else 
-			anguloFuzz[2] = functionangulo22 * (127 - angulo);
+			anguloFuzz[2] = functionangulo21 * (angulo-103);
 
 
 	if (angulo < 120 || angulo > 132) 
 		anguloFuzz[3] = 0;
 	else 
 		if (angulo > 127) 
-			anguloFuzz[3] = functionangulo31 * (angulo-120); 
+			anguloFuzz[3] = functionangulo32 * (132 - angulo); 
 		else 
-			anguloFuzz[3] = functionangulo32 * (132 - angulo);
+			anguloFuzz[3] = functionangulo31 * (angulo-120);
 
 
 	if (angulo < 127 || angulo > 152) 
 		anguloFuzz[4] = 0;
 	else 
 		if (angulo > 138) 
-			anguloFuzz[4] = functionangulo41 * (angulo-127); 
+			anguloFuzz[4] = functionangulo42 * (152 - angulo); 
 		else 
-			anguloFuzz[4] = functionangulo42 * (152 - angulo);
+			anguloFuzz[4] = functionangulo41 * (angulo-127);
 
 
 	if (angulo < 142 || angulo > 255) 
 		anguloFuzz[5] = 0;
 	else 
 		if (angulo > 156) 
-			anguloFuzz[5] = functionangulo51 * (angulo-142); 
+			anguloFuzz[5] = functionangulo52 * (255 - angulo); 
 		else 
-			anguloFuzz[5] = functionangulo52 * (255 - angulo);
+			anguloFuzz[5] = functionangulo51 * (angulo-142);
 
 
 	if (angulo < 166) 
@@ -122,45 +122,45 @@ void fuzzifier (fixed_int angulo, fixed_int velocidad) {
 		velocidadFuzz[1] = 0;
 	else 
 		if (velocidad > 64) 
-			velocidadFuzz[1] = functionvelocidad11 * (velocidad-0); 
+			velocidadFuzz[1] = functionvelocidad12 * (106 - velocidad); 
 		else 
-			velocidadFuzz[1] = functionvelocidad12 * (106 - velocidad);
+			velocidadFuzz[1] = functionvelocidad11 * (velocidad-0);
 
 
 	if (velocidad < 64 || velocidad > 127) 
 		velocidadFuzz[2] = 0;
 	else 
 		if (velocidad > 106) 
-			velocidadFuzz[2] = functionvelocidad21 * (velocidad-64); 
+			velocidadFuzz[2] = functionvelocidad22 * (127 - velocidad); 
 		else 
-			velocidadFuzz[2] = functionvelocidad22 * (127 - velocidad);
+			velocidadFuzz[2] = functionvelocidad21 * (velocidad-64);
 
 
 	if (velocidad < 106 || velocidad > 149) 
 		velocidadFuzz[3] = 0;
 	else 
 		if (velocidad > 127) 
-			velocidadFuzz[3] = functionvelocidad31 * (velocidad-106); 
+			velocidadFuzz[3] = functionvelocidad32 * (149 - velocidad); 
 		else 
-			velocidadFuzz[3] = functionvelocidad32 * (149 - velocidad);
+			velocidadFuzz[3] = functionvelocidad31 * (velocidad-106);
 
 
 	if (velocidad < 127 || velocidad > 191) 
 		velocidadFuzz[4] = 0;
 	else 
 		if (velocidad > 149) 
-			velocidadFuzz[4] = functionvelocidad41 * (velocidad-127); 
+			velocidadFuzz[4] = functionvelocidad42 * (191 - velocidad); 
 		else 
-			velocidadFuzz[4] = functionvelocidad42 * (191 - velocidad);
+			velocidadFuzz[4] = functionvelocidad41 * (velocidad-127);
 
 
 	if (velocidad < 149 || velocidad > 255) 
 		velocidadFuzz[5] = 0;
 	else 
 		if (velocidad > 191) 
-			velocidadFuzz[5] = functionvelocidad51 * (velocidad-149); 
+			velocidadFuzz[5] = functionvelocidad52 * (255 - velocidad); 
 		else 
-			velocidadFuzz[5] = functionvelocidad52 * (255 - velocidad);
+			velocidadFuzz[5] = functionvelocidad51 * (velocidad-149);
 
 
 	if (velocidad < 191) 

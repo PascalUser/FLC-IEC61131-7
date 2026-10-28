@@ -52,9 +52,9 @@ void fuzzifier (fixed_int izq, fixed_int cen, fixed_int der) {
 		izqFuzz[1] = 0;
 	else 
 		if (izq > 23) 
-			izqFuzz[1] = functionizq11 * (izq-0); 
+			izqFuzz[1] = functionizq12 * (100 - izq); 
 		else 
-			izqFuzz[1] = functionizq12 * (100 - izq);
+			izqFuzz[1] = functionizq11 * (izq-0);
 
 
 	if (izq < 23) 
@@ -81,9 +81,9 @@ void fuzzifier (fixed_int izq, fixed_int cen, fixed_int der) {
 		cenFuzz[1] = 0;
 	else 
 		if (cen > 23) 
-			cenFuzz[1] = functioncen11 * (cen-0); 
+			cenFuzz[1] = functioncen12 * (100 - cen); 
 		else 
-			cenFuzz[1] = functioncen12 * (100 - cen);
+			cenFuzz[1] = functioncen11 * (cen-0);
 
 
 	if (cen < 23) 
@@ -110,9 +110,9 @@ void fuzzifier (fixed_int izq, fixed_int cen, fixed_int der) {
 		derFuzz[1] = 0;
 	else 
 		if (der > 23) 
-			derFuzz[1] = functionder11 * (der-0); 
+			derFuzz[1] = functionder12 * (100 - der); 
 		else 
-			derFuzz[1] = functionder12 * (100 - der);
+			derFuzz[1] = functionder11 * (der-0);
 
 
 	if (der < 23) 

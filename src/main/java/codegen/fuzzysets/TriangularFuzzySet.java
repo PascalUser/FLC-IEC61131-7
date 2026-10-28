@@ -6,8 +6,8 @@ import codegen.CppWriter;
  * Triangle with feet {@code a}, {@code c} and peak {@code b}: the FCL term {@code (a, 0) (b, 1) (c, 0)}.
  * Port of {@code TriangularFS} (Luca Sarramone, Generador-FLC {@code c304c1d}).
  * <p>
- * The generated code is kept as in the original, which applies the rising slope ({@code <slope>1}) above the
- * peak and the falling slope ({@code <slope>2}) below it; see the README of the reference files.
+ * Corrected with respect to the original, which applied the rising slope ({@code <slope>1}) above the peak and
+ * the falling slope ({@code <slope>2}) below it; see the README of the reference files.
  * </p>
  *
  * @author Luca Sarramone (original generator)
@@ -43,11 +43,11 @@ public final class TriangularFuzzySet extends FuzzySet {
         out.write("\t\t" + varName + "Fuzz[" + setNumber + "] = 0;\n");
         out.write("\telse \n");
         out.write("\t\tif (" + varName + " > " + b + ") \n");
-        out.write("\t\t\t" + varName + "Fuzz[" + setNumber + "] = function" + varName + setNumber + "1"
-                + " * (" + varName + "-" + a + "); \n");
-        out.write("\t\telse \n");
         out.write("\t\t\t" + varName + "Fuzz[" + setNumber + "] = function" + varName + setNumber + "2"
-                + " * (" + c + " - " + varName + ");\n");
+                + " * (" + c + " - " + varName + "); \n");
+        out.write("\t\telse \n");
+        out.write("\t\t\t" + varName + "Fuzz[" + setNumber + "] = function" + varName + setNumber + "1"
+                + " * (" + varName + "-" + a + ");\n");
     }
 
     @Override

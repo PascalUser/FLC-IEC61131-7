@@ -9,10 +9,30 @@ Salidas de referencia (*golden files*) para validar el port del generador FLC de
 - `<ejemplo>.txt`: entrada en el DSL de Luca, copiada de `Ejemplos/` sin cambios. La única diferencia es
   que `pendulo invertido.txt` se renombró a `pendulo_invertido.txt`. Su generador arma el nombre de
   salida reemplazando los espacios por `_`, así que la salida es la misma.
-- `expected/`: salida (`<base>_out.cpp`, `<base>_out.h`, `<base>_outTB.cpp`) **regenerada con el código
-  de ese commit**. Para `pendulo_invertido` y `Autoenfoque` coincide byte a byte con la que está versionada en su repo.
-  La versionada de `EstacionamientoCamion` venía de una versión anterior del generador (usaba
-  `double`), por eso se regeneró.
+- `original/`: salida (`<base>_out.cpp`, `<base>_out.h`, `<base>_outTB.cpp`) **regenerada con el código
+  de ese commit**, sin tocar. Para `pendulo_invertido` y `Autoenfoque` coincide byte a byte con la que está
+  versionada en su repo. La versionada de `EstacionamientoCamion` venía de una versión anterior del
+  generador (usaba `double`), por eso se regeneró.
+- `expected/`: lo que tiene que generar nuestro compilador. Es `original/` con la corrección de los
+  triángulos (ver abajo); el `.h` y el testbench son iguales.
+
+## Corrección respecto del generador original
+
+El generador original tiene dos errores en las funciones de pertenencia. Las rampas Z y S y el singleton
+están bien:
+
+- **Triángulo** (`TriangularFS`): usa la pendiente de subida (`function<var><i>1`) del lado que baja
+  (`x > b`) y la de bajada (`function<var><i>2`) del lado que sube. Por ejemplo, en el péndulo
+  (`nm = TRIANGULAR(0, 99, 113)`) da 242 en x = 0 y 226 en x = 113, donde debería dar 0.
+- **Trapecio** (`TrapezoidFS`): la condición de afuera está invertida (calcula las pendientes cuando x está
+  fuera de `[a, d]` y da 0 adentro) y en la meseta asigna `1` en lugar de `2^N - 1`. Ningún ejemplo usa
+  trapecio; su código corregido está fijado en `TrapezoidFuzzySetTest`.
+
+`expected/<base>_out.cpp` se obtuvo de `original/` intercambiando, en cada triángulo, los lados derechos
+de las dos asignaciones (`function…1 * (x-a)` ⇄ `function…2 * (c - x)`). Así la referencia sigue sin
+depender de nuestro generador. Ejecutado para todos los x de 8 bits, el código corregido coincide con la
+forma ideal calculada con las mismas pendientes enteras (`255/(b - a)`). Que esas pendientes sean enteras
+es una limitación de diseño, no un error: en `TRIANGULAR(0, 99, 113)` el pico llega a 198 y no a 255.
 
 El nombre base (`pendulo_invertido`, `Autoenfoque`, `EstacionamientoCamion`) es el nombre del archivo de
 entrada. Aparece dentro de la salida (`#include "<base>_out.h"` en el testbench).
@@ -63,6 +83,16 @@ public class Driver {
 ```
 
 `java -Djava.awt.headless=true -cp classes Driver <ruta>/pendulo_invertido.txt ...`
+
+3. Esos archivos van a `original/`. Para `expected/`, copiar el `.h` y el testbench, y en el `.cpp`
+   aplicar la corrección de los triángulos. Con Python:
+
+```python
+import re
+TRIANGLE = re.compile(r"(\t\t\t(\w+)Fuzz\[(\d+)\] = )(function\w+1 \* \(\w+-\d+\))"
+                      r"(; \n\t\telse \n\t\t\t\2Fuzz\[\3\] = )(function\w+2 \* \(\d+ - \w+\))(;\n)")
+corrected, count = TRIANGLE.subn(r"\1\6\5\4\7", original_cpp)   # count = cantidad de TRIANGULAR del .txt
+```
 
 ## Cómo se compara
 
