@@ -98,6 +98,15 @@
     }
 
     /**
+     * Returns the name of the function block, the scope of its symbols (e.g. MAIN in MAIN#X).
+     *
+     * @return the function block name as stored in the symbol table keys
+     */
+    public String getFunctionBlockName() {
+        return programName;
+    }
+
+    /**
      * Returns the keys of the input and output variables in the order they are declared
      * (e.g. [MAIN#ANGLE, MAIN#SPEED, MAIN#FORCE]). Their direction is in the symbol table (source IN/OUT).
      *

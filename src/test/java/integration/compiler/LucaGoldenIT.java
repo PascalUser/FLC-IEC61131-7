@@ -2,12 +2,12 @@ package integration.compiler;
 
 import compiler.FlcCompiler;
 import compiler.GeneratedFile;
-import integration.lexer.parser.symboltable.NotYetImplemented;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import utils.DiagnosticsHandler;
 import utils.ParserTestSupport;
 import utils.TestResources;
+import utils.diagnostics.Diagnostic;
 
 import java.io.Reader;
 import java.util.Arrays;
@@ -46,14 +46,14 @@ public class LucaGoldenIT extends ParserTestSupport {
 
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = {"pendulo_invertido", "Autoenfoque", "EstacionamientoCamion"})
-    @NotYetImplemented
     void Generated_code_matches_the_reference_of_lucas_generator(String example) throws Exception {
         DiagnosticsHandler diagnostics = new DiagnosticsHandler();
         List<GeneratedFile> generated;
         try (Reader source = TestResources.reader(ROOT + example + "/" + example + ".fcl")) {
             generated = new FlcCompiler(diagnostics).compile(source, example);
         }
-        assertFalse(diagnostics.hasErrors(), "The reference programs must compile without errors");
+        assertFalse(diagnostics.hasErrors(), () -> "The reference programs must compile without errors: "
+                + messages(diagnostics));
 
         Map<String, String> actual = new TreeMap<>();
         for (GeneratedFile file : generated) {
@@ -68,5 +68,13 @@ public class LucaGoldenIT extends ParserTestSupport {
         for (Map.Entry<String, String> file : expected.entrySet()) {
             assertEquivalentCpp(file.getKey(), file.getValue(), actual.get(file.getKey()));
         }
+    }
+
+    private static String messages(DiagnosticsHandler diagnostics) {
+        StringBuilder messages = new StringBuilder();
+        for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+            messages.append(System.lineSeparator()).append(diagnostic.getMessage());
+        }
+        return messages.toString();
     }
 }
