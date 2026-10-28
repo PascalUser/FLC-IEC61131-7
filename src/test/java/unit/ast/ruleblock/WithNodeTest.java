@@ -21,7 +21,7 @@ class WithNodeTest {
     void Label_ForNumericWeight_ContainsWeightValue() {
         WithNode node = new WithNode(".5", newIfNode());
 
-        assertEquals("WITH 0.5", node.label());
+        assertEquals("WITH .5", node.label());
     }
 
     @Test

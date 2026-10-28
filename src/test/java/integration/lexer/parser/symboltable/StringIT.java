@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import parser.initializations.leafs.DefaultInitialization;
 import parser.initializations.leafs.VariableInitialization;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
@@ -22,10 +21,6 @@ import java.util.List;
  */
 public class StringIT extends ParserTestSupport {
     private static final List<String> LENGTH_8 = Collections.singletonList("8");
-
-    private static String emptyLiteral(Subtype subtype) {
-        return subtype == Subtype.STRING ? "''" : "\"\"";
-    }
 
     private static String literal(Subtype subtype) {
         return subtype == Subtype.STRING ? "'text'" : "\"text\"";

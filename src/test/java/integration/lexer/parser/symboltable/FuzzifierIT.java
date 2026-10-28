@@ -1,6 +1,5 @@
 package integration.lexer.parser.symboltable;
 
-import jdk.nashorn.internal.runtime.regexp.joni.ast.AnchorNode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import utils.LexemeInfo;

@@ -2,15 +2,7 @@ package unit.ast.ruleblock.operators;
 
 import ast.AbstractAstNode;
 import ast.ruleblock.IdentifierNode;
-import ast.ruleblock.operators.AsumNode;
-import ast.ruleblock.operators.BdifNode;
-import ast.ruleblock.operators.BsumNode;
-import ast.ruleblock.operators.MaxNode;
-import ast.ruleblock.operators.MinNode;
-import ast.ruleblock.operators.NsumNode;
-import ast.ruleblock.operators.Operator;
-import ast.ruleblock.operators.OperatorNode;
-import ast.ruleblock.operators.ProdNode;
+import ast.ruleblock.operators.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
