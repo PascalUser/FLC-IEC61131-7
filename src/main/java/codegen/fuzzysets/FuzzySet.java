@@ -55,4 +55,46 @@ public abstract class FuzzySet {
      * @param slopeName      base name of the slope constants, {@code function<var><setNumber>}
      */
     public abstract void compileFunctionSlope(CppWriter out, int converterRange, String slopeName);
+
+    /**
+     * Returns the degree the generated code computes for an input: the same branches as
+     * {@link #compileFuzzSet}, with integer slopes ({@code converterRange / width}) and the result truncated to
+     * N bits, as in {@code ap_uint<N>}.
+     *
+     * @param x              input value, {@code 0 .. converterRange}
+     * @param converterRange maximum degree, {@code 2^N - 1}
+     * @return the degree, {@code 0 .. converterRange}
+     */
+    public abstract int quantizedDegree(int x, int converterRange);
+
+    /**
+     * Returns the ideal degree of IEC 61131-7 for an input: linear between the points of the set and constant
+     * outside them (5.2.2).
+     *
+     * @param x input value
+     * @return the degree, {@code 0 .. 1}
+     */
+    public abstract double degree(double x);
+
+    /**
+     * Integer slope of the generated code: the maximum degree over the width, with integer division.
+     *
+     * @param converterRange maximum degree, {@code 2^N - 1}
+     * @param width          width of the side of the set
+     * @return {@code converterRange / width}
+     */
+    protected static int slope(final int converterRange, final int width) {
+        return converterRange / width;
+    }
+
+    /**
+     * Truncates a value to N bits, as an assignment to {@code ap_uint<N>} does.
+     *
+     * @param value          the value
+     * @param converterRange {@code 2^N - 1}, the mask of N bits
+     * @return the N low bits of the value
+     */
+    protected static int truncate(final long value, final int converterRange) {
+        return (int) (value & converterRange);
+    }
 }

@@ -48,4 +48,14 @@ public final class SingletonFuzzySet extends FuzzySet {
     public void compileFunctionSlope(final CppWriter out, final int converterRange, final String slopeName) {
         // A singleton has no slope.
     }
+
+    @Override
+    public int quantizedDegree(final int x, final int converterRange) {
+        return (x == value) ? converterRange : 0;
+    }
+
+    @Override
+    public double degree(final double x) {
+        return (x == value) ? 1 : 0;
+    }
 }

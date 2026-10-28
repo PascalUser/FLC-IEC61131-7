@@ -64,4 +64,29 @@ public final class TrapezoidFuzzySet extends FuzzySet {
         out.write("const fixed_int " + slopeName + "2 = ");
         out.write(converterRange + "/(" + d + " - " + c + "); \n");
     }
+
+    @Override
+    public int quantizedDegree(final int x, final int converterRange) {
+        if (x < a || x > d) {
+            return 0;
+        }
+        if (x < b) {
+            return truncate((long) slope(converterRange, b - a) * (x - a), converterRange);
+        }
+        if (x > c) {
+            return truncate((long) slope(converterRange, d - c) * (d - x), converterRange);
+        }
+        return converterRange;
+    }
+
+    @Override
+    public double degree(final double x) {
+        if (x <= a || x >= d) {
+            return 0;
+        }
+        if (x < b) {
+            return (x - a) / (b - a);
+        }
+        return (x <= c) ? 1 : (d - x) / (d - c);
+    }
 }

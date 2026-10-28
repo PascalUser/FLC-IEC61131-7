@@ -47,4 +47,23 @@ public final class SShapeFuzzySet extends FuzzySet {
         out.write("const fixed_int " + slopeName + " = ");
         out.write(converterRange + "/(" + b + " - " + a + "); \n");
     }
+
+    @Override
+    public int quantizedDegree(final int x, final int converterRange) {
+        if (x < a) {
+            return 0;
+        }
+        if (x > b) {
+            return converterRange;
+        }
+        return truncate((long) slope(converterRange, b - a) * (x - a), converterRange);
+    }
+
+    @Override
+    public double degree(final double x) {
+        if (x <= a) {
+            return 0;
+        }
+        return (x >= b) ? 1 : (x - a) / (b - a);
+    }
 }

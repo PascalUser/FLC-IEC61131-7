@@ -57,4 +57,23 @@ public final class TriangularFuzzySet extends FuzzySet {
         out.write("const fixed_int " + slopeName + "2 = ");
         out.write(converterRange + "/(" + c + " - " + b + "); \n");
     }
+
+    @Override
+    public int quantizedDegree(final int x, final int converterRange) {
+        if (x < a || x > c) {
+            return 0;
+        }
+        if (x > b) {
+            return truncate((long) slope(converterRange, c - b) * (c - x), converterRange);
+        }
+        return truncate((long) slope(converterRange, b - a) * (x - a), converterRange);
+    }
+
+    @Override
+    public double degree(final double x) {
+        if (x <= a || x >= c) {
+            return 0;
+        }
+        return (x <= b) ? (x - a) / (b - a) : (c - x) / (c - b);
+    }
 }
