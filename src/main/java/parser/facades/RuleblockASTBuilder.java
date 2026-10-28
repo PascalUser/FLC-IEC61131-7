@@ -98,14 +98,13 @@ public final class RuleblockASTBuilder {
                 }
                 return new IfNode((CondNode) children.get(0), (BodyNode) children.get(1));
             case WITH:
-                Weight weight = Weight.numeric(node.symbolReference());
                 if (children.size() != 1) {
                     throw new RuntimeException("ASTBUilder: found a WITH without one child.");
                 }
                 if (!(children.get(0) instanceof IfNode)) {
                     throw new RuntimeException("ASTBUilder: found an WITH without a rule.");
                 }
-                return new WithNode(weight, (IfNode) children.get(0));
+                return new WithNode(node.symbolReference(), (IfNode) children.get(0));
             case ACCUMULATION:
                 Operator accuSet = configuration.get(3);
                 return new OperatorNode(accuSet, children);

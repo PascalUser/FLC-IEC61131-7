@@ -19,6 +19,8 @@ import utils.enums.Use;
 import java.util.Arrays;
 import java.util.List;
 
+import static utils.AstTestSupport.lines;
+
 /**
  * Integration tests for ARRAY declarations: types, variables, struct members, multidimensional bounds,
  * element lists and repetition factors ({@code N(value)}).
@@ -85,6 +87,7 @@ public class ArrayIT extends ParserTestSupport {
         void Array_type_of_a_struct_repeats_the_struct_default() throws Exception {
             String symbol = "PIXELS_TYPE";
             LexemeInfo expectedInfo = array(Use.TYPE, Source.NONE, Subtype.CUSTOM, list("0"), list("1"))
+                    .customType("COLOR_TYPE")
                     .initialValue(repeated(2, colorWithDefaultClassification(".5")))
                     .build();
             
@@ -104,7 +107,7 @@ public class ArrayIT extends ParserTestSupport {
         @ParameterizedTest
         @EnumSource(Block.class)
         void Array_of_a_primitive_publishes_its_bounds_and_repeats_the_default(Block block) throws Exception {
-            String symbol = SourceCode.key("grid");
+            String symbol = SourceCode.key("READINGS");
             LexemeInfo expectedInfo = array(Use.VARIABLE, block.source(), Subtype.REAL, list("1"), list("3"))
                     .initialValue(repeated(3, realDefault()))
                     .build();
@@ -215,7 +218,7 @@ public class ArrayIT extends ParserTestSupport {
                     .customType("COLOR_TYPE")
                     .initialValue(expected)
                     .build();
-            String strCode = String.join("pixels : ARRAY [0..1, 1..10, 3..4] OF color_type := \n",
+            String strCode = lines("pixels : ARRAY [0..1, 1..10, 3..4] OF color_type := ",
                     "[",
                     "    20 ((gamma := 1.0)),",
                     "        (gamma := 2.0),",

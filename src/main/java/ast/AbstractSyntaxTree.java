@@ -12,6 +12,6 @@ public class AbstractSyntaxTree extends AbstractAstNode {
 
     @Override
     public String label() {
-        return "root";
+        return "ROOT";
     }
 }

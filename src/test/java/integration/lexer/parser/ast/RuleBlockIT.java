@@ -5,7 +5,6 @@ import ast.ruleblock.CondNode;
 import ast.ruleblock.IdentifierNode;
 import ast.ruleblock.IfNode;
 import ast.ruleblock.RuleBlockNode;
-import ast.ruleblock.Weight;
 import ast.ruleblock.WithNode;
 import ast.ruleblock.operators.Operator;
 import ast.ruleblock.operators.OperatorNode;
@@ -101,7 +100,7 @@ public class RuleBlockIT extends ParserTestSupport {
             ParsingResults results = parse(SourceCode.functionBlock());
             AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
-            assertEquals("root", ast.label());
+            assertEquals("ROOT", ast.label());
             assertTrue(ast.children().isEmpty());
         }
 
@@ -148,18 +147,19 @@ public class RuleBlockIT extends ParserTestSupport {
         @Test
         void Simple_rule_builds_accumulation_if_condition_and_body() throws Exception {
             String expectedTree = lines(
-                    "MAIN#INFERENCE",
-                    "  MAX",
-                    "    IF",
-                    "      COND",
-                    "        IS",
-                    "          HUMIDITY",
-                    "          MIDDLE",
-                    "      BODY",
-                    "        MIN",
+                    "ROOT",
+                    "  MAIN#INFERENCE",
+                    "    MAX",
+                    "      IF",
+                    "        COND",
                     "          IS",
-                    "            DT1",
-                    "            ZERO"
+                    "            HUMIDITY",
+                    "            MIDDLE",
+                    "        BODY",
+                    "          MIN",
+                    "            IS",
+                    "              DT1",
+                    "              ZERO"
             );
 
             AbstractSyntaxTree ast = parseRules(rule(7, "humidity IS middle", "dT1 IS zero"));
@@ -170,28 +170,29 @@ public class RuleBlockIT extends ParserTestSupport {
         @Test
         void Multiple_rules_preserve_source_order() throws Exception {
             String expectedTree = lines(
-                    "MAIN#INFERENCE",
-                    "  MAX",
-                    "    IF",
-                    "      COND",
-                    "        IS",
-                    "          HUMIDITY",
-                    "          LOW",
-                    "      BODY",
-                    "        MIN",
+                    "ROOT",
+                    "  MAIN#INFERENCE",
+                    "    MAX",
+                    "      IF",
+                    "        COND",
                     "          IS",
-                    "            DT1",
-                    "            ZERO",
-                    "    IF",
-                    "      COND",
-                    "        IS",
-                    "          HUMIDITY",
-                    "          HIGH",
-                    "      BODY",
-                    "        MIN",
+                    "            HUMIDITY",
+                    "            LOW",
+                    "        BODY",
+                    "          MIN",
+                    "            IS",
+                    "              DT1",
+                    "              ZERO",
+                    "      IF",
+                    "        COND",
                     "          IS",
-                    "            DT1",
-                    "            POSITIVE"
+                    "            HUMIDITY",
+                    "            HIGH",
+                    "        BODY",
+                    "          MIN",
+                    "            IS",
+                    "              DT1",
+                    "              POSITIVE"
             );
 
             AbstractSyntaxTree ast = parseRules(
@@ -205,7 +206,7 @@ public class RuleBlockIT extends ParserTestSupport {
         @Test
         void Multiple_ruleblocks_with_rules_preserve_source_order() throws Exception {
             String expectedTree = lines(
-                    "root",
+                    "ROOT",
                     "  MAIN#FIRST",
                     "    MAX",
                     "      IF",
@@ -453,7 +454,7 @@ public class RuleBlockIT extends ParserTestSupport {
             AbstractSyntaxTree ast = parseRules(rule("0.5"));
             WithNode with = (WithNode) onlyRuleBlock(ast).accumulation().children().get(0);
 
-            assertEquals(Weight.numeric(".5"), with.weight());
+            assertEquals(".5", with.weight());
             assertEquals("WITH .5", with.label());
             assertInstanceOf(IfNode.class, with.ifNode());
         }
@@ -463,7 +464,7 @@ public class RuleBlockIT extends ParserTestSupport {
             AbstractSyntaxTree ast = parseRules(rule("weight"));
             WithNode with = (WithNode) onlyRuleBlock(ast).accumulation().children().get(0);
 
-            assertEquals(Weight.identifier("MAIN#WEIGHT"), with.weight());
+            assertEquals("MAIN#WEIGHT", with.weight());
         }
     }
 

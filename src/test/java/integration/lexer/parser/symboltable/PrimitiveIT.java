@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import parser.initializations.Initialization;
 import parser.initializations.leafs.VariableInitialization;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
@@ -35,14 +36,12 @@ public class PrimitiveIT extends ParserTestSupport {
     static final class Primitive {
         final String typeName;
         final Subtype subtype;
-        final String defaultValue;
         final String literal;
         final String storedLiteral;
 
-        Primitive(String typeName, Subtype subtype, String defaultValue, String literal, String storedLiteral) {
+        Primitive(String typeName, Subtype subtype, String literal, String storedLiteral) {
             this.typeName = typeName;
             this.subtype = subtype;
-            this.defaultValue = defaultValue;
             this.literal = literal;
             this.storedLiteral = storedLiteral;
         }
@@ -54,20 +53,20 @@ public class PrimitiveIT extends ParserTestSupport {
     }
 
     private static final List<Primitive> PRIMITIVES = Arrays.asList(
-            new Primitive("BOOL", Subtype.BOOL, "FALSE", "TRUE", "TRUE"),
+            new Primitive("BOOL", Subtype.BOOL, "TRUE", "TRUE"),
             // The lexer normalizes 0.3e10 to .3e10
-            new Primitive("REAL", Subtype.REAL, "0.0", "0.3e10", ".3e10"),
-            new Primitive("LREAL", Subtype.LREAL, "0.0", "0.3e10", ".3e10"),
-            new Primitive("SINT", Subtype.SINT, "0", "42", "42"),
-            new Primitive("INT", Subtype.INT, "0", "42", "42"),
-            new Primitive("DINT", Subtype.DINT, "0", "42", "42"),
-            new Primitive("LINT", Subtype.LINT, "0", "42", "42"),
-            new Primitive("USINT", Subtype.USINT, "0", "42", "42"),
-            new Primitive("UINT", Subtype.UINT, "0", "42", "42"),
-            new Primitive("UDINT", Subtype.UDINT, "0", "42", "42"),
-            new Primitive("ULINT", Subtype.ULINT, "0", "42", "42"),
-            new Primitive("STRING", Subtype.STRING, "''", "'text'", "'text'"),
-            new Primitive("WSTRING", Subtype.WSTRING, "\"\"", "\"text\"", "\"text\"")
+            new Primitive("REAL", Subtype.REAL, "0.3e10", ".3e10"),
+            new Primitive("LREAL", Subtype.LREAL, "0.3e10", ".3e10"),
+            new Primitive("SINT", Subtype.SINT, "42", "42"),
+            new Primitive("INT", Subtype.INT, "42", "42"),
+            new Primitive("DINT", Subtype.DINT, "42", "42"),
+            new Primitive("LINT", Subtype.LINT, "42", "42"),
+            new Primitive("USINT", Subtype.USINT, "42", "42"),
+            new Primitive("UINT", Subtype.UINT, "42", "42"),
+            new Primitive("UDINT", Subtype.UDINT, "42", "42"),
+            new Primitive("ULINT", Subtype.ULINT, "42", "42"),
+            new Primitive("STRING", Subtype.STRING, "'text'", "'text'"),
+            new Primitive("WSTRING", Subtype.WSTRING, "\"text\"", "\"text\"")
     );
 
     static Stream<Arguments> blocksAndPrimitives() {
@@ -95,8 +94,9 @@ public class PrimitiveIT extends ParserTestSupport {
         @MethodSource("integration.lexer.parser.symboltable.PrimitiveIT#blocksAndPrimitives")
         void Uninitialized_primitive_variable_gets_its_literal_default(Block block, Primitive primitive) throws Exception {
             String symbol = SourceCode.key("var1");
+            Initialization expectedValue = defaultValue(primitive.subtype);
             LexemeInfo expectedInfo = variable(primitive.subtype, block)
-                    .initialValue(new VariableInitialization(primitive.defaultValue))
+                    .initialValue(expectedValue)
                     .build();
 
             ParsingResults results = parse(
@@ -128,7 +128,7 @@ public class PrimitiveIT extends ParserTestSupport {
         @Test
         void Every_identifier_in_a_list_is_published_with_the_same_metadata() throws Exception {
             LexemeInfo expectedInfo = variable(Subtype.INT, Block.VAR)
-                    .initialValue(new VariableInitialization("0"))
+                    .initialValue(intDefault())
                     .build();
 
             ParsingResults results = parse(
@@ -147,22 +147,22 @@ public class PrimitiveIT extends ParserTestSupport {
         void Variables_take_the_source_of_the_block_they_are_declared_in() throws Exception {
             String symbolIn1 = SourceCode.key("in1");
             LexemeInfo expectedInfoIn1 = variable(Subtype.INT, Block.VAR_INPUT)
-                    .initialValue(new VariableInitialization("0"))
+                    .initialValue(intDefault())
                     .build();
 
             String symbolOut1 = SourceCode.key("out1");
             LexemeInfo expectedInfoOut1 = variable(Subtype.REAL, Block.VAR_OUTPUT)
-                    .initialValue(new VariableInitialization("0.0"))
+                    .initialValue(realDefault())
                     .build();
 
             String symbolLocal1 = SourceCode.key("local1");
             LexemeInfo expectedInfoLocal1 = variable(Subtype.BOOL, Block.VAR)
-                    .initialValue(new VariableInitialization("FALSE"))
+                    .initialValue(boolDefault())
                     .build();
 
             String symbolLocal2 = SourceCode.key("local2");
             LexemeInfo expectedInfoLocal2 = variable(Subtype.BOOL, Block.VAR)
-                    .initialValue(new VariableInitialization("FALSE"))
+                    .initialValue(boolDefault())
                     .build();
 
             ParsingResults results = parse(

@@ -1,5 +1,6 @@
 package integration.lexer.parser.symboltable;
 
+import jdk.nashorn.internal.runtime.regexp.joni.ast.AnchorNode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import utils.LexemeInfo;
@@ -35,7 +36,8 @@ public class FuzzifierIT extends ParserTestSupport {
             "END_FUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_FUZZIFIER = "MAIN#HUMIDITY@fuzzifier";
+    private static final String ANONYMOUS_FUZZIFIER = "HUMIDITY";
+    private static final String FUZZ_SUFFIX = "@fuzzifier";
 
     private static List<String> list(String... values) {
         return Arrays.asList(values);
@@ -73,6 +75,7 @@ public class FuzzifierIT extends ParserTestSupport {
 
         @Test
         void Anonymous_fuzzifier_is_published_with_the_names_of_its_terms() throws Exception {
+            String symbol = SourceCode.key(ANONYMOUS_FUZZIFIER) + FUZZ_SUFFIX;
             LexemeInfo expectedInfo = fuzzifierComponent(list("LOW", "MIDDLE", "HIGH")).build();
 
             ParsingResults results = parse(
@@ -81,7 +84,7 @@ public class FuzzifierIT extends ParserTestSupport {
             );
             SymbolTable symbolTable = results.symbolTable();
 
-            assertSymbol(symbolTable, ANONYMOUS_FUZZIFIER, expectedInfo);
+            assertSymbol(symbolTable, symbol, expectedInfo);
         }
     }
 
@@ -92,10 +95,10 @@ public class FuzzifierIT extends ParserTestSupport {
         @Test
         @NotYetImplemented
         void Term_with_two_points_is_linear_and_keeps_its_points_as_limits() throws Exception {
-            String symbolLow = "MAIN#HUMIDITY#LOW";
+            String symbolLow = SourceCode.key("HUMIDITY#LOW");
             LexemeInfo expectedInfoLow = term(list("30", "50"), list("1", "0")).build();
 
-            String symbolHigh = "MAIN#HUMIDITY#HIGH";
+            String symbolHigh = SourceCode.key("HUMIDITY#HIGH");
             LexemeInfo expectedInfoHigh = term(list("70", "80"), list("0", "1")).build();
 
             ParsingResults results = parse(
@@ -114,9 +117,10 @@ public class FuzzifierIT extends ParserTestSupport {
          */
         @Test
         void Term_with_four_points_is_published_with_its_points_as_limits() throws Exception {
-            String symbol = "MAIN#HUMIDITY#MIDDLE";
+            String symbol = SourceCode.key("HUMIDITY#MIDDLE");
             LexemeInfo expectedInfo = new LexemeInfoBuilder()
                     .type(Type.FUNCTION)
+                    .subtype(Subtype.TRAPEZOID)
                     .use(Use.TERM)
                     .source(Source.FUZZIFY)
                     .inferiorLimits(list("30", "50", "70", "80"))

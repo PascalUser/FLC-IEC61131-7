@@ -36,7 +36,8 @@ public class DefuzzifierIT extends ParserTestSupport {
             "END_DEFUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_DEFUZZIFIER = "DT1@defuzzifier";
+    private static final String ANONYMOUS_DEFUZZIFIER = "DT1";
+    private static final String DEFUZZ_SUFFIX = "@defuzzifier";
 
     @Test
     void Defuzzify_block_with_singleton_terms_is_accepted() throws Exception {
@@ -50,7 +51,7 @@ public class DefuzzifierIT extends ParserTestSupport {
      */
     @Test
     void Anonymous_defuzzifier_is_published_with_its_term_names_and_default_value() throws Exception {
-        String symbol = SourceCode.key(ANONYMOUS_DEFUZZIFIER);
+        String symbol = SourceCode.key(ANONYMOUS_DEFUZZIFIER) + DEFUZZ_SUFFIX;
         LexemeInfo expectedInfo = new LexemeInfoBuilder()
                 .type(Type.SIMPLE)
                 .subtype(Subtype.COGS)

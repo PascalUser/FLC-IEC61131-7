@@ -926,10 +926,11 @@ rule_list:
     | rule_list rule
     { 
         List<TreeNode> rules = $1;
-        if (rules == null) { 
+        if (rules.isEmpty()) {
             rules = new ArrayList<>();
         }
         rules.add($2);
+        $$ = rules;
     }
 ;
 
@@ -1141,7 +1142,7 @@ subcondition:
 identifier_operand:
     IDENTIFIER
     {
-        $$ = new TreeNode(Label.IDENTIFIER, $1, null);
+        $$ = new TreeNode(Label.IDENTIFIER, $1, Collections.emptyList());
     }
 ;
 

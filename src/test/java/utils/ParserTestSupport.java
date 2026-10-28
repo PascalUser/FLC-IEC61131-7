@@ -3,8 +3,10 @@ package utils;
 import ast.AbstractSyntaxTree;
 import lexer.Lexer;
 import parser.Parser;
+import parser.initializations.Factory;
 import parser.initializations.Initialization;
 import parser.initializations.leafs.DefaultInitialization;
+import utils.enums.Subtype;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -36,6 +38,7 @@ public abstract class ParserTestSupport {
     }
 
     protected ParsingResults parse(SourceCode sourceCode) throws Exception {
+        System.out.println(sourceCode.build());
         return this.parse(new StringReader(sourceCode.build()));
     }
 
@@ -84,8 +87,18 @@ public abstract class ParserTestSupport {
         return DefaultInitialization.integer(new SymbolTable());
     }
 
-    /** Default REAL initialization built on a throw-away table, so it never pollutes the table under test. */
     protected static Initialization realDefault() {
         return DefaultInitialization.real(new SymbolTable());
     }
+
+    protected static Initialization stringDefault() {
+        return DefaultInitialization.string(new SymbolTable());
+    }
+
+    protected static Initialization defaultValue(Subtype subtype) {
+        return Factory.createPrimitiveInitialization(new SymbolTable(), subtype);
+    }
+
+
+
 }

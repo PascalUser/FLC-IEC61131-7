@@ -3,7 +3,6 @@ package utils;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -39,7 +38,7 @@ public final class SourceCode {
      * @return the mangled, upper-cased key, e.g. {@code MAIN#VAR1}
      */
     public static String key(String identifier) {
-        return FUNCTION_BLOCK_NAME.toUpperCase(Locale.ROOT) + "#" + identifier.toUpperCase(Locale.ROOT);
+        return FUNCTION_BLOCK_NAME.toUpperCase() + "#" + identifier.toUpperCase();
     }
 
     /**

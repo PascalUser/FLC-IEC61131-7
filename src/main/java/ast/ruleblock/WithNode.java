@@ -6,16 +6,16 @@ import java.util.Collections;
 import java.util.Objects;
 
 public final class WithNode extends AbstractAstNode {
-    private final Weight weight;
+    private final String weight;
     private final IfNode ifNode;
 
-    public WithNode(final Weight weight, final IfNode ifNode) {
+    public WithNode(final String weight, final IfNode ifNode) {
         super(Collections.singletonList(Objects.requireNonNull(ifNode, "ifNode")));
         this.weight = Objects.requireNonNull(weight, "weight");
         this.ifNode = ifNode;
     }
 
-    public Weight weight() {
+    public String weight() {
         return weight;
     }
 
@@ -25,6 +25,6 @@ public final class WithNode extends AbstractAstNode {
 
     @Override
     public String label() {
-        return "WITH " + weight.value();
+        return "WITH " + weight;
     }
 }

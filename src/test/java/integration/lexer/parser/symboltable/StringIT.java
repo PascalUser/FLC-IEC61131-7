@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import parser.initializations.leafs.DefaultInitialization;
 import parser.initializations.leafs.VariableInitialization;
 import utils.*;
 import utils.builders.LexemeInfoBuilder;
@@ -58,7 +59,7 @@ public class StringIT extends ParserTestSupport {
         void Fixed_length_string_type_publishes_its_length_and_defaults_to_empty(Subtype subtype) throws Exception {
             String symbol = "TEXT_TYPE";
             LexemeInfo expectedInfo = stringType(subtype, LENGTH_8)
-                    .initialValue(new VariableInitialization(emptyLiteral(subtype)))
+                    .initialValue(defaultValue(subtype))
                     .build();
 
             ParsingResults results = parse(
@@ -75,7 +76,7 @@ public class StringIT extends ParserTestSupport {
         void String_type_without_length_has_no_limit(Subtype subtype) throws Exception {
             String symbol = "TEXT_TYPE";
             LexemeInfo expectedInfo = stringType(subtype, null)
-                    .initialValue(new VariableInitialization(emptyLiteral(subtype)))
+                    .initialValue(defaultValue(subtype))
                     .build();
 
             ParsingResults results = parse(
@@ -113,7 +114,7 @@ public class StringIT extends ParserTestSupport {
         void Fixed_length_string_variable_publishes_its_length_and_defaults_to_empty_in_every_block(Block block) throws Exception {
             String symbol = SourceCode.key("text1");
             LexemeInfo expectedInfo = stringVariable(Subtype.STRING, block)
-                    .initialValue(new VariableInitialization("''"))
+                    .initialValue(stringDefault())
                     .build();
 
             ParsingResults results = parse(

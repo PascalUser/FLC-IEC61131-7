@@ -8,7 +8,6 @@ import ast.ruleblock.IfNode;
 import ast.ruleblock.IsNode;
 import ast.ruleblock.NotNode;
 import ast.ruleblock.RuleBlockNode;
-import ast.ruleblock.Weight;
 import ast.ruleblock.WithNode;
 import ast.ruleblock.operators.MaxNode;
 import ast.ruleblock.operators.MinNode;
@@ -115,7 +114,7 @@ class RuleBlockTreeTest {
                 is("dT1", "positive")
         ));
         IfNode secondRule = new IfNode(new CondNode(secondCondition), new BodyNode(secondAct));
-        WithNode secondRuleWithWeight = new WithNode(Weight.numeric("0.5"), secondRule);
+        WithNode secondRuleWithWeight = new WithNode("0.5", secondRule);
 
         MaxNode accumulation = new MaxNode(Arrays.asList(firstRule, secondRuleWithWeight));
         return new RuleBlockNode("rule_temperature", accumulation);
