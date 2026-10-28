@@ -92,7 +92,6 @@ public class FuzzifierIT extends ParserTestSupport {
 
         /** The documentation specifies LINEAR for "low"; "high" also has two points and is assumed alike. */
         @Test
-        @NotYetImplemented
         void Term_with_two_points_is_linear_and_keeps_its_points_as_limits() throws Exception {
             String symbolLow = SourceCode.key("HUMIDITY#LOW");
             LexemeInfo expectedInfoLow = term(list("30", "50"), list("1", "0")).build();
