@@ -84,6 +84,19 @@ public final class Director {
     }
 
     /**
+     * Configures the schema for the BOOL literal {@code TRUE} (the same entry the lexer creates when it
+     * reads {@code TRUE}) and returns the literal string.
+     *
+     * @param schema the schema to configure
+     * @return the literal string "TRUE"
+     */
+    public static String makeTrueBoolean(LexemeInfoMutator schema) {
+        makeLiteral(schema);
+        schema.subtype(Subtype.BOOL).initialValue(true);
+        return "TRUE";
+    }
+
+    /**
      * Configures a default STRING literal and returns its source spelling.
      *
      * @param schema the schema to configure

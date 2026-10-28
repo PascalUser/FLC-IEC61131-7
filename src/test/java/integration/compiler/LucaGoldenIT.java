@@ -1,4 +1,4 @@
-﻿package integration.compiler;
+package integration.compiler;
 
 import compiler.FlcCompiler;
 import compiler.GeneratedFile;

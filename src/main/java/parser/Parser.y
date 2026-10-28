@@ -1226,7 +1226,10 @@ option_block:
  * Pragmas can appear in OPTION blocks within function blocks.
  * They provide hints to the compiler/code generator (e.g., optimization flags,
  * target-specific settings, documentation annotations).
- * 
+ *
+ * Each pragma is published in the symbol table under <function_block>@option#<NAME>
+ * (e.g. MAIN@option#BIT_WIDTH); a pragma without value is a flag equal to TRUE.
+ *
  * @see #option_block
  */
 pragma_list:
@@ -1236,7 +1239,19 @@ pragma_list:
 
 pragma:
     PRAGMA IDENTIFIER ';'
+    {
+        SingleDeclaration pragmaDeclaration = new SingleDeclaration(this.symbolTable);
+        Director.makeWithMetadata(pragmaDeclaration, PragmaMetadata.flag(this.symbolTable));
+        pragmaDeclaration.identifier($2).setDeclarationScope(programName + PragmaMetadata.SCOPE_SUFFIX);
+        pragmaDeclaration.publish();
+    }
     | PRAGMA IDENTIFIER numeric_constant ';'
+    {
+        SingleDeclaration pragmaDeclaration = new SingleDeclaration(this.symbolTable);
+        Director.makeWithMetadata(pragmaDeclaration, PragmaMetadata.valued(this.symbolTable, $3));
+        pragmaDeclaration.identifier($2).setDeclarationScope(programName + PragmaMetadata.SCOPE_SUFFIX);
+        pragmaDeclaration.publish();
+    }
 ;
 
 /**

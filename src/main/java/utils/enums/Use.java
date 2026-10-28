@@ -18,6 +18,8 @@ public enum Use {
     FIELD,
     LITERAL,
     MACRO,
+    /** Option of an {@code OPTION} block ({@code PRAGMA name [value];}). */
+    PRAGMA,
     RULE,
     TERM,
     TYPE,
