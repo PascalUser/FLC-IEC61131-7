@@ -1,6 +1,7 @@
 package parser.metadata;
 
-import parser.facades.FunctionTypeCalculator;
+import parser.facades.MembershipFunctionClassifier;
+import parser.utils.MembershipFunctionShape;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -10,8 +11,16 @@ import utils.enums.Use;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Symbol table entry of a linguistic term ({@code TERM name := points;} or a singleton).
+ * <p>
+ * The limits keep the points as written (x as inferior limits, degrees as superior limits); the subtype and
+ * the parameters are the shape recognized by {@link MembershipFunctionClassifier}, e.g. {@code (0,1) (5,1)
+ * (10,0)} is {@code LINEAR} with parameters {@code [5, 10]}.
+ * </p>
+ */
 public final class TermMetadata implements LexemeInfoView {
-    private final Subtype subtype;
+    private final MembershipFunctionShape shape;
     private final List<String> inferiorLimits;
     private final List<String> superiorLimits;
 
@@ -19,18 +28,16 @@ public final class TermMetadata implements LexemeInfoView {
         inferiorLimits = new ArrayList<>();
         superiorLimits = new ArrayList<>();
 
-        int numberOfPoints = 0;
         boolean toInferiorList = true;
         for (String point : points) {
             if (toInferiorList) {
                 inferiorLimits.add(point);
             } else {
-                numberOfPoints++;
                 superiorLimits.add(point);
             }
             toInferiorList = !toInferiorList;
         }
-        subtype = FunctionTypeCalculator.calculate(numberOfPoints);
+        shape = MembershipFunctionClassifier.classify(inferiorLimits, superiorLimits);
     }
 
     @Override
@@ -39,7 +46,7 @@ public final class TermMetadata implements LexemeInfoView {
     }
 
     public Subtype subtype() {
-        return subtype;
+        return shape.subtype();
     }
 
     @Override
@@ -69,7 +76,7 @@ public final class TermMetadata implements LexemeInfoView {
 
     @Override
     public List<String> parameters() {
-        return null;
+        return shape.parameters();
     }
 
     @Override

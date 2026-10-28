@@ -42,6 +42,7 @@ public class FuzzifierIT extends ParserTestSupport {
         return Arrays.asList(values);
     }
 
+    /** Two-point ramp: no redundant point, so its parameters are its x values. */
     private static LexemeInfoBuilder term(List<String> inferior, List<String> superior) {
         return new LexemeInfoBuilder()
                 .type(Type.FUNCTION)
@@ -49,7 +50,8 @@ public class FuzzifierIT extends ParserTestSupport {
                 .use(Use.TERM)
                 .source(Source.FUZZIFY)
                 .inferiorLimits(inferior)
-                .superiorLimits(superior);
+                .superiorLimits(superior)
+                .parameters(inferior);
     }
 
     private static LexemeInfoBuilder fuzzifierComponent(List<String> terms) {
@@ -123,6 +125,7 @@ public class FuzzifierIT extends ParserTestSupport {
                     .source(Source.FUZZIFY)
                     .inferiorLimits(list("30", "50", "70", "80"))
                     .superiorLimits(list("0", "1", "1", "0"))
+                    .parameters(list("30", "50", "70", "80"))
                     .build();
 
             ParsingResults results = parse(
@@ -132,6 +135,32 @@ public class FuzzifierIT extends ParserTestSupport {
             SymbolTable symbolTable = results.symbolTable();
 
             assertSymbol(symbolTable, symbol, expectedInfo);
+        }
+
+        /**
+         * Outside its points a membership function keeps the degree of the first/last point (IEC 61131-7, 5.2.2),
+         * so three points can be a ramp ("shoulder") and not a triangle. The limits keep the points as written;
+         * the parameters are the points that define the ramp.
+         */
+        @Test
+        void Three_point_shoulder_is_linear_and_keeps_only_its_defining_points_as_parameters() throws Exception {
+            String symbol = SourceCode.key("TEMP#COLD");
+            LexemeInfo expectedInfo = new LexemeInfoBuilder()
+                    .type(Type.FUNCTION)
+                    .subtype(Subtype.LINEAR)
+                    .use(Use.TERM)
+                    .source(Source.FUZZIFY)
+                    .inferiorLimits(list("0", "5", "10"))
+                    .superiorLimits(list("1", "1", "0"))
+                    .parameters(list("5", "10"))
+                    .build();
+
+            ParsingResults results = parse(
+                    SourceCode.functionBlock()
+                            .body("FUZZIFY temp TERM cold := (0,1) (5,1) (10,0); END_FUZZIFY")
+            );
+
+            assertSymbol(results.symbolTable(), symbol, expectedInfo);
         }
     }
 }

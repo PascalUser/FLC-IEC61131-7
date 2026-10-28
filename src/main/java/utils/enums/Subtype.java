@@ -47,6 +47,8 @@ public enum Subtype {
     ULINT,
     UNKNOWN,
     USINT,
+    /** Membership function with points given by variables: its shape is only known at run time. */
+    VARIABLE,
     WORD,
     WSTRING
 

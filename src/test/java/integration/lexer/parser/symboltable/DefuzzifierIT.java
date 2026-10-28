@@ -81,6 +81,7 @@ public class DefuzzifierIT extends ParserTestSupport {
                 .source(Source.DEFUZZIFY)
                 .inferiorLimits(Collections.singletonList(value))
                 .superiorLimits(Collections.singletonList("1"))
+                .parameters(Collections.singletonList(value))
                 .build();
 
         ParsingResults results = parse(
