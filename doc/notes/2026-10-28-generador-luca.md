@@ -25,7 +25,7 @@ java -jar target/flc-iec61131-7-compiler-1.0-SNAPSHOT.jar programa.fcl [director
 | Ancho de bits | `PRAGMA bit_width N;` en `OPTION` (1..30); si falta, 8 con warning. |
 | REAL | No soportado por ahora: entradas/salidas enteras, puntos enteros en `0..2^N-1`. |
 | Formas de los términos | Se clasifican en el parser por **puntos y grados** (no solo por cantidad). Nombres: `SINGLETON`, `LINEAR`, `TRIANGLE`, `TRAPEZOID`, `COMPLEX`, `VARIABLE`. `LINEAR` no se divide: si es rampa Z o S lo decide el lowering por el primer grado. |
-| Orden de E/S | El de declaración, expuesto por el parser aparte de la tabla. |
+| Orden de E/S | El de declaración. El parser lo publica en la tabla: entrada del FB bajo su nombre (`MAIN`, `Use.FUNCTION_BLOCK`) con las claves de `VAR_INPUT`/`VAR_OUTPUT` en orden en `parameters`. Define la firma del controlador y los bits de cada salida. |
 | Comparación con Luca | Equivalencia semántica, no texto idéntico: tokens de C++ sin espacios, comentarios ni mayúsculas. |
 | Bugs de Luca | Se corrigen en el port (ver §5). |
 
@@ -33,7 +33,7 @@ java -jar target/flc-iec61131-7-compiler-1.0-SNAPSHOT.jar programa.fcl [director
 
 ```
 programa.fcl
-  └─ Lexer + Parser ──► tabla de símbolos + AST de RULEBLOCK + orden de E/S
+  └─ Lexer + Parser ──► tabla de símbolos (con el orden de E/S en la entrada del FB) + AST de RULEBLOCK
        └─ lowering.ControllerLowering ──► codegen.ControllerModel   (y diagnósticos de lo no soportado)
             └─ codegen.CodeGenerator ──► <base>_out.cpp / _out.h / _outTB.cpp
   compiler.FlcCompiler encadena todo; compiler.CommandLine + Main son la línea de comandos.
@@ -57,12 +57,12 @@ ignora con warning (el generador no lo implementa).
 
 | Dónde | Cambio |
 |---|---|
-| `Parser.y` | Acciones de `pragma` (OPTION a la tabla); `getInterfaceVariables()`; `getFunctionBlockName()`. Bison sin conflictos. |
+| `Parser.y` | Acciones de `pragma` (OPTION a la tabla); al cerrar el FB publica su entrada (`MAIN`) con las E/S en orden; `getFunctionBlockName()`. Bison sin conflictos. |
 | `parser.publishers` | `Publisher.keys()` (Composite: `SingleDeclaration`, `MultipleDeclaration`, `DeclarationGroup`). `ComponentDeclaration` agrega el sufijo `@fuzzifier/@defuzzifier` en `key()` en vez de modificar `identifier` en `publish()`; las claves publicadas no cambian. |
 | `parser.facades` | `FunctionTypeCalculator` se reemplazó por `MembershipFunctionClassifier` (+ `parser.utils.MembershipFunctionShape`). Los términos guardan en `parameters` las x que definen la forma (p. ej. `(0,1)(5,1)(10,0)` → `LINEAR`, `[5, 10]`). |
-| `parser.metadata` | Nuevo `PragmaMetadata`; `TermMetadata` usa el clasificador. |
-| `utils.enums` | `Use.PRAGMA`, `Subtype.VARIABLE`. `utils.builders.Director.makeTrueBoolean`. |
-| Tests | `ParsingResults` recibe la lista de E/S; `FuzzifierIT`/`DefuzzifierIT` esperan `parameters`; se quitó un `@NotYetImplemented` que ya pasaba. |
+| `parser.metadata` | Nuevos `PragmaMetadata` y `FunctionBlockMetadata`; `TermMetadata` usa el clasificador. |
+| `utils.enums` | `Use.PRAGMA`, `Use.FUNCTION_BLOCK`, `Subtype.VARIABLE`. `utils.builders.Director.makeTrueBoolean`. |
+| Tests | `FunctionBlockInterfaceIT` verifica la entrada del FB; `FuzzifierIT`/`DefuzzifierIT` esperan `parameters`; se quitó un `@NotYetImplemented` que ya pasaba. |
 
 ## 5. Bugs del generador original de Luca (corregidos en el port)
 

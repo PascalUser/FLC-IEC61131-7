@@ -86,11 +86,13 @@ public final class ControllerLowering {
     /**
      * Builds the controller model.
      *
-     * @param ast                the rule blocks
-     * @param interfaceVariables keys of the inputs and outputs in declaration order
+     * Inputs and outputs are taken in declaration order (the {@code parameters} of the function block entry):
+     * it fixes the signature of the controller and the bits of each output in its result.
+     *
+     * @param ast the rule blocks
      * @return the model, or empty if the program has something the generator does not support (reported)
      */
-    public Optional<ControllerModel> lower(final AbstractSyntaxTree ast, final List<String> interfaceVariables) {
+    public Optional<ControllerModel> lower(final AbstractSyntaxTree ast) {
         OptionalInt bitWidth = bitWidth();
         if (!bitWidth.isPresent()) {
             return Optional.empty();
@@ -103,7 +105,7 @@ public final class ControllerLowering {
         List<Variable> inputs = new ArrayList<>();
         List<Variable> outputs = new ArrayList<>();
         Map<String, Defuzzifier> defuzzifiers = new LinkedHashMap<>();
-        for (String key : interfaceVariables) {
+        for (String key : symbolTable.get(keys.functionBlock()).parameters) {
             boolean isInput = symbolTable.get(key).source == Source.IN;
             LexemeInfo block = symbolTable.get(isInput ? keys.fuzzifier(key) : keys.defuzzifier(key));
             boolean integer = isIntegerVariable(key);

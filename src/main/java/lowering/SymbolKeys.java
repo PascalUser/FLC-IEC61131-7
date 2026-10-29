@@ -7,9 +7,9 @@ import java.util.Locale;
 /**
  * The only place that knows how the parser names the symbols of a function block in the symbol table.
  * <p>
- * Variables are {@code <FB>#<VAR>}, fuzzifiers and defuzzifiers {@code <FB>#<VAR>@fuzzifier} and
- * {@code <FB>#<VAR>@defuzzifier}, terms {@code <FB>#<VAR>#<TERM>} and pragmas {@code <FB>@option#<NAME>}.
- * Names in the rule block AST are not qualified, so they are resolved here.
+ * The function block is {@code <FB>}, variables {@code <FB>#<VAR>}, fuzzifiers and defuzzifiers
+ * {@code <FB>#<VAR>@fuzzifier} and {@code <FB>#<VAR>@defuzzifier}, terms {@code <FB>#<VAR>#<TERM>} and pragmas
+ * {@code <FB>@option#<NAME>}. Names in the rule block AST are not qualified, so they are resolved here.
  * </p>
  *
  * @author Matias Ortiz
@@ -29,6 +29,16 @@ public final class SymbolKeys {
      */
     public SymbolKeys(final String functionBlock) {
         this.functionBlock = functionBlock.toUpperCase(Locale.ROOT);
+    }
+
+    /**
+     * Returns the key of the function block itself, whose {@code parameters} are its inputs and outputs in
+     * declaration order.
+     *
+     * @return its key, e.g. {@code MAIN}
+     */
+    public String functionBlock() {
+        return functionBlock;
     }
 
     /**

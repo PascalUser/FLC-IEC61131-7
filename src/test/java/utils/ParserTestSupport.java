@@ -34,7 +34,7 @@ public abstract class ParserTestSupport {
         assertFalse(diagnosticHandler.hasErrors());
         AbstractSyntaxTree ast = parser.getAST();
         assertNotNull(ast, "Parser should build an AST");
-        return new ParsingResults(symbolTable, ast, parser.getInterfaceVariables());
+        return new ParsingResults(symbolTable, ast);
     }
 
     protected ParsingResults parse(SourceCode sourceCode) throws Exception {

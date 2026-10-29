@@ -59,7 +59,7 @@ public final class FlcCompiler {
             return Collections.emptyList();
         }
         Optional<ControllerModel> model = new ControllerLowering(symbolTable, parser.getFunctionBlockName(),
-                diagnostics).lower(parser.getAST(), parser.getInterfaceVariables());
+                diagnostics).lower(parser.getAST());
         if (!model.isPresent()) {
             return Collections.emptyList();
         }

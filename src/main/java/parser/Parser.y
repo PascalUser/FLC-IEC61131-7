@@ -87,12 +87,6 @@
     private String programName;
     private AbstractSyntaxTree ast;
 
-    /**
-     * Keys of the VAR_INPUT and VAR_OUTPUT variables in declaration order: the interface of the
-     * function block. The symbol table is a map and does not keep that order.
-     */
-    private final List<String> interfaceVariables = new ArrayList<>();
-
     public AbstractSyntaxTree getAST() {
         return ast;
     }
@@ -104,16 +98,6 @@
      */
     public String getFunctionBlockName() {
         return programName;
-    }
-
-    /**
-     * Returns the keys of the input and output variables in the order they are declared
-     * (e.g. [MAIN#ANGLE, MAIN#SPEED, MAIN#FORCE]). Their direction is in the symbol table (source IN/OUT).
-     *
-     * @return unmodifiable list of symbol table keys
-     */
-    public List<String> getInterfaceVariables() {
-        return Collections.unmodifiableList(interfaceVariables);
     }
 }
 
@@ -219,6 +203,8 @@
     var_constant_spec
 
 %type <List<String>>
+    opt_fb_io_var_declarations_list
+    fb_io_var_declarations
     identifier_list
     opt_range
     range
@@ -330,7 +316,11 @@ program:
  * The top-level container for a fuzzy control program. Contains:
  * - Optional data type declarations (TYPE ... END_TYPE)
  * - Function block with I/O variables, internal variables, and fuzzy blocks
- * 
+ *
+ * Semantic Actions:
+ * The function block itself is published under its name (e.g. MAIN) with its inputs and outputs
+ * in declaration order as parameters (see parser.metadata.FunctionBlockMetadata).
+ *
  * @see #function_block_declaration
  * @see #opt_data_type_declaration
  */
@@ -340,6 +330,11 @@ function_block_declaration:
     opt_other_var_declarations_list
     opt_function_block_body
     END_FUNCTION_BLOCK
+    {
+        SingleDeclaration functionBlock = new SingleDeclaration(this.symbolTable);
+        Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata($3));
+        functionBlock.identifier(programName).publish();
+    }
 ;
 
 function_block_name:
@@ -351,7 +346,14 @@ function_block_name:
 
 opt_fb_io_var_declarations_list:
     /* empty */
+    {
+        $$ = new ArrayList<>();
+    }
     | opt_fb_io_var_declarations_list fb_io_var_declarations
+    {
+        $1.addAll($2);
+        $$ = $1;
+    }
 ;
 
 /**
@@ -378,8 +380,9 @@ opt_fb_io_var_declarations_list:
  * 
  * Semantic Actions:
  * Declarations are published with Source.IN or Source.OUT, Use.VARIABLE,
- * and scoped to the current program/function block name.
- * 
+ * and scoped to the current program/function block name. The value is the list
+ * of their keys in declaration order.
+ *
  * @see #io_var_decl
  * @see #var_retain_spec
  * @see #var_init_decl_list
@@ -391,7 +394,7 @@ fb_io_var_declarations:
     {
         $3.source($1).use(Use.VARIABLE).setDeclarationScope(programName);
         $3.publish();
-        interfaceVariables.addAll($3.keys());
+        $$ = $3.keys();
     }
 ;
 

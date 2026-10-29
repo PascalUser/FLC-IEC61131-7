@@ -64,7 +64,7 @@ public class ControllerLoweringIT extends ParserTestSupport {
     private Optional<ControllerModel> lower(String source) throws Exception {
         ParsingResults results = parse(new StringReader(source));
         return new ControllerLowering(results.symbolTable(), "main", diagnostics)
-                .lower(results.abstractSyntaxTree(), results.interfaceVariables());
+                .lower(results.abstractSyntaxTree());
     }
 
     private List<String> messagesOf(Class<? extends Diagnostic> kind) {

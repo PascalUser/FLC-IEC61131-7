@@ -32,7 +32,7 @@ public class ControllerSimulationIT extends ParserTestSupport {
             results = parse(source);
         }
         return new ControllerLowering(results.symbolTable(), example, new DiagnosticsHandler())
-                .lower(results.abstractSyntaxTree(), results.interfaceVariables()).get();
+                .lower(results.abstractSyntaxTree()).get();
     }
 
     /**
