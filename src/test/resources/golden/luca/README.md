@@ -1,77 +1,58 @@
-# Referencias del generador de Luca Sarramone
+Here is the translation of your document into English:
 
-Salidas de referencia (*golden files*) para validar el port del generador FLC de Luca Sarramone
-(<https://github.com/LucaSarramone/Generador-FLC>), usado con su permiso.
+# Luca Sarramone's Generator References
 
-## Procedencia
+Reference outputs (*golden files*) to validate the port of Luca Sarramone's FLC generator ([https://github.com/LucaSarramone/Generador-FLC](https://github.com/LucaSarramone/Generador-FLC)), used with his permission.
 
-- Repositorio: `LucaSarramone/Generador-FLC`, commit `c304c1d` ("Readme modificado + nuevos ejemplos").
-- `<ejemplo>.txt`: entrada en el DSL de Luca, copiada de `Ejemplos/` sin cambios. La única diferencia es
-  que `pendulo invertido.txt` se renombró a `pendulo_invertido.txt`. Su generador arma el nombre de
-  salida reemplazando los espacios por `_`, así que la salida es la misma.
-- `original/`: salida (`<base>_out.cpp`, `<base>_out.h`, `<base>_outTB.cpp`) **regenerada con el código
-  de ese commit**, sin tocar. Para `pendulo_invertido` y `Autoenfoque` coincide byte a byte con la que está
-  versionada en su repo. La versionada de `EstacionamientoCamion` venía de una versión anterior del
-  generador (usaba `double`), por eso se regeneró.
-- `expected/`: lo que tiene que generar nuestro compilador. Es `original/` con la corrección de los
-  triángulos (ver abajo); el `.h` y el testbench son iguales.
+## Provenance
 
-## Corrección respecto del generador original
+* Repository: `LucaSarramone/Generador-FLC`, commit `c304c1d` ("Readme modificado + nuevos ejemplos" / "Modified Readme + new examples").
+* `<example>.txt`: input in Luca's DSL, copied from `Ejemplos/` without changes. The only difference is that `pendulo invertido.txt` was renamed to `pendulo_invertido.txt`. His generator builds the output name by replacing spaces with `_`, so the output remains the same.
+* `original/`: output (`<base>_out.cpp`, `<base>_out.h`, `<base>_outTB.cpp`) **regenerated with the code from that commit**, untouched. For `pendulo_invertido` and `Autoenfoque`, it matches byte-by-byte with the one versioned in his repo. The versioned one for `EstacionamientoCamion` came from an earlier version of the generator (which used `double`), which is why it was regenerated.
+* `expected/`: what our compiler is expected to generate. It is `original/` with the triangle correction applied (see below); the `.h` and the testbench are identical.
 
-El generador original tiene dos errores en las funciones de pertenencia. Las rampas Z y S y el singleton
-están bien:
+## Corrections Regarding the Original Generator
 
-- **Triángulo** (`TriangularFS`): usa la pendiente de subida (`function<var><i>1`) del lado que baja
-  (`x > b`) y la de bajada (`function<var><i>2`) del lado que sube. Por ejemplo, en el péndulo
-  (`nm = TRIANGULAR(0, 99, 113)`) da 242 en x = 0 y 226 en x = 113, donde debería dar 0.
-- **Trapecio** (`TrapezoidFS`): la condición de afuera está invertida (calcula las pendientes cuando x está
-  fuera de `[a, d]` y da 0 adentro) y en la meseta asigna `1` en lugar de `2^N - 1`. Ningún ejemplo usa
-  trapecio; su código corregido está fijado en `TrapezoidFuzzySetTest`.
+The original generator has two bugs in the membership functions. The Z and S ramps and the singleton are correct:
 
-`expected/<base>_out.cpp` se obtuvo de `original/` intercambiando, en cada triángulo, los lados derechos
-de las dos asignaciones (`function…1 * (x-a)` ⇄ `function…2 * (c - x)`). Así la referencia sigue sin
-depender de nuestro generador. Ejecutado para todos los x de 8 bits, el código corregido coincide con la
-forma ideal calculada con las mismas pendientes enteras (`255/(b - a)`). Que esas pendientes sean enteras
-es una limitación de diseño, no un error: en `TRIANGULAR(0, 99, 113)` el pico llega a 198 y no a 255.
+* **Triangle** (`TriangularFS`): it uses the rising slope (`function<var><i>1`) for the falling side (`x > b`) and the falling slope (`function<var><i>2`) for the rising side. For example, in the pendulum (`nm = TRIANGULAR(0, 99, 113)`) it yields 242 at x = 0 and 226 at x = 113, where it should yield 0.
+* **Trapezoid** (`TrapezoidFS`): the outside condition is inverted (it calculates the slopes when x is outside `[a, d]` and yields 0 inside) and on the plateau it assigns `1` instead of `2^N - 1`. No example uses a trapezoid; its corrected code is fixed in `TrapezoidFuzzySetTest`.
 
-El nombre base (`pendulo_invertido`, `Autoenfoque`, `EstacionamientoCamion`) es el nombre del archivo de
-entrada. Aparece dentro de la salida (`#include "<base>_out.h"` en el testbench).
+`expected/<base>_out.cpp` was obtained from `original/` by swapping, in each triangle, the right-hand sides of the two assignments (`function…1 (x-a)` ⇄ `function…2 (c - x)`). This way, the reference remains independent of our generator. When executed for all 8-bit x values, the corrected code matches the ideal shape calculated with the same integer slopes (`255/(b - a)`). The fact that these slopes are integers is a design limitation, not a bug: in `TRIANGULAR(0, 99, 113)` the peak reaches 198 and not 255.
 
-## Traducción a FCL (`<base>.fcl`)
+The base name (`pendulo_invertido`, `Autoenfoque`, `EstacionamientoCamion`) is the name of the input file. It appears inside the output (`#include "<base>_out.h"` in the testbench).
 
-Cada `<base>.fcl` es el mismo controlador escrito en FCL (IEC 61131-7). Se tradujo mecánicamente del
-`.txt` con esta correspondencia:
+## Translation to FCL (`<base>.fcl`)
 
-| DSL de Luca | FCL |
-|---|---|
-| `nombre <8>:` | `OPTION PRAGMA bit_width 8; END_OPTION`; el nombre del FB es el nombre base |
-| `x : IN;` / `y : OUT;` | `VAR_INPUT x : USINT;` / `VAR_OUTPUT y : USINT;` (entero sin signo de 8 bits) |
-| `Z_SHAPE(c, d)` | `TERM t := (c, 1) (d, 0);` |
-| `S_SHAPE(a, b)` | `TERM t := (a, 0) (b, 1);` |
-| `TRIANGULAR(a, b, c)` | `TERM t := (a, 0) (b, 1) (c, 0);` |
-| `TRAPEZOID(a, b, c, d)` | `TERM t := (a, 0) (b, 1) (c, 1) (d, 0);` |
-| `SINGLETON(v)` (salidas) | `TERM t := v;` dentro de `DEFUZZIFY` |
-| `RULES <MINMAX>`, forma `(x * y = z)`, regla `a * b = c;` | `RULEBLOCK reglas AND : MIN; ACCU : MAX;` y `RULE i : IF x IS a AND y IS b THEN z IS c;` |
-| `z = CENTROID;` | `METHOD : CoGS;` |
-| — (su generador no tiene default) | `DEFAULT := NC;` |
+Each `<base>.fcl` is the same controller written in FCL (IEC 61131-7). It was mechanically translated from the `.txt` using this mapping:
 
-Se respetan el orden de las variables, de los términos y de las reglas. `Autoenfoque` concluye
-tres salidas por regla (Extension Level del estándar). Los otros dos son programas de Basic Level.
-El generador de Luca no implementa `DEFAULT`: si no se activa ninguna regla, el centroide divide por cero.
+| Luca's DSL                                               | FCL                                                                                        |
+|----------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| `nombre <8>:`                                            | `OPTION PRAGMA bit_width 8; END_OPTION`; the FB name is the base name                      |
+| `x : IN;` / `y : OUT;`                                   | `VAR_INPUT x : USINT;` / `VAR_OUTPUT y : USINT;` (8-bit unsigned integer)                  |
+| `Z_SHAPE(c, d)`                                          | `TERM t := (c, 1) (d, 0);`                                                                 |
+| `S_SHAPE(a, b)`                                          | `TERM t := (a, 0) (b, 1);`                                                                 |
+| `TRIANGULAR(a, b, c)`                                    | `TERM t := (a, 0) (b, 1) (c, 0);`                                                          |
+| `TRAPEZOID(a, b, c, d)`                                  | `TERM t := (a, 0) (b, 1) (c, 1) (d, 0);`                                                   |
+| `SINGLETON(v)` (outputs)                                 | `TERM t := v;` inside `DEFUZZIFY`                                                          |
+| `RULES <MINMAX>`, shape `(x * y = z)`, rule `a * b = c;` | `RULEBLOCK reglas AND : MIN; ACCU : MAX;` and `RULE i : IF x IS a AND y IS b THEN z IS c;` |
+| `z = CENTROID;`                                          | `METHOD : CoGS;`                                                                           |
+| — (his generator has no default)                         | `DEFAULT := NC;`                                                                           |
 
-## Cómo regenerar
+The order of variables, terms, and rules is preserved. `Autoenfoque` infers three outputs per rule (Extension Level of the standard). The other two are Basic Level programs. Luca's generator does not implement `DEFAULT`: if no rule is triggered, the centroid divides by zero.
 
-1. Clonar el repositorio en `c304c1d` y compilar `Compilador/src` (Java 8+, codificación ISO-8859-1):
+## How to Regenerate
+
+1. Clone the repository at `c304c1d` and compile `Compilador/src` (Java 8+, ISO-8859-1 encoding):
    `javac -encoding ISO-8859-1 -d classes $(find Compilador/src -name "*.java")`.
-2. Compilar y ejecutar este driver, que corre el generador sin abrir la GUI, pasándole las rutas
-   **absolutas** de los `.txt`. El generador escribe la salida en la carpeta de cada entrada:
+2. Compile and run this driver, which executes the generator without opening the GUI, passing the **absolute** paths of the `.txt` files. The generator writes the output in each input's folder:
 
 ```java
 import java.lang.reflect.Field;
 
 public class Driver {
     public static void main(String[] args) throws Exception {
-        // MainFrame.printOutput escribe en un JTextArea estático que solo crea la GUI.
+        // MainFrame.printOutput writes to a static JTextArea that is only created by the GUI.
         Field output = Class.forName("gui.MainFrame").getDeclaredField("outputText");
         output.setAccessible(true);
         output.set(null, new javax.swing.JTextArea());
@@ -80,24 +61,20 @@ public class Driver {
         }
     }
 }
+
 ```
 
-`java -Djava.awt.headless=true -cp classes Driver <ruta>/pendulo_invertido.txt ...`
+`java -Djava.awt.headless=true -cp classes Driver <path>/pendulo_invertido.txt ...`
 
-3. Esos archivos van a `original/`. Para `expected/`, copiar el `.h` y el testbench, y en el `.cpp`
-   aplicar la corrección de los triángulos. Con Python:
+3. Those files go to `original/`. For `expected/`, copy the `.h` and the testbench, and apply the triangle correction in the `.cpp`. Using Python:
 
 ```python
 import re
 TRIANGLE = re.compile(r"(\t\t\t(\w+)Fuzz\[(\d+)\] = )(function\w+1 \* \(\w+-\d+\))"
                       r"(; \n\t\telse \n\t\t\t\2Fuzz\[\3\] = )(function\w+2 \* \(\d+ - \w+\))(;\n)")
-corrected, count = TRIANGLE.subn(r"\1\6\5\4\7", original_cpp)   # count = cantidad de TRIANGULAR del .txt
+corrected, count = TRIANGLE.subn(r"\1\6\5\4\7", original_cpp)   # count = number of TRIANGULAR in the .txt
 ```
 
-## Cómo se compara
+## How It Compares
 
-No se exige que la salida sea idéntica byte a byte, sino **equivalente**: `LucaGoldenIT` compara las
-secuencias de tokens de C++, ignorando espacios, saltos de línea (el generador escribe `\n`; git puede
-convertirlos a `\r\n`), comentarios y mayúsculas/minúsculas. Los nombres de IEC 61131 no distinguen
-mayúsculas y el front-end los normaliza. Cualquier otro cambio, incluso uno que no altere el
-comportamiento, obliga a revisar la referencia de forma explícita.
+The output is not required to be identical byte-by-byte, but rather **equivalent**: `LucaGoldenIT` compares the C++ token sequences, ignoring spaces, line breaks (the generator writes `\n`; git might convert them to `\r\n`), comments, and case sensitivity. IEC 61131 names are case-insensitive and the front-end normalizes them. Any other change, even one that does not alter behavior, requires the reference to be reviewed explicitly.
