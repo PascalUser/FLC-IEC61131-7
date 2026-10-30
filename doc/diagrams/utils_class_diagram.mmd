@@ -27,7 +27,20 @@ classDiagram
         }
     }
     namespace utils_builders {
-        class LexemeInfoSchema {
+        class LexemeInfoMutator {
+            <<interface>>
+            +type(Type)
+            +subtype(Subtype)
+            +customType(String)
+            +source(Source)
+            +use(Use)
+            +inferiorLimits(List~String~)
+            +superiorLimits(List~String~)
+            +parameters(List~String~)
+            +initialValue(Object)
+        }
+        class LexemeInfoView {
+            <<interface>>
             +type()
             +subtype()
             +customType()
@@ -42,20 +55,21 @@ classDiagram
             +build()
         }
         class Director {
-            +makeLiteral()
-            +makeType()
-            +makeMacro()
-            +makeDefaultInteger()
-            +makeDefaultReal()
-            +makeDefaultBoolean()
-            +makeDefaultString()
-            +makeDefaultWString()
+            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView)
+            +makeLiteral(LexemeInfoMutator)
+            +makeIntegerZeroConstant(LexemeInfoMutator)
+            +makeDefaultInteger(LexemeInfoMutator)
+            +makeDefaultReal(LexemeInfoMutator)
+            +makeDefaultBoolean(LexemeInfoMutator)
+            +makeTrueBoolean(LexemeInfoMutator)
+            +makeDefaultString(LexemeInfoMutator)
+            +makeDefaultWString(LexemeInfoMutator)
         }
     }
     namespace utils_enums {
-        class Type { 6 values }
-        class Subtype { 24 values }
-        class Use { 9 values }
+        class Type { 8 values }
+        class Subtype { 35 values }
+        class Use { 12 values }
         class Source { 7 values }
     }
     namespace utils_diagnostics {
@@ -63,11 +77,19 @@ classDiagram
         class Error
         class Warning
         class SyntaxError
+        class UndeclaredReference
+        class UnsupportedFeature
+        class GeneratorWarning
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
     Error <|-- SyntaxError
-    LexemeInfoBuilder ..|> LexemeInfoSchema
-    Director ..> LexemeInfoSchema
+    Error <|-- UndeclaredReference
+    Error <|-- UnsupportedFeature
+    Warning <|-- GeneratorWarning
+    LexemeInfoBuilder ..|> LexemeInfoMutator
+    LexemeInfoBuilder ..|> LexemeInfoView
+    Director ..> LexemeInfoMutator
+    Director ..> LexemeInfoView
     SymbolTable --> LexemeInfo
     DiagnosticsHandler --> Diagnostic

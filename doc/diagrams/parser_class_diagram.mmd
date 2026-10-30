@@ -1,205 +1,205 @@
 classDiagram
-    namespace parser {
-        class Parser {
-            +parse()
-        }
-    }
-    namespace parser_publishers {
-        class Publisher {
-            <<interface>>
-            +setDeclarationScope(String)
-            +publish()
-        }
-        class LexemeInfoSchema {
-            <<interface>>
-            +type(Type)
-            +subtype(Subtype)
-            +customType(String)
-            +source(Source)
-            +use(Use)
-            +inferiorLimits(List~String~)
-            +superiorLimits(List~String~)
-            +parameters(List~String~)
-            +initialValue(Object)
-        }
-        class DeclarationGroup {
-            +declarations: List~Declaration~
-            +publish()
-            +setDeclarationScope(String)
-        }
-        class Declaration {
-            #builder: LexemeInfoBuilder
-            #declarationScope: String
-            +type(Type)
-            +subtype(Subtype)
-            +customType(String)
-            +source(Source)
-            +use(Use)
-            +inferiorLimits(List~String~)
-            +superiorLimits(List~String~)
-            +parameters(List~String~)
-            +initialValue(Object)
-            +publish()
-        }
-        class MultipleDeclaration {
-            +identifiers: List~String~
-            +identifiers(List~String~)
-            +publish()
-        }
-        class SingleDeclaration {
-            +identifier: String
-            +identifier(String)
-            +publish()
-        }
-        class DeclarationBlock {
-            +addDeclaration(Declaration)
-        }
-        class StructureBlock {
-            +addField(SingleDeclaration)
-            +getStructInitializationInfo() List~PathInitializationInfo~
-        }
-        class StructureDeclaration {
-            +structBlock: StructureBlock
-            +identifier(String)
-            +publish()
-        }
-        class AnnonymousEnumeratedVariable {
-            +publish()
-        }
-        class AnnonymousEnumeratedField {
-            +publish()
-        }
-        class EnumeratedTypeDeclaration {
-            +publish()
-        }
-    }
-    namespace parser_facades {
-        class DimensionCalculator {
-            +calculate(List~String~, List~String~) int
-        }
-        class RangesParser {
-            +parse(List~String~, List~String~, List~String~)
-        }
-        class MacrosPublisher {
-            +publish(SymbolTable, List~String~, String)
-        }
-        class UnderlyingScopeSearcher {
-            +search(SymbolTable, String) String
-        }
-    }
-    namespace parser_initializations {
-        class Factory {
-            +createPrimitiveInitialization(SymbolTable, Subtype) Initialization
-        }
-        class Initialization {
-            <<interface>>
-            +find(String) Optional~Initialization~
-            +variableValue() String
-            +copy() Initialization
-        }
-        class NodeInitialization {
-            <<abstract>>
-            +put(String, Initialization) Initialization
-            +find(String) Optional~Initialization~
-            #breakStringPath(String) String[]
-        }
-        class LeafInitialization {
-            <<abstract>>
-            +find(String) Optional~Initialization~
-            +copy() Initialization
-        }
-    }
-    namespace parser_initializations_leafs {
-        class VariableInitialization
-        class EnumeratedInitialization
-        class MacroInitialization
-        class SubrangeInitialization
-        class DefaultInitialization
-        class LeafInitialization
-    }
-    namespace parser_initializations_nodes {
-        class StructInitialization
-        class RepeatedInitialization
-        class NodeInitialization
-    }
-    namespace utils {
-        class SymbolTable {
-            +table: Map~String, LexemeInfo~
-            +get()
-            +put()
-            +putIfAbsent()
-        }
-        class LexemeInfo {
-            +type: Type
-            +subtype: Subtype
-            +customType: String
-            +use: Use
-            +source: Source
-            +inferiorLimits: List~String~
-            +superiorLimits: List~String~
-            +parameters: List~String~
-            +initialValue: Object
-        }
-        class LexemeInfoBuilder {
-            +type(Type)
-            +subtype(Subtype)
-            +customType(String)
-            +source(Source)
-            +use(Use)
-            +inferiorLimits(List~String~)
-            +superiorLimits(List~String~)
-            +parameters(List~String~)
-            +initialValue(Object)
-            +build() LexemeInfo
-        }
-        class Director {
-            +makePrimitive(LexemeInfoSchema, SymbolTable, Subtype)
-            +makeCustom(LexemeInfoSchema, SymbolTable, String)
-            +makeMacro(LexemeInfoSchema, SymbolTable, Integer)
-            +makeEnumerated(LexemeInfoSchema, List~String~)
-            +makeStructure(LexemeInfoSchema, StructureBlock)
-            +makeArray(LexemeInfoSchema, SymbolTable, ArrayMetadata)
-            +makeLiteral(LexemeInfoSchema)
-            +makeDefaultInteger()
-            +makeDefaultReal()
-            +makeDefaultBoolean()
-            +makeDefaultString()
-            +makeDefaultWString()
-        }
-    }
-    DeclarationGroup ..|> Publisher
-    Declaration ..|> Publisher
-    Declaration ..|> LexemeInfoSchema
-    DeclarationGroup ..|> LexemeInfoSchema
-    MultipleDeclaration --|> Declaration
-    SingleDeclaration --|> Declaration
-    DeclarationBlock --|> DeclarationGroup
-    StructureBlock --|> DeclarationGroup
-    StructureDeclaration --|> SingleDeclaration
-    AnnonymousEnumeratedVariable --|> MultipleDeclaration
-    AnnonymousEnumeratedField --|> SingleDeclaration
-    EnumeratedTypeDeclaration --|> SingleDeclaration
-    Initialization <|.. NodeInitialization
-    Initialization <|.. LeafInitialization
-    LeafInitialization <|-- VariableInitialization
-    LeafInitialization <|-- EnumeratedInitialization
-    LeafInitialization <|-- MacroInitialization
-    LeafInitialization <|-- SubrangeInitialization
-    LeafInitialization <|-- DefaultInitialization
-    NodeInitialization <|-- StructInitialization
-    NodeInitialization <|-- RepeatedInitialization
-    Factory ..> DefaultInitialization : creates
-    Parser --> Declaration : uses
-    Parser --> Director : uses
-    Parser --> Factory : uses
-    Parser --> DimensionCalculator : uses
-    Parser --> RangesParser : uses
-    Parser --> MacrosPublisher : uses
-    Director ..> Factory : uses
-    Director ..> LexemeInfoBuilder : configures
-    MultipleDeclaration ..> LexemeInfoBuilder : uses
-    SingleDeclaration ..> LexemeInfoBuilder : uses
-    StructureDeclaration ..> StructureBlock : uses
-    AnnonymousEnumeratedVariable ..> MacrosPublisher : uses
-    AnnonymousEnumeratedField ..> MacrosPublisher : uses
-    EnumeratedTypeDeclaration ..> MacrosPublisher : uses
+namespace parser {
+class Parser {
++parse()
+}
+}
+namespace parser_publishers {
+class Publisher {
+<<interface>>
++setDeclarationScope(String)
++publish()
+}
+class LexemeInfoSchema {
+<<interface>>
++type(Type)
++subtype(Subtype)
++customType(String)
++source(Source)
++use(Use)
++inferiorLimits(List~~String~~)
++superiorLimits(List~~String~~)
++parameters(List~~String~~)
++initialValue(Object)
+}
+class DeclarationGroup {
++declarations: List~~Declaration~~
++publish()
++setDeclarationScope(String)
+}
+class Declaration {
+\#builder: LexemeInfoBuilder
+\#declarationScope: String
++type(Type)
++subtype(Subtype)
++customType(String)
++source(Source)
++use(Use)
++inferiorLimits(List~~String~~)
++superiorLimits(List~~String~~)
++parameters(List~~String~~)
++initialValue(Object)
++publish()
+}
+class MultipleDeclaration {
++identifiers: List~~String~~
++identifiers(List~~String~~)
++publish()
+}
+class SingleDeclaration {
++identifier: String
++identifier(String)
++publish()
+}
+class DeclarationBlock {
++addDeclaration(Declaration)
+}
+class StructureBlock {
++addField(SingleDeclaration)
++getStructInitializationInfo() List~~PathInitializationInfo~~
+}
+class StructureDeclaration {
++structBlock: StructureBlock
++identifier(String)
++publish()
+}
+class AnnonymousEnumeratedVariable {
++publish()
+}
+class AnnonymousEnumeratedField {
++publish()
+}
+class EnumeratedTypeDeclaration {
++publish()
+}
+}
+namespace parser_facades {
+class DimensionCalculator {
++calculate(List~~String~~, List~~String~~) int
+}
+class RangesParser {
++parse(List~~String~~, List~~String~~, List~~String~~)
+}
+class MacrosPublisher {
++publish(SymbolTable, List~~String~~, String)
+}
+class UnderlyingScopeSearcher {
++search(SymbolTable, String) String
+}
+}
+namespace parser_initializations {
+class Factory {
++createPrimitiveInitialization(SymbolTable, Subtype) Initialization
+}
+class Initialization {
+<<interface>>
++find(String) Optional~~Initialization~~
++variableValue() String
++copy() Initialization
+}
+class NodeInitialization {
+<<abstract>>
++put(String, Initialization) Initialization
++find(String) Optional~~Initialization~~
+\#breakStringPath(String) String\[]
+}
+class LeafInitialization {
+<<abstract>>
++find(String) Optional~~Initialization~~
++copy() Initialization
+}
+}
+namespace parser_initializations_leafs {
+class VariableInitialization
+class EnumeratedInitialization
+class MacroInitialization
+class SubrangeInitialization
+class DefaultInitialization
+class LeafInitialization
+}
+namespace parser_initializations_nodes {
+class StructInitialization
+class RepeatedInitialization
+class NodeInitialization
+}
+namespace utils {
+class SymbolTable {
++table: Map~~String, LexemeInfo~~
++get()
++put()
++putIfAbsent()
+}
+class LexemeInfo {
++type: Type
++subtype: Subtype
++customType: String
++use: Use
++source: Source
++inferiorLimits: List~~String~~
++superiorLimits: List~~String~~
++parameters: List~~String~~
++initialValue: Object
+}
+class LexemeInfoBuilder {
++type(Type)
++subtype(Subtype)
++customType(String)
++source(Source)
++use(Use)
++inferiorLimits(List~~String~~)
++superiorLimits(List~~String~~)
++parameters(List~~String~~)
++initialValue(Object)
++build() LexemeInfo
+}
+class Director {
++makePrimitive(LexemeInfoSchema, SymbolTable, Subtype)
++makeCustom(LexemeInfoSchema, SymbolTable, String)
++makeMacro(LexemeInfoSchema, SymbolTable, Integer)
++makeEnumerated(LexemeInfoSchema, List~~String~~)
++makeStructure(LexemeInfoSchema, StructureBlock)
++makeArray(LexemeInfoSchema, SymbolTable, ArrayMetadata)
++makeLiteral(LexemeInfoSchema)
++makeDefaultInteger()
++makeDefaultReal()
++makeDefaultBoolean()
++makeDefaultString()
++makeDefaultWString()
+}
+}
+DeclarationGroup ..|> Publisher
+Declaration ..|> Publisher
+Declaration ..|> LexemeInfoSchema
+DeclarationGroup ..|> LexemeInfoSchema
+MultipleDeclaration --|> Declaration
+SingleDeclaration --|> Declaration
+DeclarationBlock --|> DeclarationGroup
+StructureBlock --|> DeclarationGroup
+StructureDeclaration --|> SingleDeclaration
+AnnonymousEnumeratedVariable --|> MultipleDeclaration
+AnnonymousEnumeratedField --|> SingleDeclaration
+EnumeratedTypeDeclaration --|> SingleDeclaration
+Initialization <|.. NodeInitialization
+Initialization <|.. LeafInitialization
+LeafInitialization <|-- VariableInitialization
+LeafInitialization <|-- EnumeratedInitialization
+LeafInitialization <|-- MacroInitialization
+LeafInitialization <|-- SubrangeInitialization
+LeafInitialization <|-- DefaultInitialization
+NodeInitialization <|-- StructInitialization
+NodeInitialization <|-- RepeatedInitialization
+Factory ..> DefaultInitialization : creates
+Parser --> Declaration : uses
+Parser --> Director : uses
+Parser --> Factory : uses
+Parser --> DimensionCalculator : uses
+Parser --> RangesParser : uses
+Parser --> MacrosPublisher : uses
+Director ..> Factory : uses
+Director ..> LexemeInfoBuilder : configures
+MultipleDeclaration ..> LexemeInfoBuilder : uses
+SingleDeclaration ..> LexemeInfoBuilder : uses
+StructureDeclaration ..> StructureBlock : uses
+AnnonymousEnumeratedVariable ..> MacrosPublisher : uses
+AnnonymousEnumeratedField ..> MacrosPublisher : uses
+EnumeratedTypeDeclaration ..> MacrosPublisher : uses

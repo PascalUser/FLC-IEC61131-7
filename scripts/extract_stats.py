@@ -6,6 +6,7 @@ Outputs: doc/assets/*.png + stats.json
 """
 import argparse
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -54,15 +55,14 @@ def extract_enum_sizes():
             continue
         content = enum_file.read_text()
         enum_name = enum_file.stem
-        # Count enum constants (lines with = or just identifiers before , or ;)
-        import re
+        # Strip comments before matching the enum body so that braces inside
+        # javadoc (e.g. "{@code parameters}") do not truncate the declaration.
+        body = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+        body = re.sub(r'//[^\n]*', '', body)
         # Find enum body
-        match = re.search(r'enum\s+\w+\s*\{(.+?)}', content, re.DOTALL)
+        match = re.search(r'enum\s+\w+\s*\{(.+?)}', body, re.DOTALL)
         if match:
             body = match.group(1)
-            # Strip comments before counting constants
-            body = re.sub(r'/\*.*?\*/', '', body, flags=re.DOTALL)
-            body = re.sub(r'//[^\n]*', '', body)
             # Constants are declared before the first ';' (or end of body),
             # separated by commas; each may optionally call a constructor.
             decl_section = body.split(';', 1)[0]
@@ -193,7 +193,8 @@ def extract_cyclomatic_complexity():
     packages = {
         "lexer": ["lexer", "lexer.internals", "lexer.transformers", "lexer.semantics"],
         "parser": ["parser", "parser.internals", "parser.utils", "parser.initializations"],
-        "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"]
+        "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"],
+        "codegen": ["codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"],
     }
     
     results = {}
@@ -237,7 +238,8 @@ def extract_loc():
     packages = {
         "lexer": ["lexer", "lexer.internals", "lexer.transformers", "lexer.semantics"],
         "parser": ["parser", "parser.internals", "parser.utils", "parser.initializations"],
-        "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"]
+        "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"],
+        "codegen": ["codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"],
     }
     
     results = {}
@@ -313,7 +315,7 @@ def extract_test_coverage():
 
 def extract_coupling():
     """Calculate afferent/efferent coupling between packages"""
-    packages = ["lexer", "parser", "utils"]
+    packages = ["lexer", "parser", "utils", "codegen"]
     coupling = {}
     
     for pkg in packages:

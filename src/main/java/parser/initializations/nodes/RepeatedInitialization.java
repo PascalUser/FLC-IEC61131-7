@@ -33,7 +33,7 @@ public final class RepeatedInitialization extends NodeInitialization {
      * Constructs a new {@code RepeatedInitialization} for the given dimension,
      * initially filled entirely with {@code defaultValue}.
      *
-     * @param dimension    the size of the array dimension (must be > 0)
+     * @param dimension    the size of the array dimension (must be &gt; 0)
      * @param defaultValue the {@link Initialization} to assign to every index initially
      */
     public RepeatedInitialization(int dimension, Initialization defaultValue) {

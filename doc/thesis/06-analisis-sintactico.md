@@ -2,417 +2,267 @@
 
 ## Gramática
 
-La gramática (`src/main/java/parser/Parser.y`) reconoce dos grandes bloques: la declaración de tipos (`TYPE ... END_TYPE`, no terminal `data_type_declaration`) y la declaración de un `FUNCTION_BLOCK` completo, con sus variables, bloques de fuzzificación/defuzzificación y bloque de reglas.
+### Generador y punto de entrada
 
-![Gramática](../assets/rendered_diagrams/diagram_847a06d9.png)
+El analizador sintáctico se genera a partir de `src/main/java/parser/Parser.y` con GNU Bison 3.8.2. La clase generada es `parser.Parser`, pública y final, y su constructor recibe el analizador léxico y la tabla de símbolos compartida: `Parser(Lexer, SymbolTable)`. La clase expone la constante `public static final String bisonVersion = "3.8.2"`.
 
-**Figura 6.1** — Flujo principal del parser (generado a partir de `Parser.y`).
-
-## Flujo de declaración de variables
-
-![Flujo de declaración de variables](../assets/rendered_diagrams/diagram_89e40370.png)
-
-**Figura 6.1** — Flujo de una declaración simple, tal como lo ejecutan las reglas `var_init_decl` y `Publisher.publish`.
-
-## El patrón Publisher
-
-`parser.facades.Publisher.publish(ParsingContext)` es el único punto que efectivamente escribe en la tabla de símbolos: toma el `LexemeInfo` construido en el contexto activo y lo asocia, para cada identificador declarado en `ctx.declaredIdentifiers()`, a su nombre mangled (`ctx.outerScopes().getNameMangled(identifier)`). Esto separa completamente la *construcción* incremental de metadatos (que ocurre a lo largo de muchas reglas reducidas) de su *publicación* atómica.
-
-## Tipos derivados
-
-| Construcción FCL        | No terminal principal      | Resultado en `LexemeInfo`                                                                                                                           |
-|-------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `(A, B, C)`             | `enumerated_specification` | `type=ENUMERATE`, `subtype=INT`, `parameters=[A,B,C]`, cada valor publicado aparte con `use=MACRO`                                                  |
-| `INT (0..100)`          | `subrange_specification`   | `type=SUBRANGE`, límites en `inferiorLimits`/`superiorLimits`                                                                                       |
-| `STRUCT ... END_STRUCT` | `structure_specification`  | `type=STRUCT`, `parameters` = nombres de campo, `initialValue` un `parser.initializations.nodes.StructInitialization` (mapa campo → inicialización) |
-| `ARRAY [0..9] OF T`     | `array_specification`      | `type=ARRAY`, `initialValue` un `RepeatedInitialization` particionado en intervalos disjuntos                                                       |
-
-## Inicializaciones como jerarquía polimórfica
-
-Todas las formas de inicializar un valor implementan la interfaz `parser.initializations.Initialization` (`selectVariable`, `getVariableValue`, `copy`): `VariableInitialization` (un literal concreto), `MacroInitialization` (valor ordinal de un enumerado), `SubrangeInitialization`, `parser.initializations.nodes.StructInitialization` (mapa recursivo, soporta structs anidados vía claves compuestas `RGB#GAMMA_R`) y `RepeatedInitialization` (particiona un arreglo en intervalos `[start,end]` disjuntos, cada uno con su propia `Initialization`, y los compacta automáticamente cuando dos intervalos adyacentes terminan con el mismo valor).
-
-![Inicializaciones como jerarquía polimórfica](../assets/rendered_diagrams/diagram_df8601ff.png)
-
-## Parser internals
-
-### ContextHandler
-
-Mantiene una pila LIFO de `ParsingContext` para scopes anidados.
-
-### ParsingContext
-
-Estado por scope: identificadores, `LexemeInfoBuilder`, 3 `NameMangler` independientes (`outerScopes`, `searchScope`, `nestedFields`), índice de array.
-
-### NameMangler
-
-Genera claves calificadas (`TYPE#FIELD#VALUE`) con separador `#`. Tres instancias por contexto: `outerScopes`, `searchScope`, `nestedFields`.
-
-### Publisher
-
-Publica identificadores declarados en la `SymbolTable` con nombre mangled.
-
-### Factory
-
-Crea inicializaciones por defecto para tipos primitivos (solo `REAL` hoy).
-
-### UnderlyingScopeSearcher
-
-Resuelve cadena de alias de tipo custom hasta la definición raíz.
-
-### DimensionCalculator
-
-Calcula dimensión total de arrays multi-dimensionales.
-
-## Gramática soportada — resumen
-
-### Bloques principales IEC 61131-7
+La regla inicial es `program`, que admite una sección opcional de declaraciones de tipos seguida de la declaración del bloque de función:
 
 ```
-program → opt_data_type_declaration function_block_declaration
-
-function_block_declaration → FUNCTION_BLOCK name
-    opt_fb_io_var_declarations_list   (VAR_INPUT / VAR_OUTPUT)
-    opt_other_var_declarations_list   (VAR)
-    opt_function_block_body
-    END_FUNCTION_BLOCK
-
-opt_function_block_body → opt_fuzzify_block_list
-    opt_defuzzify_block_list
-    opt_rule_block_list
-    opt_option_block_list
+program:
+    opt_data_type_declaration
+    function_block_declaration
+;
 ```
 
-### Fuzzify / Defuzzify
+El cuerpo de `function_block_declaration` agrupa declaraciones de variables (`VAR_INPUT`, `VAR_OUTPUT`, `VAR`), el bloque de funciones difusas (`FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION`) y termina con `END_FUNCTION_BLOCK`.
+
+### Métricas de la gramática
+
+La tabla siguiente resume las métricas extraídas del archivo `Parser.y` (fuente de verdad: `doc/stats.json`, clave `grammar_stats`).
+
+| Métrica                 | Valor                        |
+|-------------------------|------------------------------|
+| Tokens                  | 82                           |
+| No terminales           | 141                          |
+| Tipos de inicialización | 7                            |
+| Generador               | GNU Bison 3.8.2              |
+| Clase generada          | `parser.Parser`              |
+| Constructor             | `Parser(Lexer, SymbolTable)` |
+
+Los 7 tipos de inicialización corresponden a las implementaciones concretas de la interfaz `parser.initializations.Initialization` descritas más adelante.
+
+### Bloques del programa IEC 61131-7
+
+El parser reconoce los bloques propios de IEC 61131-7 (lógica difusa) sobre la base de IEC 61131-3:
+
+* `program`: punto de entrada, envuelve los tipos definidos por el usuario y el bloque de función.
+* `function_block_declaration`: contenedor principal con nombre (p. ej. `MAIN`), variables y bloques difusos.
+* `fuzzify_block`: define variables de entrada y sus términos lingüísticos, entre `FUZZIFY` y `END_FUZZIFY`.
+* `defuzzify_block`: define variables de salida, rango, método de desdifusión y valor por defecto, entre `DEFUZZIFY` y `END_DEFUZZIFY`.
+* `rule_block`: base de reglas difusas con operadores OR/AND, entre `RULEBLOCK` y `END_RULEBLOCK`.
+* `option_block`: bloque de pragmas específico del fabricante, entre `OPTION` y `END_OPTION`.
+
+### Declaraciones de variables
+
+Las declaraciones de variables siguen el anexo B de IEC 61131-3 y usan las palabras `VAR`, `VAR_INPUT` y `VAR_OUTPUT`, cerradas con `END_VAR`. El parser soporta:
+
+* `VAR ... END_VAR`: variables internas y constantes.
+* `VAR_INPUT ... END_VAR`: entradas del bloque, publicadas con `Source.IN`.
+* `VAR_OUTPUT ... END_VAR`: salidas del bloque, publicadas con `Source.OUT`.
+* `CONSTANT`: opcional dentro de un bloque `VAR`, marca la variable como constante mediante `Use.CONSTANT`.
+
+Cada bloque declara una lista de identificadores que comparten tipo y, opcionalmente, un valor de inicialización:
 
 ```
-fuzzify_block → FUZZIFY IDENTIFIER linguistic_term_list END_FUZZIFY
-linguistic_term → TERM IDENTIFIER := (IDENTIFIER | membership_function) ';'
-membership_function → singleton | point_list
-point_list → point (',' point)*
-point → '(' numeric_constant ',' numeric_constant ')'
-        | '(' IDENTIFIER ',' numeric_constant ')'
-
-defuzzify_block → DEFUZZIFY IDENTIFIER
-    opt_range
-    opt_linguistic_term_list
-    defuzzification_method
-    default_value
-    END_DEFUZZIFY
-defuzz_method → COG | COGS | COA | LM | RM
-```
-
-### Rule Block
-
-```
-rule_block → RULEBLOCK IDENTIFIER
-    operator_definition
-    activation_method_opt
-    accumulation_method
-    rule_list
-    END_RULEBLOCK
-
-operator_definition → [OR ':' or_type] [AND ':' and_type] ';'
-or_type → MAX | ASUM | BSUM
-and_type → MIN | PROD | BDIF
-activation_method → ACT ':' (PROD | MIN) ';'
-accumulation_method → ACCU ':' (MAX | BSUM | NSUM) ';'
-
-rule → RULE numeric_constant ':' IF condition THEN conclusion_list [WITH weight] ';'
-condition → x condition_tail | IDENTIFIER condition_tail
-x → NOT x | NOT IDENTIFIER | subcondition | '(' condition ')'
-subcondition → IDENTIFIER IS IDENTIFIER | IDENTIFIER IS NOT IDENTIFIER
-conclusion_list → IDENTIFIER [IS IDENTIFIER] (',' IDENTIFIER [IS IDENTIFIER])*
-```
-
-### Declaraciones de variables — Anexo B IEC 61131-3
-
-```
-var_declarations → var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
-var_id_decl → VAR { source=INTERNAL, use=VARIABLE }
-io_var_decl → VAR_INPUT { source=IN, use=VARIABLE }
-           | VAR_OUTPUT { source=OUT, use=VARIABLE }
-
-var_init_decl → identifier_list ':' var_spec_init  { Publisher.publish(ctx) }
-var_spec_init → custom_spec_init | boolean_spec_init | simple_spec_init
-            | subrange_spec_init | enumerated_spec_init | array_spec_init | string_spec_init
+<identificador_lista> : <tipo_especificacion> [:= <valor_inicial>] ;
 ```
 
 ### Tipos de datos
 
-```
-simple_specification → elementary_type_name  { subtype ∈ {SINT..ULINT, REAL, LREAL, TIME, DATE, ...} }
-custom_specification → IDENTIFIER  { subtype=CUSTOM, customType=IDENTIFIER }
-subrange_specification → subrange_type_decl '(' range ')'
-range → numeric_constant '..' numeric_constant
-enumerated_specification → '(' enumerated_values_list ')'
-array_specification → ARRAY '[' range_list ']' OF (IDENTIFIER | non_generic_type_name)
-structure_specification → STRUCT structure_field_declaration_list END_STRUCT
-string_specification → STRING | WSTRING [ '[' numeric_constant ']' ]
-```
+El parser soporta tipos elementales y derivados:
 
-### Inicializaciones
+* Elementales: enteros con signo (`SINT`, `INT`, `DINT`, `LINT`), enteros sin signo (`USINT`, `UINT`, `UDINT`, `ULINT`), reales (`REAL`, `LREAL`), fecha/hora (`TIME`, `DATE`, `TIME_OF_DAY`, `DATE_AND_TIME`), cadenas de bits (`BYTE`, `WORD`, `DWORD`, `LWORD`) y booleano (`BOOL`).
+* Derivados: enumerados, subrangos, arrays, estructuras y cadenas con longitud (`STRING`, `WSTRING`).
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+Cada tipo elemental produce un `LexemeInfoBuilder` configurado con `Director.makeWithMetadata` y una instancia de `parser.metadata.PrimitiveMetadata`, que fija `type = SIMPLE` y el `Subtype` correspondiente.
 
-### Declaración de tipos de datos
+### Inicializaciones en la gramática
+
+La gramática define inicializaciones para variables simples, arrays, estructuras y tipos enumerados. Las inicializaciones se modelan como un árbol polimórfico bajo la interfaz `parser.initializations.Initialization`:
+
+* Hojas: `DefaultInitialization`, `VariableInitialization`, `EnumeratedInitialization`, `SubrangeInitialization`, `MacroInitialization`.
+* Nodos: `StructInitialization`, `RepeatedInitialization`.
+
+Los arrays se inicializan con `[ valor, valor, ... ]` y admiten repeticiones `n(valor)`; las estructuras usan `{ campo = valor, ... }`. Cada inicialización es inmutable salvo los nodos, que admiten inserción y búsqueda por ruta con el separador `#` (p. ej. `RGB#R` o `2#X`).
+
+### Declaraciones de tipos de datos
+
+La sección `TYPE ... END_TYPE` permite definir tipos definidos por el usuario reutilizables en declaraciones de variables. Cada `type_declaration` tiene la forma:
 
 ```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_specification | string_spec_init
+<nombre_tipo> : <especificacion_tipo> ;
 ```
 
-### Inicializaciones
+Las especificaciones soportadas son: referencia a tipo definido, tipo elemental, enumerado `( valor1, valor2, ... )`, subrango `tipo( inferior .. superior )`, array `ARRAY [ ... ] OF tipo` y estructura `STRUCT ... END_STRUCT`. Todas se publican con `Use.TYPE` y `Source.NONE` bajo la clave `TypeName` en la tabla de símbolos.
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+## El patrón Publisher Director Builder
 
-### Declaración de tipos de datos
+### Interfaz Publisher
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+`parser.publishers.Publisher` es la interfaz que abstrae la publicación de símbolos en la tabla. Extiende `utils.builders.LexemeInfoMutator` y declara tres operaciones:
 
-### Inicializaciones
+* `setDeclarationScope(String)`: fija el ámbito bajo el cual se publican los símbolos.
+* `publish()`: escribe el símbolo o los símbolos en `utils.SymbolTable`.
+* `List<String> keys()`: devuelve las claves que se escribirán al llamar `publish()`, en orden de declaración y con el ámbito aplicado (p. ej. `[MAIN#X, MAIN#Y]`).
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+### Jerarquía de declaraciones
 
-### Declaración de tipos de datos
+El parser modela cada construcción declarativa como un publicador concreto:
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+* `Declaration`: clase abstracta base. Contiene el `LexemeInfoBuilder` y expone el API fluido de `LexemeInfoMutator` delegado en el builder.
+* `SingleDeclaration`: publica un único identificador bajo `scope#identificador`. Usada para variables simples, componentes y tipos.
+* `MultipleDeclaration`: publica una lista de identificadores que comparten tipo y atributos, bajo el mismo ámbito.
+* `DeclarationBlock`: agrupa varias declaraciones (`DeclarationGroup`) y las publica en lote.
+* `StructureDeclaration`: extiende `SingleDeclaration`; publica primero los campos de su `StructureBlock` y luego el tipo estructurado.
+* `EnumeratedTypeDeclaration`: extiende `SingleDeclaration`; publica los literales como macros con prefijo `enum#` y luego el tipo enumerado.
+* `ComponentDeclaration`: extiende `SingleDeclaration`; usada por bloques `FUZZIFY` y `DEFUZZIFY`. Añade el sufijo `@fuzzifier` o `@defuzzifier` a la clave del componente y publica sus términos bajo el ámbito del componente.
+* `TermBlock`: `DeclarationGroup` que acumula los términos lingüísticos de un componente.
+* `AnnonymousEnumeratedVariable` y `AnnonymousEnumeratedField`: variantes para enumerados anónimos que publican sus macros mediante `parser.facades.MacrosPublisher`.
 
-### Inicializaciones
+### Director y recetas predefinidas
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+`utils.builders.Director` es una clase de utilidad con métodos estáticos que configuran un `LexemeInfoMutator` según recetas frecuentes:
 
-### Declaración de tipos de datos
+* `makeWithMetadata(LexemeInfoMutator, LexemeInfoView)`: copia todos los atributos de un objeto de vista (`LexemeInfoView`) al builder. Es la receta principal usada en las acciones semánticas de `Parser.y`.
+* `makeLiteral(LexemeInfoMutator)`: fija `type = SIMPLE`, `use = LITERAL`, `source = NONE`.
+* `makeDefaultInteger` / `makeDefaultReal` / `makeDefaultBoolean` / `makeDefaultString` / `makeDefaultWString`: configuran el valor por defecto de cada tipo primitivo y devuelven la representación literal (`0`, `0.0`, `FALSE`, `''`, `""`).
+* `makeTrueBoolean`: configura el literal booleano `TRUE`.
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+### Fluente API de LexemeInfoBuilder
 
-### Inicializaciones
+`utils.builders.LexemeInfoBuilder` implementa `LexemeInfoMutator` y `LexemeInfoView`. Permite encadenar llamadas para configurar `type`, `subtype`, `customType`, `source`, `use`, `inferiorLimits`, `superiorLimits`, `parameters` e `initialValue`, y termina con `build()`, que devuelve una instancia inmutable de `utils.LexemeInfo`.
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+### Resolución de identificadores
 
-### Declaración de tipos de datos
+El mangado de identificadores es inline y no depende de una clase separada. El identificador completo se forma como `scope#identificador` (p. ej. `MAIN#X`). La utilidad `parser.facades.IdentifierParser.parse(String, String)` devuelve un `parser.utils.ParsedIdentifier` que separa el ámbito y el nombre simple dividiendo sobre `#`. Cuando el identificador ya contiene `#`, se extraen directamente ámbito y nombre; cuando no, se antepone el ámbito recibido como segundo parámetro.
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+### Clases eliminadas de la arquitectura
 
-### Inicializaciones
+Las clases `ContextHandler`, `ParsingContext`, `NameMangler` y `UnderlyingScopeSearcher` no existen en el código actual y no deben referenciarse como parte de la arquitectura vigente. La resolución de ámbito y el mangado se resuelven con `declarationScope` en los publicadores, `IdentifierParser` y la convención `scope#identificador`. El DTO de símbolos actual es `utils.LexemeInfo`; cualquier DTO de símbolos anterior ha quedado obsoleto y excluido.
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+## Tipos derivados y LexemeInfo
 
-### Declaración de tipos de datos
+Cada construcción FCL de tipo derivado mapea a un no terminal principal y a una entrada de `utils.LexemeInfo` con atributos específicos.
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+| Construcción FCL | No terminal principal     | Resultado en LexemeInfo                                                                                         |
+|------------------|---------------------------|-----------------------------------------------------------------------------------------------------------------|
+| ENUMERATE        | `enumerated_spec_init`    | `type = ENUMERATE`, `subtype = INT`, `parameters` = lista de valores, `initialValue = EnumeratedInitialization` |
+| SUBRANGE         | `subrange_spec_init`      | `type = SUBRANGE`, `inferiorLimits` y `superiorLimits`, `initialValue = SubrangeInitialization`                 |
+| STRUCT           | `structure_specification` | `type = STRUCT`, `parameters` = nombres de campos, `initialValue = StructInitialization`                        |
+| ARRAY            | `array_spec_init`         | `type = ARRAY`, `inferiorLimits` y `superiorLimits`, `initialValue = RepeatedInitialization`                    |
+| SIMPLE elemental | `simple_spec_init`        | `type = SIMPLE`, `subtype` según el tipo elemental, `initialValue = DefaultInitialization`                      |
+| STRING / WSTRING | `string_spec_init`        | `type = SIMPLE`, `subtype = STRING` o `WSTRING`, límites de longitud, `initialValue = DefaultInitialization`    |
 
-### Inicializaciones
+## Jerarquía de inicializaciones polimórfica
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+### Interfaz e implementaciones
 
-### Declaración de tipos de datos
+`parser.initializations.Initialization` define el contrato `find(String)`, `variableValue()` y `copy()`. Se divide en hojas y nodos.
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+`parser.initializations.leafs.LeafInitialization` es la clase abstracta para valores atómicos. Sus hojas son:
 
-### Inicializaciones
+* `DefaultInitialization`: valor por defecto de un tipo primitivo.
+* `VariableInitialization`: referencia a otra variable.
+* `EnumeratedInitialization`: valor de un tipo enumerado.
+* `SubrangeInitialization`: límite inferior de un subrango.
+* `MacroInitialization`: literal ordinal de un enumerado, registrado como `INT` en la tabla de símbolos.
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+`parser.initializations.nodes.NodeInitialization` es la clase abstracta para valores compuestos con búsqueda por ruta. Sus nodos son:
 
-### Declaración de tipos de datos
+* `StructInitialization`: mapa de campos con nombre, representación `{campo=valor, ...}`.
+* `RepeatedInitialization`: dimensión de array particionada en intervalos disjuntos, representación `[valor, n(valor), ...]`.
 
-```
-data_type_declaration → type_id_decl type_declaration_list END_TYPE
-type_id_decl → TYPE { use=TYPE }
-type_declaration → type_name_declaration ':' type_spec_init { Publisher.publish(ctx); outerScopes.popScope() }
-type_spec_init → custom_spec_init | simple_spec_init | enumerated_spec_init | subrange_spec_init | array_spec_init | structure_spec_init | string_spec_init
-```
+### Valores por defecto
 
-### Inicializaciones
+`parser.initializations.Factory.createPrimitiveInitialization(SymbolTable, Subtype)` devuelve un `DefaultInitialization` para `BOOL`, `REAL`/`LREAL`, `STRING`, `WSTRING` y los enteros `SINT`..`ULINT`; lanza `IllegalArgumentException` para cualquier otro subtipo. Cada default se registra en la tabla de símbolos a través de `Director`.
 
-```
-initialized_simple → simple_specification ':=' constant
-initialized_custom → custom_type_name ':=' (constant | identifier_with_opt_mangling | structure_initialization)
-initialized_boolean → boolean_specification ':=' boolean_constant
-initialized_subrange → subrange_specification ':=' numeric_constant
-initialized_enumerated → enumerated_specification ':=' identifier_with_opt_mangling
-initialized_array → array_specification ':=' array_initialization
-array_initialization → '[' array_initial_elements_list ']'
-array_initial_elements → constant | identifier_with_opt_mangling | structure_initialization | array_initialization
-repeated_initial_element → numeric_constant '(' array_initial_element ')'
-structure_initialization → '(' structure_field_initialization_list ')'
-initialized_structure_field → nested_field ':=' (constant | identifier_with_opt_mangling | array_initialization | structure_initialization)
-nested_field → IDENTIFIER ('.' IDENTIFIER)*
-```
+| Subtype       | Valor por defecto | Receta de Director |
+|---------------|-------------------|--------------------|
+| BOOL          | FALSE             | makeDefaultBoolean |
+| SINT .. ULINT | 0                 | makeDefaultInteger |
+| REAL / LREAL  | 0.0               | makeDefaultReal    |
+| STRING        | ''                | makeDefaultString  |
+| WSTRING       | ""                | makeDefaultWString |
 
-### Acciones semánticas clave — extracto de Parser.y
+## Flujo Léxico Parser Tabla de Símbolos
 
-| Regla                              | Acción semántica                                                                                                     |
-|------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `function_block_name`              | Crea `ParsingContext`, añade nombre a `outerScopes`, `contexts.add(ctx)`                                             |
-| `function_block_declaration` (END) | `contexts.pop()`                                                                                                     |
-| `io_var_decl` (VAR_INPUT)          | `ctx.metadataBuilder().source(Source.IN).use(Use.VARIABLE)`                                                          |
-| `io_var_decl` (VAR_OUTPUT)         | `ctx.metadataBuilder().source(Source.OUT).use(Use.VARIABLE)`                                                         |
-| `var_id_decl` (VAR)                | `ctx.metadataBuilder().source(Source.INTERNAL).use(Use.VARIABLE)`                                                    |
-| `var_init_decl`                    | `Publisher.publish(ctx); ctx.declaredIdentifiers().clear()`                                                          |
-| `custom_type_name`                 | Busca `LexemeInfo` en `SymbolTable`, setea `type=SIMPLE, subtype=CUSTOM`, añade ámbito subyacente a `searchScope`    |
-| `simple_specification`             | `type=SIMPLE, subtype=$1, initialValue=Factory.createPrimitiveInitialization(...)`                                   |
-| `range`                            | Acumula límites en `inferiorLimits` / `superiorLimits` del builder                                                   |
-| `enumerated_values_list`           | Crea contexto hijo por valor enum, `use=MACRO, source=NONE`, publica cada literal                                    |
-| `array_specification`              | `type=ARRAY, subtype=elementType, dimension=DimensionCalculator.calculate(ctx), initialValue=RepeatedInitialization` |
-| `structure_field_declaration`      | Nuevo contexto por campo, `use=FIELD`, publica al reducir                                                            |
-| `structure_specification`          | Recorre campos, construye `parser.initializations.nodes.StructInitialization` con `initialValue` de cada campo       |
-| `type_declaration`                 | `Publisher.publish(ctx); outerScopes.popScope()`                                                                     |
+El flujo de un símbolo desde el analizador léxico hasta la tabla de símbolos se resume en el diagrama siguiente.
 
-## Cobertura de la gramática (IEC 61131-7)
+![Flujo Léxico Parser Tabla de Símbolos](../assets/rendered_diagrams/diagram_28d99b51.png)
 
-| Sección              | Reglas clave                                                                                         | Estado |
-|----------------------|------------------------------------------------------------------------------------------------------|--------|
-| **Programa**         | `program → opt_data_type_declaration function_block_declaration`                                     | ✅      |
-| **Function Block**   | `FUNCTION_BLOCK … END_FUNCTION_BLOCK` con secciones `VAR_INPUT`, `VAR_OUTPUT`, `VAR`, `VAR CONSTANT` | ✅      |
-| **Tipos de datos**   | `TYPE … END_TYPE` con `STRUCT`, `ENUMERATE`, `SUBRANGE`, `ARRAY`, `STRING`/`WSTRING`                 | ✅      |
-| **Inicializaciones** | Simples, struct, array con repetición, enum, subrange, custom                                        | ✅      |
-| **Bloques difusos**  | `FUZZIFY`, `DEFUZZIFY`, `RULEBLOCK`, `OPTION` (reconocimiento sintáctico)                            | ✅      |
-| **Pragmas**          | `PRAGMA identifier [numeric_constant]`                                                               | ✅      |
+Figura 6.1 — Flujo desde el analizador léxico hasta la tabla de símbolos.
+
+## Publicación en la tabla de símbolos
+
+La publicación es responsabilidad de los publicadores, no del parser directamente. El parser construye el publicador adecuado, configura su builder mediante `Director` e invoca `publish()`.
+
+![Publicación en la tabla de símbolos](../assets/rendered_diagrams/diagram_2a6a556d.png)
+
+Figura 6.2 — Publicación de símbolos a través de la jerarquía Publisher.
+
+La tabla siguiente resume las formas de clave y las clases de metadatos implicadas.
+
+| Clave de símbolo            | Forma de clave           | Clase de metadatos                                   | Ejemplo de clave      |
+|-----------------------------|--------------------------|------------------------------------------------------|-----------------------|
+| Función bloque              | nombre                   | `parser.metadata.FunctionBlockMetadata`              | MAIN                  |
+| Variable de entrada/salida  | scope#identificador      | `utils.LexemeInfo` (Director)                        | MAIN#ANGLE            |
+| Variable interna            | scope#identificador      | `utils.LexemeInfo` (Director)                        | MAIN#X                |
+| Componente fuzzificador     | scope#nombre             | `parser.metadata.FuzzifierMetadata`                  | MAIN#ENTRADA          |
+| Componente desdifusificador | scope#nombre             | `parser.metadata.DefuzzifierMetadata`                | MAIN#SALIDA           |
+| Término lingüístico         | scope#componente#término | `parser.metadata.TermMetadata`                       | MAIN#ENTRADA#POSITIVO |
+| Tipo enumerado              | TypeName                 | `parser.metadata.EnumeratedMetadata`                 | COLOR                 |
+| Literal enumerado (macro)   | enum#valor               | `parser.metadata.MacroMetadata`                      | COLOR#ROJO            |
+| Tipo estructurado           | TypeName                 | `parser.metadata.StructureMetadata`                  | RGB                   |
+| Campo de estructura         | estructura#campo         | `utils.LexemeInfo`                                   | RGB#R                 |
+| Tipo subrango               | TypeName                 | `parser.metadata.SubrangeMetadata`                   | TEMPERATURA           |
+| Tipo array                  | TypeName                 | `parser.metadata.ArrayMetadata`                      | TABLA                 |
+| Tipo cadena                 | TypeName                 | `parser.metadata.StringMetadata`                     | MENSAJE               |
+| Literal por defecto         | valor literal            | `parser.initializations.leafs.DefaultInitialization` | 0, 0.0, FALSE         |
+
+## Acciones semánticas clave
+
+Las acciones semánticas son bloques Java embebidos en `Parser.y`. Construyen `LexemeInfoBuilder` mediante `Director`, los envuelven en publicadores y los publican en `utils.SymbolTable`.
+
+| Regla                        | Acción semántica                                                                                                                                      | Efecto                                                                              |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| `function_block_declaration` | `SingleDeclaration` + `Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata($3))`; `functionBlock.identifier(programName).publish()`    | Publica el bloque bajo su nombre con la interfaz de entrada/salida en parámetros    |
+| `fuzzify_block`              | `ComponentDeclaration` + `Director.makeWithMetadata(..., new FuzzifierMetadata($3))`; `fuzzifierDeclaration.identifier($2).publish()`                 | Publica componente fuzzificador con sus términos                                    |
+| `defuzzify_block`            | `ComponentDeclaration` + `Director.makeWithMetadata(..., new DefuzzifierMetadata($3, $4, $5, $6))`; `defuzzifierDeclaration.identifier($2).publish()` | Publica componente desdifusificador con rango, términos, método y valor por defecto |
+| `linguistic_term`            | `new SingleDeclaration(this.symbolTable, $4).identifier($2)`                                                                                          | Registra el término en el bloque de términos del componente                         |
+| declaraciones `VAR`          | `$3.source(Source.INTERNAL).use($2).setDeclarationScope(programName); $3.publish()`                                                                   | Publica variables internas con ámbito del bloque de función                         |
+| `fb_io_var_declarations`     | `$3.source($1).use(Use.VARIABLE).setDeclarationScope(programName); $3.publish()`                                                                      | Publica entradas y salidas con `Source.IN` / `Source.OUT`                           |
+| `type_declaration`           | `$3.identifier($1).use(Use.TYPE).source(Source.NONE); $3.publish()`                                                                                   | Publica tipo definido por el usuario bajo `TypeName`                                |
+
+## Cobertura de la gramática IEC 61131-7
+
+| Sección                    | Reglas clave                                                                                      | Estado         |
+|----------------------------|---------------------------------------------------------------------------------------------------|----------------|
+| Programa y función bloque  | `program`, `function_block_declaration`, `function_block_name`                                    | ✅ Implementado |
+| Bloque FUZZIFY             | `fuzzify_block`, `fuzzify_block_name`, `linguistic_term`, `linguistic_term_list`                  | ✅ Implementado |
+| Bloque DEFUZZIFY           | `defuzzify_block`, `defuzzify_block_name`, `defuzzification_method`, `default_value`, `opt_range` | ✅ Implementado |
+| Bloque RULEBLOCK           | `rule_block`, `rule_block_name`, `rules_decl`, `operator_definition`                              | ✅ Implementado |
+| Bloque OPTION / PRAGMA     | `option_block`, `pragma`, `pragma_list`                                                           | ✅ Implementado |
+| Declaraciones de variables | `var_declarations`, `fb_io_var_declarations`, `VAR`, `VAR_INPUT`, `VAR_OUTPUT`                    | ✅ Implementado |
+| Tipos elementales          | `elementary_type`, `numeric_type`, `real_type`, `bit_string_type`                                 | ✅ Implementado |
+| Tipos derivados            | `subrange_spec_init`, `enumerated_spec_init`, `array_spec_init`, `string_spec_init`               | ✅ Implementado |
+| Estructuras                | `structure_specification`, `STRUCT`, `END_STRUCT`                                                 | ✅ Implementado |
+| Declaraciones de tipos     | `TYPE`, `END_TYPE`, `data_type_declaration`, `type_declaration`                                   | ✅ Implementado |
 
 ## Cómo probarlo
 
-```bash
-# Tests unitarios del parser (ejemplos FCL en src/test/resources/examples)
-./gradlew test --tests unit.parser.ParserTest
+El proyecto se compila y prueba con Maven (`pom.xml`). Los comandos siguientes ejecutan los conjuntos de prueba más relevantes para el analizador sintáctico:
 
-# Tests de RepeatedInitialization
-./gradlew test --tests unit.parser.initializations.RepeatedInitializationTest
+```bash
+# Prueba unitaria del parser y de inicializaciones repetidas
+mvn test -Dtest=unit.parser.ParserTest,unit.parser.initializations.RepeatedInitializationTest
+
+# Pruebas de integración sobre la tabla de símbolos por tipo de dato
+mvn test -Dtest=integration.lexer.parser.symboltable.PrimitiveIT,integration.lexer.parser.symboltable.ArrayIT,integration.lexer.parser.symboltable.StructIT,integration.lexer.parser.symboltable.EnumerateIT
+
+# Pruebas de integración sobre bloques difusos e interfaz de función bloque
+mvn test -Dtest=integration.lexer.parser.ast.RuleBlockIT,integration.lexer.parser.symboltable.FunctionBlockInterfaceIT
 ```
 
-Clase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table).
+Cada archivo de prueba verifica un aspecto concreto:
+
+* `unit.parser.ParserTest`: valida el parsing de programas completos, bloques difusos y la población de la tabla de símbolos a partir de archivos FCL de entrada.
+* `unit.parser.initializations.RepeatedInitializationTest`: cubre la inserción, búsqueda y copia de inicializaciones de array por intervalos y rutas anidadas.
+* `integration.lexer.parser.symboltable.PrimitiveIT`: comprueba que los tipos elementales se publican con el subtipo y el valor por defecto correctos.
+* `integration.lexer.parser.symboltable.ArrayIT`: valida límites de arrays, inicializaciones repetidas y acceso por índice.
+* `integration.lexer.parser.symboltable.StructIT`: valida estructuras, campos anidados y acceso por ruta con `#`.
+* `integration.lexer.parser.symboltable.EnumerateIT`: valida tipos enumerados, literales macros y sus claves en la tabla de símbolos.
+* `integration.lexer.parser.ast.RuleBlockIT`: cubre reglas difusas, operadores y acumulación.
+* `integration.lexer.parser.symboltable.FunctionBlockInterfaceIT`: valida la interfaz de la función bloque (entradas y salidas en orden de declaración).
+
+Estas pruebas garantizan que los cambios en la gramática, los publicadores o las inicializaciones no rompan el contrato de la tabla de símbolos y que el parser se mantenga mantenible a medida que crece.

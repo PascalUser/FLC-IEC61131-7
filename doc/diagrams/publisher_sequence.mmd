@@ -1,25 +1,25 @@
 sequenceDiagram
-    participant Parser as Parser (Bison)
-    participant Pub as Publisher (Declaration*)
-    participant Builder as LexemeInfoBuilder
-    participant Director as Director
-    participant ST as SymbolTable
-    participant MacroPub as MacrosPublisher
-    participant Factory as Factory
+participant Parser as Parser (Bison)
+participant Pub as Publisher (Declaration\*)
+participant Builder as LexemeInfoBuilder
+participant Director as Director
+participant ST as SymbolTable
+participant MacroPub as MacrosPublisher
+participant Factory as Factory
 
-    Parser->>Builder: new LexemeInfoBuilder()
-    Parser->>Director: makePrimitive/makeCustom/makeArray/etc.
-    Director->>Factory: createPrimitiveInitialization()
-    Factory-->>Director: DefaultInitialization
-    Director->>Builder: configure type, subtype, initialValue
-    Parser->>Pub: new Declaration*(symbolTable, builder)
-    Pub->>Pub: identifiers(list) / identifier(name)
-    Pub->>Pub: setDeclarationScope(programName)
-    Pub->>Pub: source/use/type/subtype/limits/params
-    Pub->>ST: put(key, builder.build())
+Parser->>Builder: new LexemeInfoBuilder()
+Parser->>Director: makePrimitive/makeCustom/makeArray/etc.
+Director->>Factory: createPrimitiveInitialization()
+Factory-->>Director: DefaultInitialization
+Director->>Builder: configure type, subtype, initialValue
+Parser->>Pub: new Declaration*(symbolTable, builder)
+Pub->>Pub: identifiers(list) / identifier(name)
+Pub->>Pub: setDeclarationScope(programName)
+Pub->>Pub: source/use/type/subtype/limits/params
+Pub->>ST: put(key, builder.build())
 
-    alt Enum declaration
-        Pub->>MacroPub: publish(symbolTable, macroNames, prefix)
-        MacroPub->>Director: makeMacro(builder, symbolTable, ordinal)
-        MacroPub->>ST: put(prefix + macroName, builder.build())
-    end
+alt Enum declaration
+    Pub->>MacroPub: publish(symbolTable, macroNames, prefix)
+    MacroPub->>Director: makeMacro(builder, symbolTable, ordinal)
+    MacroPub->>ST: put(prefix + macroName, builder.build())
+end

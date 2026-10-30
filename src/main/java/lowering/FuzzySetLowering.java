@@ -33,7 +33,7 @@ final class FuzzySetLowering {
     private final LoweringReport report;
 
     /**
-     * Creates the lowering of terms for a bit width.
+     * Creates the lowering of terms for a bit-width.
      *
      * @param converterRange largest coordinate, {@code 2^N - 1}
      * @param report         where problems are reported

@@ -56,7 +56,7 @@ def main():
     run(["python3", "scripts/generate_diagrams.py", "all"], "Mermaid diagrams")
     
     # 3. Module documentation (requires opencode)
-    for pkg in ["utils", "parser", "lexer"]:
+    for pkg in ["utils", "parser", "lexer", "ast", "codegen", "lowering", "simulation", "compiler"]:
         try_opencode(["/docs-update", pkg], f"Module docs: {pkg}")
     
     # 4. Synthesis

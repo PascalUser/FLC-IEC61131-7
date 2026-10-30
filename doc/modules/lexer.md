@@ -83,12 +83,12 @@ classDiagram
         class StripLeadingZeros
         class StripTrailingZeros
         class StripBaseNumberLeadingZeros
+        class StringEscapeResolver
+        class Nothing
         class OmitLeadingZeroMagnitudes
         class OmitTrailingZeroMagnitudes
         class OmitLeadingZerosInMagnitudes
         class OmitTrailingZerosInMagnitudes
-        class StringEscapeResolver
-        class Nothing
     }
     namespace lexer_transformers_hex_resolvers {
         class HexResolver
@@ -143,16 +143,16 @@ classDiagram
     SemanticAnalyzer <|-- StringsAnalyzer
     StringsAnalyzer <|-- WStrings
     Transformer <|-- Nothing
+    Transformer <|-- OmitLeadingZeroMagnitudes
+    Transformer <|-- OmitLeadingZerosInMagnitudes
+    Transformer <|-- OmitTrailingZeroMagnitudes
+    Transformer <|-- OmitTrailingZerosInMagnitudes
     Transformer <|-- StringEscapeResolver
+    Transformer <|-- StripBaseNumberLeadingZeros
     Transformer <|-- StripLeadingZeros
     Transformer <|-- StripTrailingZeros
-    Transformer <|-- StripBaseNumberLeadingZeros
     Transformer <|-- UnderscoreRemover
     Transformer <|-- UpperCaseConverter
-    Transformer <|-- OmitLeadingZeroMagnitudes
-    Transformer <|-- OmitTrailingZeroMagnitudes
-    Transformer <|-- OmitLeadingZerosInMagnitudes
-    Transformer <|-- OmitTrailingZerosInMagnitudes
     Transformer <|-- HexResolver
     HexResolver <|-- StringHexResolver
     HexResolver <|-- WStringHexResolver
@@ -235,9 +235,9 @@ flowchart LR
 
 ```
 
-### Results and Errors
+## Results and Errors
 
-* `SemanticAnalyzer.LexicalContext` carries `preprocessedLexeme`, line, `SymbolTable`, and `DiagnosticsHandler`; `SemanticAnalyzer.Result` carries **`lexeme` and `token**`, in that order in the constructor. `processAndSaveYylval` saves `result.lexeme` in `yylval` and returns `result.token`. Sources: `src/main/java/lexer/semantics/SemanticAnalyzer.java`, `src/main/java/lexer/Lexer.flex`.
+* `SemanticAnalyzer.LexicalContext` carries `preprocessedLexeme`, line, `SymbolTable`, and `DiagnosticsHandler`; `SemanticAnalyzer.Result` carries **`lexeme`** and **`token`**, in that order in the constructor. `processAndSaveYylval` saves `result.lexeme` in `yylval` and returns `result.token`. Sources: `src/main/java/lexer/semantics/SemanticAnalyzer.java`, `src/main/java/lexer/Lexer.flex`.
 * `NumbersAnalyzer` returns `NUMERIC_LITERAL`; when the subtype is `UNKNOWN`, it logs a warning and stores the recovery `ParsedValue`, whose key may differ from the original lexeme. `Naturals`, `Integers`, `Reals`, and base analyzers provide their respective recoveries. Sources: `src/main/java/lexer/semantics/numbers/NumbersAnalyzer.java`, `src/main/java/lexer/semantics/numbers/Naturals.java`, `src/main/java/lexer/semantics/numbers/Integers.java`, `src/main/java/lexer/semantics/numbers/Reals.java`, `src/main/java/lexer/semantics/numbers/bases/BaseNumbersAnalyzer.java`.
 * `Dates`, `DayTimes`, and `DateAndDayTimes` store `LocalDate`, `LocalTime`, and `LocalDateTime`; `Intervals` stores `Duration` and verifies limits of subordinate magnitudes and accumulated nanoseconds. In their error paths, a diagnostic is added and `YYerror` is returned. The temporal actions of `Lexer.flex` only return `TIME_LITERAL` if there is no `YYerror`; otherwise, they reset the state and continue scanning. Sources: `src/main/java/lexer/semantics/Dates.java`, `src/main/java/lexer/semantics/DayTimes.java`, `src/main/java/lexer/semantics/DateAndDayTimes.java`, `src/main/java/lexer/semantics/Intervals.java`, `src/main/java/lexer/Lexer.flex`.
 * `StringsAnalyzer` applies **`MAX_STRING_LENGTH = 255` to STRING and WSTRING** alike, measures Java's `content.length()` after resolving escapes, truncates content and key, issues `StringLengthWarning`, and returns `STRING_LITERAL`. Hexadecimal escapes are interpreted via `StringHexResolver` with two digits and `WStringHexResolver` with four. Sources: `src/main/java/lexer/semantics/strings/StringsAnalyzer.java`, `src/main/java/lexer/semantics/strings/Strings.java`, `src/main/java/lexer/semantics/strings/WStrings.java`, `src/main/java/lexer/transformers/hex_resolvers/StringHexResolver.java`, `src/main/java/lexer/transformers/hex_resolvers/WStringHexResolver.java`.

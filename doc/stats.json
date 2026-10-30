@@ -2,8 +2,8 @@
   "enum_sizes": {
     "Type": 8,
     "Source": 7,
-    "Use": 10,
-    "Subtype": 34
+    "Use": 12,
+    "Subtype": 35
   },
   "transformer_chains": {
     "DATE_AND_TIMES": 1,
@@ -21,12 +21,12 @@
     "IDENTIFIERS": 1
   },
   "diagnostics": {
-    "errors": 5,
-    "warnings": 7
+    "errors": 7,
+    "warnings": 8
   },
   "grammar_stats": {
     "tokens": 82,
-    "nonterminals": 132,
+    "nonterminals": 141,
     "init_types": 7
   },
   "symboltable_distribution": {
@@ -101,14 +101,19 @@
       "estimated_methods": 56
     },
     "parser": {
-      "avg_cyclomatic": 13.9,
-      "total_complexity": 487,
-      "estimated_methods": 35
+      "avg_cyclomatic": 15.1,
+      "total_complexity": 619,
+      "estimated_methods": 41
     },
     "utils": {
       "avg_cyclomatic": 2.4,
-      "total_complexity": 117,
-      "estimated_methods": 48
+      "total_complexity": 122,
+      "estimated_methods": 51
+    },
+    "codegen": {
+      "avg_cyclomatic": 2.7,
+      "total_complexity": 100,
+      "estimated_methods": 37
     }
   },
   "loc": {
@@ -117,20 +122,34 @@
       "files": 21
     },
     "parser": {
-      "loc": 3275,
-      "files": 6
+      "loc": 3886,
+      "files": 8
     },
     "utils": {
-      "loc": 1228,
-      "files": 28
+      "loc": 1330,
+      "files": 31
+    },
+    "codegen": {
+      "loc": 1213,
+      "files": 15
     }
   },
   "test_coverage": {
-    "overall": 74,
+    "overall": 69,
     "packages": {
-      "parser": 42,
+      "ast/ruleblock": 100,
+      "codegen/evaluation": 100,
+      "parser": 51,
+      "ast": 92,
+      "simulation": 0,
+      "utils": 100,
       "lexer": 100,
-      "utils": 47
+      "compiler": 0,
+      "codegen": 98,
+      "ast/ruleblock/operators": 100,
+      "codegen/fuzzysets": 95,
+      "lowering": 0,
+      "codegen/defuzzification": 100
     }
   },
   "coupling": {
@@ -140,14 +159,19 @@
       "instability": 1.0
     },
     "parser": {
-      "afferent": 2,
+      "afferent": 1,
       "efferent": 1,
-      "instability": 0.33
+      "instability": 0.5
     },
     "utils": {
       "afferent": 2,
-      "efferent": 1,
-      "instability": 0.33
+      "efferent": 0,
+      "instability": 0.0
+    },
+    "codegen": {
+      "afferent": 0,
+      "efferent": 0,
+      "instability": 0.0
     }
   }
 }

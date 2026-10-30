@@ -54,7 +54,7 @@ import java.util.Set;
  * @since 1.0
  */
 public final class ControllerLowering {
-    /** Bit width used when the program has no {@code PRAGMA bit_width}. */
+    /** Bit-width used when the program has no {@code PRAGMA bit_width}. */
     public static final int DEFAULT_BIT_WIDTH = 8;
 
     private static final Set<Subtype> INTEGER_TYPES = EnumSet.of(
@@ -85,7 +85,7 @@ public final class ControllerLowering {
 
     /**
      * Builds the controller model.
-     *
+     * <p>
      * Inputs and outputs are taken in declaration order (the {@code parameters} of the function block entry):
      * it fixes the signature of the controller and the bits of each output in its result.
      *

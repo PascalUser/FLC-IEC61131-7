@@ -90,9 +90,7 @@ final class RuleLowering {
         for (AbstractAstNode rule : accumulation.children()) {
             number++;
             Optional<int[]> row = row(rule, "rule " + number + " of " + block.name());
-            if (row.isPresent()) {
-                rows.add(row.get());
-            }
+            row.ifPresent(rows::add);
         }
         return rows;
     }

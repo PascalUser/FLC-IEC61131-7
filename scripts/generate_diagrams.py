@@ -456,14 +456,20 @@ def generate_diagnostics_hierarchy():
     mermaid = ["classDiagram", "    class Diagnostic {", "        +line: int", "        +getMessage()",
                "        +fatalForCompilation()", "    }", "    class Error {", "        +fatalForCompilation() = true",
                "    }", "    class Warning {", "        +fatalForCompilation() = false", "    }",
-               "    class SyntaxError {", "        +fatalForCompilation() = true", "    }", "    Diagnostic <|-- Error",
-               "    Diagnostic <|-- Warning", "    Error <|-- SyntaxError", "", "    Error <|-- DateOutOfRange",
+               "    class SyntaxError {", "        +fatalForCompilation() = true", "    }",
+               "    class DateOutOfRange", "    class IntervalConstructionError", "    class IntervalOutOfRange",
+               "    class TimeOfDayOutOfRange", "    class DateAndTimeOutOfRange", "    class UndeclaredReference",
+               "    class UnsupportedFeature", "    class StringLengthWarning", "    class HexadecimalOutOfRange",
+               "    class RealOutOfRange", "    class NaturalOutOfRange", "    class BinaryOutOfRange",
+               "    class OctalOutOfRange", "    class GeneratorWarning", "    Diagnostic <|-- Error",
+               "    Diagnostic <|-- Warning", "    Error <|-- SyntaxError", "    Error <|-- DateOutOfRange",
                "    Error <|-- IntervalConstructionError", "    Error <|-- IntervalOutOfRange",
-               "    Error <|-- TimeOfDayOutOfRange", "    Error <|-- DateAndTimeOutOfRange", "",
+               "    Error <|-- TimeOfDayOutOfRange", "    Error <|-- DateAndTimeOutOfRange",
+               "    Error <|-- UndeclaredReference", "    Error <|-- UnsupportedFeature", "",
                "    Warning <|-- StringLengthWarning", "    Warning <|-- HexadecimalOutOfRange",
                "    Warning <|-- RealOutOfRange", "    Warning <|-- NaturalOutOfRange",
                "    Warning <|-- BinaryOutOfRange", "    Warning <|-- OctalOutOfRange",
-               "    Warning <|-- IntegerOutOfRange"]
+               "    Warning <|-- IntegerOutOfRange", "    Warning <|-- GeneratorWarning"]
     return "\n".join(mermaid)
 
 
@@ -516,7 +522,20 @@ def generate_utils_class_diagram():
         }
     }
     namespace utils_builders {
-        class LexemeInfoSchema {
+        class LexemeInfoMutator {
+            <<interface>>
+            +type(Type)
+            +subtype(Subtype)
+            +customType(String)
+            +source(Source)
+            +use(Use)
+            +inferiorLimits(List~String~)
+            +superiorLimits(List~String~)
+            +parameters(List~String~)
+            +initialValue(Object)
+        }
+        class LexemeInfoView {
+            <<interface>>
             +type()
             +subtype()
             +customType()
@@ -531,20 +550,21 @@ def generate_utils_class_diagram():
             +build()
         }
         class Director {
-            +makeLiteral()
-            +makeType()
-            +makeMacro()
-            +makeDefaultInteger()
-            +makeDefaultReal()
-            +makeDefaultBoolean()
-            +makeDefaultString()
-            +makeDefaultWString()
+            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView)
+            +makeLiteral(LexemeInfoMutator)
+            +makeIntegerZeroConstant(LexemeInfoMutator)
+            +makeDefaultInteger(LexemeInfoMutator)
+            +makeDefaultReal(LexemeInfoMutator)
+            +makeDefaultBoolean(LexemeInfoMutator)
+            +makeTrueBoolean(LexemeInfoMutator)
+            +makeDefaultString(LexemeInfoMutator)
+            +makeDefaultWString(LexemeInfoMutator)
         }
     }
     namespace utils_enums {
-        class Type { 6 values }
-        class Subtype { 24 values }
-        class Use { 9 values }
+        class Type { 8 values }
+        class Subtype { 35 values }
+        class Use { 12 values }
         class Source { 7 values }
     }
     namespace utils_diagnostics {
@@ -552,12 +572,20 @@ def generate_utils_class_diagram():
         class Error
         class Warning
         class SyntaxError
+        class UndeclaredReference
+        class UnsupportedFeature
+        class GeneratorWarning
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
     Error <|-- SyntaxError
-    LexemeInfoBuilder ..|> LexemeInfoSchema
-    Director ..> LexemeInfoSchema
+    Error <|-- UndeclaredReference
+    Error <|-- UnsupportedFeature
+    Warning <|-- GeneratorWarning
+    LexemeInfoBuilder ..|> LexemeInfoMutator
+    LexemeInfoBuilder ..|> LexemeInfoView
+    Director ..> LexemeInfoMutator
+    Director ..> LexemeInfoView
     SymbolTable --> LexemeInfo
     DiagnosticsHandler --> Diagnostic"""
     return mermaid
@@ -593,6 +621,90 @@ def generate_publisher_sequence():
     return "\n".join(mermaid)
 
 
+def generate_codegen_package_flowchart():
+    """Import dependencies of the codegen package and its consumers."""
+    sources = read_java_files(SRC_DIR / "codegen")
+    packages = {"codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"}
+    edges = set()
+    for path, content in sources.items():
+        origin = ".".join(Path(path).parts[:-1])
+        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+            destination = imp if wildcard else imp.rsplit(".", 1)[0]
+            if origin in packages and destination in packages and origin != destination:
+                edges.add((origin, destination))
+    for consumer in ("compiler", "lowering", "simulation"):
+        edges.add((consumer, "codegen"))
+    used = sorted({p for edge in edges for p in edge})
+    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+    lines = ["flowchart LR"]
+    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
+    return "\n".join(lines)
+
+
+def generate_codegen_class_diagram():
+    """Class diagram of the codegen package: generator stages, controller model, fuzzy sets."""
+    sources = read_java_files(SRC_DIR / "codegen")
+    selected = {
+        "codegen": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
+        "codegen_defuzzification": ["Defuzzifier", "CentroidDefuzzifier"],
+        "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
+        "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet", "SShapeFuzzySet", "TrapezoidFuzzySet", "TriangularFuzzySet", "ZShapeFuzzySet"],
+    }
+    lines = ["classDiagram"]
+    known = {name for group in selected.values() for name in group}
+    for namespace, names in selected.items():
+        lines.append(f"    namespace {namespace} {{")
+        for name in names:
+            matches = [(path, content) for path, content in sources.items() if Path(path).stem == name]
+            if len(matches) != 1 or not re.search(r'\b(class|interface)\s+' + name + r'\b', matches[0][1]):
+                raise ValueError(f"Missing codegen type: {name}")
+            lines.append(f"        class {name}")
+        lines.append("    }")
+    lines += [
+        "    EvaluationMethod <|-- MinMaxMethod",
+        "    Defuzzifier <|-- CentroidDefuzzifier",
+        "    FuzzySet <|-- SingletonFuzzySet",
+        "    FuzzySet <|-- SShapeFuzzySet",
+        "    FuzzySet <|-- TrapezoidFuzzySet",
+        "    FuzzySet <|-- TriangularFuzzySet",
+        "    FuzzySet <|-- ZShapeFuzzySet",
+        "    CodeGenerator --> ControllerModel : uses",
+        "    CodeGenerator --> Fuzzifier : uses",
+        "    CodeGenerator --> EvaluationMethod : uses",
+        "    CodeGenerator --> Defuzzifier : uses",
+        "    Fuzzifier --> Variable : uses",
+        "    Variable --> FuzzySet : uses",
+    ]
+    return "\n".join(lines)
+
+
+def generate_codegen_controller_sequence():
+    """Sequence of the controller generation stages."""
+    return "\n".join([
+        "sequenceDiagram",
+        "    participant M as ControllerModel",
+        "    participant G as CodeGenerator",
+        "    participant F as Fuzzifier",
+        "    participant E as EvaluationMethod",
+        "    participant D as Defuzzifier",
+        "    participant S as FuzzySet",
+        "",
+        "    G->>M: new ControllerModel",
+        "    M-->>G: inputs outputs converterRange evaluationMethod defuzzifiers",
+        "    G->>F: compileFunctionsSlope out converterRange",
+        "    G->>F: compileInputVariablesBuffers out",
+        "    G->>F: compileFuzzifier out",
+        "    F->>S: compileFuzzSet out converterRange varName setNumber",
+        "    G->>E: compileEvalMethod out model",
+        "    G->>D: compileDefuzz out model outputIndex",
+        "    D->>S: compileOutputSetsBuffer out",
+        "    G->>M: generateCpp",
+        "    G->>M: generateHeader",
+        "    G->>M: generateTestBench headerFile",
+    ])
+
+
 DIAGRAMS = {
     "package_dependencies": generate_package_flowchart,
     "lexer_package_flowchart": generate_lexer_package_flowchart,
@@ -605,13 +717,16 @@ DIAGRAMS = {
     "architecture_evolution": generate_architecture_evolution,
     "utils_class_diagram": generate_utils_class_diagram,
     "publisher_sequence": generate_publisher_sequence,
+    "codegen_package_flowchart": generate_codegen_package_flowchart,
+    "codegen_class_diagram": generate_codegen_class_diagram,
+    "codegen_controller_sequence": generate_codegen_controller_sequence,
 }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Generate mermaid diagrams from source code")
     parser.add_argument("--list", action="store_true", help="List available diagrams")
-    parser.add_argument("scope", nargs="?", default="all", help="Scope: all|lexer|parser|utils|architecture")
+    parser.add_argument("scope", nargs="?", default="all", help="Scope: all|lexer|parser|utils|codegen|architecture")
     args = parser.parse_args()
 
     DIAGRAMS_DIR.mkdir(parents=True, exist_ok=True)
@@ -627,6 +742,8 @@ def main():
         targets = ["parser_class_diagram", "publisher_sequence", "symboltable_storage"]
     elif scope == "utils":
         targets = ["utils_class_diagram", "diagnostics_hierarchy", "symboltable_storage"]
+    elif scope == "codegen":
+        targets = ["codegen_package_flowchart", "codegen_class_diagram", "codegen_controller_sequence"]
     elif scope == "architecture":
         targets = ["package_dependencies", "lexer_parser_sequence", "architecture_evolution"]
     else:
@@ -635,7 +752,7 @@ def main():
             targets = [scope]
         else:
             print(f"Unknown scope: {scope}")
-            print(f"Available: all, lexer, parser, utils, architecture")
+            print(f"Available: all, lexer, parser, utils, codegen, architecture")
             print(f"Or specific: {', '.join(DIAGRAMS.keys())}")
             return
 

@@ -8,6 +8,8 @@ services:
     env_file: .env
     volumes:
       - .:/workspace:ro
+      - ./.opencode:/workspace/.opencode:rw
+      - ./README.md:/workspace/README.md:rw
       - ./doc:/workspace/doc:rw
       - ./src:/workspace/src:rw
       - ./scripts:/workspace/scripts:rw

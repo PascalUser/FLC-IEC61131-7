@@ -279,7 +279,8 @@ def main():
             "module_chapter_mapping": {
                 "utils": ["04-arquitectura-implementada", "07-mantenibilidad"],
                 "parser": ["06-analisis-sintactico", "07-mantenibilidad"],
-                "lexer": ["05-analisis-lexico", "07-mantenibilidad"]
+                "lexer": ["05-analisis-lexico", "07-mantenibilidad"],
+                "codegen": ["04.2-lowering", "04.3-generacion-codigo", "04.5-pipeline-compilador"]
             }
         },
         "readme_view": build_readme_architecture_summary(modules_data),

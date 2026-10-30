@@ -1,0 +1,37 @@
+classDiagram
+    namespace codegen {
+        class CodeGenerator
+        class ControllerModel
+        class CppWriter
+        class Fuzzifier
+        class Variable
+    }
+    namespace codegen_defuzzification {
+        class Defuzzifier
+        class CentroidDefuzzifier
+    }
+    namespace codegen_evaluation {
+        class EvaluationMethod
+        class MinMaxMethod
+    }
+    namespace codegen_fuzzysets {
+        class FuzzySet
+        class SingletonFuzzySet
+        class SShapeFuzzySet
+        class TrapezoidFuzzySet
+        class TriangularFuzzySet
+        class ZShapeFuzzySet
+    }
+    EvaluationMethod <|-- MinMaxMethod
+    Defuzzifier <|-- CentroidDefuzzifier
+    FuzzySet <|-- SingletonFuzzySet
+    FuzzySet <|-- SShapeFuzzySet
+    FuzzySet <|-- TrapezoidFuzzySet
+    FuzzySet <|-- TriangularFuzzySet
+    FuzzySet <|-- ZShapeFuzzySet
+    CodeGenerator --> ControllerModel : uses
+    CodeGenerator --> Fuzzifier : uses
+    CodeGenerator --> EvaluationMethod : uses
+    CodeGenerator --> Defuzzifier : uses
+    Fuzzifier --> Variable : uses
+    Variable --> FuzzySet : uses

@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/nemotron-3-ultra-free",
+  "model": "opencode/gemini-3.7-flash",
 
   "agent": {
     "readme-writer": {

@@ -13,15 +13,30 @@ classDiagram
     class SyntaxError {
         +fatalForCompilation() = true
     }
+    class DateOutOfRange
+    class IntervalConstructionError
+    class IntervalOutOfRange
+    class TimeOfDayOutOfRange
+    class DateAndTimeOutOfRange
+    class UndeclaredReference
+    class UnsupportedFeature
+    class StringLengthWarning
+    class HexadecimalOutOfRange
+    class RealOutOfRange
+    class NaturalOutOfRange
+    class BinaryOutOfRange
+    class OctalOutOfRange
+    class GeneratorWarning
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
     Error <|-- SyntaxError
-
     Error <|-- DateOutOfRange
     Error <|-- IntervalConstructionError
     Error <|-- IntervalOutOfRange
     Error <|-- TimeOfDayOutOfRange
     Error <|-- DateAndTimeOutOfRange
+    Error <|-- UndeclaredReference
+    Error <|-- UnsupportedFeature
 
     Warning <|-- StringLengthWarning
     Warning <|-- HexadecimalOutOfRange
@@ -30,3 +45,4 @@ classDiagram
     Warning <|-- BinaryOutOfRange
     Warning <|-- OctalOutOfRange
     Warning <|-- IntegerOutOfRange
+    Warning <|-- GeneratorWarning

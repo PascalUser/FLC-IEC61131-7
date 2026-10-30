@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant M as ControllerModel
+    participant G as CodeGenerator
+    participant F as Fuzzifier
+    participant E as EvaluationMethod
+    participant D as Defuzzifier
+    participant S as FuzzySet
+
+    G->>M: new ControllerModel
+    M-->>G: inputs outputs converterRange evaluationMethod defuzzifiers
+    G->>F: compileFunctionsSlope out converterRange
+    G->>F: compileInputVariablesBuffers out
+    G->>F: compileFuzzifier out
+    F->>S: compileFuzzSet out converterRange varName setNumber
+    G->>E: compileEvalMethod out model
+    G->>D: compileDefuzz out model outputIndex
+    D->>S: compileOutputSetsBuffer out
+    G->>M: generateCpp
+    G->>M: generateHeader
+    G->>M: generateTestBench headerFile
