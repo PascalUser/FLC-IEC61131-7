@@ -63,6 +63,9 @@ RUN npx puppeteer browsers install chrome-headless-shell --path=/opt/puppeteer/c
 ENV PUPPETEER_EXECUTABLE_PATH=/opt/puppeteer/cache/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell
 
 COPY --chown=devuser:devgroup doc/ /workspace/doc/
+COPY --chown=devuser:devgroup pom.xml /workspace/
+COPY --chown=devuser:devgroup src/ /workspace/src/
+COPY --chown=devuser:devgroup scripts/ /workspace/scripts/
 
 # Returns to root to execute the entrypoint.sh
 USER root

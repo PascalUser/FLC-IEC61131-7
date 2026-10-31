@@ -13,6 +13,7 @@ services:
       - ./src:/workspace/src:rw
       - ./output:/workspace/output:rw
       - ./opencode.json:/workspace/opencode.json:ro
+      - ./pom.xml:/workspace/pom.xml:ro
       - ./README.md:/workspace/README.md:rw
       - ./run_all_agents.py:/workspace/run_all_agents.py:ro
     working_dir: /workspace

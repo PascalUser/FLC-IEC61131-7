@@ -171,8 +171,17 @@
     }
   },
   "test_coverage": {
-    "overall": 0,
-    "packages": {}
+    "overall": 89,
+    "packages": {
+      "ast": 100,
+      "codegen": 97,
+      "compiler": 78,
+      "lexer": 89,
+      "lowering": 91,
+      "parser": 87,
+      "simulation": 91,
+      "utils": 87
+    }
   },
   "coupling": {
     "lexer": {

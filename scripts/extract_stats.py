@@ -277,10 +277,12 @@ def extract_test_coverage():
     jacoco_file = ROOT / "target" / "site" / "jacoco" / "jacoco.xml"
     if not jacoco_file.exists():
         print("  -> JaCoCo report not found. Running 'mvn -q test jacoco:report'...")
-        run_cmd("mvn -q test jacoco:report")
+        out, err, rc = run_cmd("mvn -q test jacoco:report")
+        if rc != 0:
+            raise RuntimeError(f"Failed to generate JaCoCo report: {err}")
     
     if not jacoco_file.exists():
-        return {"overall": 0, "packages": {}}
+        raise RuntimeError("JaCoCo report not found after generation attempt")
     
     import xml.etree.ElementTree as ET
     tree = ET.parse(jacoco_file)
