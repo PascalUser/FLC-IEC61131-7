@@ -79,14 +79,38 @@ classDiagram
         class SyntaxError
         class UndeclaredReference
         class UnsupportedFeature
+        class DateOutOfRange
+        class DateAndTimeOutOfRange
+        class TimeOfDayOutOfRange
+        class IntervalOutOfRange
+        class IntervalConstructionError
         class GeneratorWarning
+        class IntegerOutOfRange
+        class RealOutOfRange
+        class BinaryOutOfRange
+        class OctalOutOfRange
+        class HexadecimalOutOfRange
+        class NaturalOutOfRange
+        class StringLengthWarning
     }
     Diagnostic <|-- Error
     Diagnostic <|-- Warning
     Error <|-- SyntaxError
     Error <|-- UndeclaredReference
     Error <|-- UnsupportedFeature
+    Error <|-- DateOutOfRange
+    Error <|-- DateAndTimeOutOfRange
+    Error <|-- TimeOfDayOutOfRange
+    Error <|-- IntervalOutOfRange
+    Error <|-- IntervalConstructionError
     Warning <|-- GeneratorWarning
+    Warning <|-- IntegerOutOfRange
+    Warning <|-- RealOutOfRange
+    Warning <|-- BinaryOutOfRange
+    Warning <|-- OctalOutOfRange
+    Warning <|-- HexadecimalOutOfRange
+    Warning <|-- NaturalOutOfRange
+    Warning <|-- StringLengthWarning
     LexemeInfoBuilder ..|> LexemeInfoMutator
     LexemeInfoBuilder ..|> LexemeInfoView
     Director ..> LexemeInfoMutator

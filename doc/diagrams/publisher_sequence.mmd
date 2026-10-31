@@ -1,25 +1,31 @@
 sequenceDiagram
-participant Parser as Parser (Bison)
-participant Pub as Publisher (Declaration\*)
-participant Builder as LexemeInfoBuilder
-participant Director as Director
-participant ST as SymbolTable
-participant MacroPub as MacrosPublisher
-participant Factory as Factory
+    participant Parser as parser.Parser
+    participant Publisher as parser.publishers.*
+    participant Director as utils.builders.Director
+    participant Metadata as Metadata View
+    participant Builder as utils.builders.LexemeInfoBuilder
+    participant ST as utils.SymbolTable
+    participant MacroPub as parser.facades.MacrosPublisher
+    participant Factory as parser.initializations.Factory
 
-Parser->>Builder: new LexemeInfoBuilder()
-Parser->>Director: makePrimitive/makeCustom/makeArray/etc.
-Director->>Factory: createPrimitiveInitialization()
-Factory-->>Director: DefaultInitialization
-Director->>Builder: configure type, subtype, initialValue
-Parser->>Pub: new Declaration*(symbolTable, builder)
-Pub->>Pub: identifiers(list) / identifier(name)
-Pub->>Pub: setDeclarationScope(programName)
-Pub->>Pub: source/use/type/subtype/limits/params
-Pub->>ST: put(key, builder.build())
+    Parser->>Publisher: new SingleDeclaration / MultipleDeclaration / DeclarationBlock
+    Parser->>Director: makeWithMetadata(publisher, metadata)
+    Director->>Metadata: read type, subtype, use, source, limits, parameters, initialValue
+    Director->>Builder: copy attributes into LexemeInfoBuilder
+    Parser->>Publisher: identifier(name) or identifiers(list)
+    Parser->>Publisher: setDeclarationScope(programName)
+    Publisher->>Builder: build()
+    Publisher->>ST: put(scope#identifier, LexemeInfo)
+    ST-->>Publisher: previous LexemeInfo or null
+    Publisher-->>Parser: keys()
 
-alt Enum declaration
-    Pub->>MacroPub: publish(symbolTable, macroNames, prefix)
-    MacroPub->>Director: makeMacro(builder, symbolTable, ordinal)
-    MacroPub->>ST: put(prefix + macroName, builder.build())
-end
+    opt Array or STRING metadata
+        Metadata->>Factory: createPrimitiveInitialization(symbolTable, subtype)
+        Factory-->>Metadata: DefaultInitialization
+    end
+
+    opt Enumeration declaration
+        Publisher->>MacroPub: publish(symbolTable, macroNames, prefix)
+        MacroPub->>Director: makeWithMetadata(builder, new MacroMetadata(...))
+        MacroPub->>ST: put(prefix + macroName, LexemeInfo)
+    end

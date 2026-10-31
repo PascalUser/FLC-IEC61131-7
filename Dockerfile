@@ -1,6 +1,6 @@
 FROM maven:3.9-eclipse-temurin-8
 
-# 1. Install system dependencies (as ROOT)
+# 1. Install system dependencies (as ROOT) - Se agregó gosu
 RUN apt-get update && apt-get install -y \
     git \
     pandoc \
@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     libgbm1 \
     libasound2t64 \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20+
@@ -32,7 +33,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 RUN pip install --break-system-packages matplotlib
 RUN npm install -g @mermaid-js/mermaid-cli yauzl remark-cli remark-gfm bun
 
-# 2. Create/configure unprivileged user (devuser) with configurable UID/GID
+# 2. Create/configure unprivileged user (devuser)
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 RUN if [ "$USER_ID" = "1000" ] && [ "$GROUP_ID" = "1000" ] && getent passwd ubuntu >/dev/null 2>&1; then \
@@ -44,26 +45,28 @@ RUN if [ "$USER_ID" = "1000" ] && [ "$GROUP_ID" = "1000" ] && getent passwd ubun
         useradd -m -s /bin/bash -u $USER_ID -g $GROUP_ID devuser; \
     fi
 
-# 3. Prepare directories and assign permissions to the user
+# 3. Prepare directories
 RUN mkdir -p /opt/puppeteer/cache /workspace /workspace/output && \
     chown -R devuser:devgroup /opt/puppeteer /workspace
 
-# 4. DROP PRIVILEGES: Everything from here on is executed as 'devuser'
+# 4. INSTALAR HERRAMIENTAS COMO devuser
 USER devuser
 WORKDIR /workspace
 
-# Install OpenCode CLI specifically for devuser and expose its binary path
+# Install OpenCode CLI
 RUN curl -fsSL https://opencode.ai/v2/install | bash
 ENV PATH="/home/devuser/.bun/bin:${PATH}"
 
-# Install Puppeteer locally in the user's cache
+# Install Puppeteer
 ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
 RUN npx puppeteer browsers install chrome-headless-shell --path=/opt/puppeteer/cache
-
-# Puppeteer paths
 ENV PUPPETEER_EXECUTABLE_PATH=/opt/puppeteer/cache/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell
 
-# Copy assets (ensuring they belong to devuser)
 COPY --chown=devuser:devgroup doc/ /workspace/doc/
 
-ENTRYPOINT ["bash"]
+# Returns to root to execute the entrypoint.sh
+USER root
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

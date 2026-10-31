@@ -106,6 +106,26 @@
                 </configuration>
             </plugin>
 
+            <!-- Failsafe: Ejecución de integration tests (*IT.java) en la fase test -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <argLine>@{argLine}</argLine>
+                </configuration>
+            </plugin>
+
             <!-- JaCoCo: Generación del reporte XML para SonarQube -->
             <plugin>
                 <groupId>org.jacoco</groupId>

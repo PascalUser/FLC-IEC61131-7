@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/gemini-3.7-flash",
+  "model": "opencode/flint-40b-free",
 
   "agent": {
     "readme-writer": {

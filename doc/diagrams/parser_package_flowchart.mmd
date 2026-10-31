@@ -1,0 +1,65 @@
+flowchart LR
+    ast["ast"]
+    ast_ruleblock["ast.ruleblock"]
+    ast_ruleblock_operators["ast.ruleblock.operators"]
+    parser["parser"]
+    parser_facades["parser.facades"]
+    parser_initializations["parser.initializations"]
+    parser_initializations_leafs["parser.initializations.leafs"]
+    parser_initializations_nodes["parser.initializations.nodes"]
+    parser_metadata["parser.metadata"]
+    parser_publishers["parser.publishers"]
+    parser_tree["parser.tree"]
+    parser_utils["parser.utils"]
+    utils["utils"]
+    utils_builders["utils.builders"]
+    utils_enums["utils.enums"]
+    parser --> ast
+    parser --> ast_ruleblock
+    parser --> ast_ruleblock_operators
+    parser --> parser_facades
+    parser --> parser_initializations
+    parser --> parser_initializations_leafs
+    parser --> parser_initializations_nodes
+    parser --> parser_metadata
+    parser --> parser_publishers
+    parser --> parser_tree
+    parser --> parser_utils
+    parser --> utils
+    parser --> utils_builders
+    parser --> utils_enums
+    parser_facades --> ast
+    parser_facades --> ast_ruleblock
+    parser_facades --> ast_ruleblock_operators
+    parser_facades --> parser_metadata
+    parser_facades --> parser_tree
+    parser_facades --> parser_utils
+    parser_facades --> utils
+    parser_facades --> utils_builders
+    parser_facades --> utils_enums
+    parser_initializations --> parser_initializations_leafs
+    parser_initializations --> utils
+    parser_initializations --> utils_enums
+    parser_initializations_leafs --> parser_initializations
+    parser_initializations_leafs --> utils
+    parser_initializations_leafs --> utils_builders
+    parser_initializations_leafs --> utils_enums
+    parser_initializations_nodes --> parser_initializations
+    parser_metadata --> parser_facades
+    parser_metadata --> parser_initializations
+    parser_metadata --> parser_initializations_leafs
+    parser_metadata --> parser_initializations_nodes
+    parser_metadata --> parser_publishers
+    parser_metadata --> parser_utils
+    parser_metadata --> utils
+    parser_metadata --> utils_builders
+    parser_metadata --> utils_enums
+    parser_publishers --> parser_facades
+    parser_publishers --> parser_initializations
+    parser_publishers --> parser_utils
+    parser_publishers --> utils
+    parser_publishers --> utils_builders
+    parser_publishers --> utils_enums
+    parser_utils --> parser_initializations
+    parser_utils --> parser_tree
+    parser_utils --> utils_enums

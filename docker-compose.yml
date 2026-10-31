@@ -7,13 +7,13 @@ services:
         GROUP_ID: ${GID:-1000}
     env_file: .env
     volumes:
-      - .:/workspace:ro
       - ./.opencode:/workspace/.opencode:rw
-      - ./README.md:/workspace/README.md:rw
       - ./doc:/workspace/doc:rw
+      - ./scripts:/workspace/scripts:ro
       - ./src:/workspace/src:rw
-      - ./scripts:/workspace/scripts:rw
       - ./output:/workspace/output:rw
+      - ./opencode.json:/workspace/opencode.json:ro
+      - ./README.md:/workspace/README.md:rw
+      - ./run_all_agents.py:/workspace/run_all_agents.py:ro
     working_dir: /workspace
-    entrypoint: ["tail"]
-    command: ["-f", "/dev/null"]
+    command: ["tail", "-f", "/dev/null"]

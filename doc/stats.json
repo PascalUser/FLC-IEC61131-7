@@ -101,19 +101,39 @@
       "estimated_methods": 56
     },
     "parser": {
-      "avg_cyclomatic": 15.1,
-      "total_complexity": 619,
-      "estimated_methods": 41
+      "avg_cyclomatic": 5.5,
+      "total_complexity": 875,
+      "estimated_methods": 159
     },
     "utils": {
       "avg_cyclomatic": 2.4,
       "total_complexity": 122,
       "estimated_methods": 51
     },
+    "ast": {
+      "avg_cyclomatic": 1.2,
+      "total_complexity": 30,
+      "estimated_methods": 25
+    },
     "codegen": {
       "avg_cyclomatic": 2.7,
       "total_complexity": 100,
       "estimated_methods": 37
+    },
+    "lowering": {
+      "avg_cyclomatic": 7.4,
+      "total_complexity": 96,
+      "estimated_methods": 13
+    },
+    "simulation": {
+      "avg_cyclomatic": 3.9,
+      "total_complexity": 51,
+      "estimated_methods": 13
+    },
+    "compiler": {
+      "avg_cyclomatic": 3.3,
+      "total_complexity": 23,
+      "estimated_methods": 7
     }
   },
   "loc": {
@@ -122,56 +142,101 @@
       "files": 21
     },
     "parser": {
-      "loc": 3886,
-      "files": 8
+      "loc": 6283,
+      "files": 51
     },
     "utils": {
       "loc": 1330,
       "files": 31
     },
+    "ast": {
+      "loc": 305,
+      "files": 20
+    },
     "codegen": {
       "loc": 1213,
       "files": 15
+    },
+    "lowering": {
+      "loc": 639,
+      "files": 5
+    },
+    "simulation": {
+      "loc": 381,
+      "files": 5
+    },
+    "compiler": {
+      "loc": 229,
+      "files": 3
     }
   },
   "test_coverage": {
-    "overall": 69,
-    "packages": {
-      "ast/ruleblock": 100,
-      "codegen/evaluation": 100,
-      "parser": 51,
-      "ast": 92,
-      "simulation": 0,
-      "utils": 100,
-      "lexer": 100,
-      "compiler": 0,
-      "codegen": 98,
-      "ast/ruleblock/operators": 100,
-      "codegen/fuzzysets": 95,
-      "lowering": 0,
-      "codegen/defuzzification": 100
-    }
+    "overall": 0,
+    "packages": {}
   },
   "coupling": {
     "lexer": {
-      "afferent": 0,
+      "afferent": 1,
       "efferent": 2,
-      "instability": 1.0
+      "instability": 0.67
     },
     "parser": {
-      "afferent": 1,
+      "afferent": 3,
       "efferent": 1,
-      "instability": 0.5
+      "instability": 0.25
     },
     "utils": {
+      "afferent": 4,
+      "efferent": 0,
+      "instability": 0.0
+    },
+    "ast": {
       "afferent": 2,
       "efferent": 0,
       "instability": 0.0
     },
     "codegen": {
+      "afferent": 3,
+      "efferent": 0,
+      "instability": 0.0
+    },
+    "lowering": {
+      "afferent": 1,
+      "efferent": 2,
+      "instability": 0.67
+    },
+    "simulation": {
       "afferent": 0,
       "efferent": 0,
       "instability": 0.0
+    },
+    "compiler": {
+      "afferent": 0,
+      "efferent": 3,
+      "instability": 1.0
     }
+  },
+  "ast_nodes": {
+    "BodyNode": 1,
+    "IfNode": 1,
+    "NotNode": 1,
+    "IdentifierNode": 1,
+    "RuleBlockNode": 1,
+    "WithNode": 1,
+    "IsNode": 1,
+    "CondNode": 1,
+    "OperatorNodes": 8,
+    "AbstractBases": 2
+  },
+  "lowering": {
+    "classes": 5,
+    "class_names": [
+      "RuleLowering",
+      "SymbolKeys",
+      "FuzzySetLowering",
+      "ControllerLowering",
+      "LoweringReport"
+    ],
+    "transformer_refs": 0
   }
 }

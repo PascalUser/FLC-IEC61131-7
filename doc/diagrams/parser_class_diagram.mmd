@@ -1,205 +1,294 @@
 classDiagram
-namespace parser {
-class Parser {
-+parse()
-}
-}
-namespace parser_publishers {
-class Publisher {
-<<interface>>
-+setDeclarationScope(String)
-+publish()
-}
-class LexemeInfoSchema {
-<<interface>>
-+type(Type)
-+subtype(Subtype)
-+customType(String)
-+source(Source)
-+use(Use)
-+inferiorLimits(List~~String~~)
-+superiorLimits(List~~String~~)
-+parameters(List~~String~~)
-+initialValue(Object)
-}
-class DeclarationGroup {
-+declarations: List~~Declaration~~
-+publish()
-+setDeclarationScope(String)
-}
-class Declaration {
-\#builder: LexemeInfoBuilder
-\#declarationScope: String
-+type(Type)
-+subtype(Subtype)
-+customType(String)
-+source(Source)
-+use(Use)
-+inferiorLimits(List~~String~~)
-+superiorLimits(List~~String~~)
-+parameters(List~~String~~)
-+initialValue(Object)
-+publish()
-}
-class MultipleDeclaration {
-+identifiers: List~~String~~
-+identifiers(List~~String~~)
-+publish()
-}
-class SingleDeclaration {
-+identifier: String
-+identifier(String)
-+publish()
-}
-class DeclarationBlock {
-+addDeclaration(Declaration)
-}
-class StructureBlock {
-+addField(SingleDeclaration)
-+getStructInitializationInfo() List~~PathInitializationInfo~~
-}
-class StructureDeclaration {
-+structBlock: StructureBlock
-+identifier(String)
-+publish()
-}
-class AnnonymousEnumeratedVariable {
-+publish()
-}
-class AnnonymousEnumeratedField {
-+publish()
-}
-class EnumeratedTypeDeclaration {
-+publish()
-}
-}
-namespace parser_facades {
-class DimensionCalculator {
-+calculate(List~~String~~, List~~String~~) int
-}
-class RangesParser {
-+parse(List~~String~~, List~~String~~, List~~String~~)
-}
-class MacrosPublisher {
-+publish(SymbolTable, List~~String~~, String)
-}
-class UnderlyingScopeSearcher {
-+search(SymbolTable, String) String
-}
-}
-namespace parser_initializations {
-class Factory {
-+createPrimitiveInitialization(SymbolTable, Subtype) Initialization
-}
-class Initialization {
-<<interface>>
-+find(String) Optional~~Initialization~~
-+variableValue() String
-+copy() Initialization
-}
-class NodeInitialization {
-<<abstract>>
-+put(String, Initialization) Initialization
-+find(String) Optional~~Initialization~~
-\#breakStringPath(String) String\[]
-}
-class LeafInitialization {
-<<abstract>>
-+find(String) Optional~~Initialization~~
-+copy() Initialization
-}
-}
-namespace parser_initializations_leafs {
-class VariableInitialization
-class EnumeratedInitialization
-class MacroInitialization
-class SubrangeInitialization
-class DefaultInitialization
-class LeafInitialization
-}
-namespace parser_initializations_nodes {
-class StructInitialization
-class RepeatedInitialization
-class NodeInitialization
-}
-namespace utils {
-class SymbolTable {
-+table: Map~~String, LexemeInfo~~
-+get()
-+put()
-+putIfAbsent()
-}
-class LexemeInfo {
-+type: Type
-+subtype: Subtype
-+customType: String
-+use: Use
-+source: Source
-+inferiorLimits: List~~String~~
-+superiorLimits: List~~String~~
-+parameters: List~~String~~
-+initialValue: Object
-}
-class LexemeInfoBuilder {
-+type(Type)
-+subtype(Subtype)
-+customType(String)
-+source(Source)
-+use(Use)
-+inferiorLimits(List~~String~~)
-+superiorLimits(List~~String~~)
-+parameters(List~~String~~)
-+initialValue(Object)
-+build() LexemeInfo
-}
-class Director {
-+makePrimitive(LexemeInfoSchema, SymbolTable, Subtype)
-+makeCustom(LexemeInfoSchema, SymbolTable, String)
-+makeMacro(LexemeInfoSchema, SymbolTable, Integer)
-+makeEnumerated(LexemeInfoSchema, List~~String~~)
-+makeStructure(LexemeInfoSchema, StructureBlock)
-+makeArray(LexemeInfoSchema, SymbolTable, ArrayMetadata)
-+makeLiteral(LexemeInfoSchema)
-+makeDefaultInteger()
-+makeDefaultReal()
-+makeDefaultBoolean()
-+makeDefaultString()
-+makeDefaultWString()
-}
-}
-DeclarationGroup ..|> Publisher
-Declaration ..|> Publisher
-Declaration ..|> LexemeInfoSchema
-DeclarationGroup ..|> LexemeInfoSchema
-MultipleDeclaration --|> Declaration
-SingleDeclaration --|> Declaration
-DeclarationBlock --|> DeclarationGroup
-StructureBlock --|> DeclarationGroup
-StructureDeclaration --|> SingleDeclaration
-AnnonymousEnumeratedVariable --|> MultipleDeclaration
-AnnonymousEnumeratedField --|> SingleDeclaration
-EnumeratedTypeDeclaration --|> SingleDeclaration
-Initialization <|.. NodeInitialization
-Initialization <|.. LeafInitialization
-LeafInitialization <|-- VariableInitialization
-LeafInitialization <|-- EnumeratedInitialization
-LeafInitialization <|-- MacroInitialization
-LeafInitialization <|-- SubrangeInitialization
-LeafInitialization <|-- DefaultInitialization
-NodeInitialization <|-- StructInitialization
-NodeInitialization <|-- RepeatedInitialization
-Factory ..> DefaultInitialization : creates
-Parser --> Declaration : uses
-Parser --> Director : uses
-Parser --> Factory : uses
-Parser --> DimensionCalculator : uses
-Parser --> RangesParser : uses
-Parser --> MacrosPublisher : uses
-Director ..> Factory : uses
-Director ..> LexemeInfoBuilder : configures
-MultipleDeclaration ..> LexemeInfoBuilder : uses
-SingleDeclaration ..> LexemeInfoBuilder : uses
-StructureDeclaration ..> StructureBlock : uses
-AnnonymousEnumeratedVariable ..> MacrosPublisher : uses
-AnnonymousEnumeratedField ..> MacrosPublisher : uses
-EnumeratedTypeDeclaration ..> MacrosPublisher : uses
+    namespace parser {
+        class Parser {
+            <<Bison_3_8_2>>
+            +Parser(Lexer, SymbolTable)
+            +parse() boolean
+            +getNumberOfErrors() int
+        }
+    }
+    namespace parser_publishers {
+        class Publisher {
+            <<interface>>
+            +setDeclarationScope(String)
+            +publish()
+            +keys() List~String~
+        }
+        class Declaration {
+            <<abstract>>
+            #declarationScope String
+            #builder LexemeInfoBuilder
+            +setDeclarationScope(String)
+            +publish()
+            +keys() List~String~
+        }
+        class DeclarationGroup {
+            #declarations List~Declaration~
+            +publish()
+            +keys() List~String~
+        }
+        class DeclarationBlock {
+            +addDeclaration(Declaration)
+        }
+        class MultipleDeclaration {
+            #identifiers List~String~
+            +identifiers(List~String~)
+            +publish()
+            +keys() List~String~
+        }
+        class SingleDeclaration {
+            #identifier String
+            +identifier(String)
+            +publish()
+            +keys() List~String~
+        }
+        class ComponentDeclaration {
+            +source(Source)
+            +publish()
+        }
+        class StructureDeclaration {
+            +identifier(String)
+            +publish()
+        }
+        class StructureBlock {
+            +addField(SingleDeclaration)
+            +getInitializationInfo() List~PathInitializationInfo~
+        }
+        class TermBlock {
+            +addTerm(SingleDeclaration)
+            +getTermNames() List~String~
+        }
+        class EnumeratedTypeDeclaration {
+            +publish()
+        }
+        class AnnonymousEnumeratedVariable {
+            +publish()
+        }
+        class AnnonymousEnumeratedField {
+            +publish()
+        }
+    }
+    namespace parser_facades {
+        class DimensionCalculator {
+            +calculate(List~String~, List~String~) int
+        }
+        class IdentifierParser {
+            +parse(String, String) ParsedIdentifier
+        }
+        class MacrosPublisher {
+            +publish(SymbolTable, List~String~, String)
+        }
+        class MembershipFunctionClassifier {
+            +classify(List~String~, List~String~) MembershipFunctionShape
+        }
+        class RangesParser {
+            +parse(List~String~, List~String~, List~String~)
+        }
+        class RuleblockASTBuilder {
+            +build(TreeNode, List~Operator~) RuleBlockNode
+        }
+    }
+    namespace parser_initializations {
+        class Initialization {
+            <<interface>>
+            +find(String) Optional~Initialization~
+            +variableValue() String
+            +copy() Initialization
+        }
+        class Factory {
+            +createPrimitiveInitialization(SymbolTable, Subtype) DefaultInitialization
+        }
+    }
+    namespace parser_initializations_leafs {
+        class LeafInitialization {
+            <<abstract>>
+            +find(String) Optional~Initialization~
+        }
+        class DefaultInitialization {
+            +bool(SymbolTable) DefaultInitialization
+            +real(SymbolTable) DefaultInitialization
+            +integer(SymbolTable) DefaultInitialization
+            +string(SymbolTable) DefaultInitialization
+            +wstring(SymbolTable) DefaultInitialization
+        }
+        class VariableInitialization {
+            +variableValue() String
+        }
+        class EnumeratedInitialization {
+            +variableValue() String
+        }
+        class SubrangeInitialization {
+            +variableValue() String
+        }
+        class MacroInitialization {
+            +variableValue() String
+        }
+    }
+    namespace parser_initializations_nodes {
+        class NodeInitialization {
+            <<abstract>>
+            +put(String, Initialization) Initialization
+        }
+        class StructInitialization {
+            +put(String, Initialization) Initialization
+            +find(String) Optional~Initialization~
+        }
+        class RepeatedInitialization {
+            +put(String, Initialization) Initialization
+            +find(String) Optional~Initialization~
+        }
+    }
+    namespace parser_metadata {
+        class FunctionBlockMetadata
+        class PrimitiveMetadata
+        class ArrayMetadata
+        class StringMetadata
+        class EnumeratedMetadata
+        class SubrangeMetadata
+        class StructureMetadata
+        class MacroMetadata
+        class CustomMetadata
+        class TermMetadata
+        class FuzzifierMetadata
+        class DefuzzifierMetadata
+        class PragmaMetadata
+    }
+    namespace parser_tree {
+        class TreeNode {
+            +label() Label
+            +symbolReference() String
+            +children() List~TreeNode~
+        }
+        class Label
+    }
+    namespace parser_utils {
+        class ParsedIdentifier {
+            +mangled() String
+            +scope() String
+            +name() String
+        }
+        class PathInitializationInfo {
+            +name() String
+            +initialValue() Initialization
+        }
+        class ConditionParsingContext {
+            +addOperator(Label)
+            +addOperand(TreeNode)
+            +getConditionNode() TreeNode
+        }
+        class ArrayParsingContext {
+            +getMaxValue() int
+            +getPathsInfo() List~PathInitializationInfo~
+        }
+        class MembershipFunctionShape {
+            +subtype() Subtype
+            +parameters() List~String~
+        }
+    }
+    namespace utils {
+        class SymbolTable {
+            +put(String, LexemeInfo) LexemeInfo
+            +putIfAbsent(String, LexemeInfo) LexemeInfo
+            +get(String) LexemeInfo
+            +size() int
+        }
+        class LexemeInfo
+    }
+    namespace utils_builders {
+        class LexemeInfoMutator {
+            <<interface>>
+            +type(Type)
+            +subtype(Subtype)
+            +initialValue(Object)
+        }
+        class LexemeInfoView {
+            <<interface>>
+            +type() Type
+            +subtype() Subtype
+            +initialValue() Object
+        }
+        class LexemeInfoBuilder {
+            +build() LexemeInfo
+        }
+        class Director {
+            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView)
+            +makeLiteral(LexemeInfoMutator)
+            +makeDefaultInteger(LexemeInfoMutator) String
+            +makeDefaultReal(LexemeInfoMutator) String
+            +makeDefaultBoolean(LexemeInfoMutator) String
+            +makeDefaultString(LexemeInfoMutator) String
+            +makeDefaultWString(LexemeInfoMutator) String
+        }
+    }
+    namespace ast_ruleblock {
+        class RuleBlockNode
+    }
+    namespace ast_ruleblock_operators {
+        class Operator
+    }
+    utils_builders_LexemeInfoMutator <|-- parser_publishers_Publisher
+    parser_publishers_Publisher <|.. parser_publishers_Declaration
+    parser_publishers_Publisher <|.. parser_publishers_DeclarationGroup
+    parser_publishers_Declaration <|-- parser_publishers_MultipleDeclaration
+    parser_publishers_Declaration <|-- parser_publishers_SingleDeclaration
+    parser_publishers_DeclarationGroup <|-- parser_publishers_DeclarationBlock
+    parser_publishers_DeclarationGroup <|-- parser_publishers_StructureBlock
+    parser_publishers_DeclarationGroup <|-- parser_publishers_TermBlock
+    parser_publishers_SingleDeclaration <|-- parser_publishers_ComponentDeclaration
+    parser_publishers_SingleDeclaration <|-- parser_publishers_StructureDeclaration
+    parser_publishers_SingleDeclaration <|-- parser_publishers_EnumeratedTypeDeclaration
+    parser_publishers_SingleDeclaration <|-- parser_publishers_AnnonymousEnumeratedField
+    parser_publishers_MultipleDeclaration <|-- parser_publishers_AnnonymousEnumeratedVariable
+    parser_initializations_Initialization <|.. parser_initializations_leafs_LeafInitialization
+    parser_initializations_Initialization <|.. parser_initializations_nodes_NodeInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_DefaultInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_VariableInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_EnumeratedInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_SubrangeInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_MacroInitialization
+    parser_initializations_nodes_NodeInitialization <|-- parser_initializations_nodes_StructInitialization
+    parser_initializations_nodes_NodeInitialization <|-- parser_initializations_nodes_RepeatedInitialization
+    utils_builders_LexemeInfoMutator <|.. utils_builders_LexemeInfoBuilder
+    utils_builders_LexemeInfoView <|.. utils_builders_LexemeInfoBuilder
+    utils_SymbolTable --> utils_LexemeInfo : stores
+    utils_builders_LexemeInfoBuilder ..> utils_LexemeInfo : builds
+    utils_builders_Director ..> utils_builders_LexemeInfoMutator : configures
+    utils_builders_Director ..> utils_builders_LexemeInfoView : reads
+    parser_Parser --> parser_publishers_Publisher : creates
+    parser_Parser --> parser_facades_RuleblockASTBuilder : builds AST
+    parser_Parser --> utils_SymbolTable : writes
+    parser_publishers_Declaration --> utils_builders_LexemeInfoBuilder : holds
+    parser_publishers_ComponentDeclaration --> parser_publishers_TermBlock : publishes terms
+    parser_publishers_StructureDeclaration --> parser_publishers_StructureBlock : publishes fields
+    parser_publishers_StructureBlock ..> parser_utils_PathInitializationInfo : exposes
+    parser_publishers_EnumeratedTypeDeclaration ..> parser_facades_MacrosPublisher : registers macros
+    parser_publishers_AnnonymousEnumeratedField ..> parser_facades_MacrosPublisher : registers macros
+    parser_publishers_AnnonymousEnumeratedVariable ..> parser_facades_MacrosPublisher : registers macros
+    parser_facades_MacrosPublisher ..> parser_metadata_MacroMetadata : builds
+    parser_facades_MacrosPublisher --> utils_SymbolTable : writes
+    parser_facades_IdentifierParser ..> parser_utils_ParsedIdentifier : returns
+    parser_facades_MembershipFunctionClassifier ..> parser_utils_MembershipFunctionShape : returns
+    parser_facades_RuleblockASTBuilder ..> parser_tree_TreeNode : traverses
+    parser_facades_RuleblockASTBuilder ..> ast_ruleblock_RuleBlockNode : returns
+    parser_facades_RuleblockASTBuilder ..> ast_ruleblock_operators_Operator : configured by
+    parser_initializations_Factory ..> parser_initializations_leafs_DefaultInitialization : creates
+    parser_initializations_nodes_StructInitialization --> parser_initializations_Initialization : fields
+    parser_initializations_nodes_RepeatedInitialization --> parser_initializations_Initialization : intervals
+    parser_metadata_TermMetadata ..> parser_facades_MembershipFunctionClassifier : classifies
+    parser_metadata_ArrayMetadata ..> parser_facades_DimensionCalculator : sizes
+    parser_metadata_ArrayMetadata ..> parser_facades_RangesParser : splits ranges
+    parser_metadata_ArrayMetadata ..> parser_initializations_nodes_RepeatedInitialization : creates
+    parser_utils_ConditionParsingContext --> parser_tree_TreeNode : builds
+    utils_builders_LexemeInfoView <|.. parser_metadata_FunctionBlockMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_PrimitiveMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_ArrayMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_StringMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_EnumeratedMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_SubrangeMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_StructureMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_MacroMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_CustomMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_TermMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_FuzzifierMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_DefuzzifierMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_PragmaMetadata

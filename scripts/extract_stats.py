@@ -56,7 +56,7 @@ def extract_enum_sizes():
         content = enum_file.read_text()
         enum_name = enum_file.stem
         # Strip comments before matching the enum body so that braces inside
-        # javadoc (e.g. "{@code parameters}") do not truncate the declaration.
+        # Javadoc (e.g. "{@code parameters}") do not truncate the declaration.
         body = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
         body = re.sub(r'//[^\n]*', '', body)
         # Find enum body
@@ -192,9 +192,15 @@ def extract_cyclomatic_complexity():
     """Extract cyclomatic complexity per package using javancss or manual estimation"""
     packages = {
         "lexer": ["lexer", "lexer.internals", "lexer.transformers", "lexer.semantics"],
-        "parser": ["parser", "parser.internals", "parser.utils", "parser.initializations"],
+        "parser": ["parser", "parser.publishers", "parser.facades", "parser.metadata", "parser.tree",
+                   "parser.utils", "parser.initializations", "parser.initializations.leafs",
+                   "parser.initializations.nodes"],
         "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"],
+        "ast": ["ast", "ast.ruleblock", "ast.ruleblock.operators"],
         "codegen": ["codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"],
+        "lowering": ["lowering"],
+        "simulation": ["simulation"],
+        "compiler": ["compiler"],
     }
     
     results = {}
@@ -237,9 +243,15 @@ def extract_loc():
     """Lines of code per module"""
     packages = {
         "lexer": ["lexer", "lexer.internals", "lexer.transformers", "lexer.semantics"],
-        "parser": ["parser", "parser.internals", "parser.utils", "parser.initializations"],
+        "parser": ["parser", "parser.publishers", "parser.facades", "parser.metadata", "parser.tree",
+                   "parser.utils", "parser.initializations", "parser.initializations.leafs",
+                   "parser.initializations.nodes"],
         "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"],
+        "ast": ["ast", "ast.ruleblock", "ast.ruleblock.operators"],
         "codegen": ["codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"],
+        "lowering": ["lowering"],
+        "simulation": ["simulation"],
+        "compiler": ["compiler"],
     }
     
     results = {}
@@ -261,8 +273,12 @@ def extract_loc():
 
 
 def extract_test_coverage():
-    """Extract test coverage from JaCoCo report if available"""
+    """Extract test coverage from JaCoCo report if available, generating it if missing"""
     jacoco_file = ROOT / "target" / "site" / "jacoco" / "jacoco.xml"
+    if not jacoco_file.exists():
+        print("  -> JaCoCo report not found. Running 'mvn -q test jacoco:report'...")
+        run_cmd("mvn -q test jacoco:report")
+    
     if not jacoco_file.exists():
         return {"overall": 0, "packages": {}}
     
@@ -270,44 +286,54 @@ def extract_test_coverage():
     tree = ET.parse(jacoco_file)
     root = tree.getroot()
     
-    # Parse JaCoCo XML for line coverage per package
-    packages_data = {}
+    module_covered = {}
+    module_missed = {}
     total_covered = 0
     total_missed = 0
     
-    # JaCoCo internal packages to exclude from coverage report
     EXCLUDED_MODULES = {'jacoco', 'org.jacoco', 'com.google.code.jacoco'}
     
     for package in root.findall('.//package'):
         name = package.get('name', '')
-        # Convert package name to module name (lexer, parser, utils)
         if name.startswith('lexer'):
             module = 'lexer'
         elif name.startswith('parser'):
             module = 'parser'
         elif name.startswith('utils'):
             module = 'utils'
+        elif name.startswith('ast'):
+            module = 'ast'
+        elif name.startswith('codegen'):
+            module = 'codegen'
+        elif name.startswith('lowering'):
+            module = 'lowering'
+        elif name.startswith('simulation'):
+            module = 'simulation'
+        elif name.startswith('compiler'):
+            module = 'compiler'
         else:
             module = name.split('.')[0]
         
-        # Skip JaCoCo internal packages
-        if module in EXCLUDED_MODULES:
-            continue
-        # Skip empty module names (empty package name in XML)
-        if not module:
+        if module in EXCLUDED_MODULES or not module:
             continue
         
         for counter in package.findall('counter'):
             if counter.get('type') == 'LINE':
                 missed = int(counter.get('missed', 0))
                 covered = int(counter.get('covered', 0))
-                total = missed + covered
-                if total > 0:
-                    pct = round(covered / total * 100)
-                    packages_data[module] = pct
+                module_covered[module] = module_covered.get(module, 0) + covered
+                module_missed[module] = module_missed.get(module, 0) + missed
                 total_covered += covered
                 total_missed += missed
     
+    packages_data = {}
+    for mod in sorted(set(list(module_covered.keys()) + list(module_missed.keys()))):
+        cov = module_covered.get(mod, 0)
+        mis = module_missed.get(mod, 0)
+        tot = cov + mis
+        if tot > 0:
+            packages_data[mod] = round(cov / tot * 100)
+            
     overall = round(total_covered / (total_covered + total_missed) * 100) if (total_covered + total_missed) > 0 else 0
     
     return {"overall": overall, "packages": packages_data}
@@ -315,7 +341,7 @@ def extract_test_coverage():
 
 def extract_coupling():
     """Calculate afferent/efferent coupling between packages"""
-    packages = ["lexer", "parser", "utils", "codegen"]
+    packages = ["lexer", "parser", "utils", "ast", "codegen", "lowering", "simulation", "compiler"]
     coupling = {}
     
     for pkg in packages:
@@ -353,6 +379,47 @@ def extract_coupling():
         
         coupling[pkg] = {"afferent": afferent, "efferent": efferent, "instability": round(efferent / max(1, afferent + efferent), 2)}
     return coupling
+
+
+def extract_ast_nodes():
+    """Count AST node classes by category under ast/"""
+    ast_dir = SRC_DIR / "ast"
+    ruleblock_dir = ast_dir / "ruleblock"
+    operators_dir = ruleblock_dir / "operators"
+    counts = {}
+    # RuleBlock node classes (top-level node files)
+    if ruleblock_dir.exists():
+        for f in ruleblock_dir.glob("*.java"):
+            if f.name.endswith("Node.java") or f.name in ("RuleBlockNode.java",):
+                counts[f.stem] = 1
+    # Operator node classes
+    op_count = 0
+    if operators_dir.exists():
+        for f in operators_dir.glob("*.java"):
+            if f.name.endswith("Node.java"):
+                op_count += 1
+    counts["OperatorNodes"] = op_count
+    # Abstract base
+    abstracts = 0
+    for f in ast_dir.rglob("*.java"):
+        if "Abstract" in f.name:
+            abstracts += 1
+    counts["AbstractBases"] = abstracts
+    return counts
+
+
+def extract_lowering():
+    """Count lowering classes and transformers"""
+    lowering_dir = SRC_DIR / "lowering"
+    classes = []
+    transformers = 0
+    for f in lowering_dir.glob("*.java"):
+        if f.name == "package-info.java":
+            continue
+        classes.append(f.stem)
+        content = f.read_text()
+        transformers += content.count("Transformer")  # rough
+    return {"classes": len(classes), "class_names": classes, "transformer_refs": transformers}
 
 
 def generate_chart_enum_sizes(data):
@@ -509,13 +576,15 @@ def generate_chart_coverage(data):
     packages = list(data["packages"].keys())
     coverage = [data["packages"][p] for p in packages]
     
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.bar(packages, coverage, color=['#3498db', '#e74c3c', '#2ecc71'])
+    fig, ax = plt.subplots(figsize=(9, 5))
+    colors = plt.cm.tab10(range(len(packages))) if packages else ['#3498db']
+    ax.bar(packages, coverage, color=colors)
     ax.set_ylabel("Coverage (%)", fontsize=11)
     ax.set_title("Test Coverage per Package", fontsize=14, fontweight='bold')
     ax.set_ylim(0, 110)
+    ax.tick_params(axis='x', rotation=15)
     for i, v in enumerate(coverage):
-        ax.text(i, v + 2, f"{v}%", ha='center', fontsize=12)
+        ax.text(i, v + 2, f"{v}%", ha='center', fontsize=11)
     # Overall line
     ax.axhline(y=data["overall"], color='red', linestyle='--', label=f"Overall: {data['overall']}%")
     ax.legend()
@@ -562,6 +631,38 @@ def generate_chart_coupling(data):
     return _save(fig, "package_coupling", "Import analysis across src/main/java")
 
 
+def generate_chart_ast_nodes(data):
+    if not data:
+        return None
+    labels = list(data.keys())
+    values = list(data.values())
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.bar(labels, values, color=plt.cm.tab20(range(len(labels))))
+    ax.set_ylabel("Count", fontsize=11)
+    ax.set_title("AST Node Distribution", fontsize=14, fontweight='bold')
+    ax.tick_params(axis='x', rotation=45)
+    max_val = max(values) if values else 1
+    ax.set_ylim(0, max_val * 1.2)
+    for i, v in enumerate(values):
+        ax.text(i, v + max_val * 0.02, str(v), ha='center', fontsize=10)
+    plt.tight_layout()
+    return _save(fig, "ast_node_distribution", "src/main/java/ast/**/*.java")
+
+
+def generate_chart_lowering(data):
+    if not data:
+        return None
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(["Classes"], [data.get("classes", 0)], color='#3498db')
+    ax.set_ylabel("Count", fontsize=11)
+    ax.set_title("Lowering Module Overview", fontsize=14, fontweight='bold')
+    v = data.get("classes", 0)
+    ax.set_ylim(0, max(1, v) * 1.2)
+    ax.text(0, v + max(1, v) * 0.02, str(v), ha='center', fontsize=12)
+    plt.tight_layout()
+    return _save(fig, "lowering_overview", "src/main/java/lowering/*.java")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Extract statistics and generate charts")
     parser.add_argument("--list", action="store_true", help="List available charts")
@@ -582,6 +683,8 @@ def main():
     loc = extract_loc()
     coverage = extract_test_coverage()
     coupling = extract_coupling()
+    ast_nodes = extract_ast_nodes()
+    lowering = extract_lowering()
     
     all_data = {
         "enum_sizes": enum_sizes,
@@ -593,7 +696,9 @@ def main():
         "cyclomatic_complexity": cyclo,
         "loc": loc,
         "test_coverage": coverage,
-        "coupling": coupling
+        "coupling": coupling,
+        "ast_nodes": ast_nodes,
+        "lowering": lowering
     }
     
     # Save stats.json
@@ -614,6 +719,8 @@ def main():
         "loc_per_module": (generate_chart_loc, loc),
         "test_coverage": (generate_chart_coverage, coverage),
         "package_coupling": (generate_chart_coupling, coupling),
+        "ast_node_distribution": (generate_chart_ast_nodes, ast_nodes),
+        "lowering_overview": (generate_chart_lowering, lowering),
     }
     
     if args.list:
