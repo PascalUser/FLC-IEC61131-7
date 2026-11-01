@@ -21,7 +21,7 @@ import java.util.List;
  *   <li>Invalid points (x not strictly ascending, degree other than 0 or 1): {@code COMPLEX}. Degrees between
  *       0 and 1 are an Open Level feature (table 10); Basic and Extension levels require 0 or 1.</li>
  *   <li>Redundant points are removed: interior points on a flat segment and extreme points that repeat the
- *       degree of their neighbour.</li>
+ *       degree of their neighbor.</li>
  *   <li>The remaining degrees give the shape: {@code 1,0} or {@code 0,1} is {@code LINEAR} (decreasing or
  *       increasing ramp; the direction is read from the degrees), {@code 0,1,0} is {@code TRIANGLE},
  *       {@code 0,1,1,0} is {@code TRAPEZOID}, anything else (constant, V, W...) is {@code COMPLEX}.</li>

@@ -11,6 +11,10 @@ import java.util.Collections;
 import java.util.List;
 
 public final class RuleblockASTBuilder {
+    private RuleblockASTBuilder() {
+        // Utility class - not instantiable
+    }
+
     public static RuleBlockNode build(TreeNode ruleblockTree, List<Operator> configuration) {
         if (configuration.size() != 4) {
             throw new IllegalArgumentException("ASTBuilder: missing configuration parameters.");

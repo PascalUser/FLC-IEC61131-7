@@ -9,6 +9,10 @@ import java.util.List;
 
 public final class MacrosPublisher {
 
+    private MacrosPublisher() {
+        // Utility class - not instantiable
+    }
+
     public static void publish(SymbolTable symbolTable, List<String> macroNames, String prefix) {
         LexemeInfoBuilder macroBuilder = new LexemeInfoBuilder();
         for (int i = 0; i < macroNames.size(); i++) {

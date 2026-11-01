@@ -3,6 +3,11 @@ package parser.facades;
 import parser.utils.ParsedIdentifier;
 
 public final class IdentifierParser {
+
+    private IdentifierParser() {
+        // Utility class - not instantiable
+    }
+
     public static ParsedIdentifier parse(String identifier, String possibleScope) {
         int octothorpeIdx = identifier.indexOf('#');
         if (-1 == octothorpeIdx) {
