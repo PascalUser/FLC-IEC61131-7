@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -54,6 +55,10 @@ public final class SymbolTable {
      */
     public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) {
         return table.putIfAbsent(lexeme, info);
+    }
+
+    public Iterator<Map.Entry<String, LexemeInfo>> iterator() {
+        return table.entrySet().iterator();
     }
 
     /**

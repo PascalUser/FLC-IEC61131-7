@@ -70,6 +70,10 @@
     import parser.initializations.nodes.*;
     import parser.metadata.*;
     import parser.publishers.*;
+    import parser.publishers.leafs.*;
+    import parser.publishers.leafs.single.*;
+    import parser.publishers.leafs.multiple.*;
+    import parser.publishers.nodes.*;
     import parser.tree.*;
     import parser.utils.*;
 
@@ -135,7 +139,7 @@
 %type <DeclarationBlock>
     var_init_decl_list
 
-%type <TermBlock>
+%type <FuzzyBlock>
     opt_linguistic_term_list
     linguistic_term_list
 
@@ -254,11 +258,11 @@
 %type <RuleBlockNode>
     rule_block
 
-%type <List<TreeNode>>
+%type <List<ParserTreeNode>>
     rule_list
     conclusion_list
 
-%type <TreeNode>
+%type <ParserTreeNode>
     rules_decl
     rule
     condition
@@ -308,6 +312,9 @@
 program:
     opt_data_type_declaration
     function_block_declaration
+    {
+        SymbolTableCleaner.clean(this.symbolTable);
+    }
 ;
 
 /**
@@ -392,8 +399,7 @@ opt_fb_io_var_declarations_list:
 fb_io_var_declarations:
     io_var_decl var_retain_spec var_init_decl_list ';' END_VAR
     {
-        $3.source($1).use(Use.VARIABLE).setDeclarationScope(programName);
-        $3.publish();
+        $3.source($1).use(Use.VARIABLE).scope(programName).publish();
         $$ = $3.keys();
     }
 ;
@@ -509,9 +515,9 @@ fuzzify_block:
     FUZZIFY fuzzify_block_name
     linguistic_term_list
     {
-        ComponentDeclaration fuzzifierDeclaration = new ComponentDeclaration(this.symbolTable, $3);
+        FuzzyDeclaration fuzzifierDeclaration = new FuzzyDeclaration(this.symbolTable, $3);
         Director.makeWithMetadata(fuzzifierDeclaration, new FuzzifierMetadata($3));
-        fuzzifierDeclaration.identifier($2).publish();
+        fuzzifierDeclaration.identifier($2).scope(programName).publish();
     }
     END_FUZZIFY
 ;
@@ -519,7 +525,7 @@ fuzzify_block:
 fuzzify_block_name:
     IDENTIFIER
     {
-        $$ = programName + '#' + $1;
+        $$ = $1;
     }
 ;
 
@@ -536,9 +542,9 @@ defuzzify_block:
     default_value
     END_DEFUZZIFY
     {
-         ComponentDeclaration defuzzifierDeclaration = new ComponentDeclaration(this.symbolTable, $4);
+         FuzzyDeclaration defuzzifierDeclaration = new FuzzyDeclaration(this.symbolTable, $4);
          Director.makeWithMetadata(defuzzifierDeclaration, new DefuzzifierMetadata($3, $4, $5, $6));
-         defuzzifierDeclaration.identifier($2).publish();
+         defuzzifierDeclaration.identifier($2).scope(programName).publish();
     }
 ;
 
@@ -577,7 +583,7 @@ defuzzify_block:
 defuzzify_block_name:
     IDENTIFIER
     {
-        $$ = programName + '#' + $1;
+        $$ = $1;
     }
 ;
 
@@ -595,13 +601,13 @@ opt_linguistic_term_list:
 linguistic_term_list:
     linguistic_term
     {
-        TermBlock block = new TermBlock();
-        block.addTerm($1);
+        FuzzyBlock block = new FuzzyBlock();
+        block.add($1);
         $$ = block;
     }
     | linguistic_term_list linguistic_term
     {
-        $1.addTerm($2);
+        $1.add($2);
         $$ = $1;
     }
 ;
@@ -813,8 +819,8 @@ rule_block:
         configuration.add($4);
         configuration.add($5);
         
-        List<TreeNode> componentChild = Collections.singletonList($6);
-        TreeNode componentNode = new TreeNode(Label.COMPONENT, $2, componentChild);
+        List<ParserTreeNode> componentChild = Collections.singletonList($6);
+        ParserTreeNode componentNode = new ParserTreeNode(ParserLabel.COMPONENT, $2, componentChild);
 
         $$ = RuleblockASTBuilder.build(componentNode, configuration);
     }
@@ -943,7 +949,7 @@ accu_type:
 rules_decl:
     rule_list
     { 
-        $$ = new TreeNode(Label.ACCUMULATION, $1);
+        $$ = new ParserTreeNode(ParserLabel.ACCUMULATION, $1);
     }
 ;
 
@@ -954,7 +960,7 @@ rule_list:
     }
     | rule_list rule
     { 
-        List<TreeNode> rules = $1;
+        List<ParserTreeNode> rules = $1;
         if (rules.isEmpty()) {
             rules = new ArrayList<>();
         }
@@ -966,21 +972,21 @@ rule_list:
 rule:
     RULE numeric_constant ':' IF condition THEN conclusions opt_weighting ';'
     {
-        List<TreeNode> condChild = Collections.singletonList($5);
-        List<TreeNode> bodyChild = Collections.singletonList($7);
-        TreeNode condNode = new TreeNode(Label.CONDITION, condChild);
-        TreeNode bodyNode = new TreeNode(Label.BODY, bodyChild);
+        List<ParserTreeNode> condChild = Collections.singletonList($5);
+        List<ParserTreeNode> bodyChild = Collections.singletonList($7);
+        ParserTreeNode condNode = new ParserTreeNode(ParserLabel.CONDITION, condChild);
+        ParserTreeNode bodyNode = new ParserTreeNode(ParserLabel.BODY, bodyChild);
 
-        List<TreeNode> ifChildren = new ArrayList<>();
+        List<ParserTreeNode> ifChildren = new ArrayList<>();
         ifChildren.add(condNode);
         ifChildren.add(bodyNode);
-        TreeNode ifNode = new TreeNode(Label.IF, ifChildren);
+        ParserTreeNode ifNode = new ParserTreeNode(ParserLabel.IF, ifChildren);
 
         if ($8.isEmpty()) { 
             $$ = ifNode;
         } else { 
-            List<TreeNode> withChild = Collections.singletonList(ifNode);
-            $$ = new TreeNode(Label.WITH, $8, withChild);
+            List<ParserTreeNode> withChild = Collections.singletonList(ifNode);
+            $$ = new ParserTreeNode(ParserLabel.WITH, $8, withChild);
         }
     }
 ;
@@ -1064,7 +1070,7 @@ condition_tail:
     | OR or_operand condition_tail
     {
         $3.addOperand($2);
-        $3.addOperator(Label.OR);
+        $3.addOperator(ParserLabel.OR);
         $$ = $3;
     }
 ;
@@ -1088,7 +1094,7 @@ and_condition_tail:
     | AND and_operand and_condition_tail
     {
         $3.addOperand($2);
-        $3.addOperator(Label.AND);
+        $3.addOperator(ParserLabel.AND);
         $$ = $3;
     }
 ;
@@ -1119,13 +1125,13 @@ and_operand:
 condition_operand:
     NOT condition_operand
     {
-        List<TreeNode> notChild = Collections.singletonList($2);
-        $$ = new TreeNode(Label.NOT, notChild);
+        List<ParserTreeNode> notChild = Collections.singletonList($2);
+        $$ = new ParserTreeNode(ParserLabel.NOT, notChild);
     }
     | NOT identifier_operand
     {
-        List<TreeNode> notChild = Collections.singletonList($2);
-        $$ = new TreeNode(Label.NOT, notChild);
+        List<ParserTreeNode> notChild = Collections.singletonList($2);
+        $$ = new ParserTreeNode(ParserLabel.NOT, notChild);
     }
     | subcondition
     {
@@ -1151,27 +1157,27 @@ condition_operand:
 subcondition:
     identifier_operand IS identifier_operand
     {
-        List<TreeNode> isChildren = new ArrayList<>();
+        List<ParserTreeNode> isChildren = new ArrayList<>();
         isChildren.add($1);
         isChildren.add($3);
-        $$ = new TreeNode(Label.IS, isChildren);
+        $$ = new ParserTreeNode(ParserLabel.IS, isChildren);
     }
     | identifier_operand IS NOT identifier_operand
     {
-        List<TreeNode> isChildren = new ArrayList<>();
+        List<ParserTreeNode> isChildren = new ArrayList<>();
         isChildren.add($1);
         isChildren.add($4);
-        TreeNode isNode = new TreeNode(Label.IS, isChildren);
+        ParserTreeNode isNode = new ParserTreeNode(ParserLabel.IS, isChildren);
 
-        List<TreeNode> notChild = Collections.singletonList(isNode);
-        $$ = new TreeNode(Label.NOT, notChild);
+        List<ParserTreeNode> notChild = Collections.singletonList(isNode);
+        $$ = new ParserTreeNode(ParserLabel.NOT, notChild);
     }
 ;
 
 identifier_operand:
     IDENTIFIER
     {
-        $$ = new TreeNode(Label.IDENTIFIER, $1, Collections.emptyList());
+        $$ = new ParserTreeNode(ParserLabel.IDENTIFIER, $1, Collections.emptyList());
     }
 ;
 
@@ -1199,14 +1205,14 @@ identifier_operand:
 conclusions:
     conclusion_list
     { 
-        $$ = new TreeNode(Label.ACTIVATION, $1);
+        $$ = new ParserTreeNode(ParserLabel.ACTIVATION, $1);
     }
 ;
  
 conclusion_list:
     conclusion
     { 
-        List<TreeNode> conclusions = new ArrayList<>();
+        List<ParserTreeNode> conclusions = new ArrayList<>();
         conclusions.add($1);
         $$ = conclusions; 
     }
@@ -1220,10 +1226,10 @@ conclusion_list:
 conclusion:
      identifier_operand IS identifier_operand
      { 
-        List<TreeNode> isChildren = new ArrayList<>();
+        List<ParserTreeNode> isChildren = new ArrayList<>();
         isChildren.add($1);
         isChildren.add($3);
-        $$ = new TreeNode(Label.IS, isChildren);
+        $$ = new ParserTreeNode(ParserLabel.IS, isChildren);
      }
      | identifier_operand
      { 
@@ -1271,15 +1277,13 @@ pragma:
     {
         SingleDeclaration pragmaDeclaration = new SingleDeclaration(this.symbolTable);
         Director.makeWithMetadata(pragmaDeclaration, PragmaMetadata.flag(this.symbolTable));
-        pragmaDeclaration.identifier($2).setDeclarationScope(programName + PragmaMetadata.SCOPE_SUFFIX);
-        pragmaDeclaration.publish();
+        pragmaDeclaration.identifier($2).scope(programName + PragmaMetadata.SCOPE_SUFFIX).publish();
     }
     | PRAGMA IDENTIFIER numeric_constant ';'
     {
         SingleDeclaration pragmaDeclaration = new SingleDeclaration(this.symbolTable);
         Director.makeWithMetadata(pragmaDeclaration, PragmaMetadata.valued(this.symbolTable, $3));
-        pragmaDeclaration.identifier($2).setDeclarationScope(programName + PragmaMetadata.SCOPE_SUFFIX);
-        pragmaDeclaration.publish();
+        pragmaDeclaration.identifier($2).scope(programName + PragmaMetadata.SCOPE_SUFFIX).publish();
     }
 ;
 
@@ -1332,8 +1336,7 @@ pragma:
 var_declarations:
     var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
     {
-        $3.source(Source.INTERNAL).use($2).setDeclarationScope(programName);
-        $3.publish();
+        $3.source(Source.INTERNAL).use($2).scope(programName).publish();
     }
 ;
 
@@ -1385,12 +1388,12 @@ var_init_decl_list:
     var_init_decl
     {
         DeclarationBlock block = new DeclarationBlock();
-        block.addDeclaration($1);
+        block.add($1);
         $$ = block;
     }
     | var_init_decl_list ';' var_init_decl
     {
-        $1.addDeclaration($3);
+        $1.add($3);
         $$ = $1;
     }
 ;
@@ -2566,12 +2569,12 @@ structure_field_init_decl_list:
     structure_field_init_decl ';'
     {
         StructureBlock structBlock = new StructureBlock();
-        structBlock.addField($1);
+        structBlock.add($1);
         $$ = structBlock;
     }
     | structure_field_init_decl_list structure_field_init_decl ';'
     {
-        $1.addField($2);
+        $1.add($2);
         $$ = $1;
     }
 ;

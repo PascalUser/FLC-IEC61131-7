@@ -1,7 +1,7 @@
 package parser.metadata;
 
 import parser.initializations.nodes.StructInitialization;
-import parser.publishers.StructureBlock;
+import parser.publishers.nodes.StructureBlock;
 import parser.utils.PathInitializationInfo;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
@@ -10,7 +10,6 @@ import utils.enums.Type;
 import utils.enums.Use;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public final class StructureMetadata implements LexemeInfoView {

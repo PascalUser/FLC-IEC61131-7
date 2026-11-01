@@ -1,5 +1,6 @@
-package parser.publishers;
+package parser.publishers.leafs.single;
 
+import parser.publishers.nodes.StructureBlock;
 import utils.SymbolTable;
 
 public final class StructureDeclaration extends SingleDeclaration {
@@ -13,7 +14,7 @@ public final class StructureDeclaration extends SingleDeclaration {
     @Override
     public StructureDeclaration identifier(String newIdentifier) {
         super.identifier(newIdentifier);
-        structBlock.setDeclarationScope(newIdentifier);
+        structBlock.scope(newIdentifier);
         return this;
     }
 

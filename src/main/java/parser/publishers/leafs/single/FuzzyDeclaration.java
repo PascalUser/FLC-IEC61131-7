@@ -1,20 +1,23 @@
-package parser.publishers;
+package parser.publishers.leafs.single;
 
+import parser.publishers.nodes.FuzzyBlock;
 import utils.SymbolTable;
 import utils.enums.Source;
 
-public final class ComponentDeclaration extends SingleDeclaration {
-    private final TermBlock termDeclarations;
+public final class FuzzyDeclaration extends SingleDeclaration {
+    private final FuzzyBlock termDeclarations;
     private String suffix;
 
-    public ComponentDeclaration(SymbolTable initTable, TermBlock terms) {
+    private final static String ERR = "FuzzyDeclaration: the component source was not FUZZIFY or DEFUZZIFY";
+
+    public FuzzyDeclaration(SymbolTable initTable, FuzzyBlock terms) {
         super(initTable);
         termDeclarations = terms;
         suffix = "";
     }
 
     @Override
-    public ComponentDeclaration source(Source newSource) {
+    public FuzzyDeclaration source(Source newSource) {
         if (termDeclarations != null) {
             termDeclarations.source(newSource);
         }
@@ -27,8 +30,7 @@ public final class ComponentDeclaration extends SingleDeclaration {
                 suffix = "@defuzzifier";
                 break;
             default:
-                break;
-
+                throw new IllegalArgumentException(ERR);
         }
         return this;
     }
@@ -36,8 +38,7 @@ public final class ComponentDeclaration extends SingleDeclaration {
     @Override
     public void publish() {
         if (termDeclarations != null) {
-            termDeclarations.setDeclarationScope(identifier);
-            termDeclarations.publish();
+            termDeclarations.scope(super.key()).publish();
         }
         super.publish();
     }

@@ -1,7 +1,7 @@
 package parser.metadata;
 
 import parser.initializations.leafs.VariableInitialization;
-import parser.publishers.TermBlock;
+import parser.publishers.nodes.FuzzyBlock;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -21,7 +21,7 @@ public final class DefuzzifierMetadata implements LexemeInfoView {
 
     public DefuzzifierMetadata(
             List<String> range,
-            TermBlock termBlock,
+            FuzzyBlock fuzzyBlock,
             Subtype subtype,
             VariableInitialization defaultValue
     ) {
@@ -33,7 +33,7 @@ public final class DefuzzifierMetadata implements LexemeInfoView {
         }
 
         this.subtype = subtype;
-        this.terms = (termBlock != null) ? termBlock.getTermNames() : null;
+        this.terms = (fuzzyBlock != null) ? fuzzyBlock.getTermNames() : null;
         this.initialValue = defaultValue;
     }
 

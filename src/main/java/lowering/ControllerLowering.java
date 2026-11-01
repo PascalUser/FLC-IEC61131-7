@@ -58,8 +58,15 @@ public final class ControllerLowering {
     public static final int DEFAULT_BIT_WIDTH = 8;
 
     private static final Set<Subtype> INTEGER_TYPES = EnumSet.of(
-            Subtype.SINT, Subtype.INT, Subtype.DINT, Subtype.LINT,
-            Subtype.USINT, Subtype.UINT, Subtype.UDINT, Subtype.ULINT);
+            Subtype.SINT,
+            Subtype.INT,
+            Subtype.DINT,
+            Subtype.LINT,
+            Subtype.USINT,
+            Subtype.UINT,
+            Subtype.UDINT,
+            Subtype.ULINT
+    );
 
     private final SymbolTable symbolTable;
     private final SymbolKeys keys;

@@ -55,6 +55,19 @@ public final class Director {
         return "0";
     }
 
+    /**
+     * Configures the schema for the BOOL literal {@code TRUE} (the same entry the lexer creates when it
+     * reads {@code TRUE}) and returns the literal string.
+     *
+     * @param schema the schema to configure
+     * @return the literal string "TRUE"
+     */
+    public static String makeBooleanTrueConstant(LexemeInfoMutator schema) {
+        makeLiteral(schema);
+        schema.subtype(Subtype.BOOL).initialValue(true);
+        return "TRUE";
+    }
+
     public static String makeDefaultInteger(LexemeInfoMutator schema) {
         return makeIntegerZeroConstant(schema);
     }
@@ -81,19 +94,6 @@ public final class Director {
         makeLiteral(schema);
         schema.subtype(Subtype.BOOL).initialValue(false);
         return "FALSE";
-    }
-
-    /**
-     * Configures the schema for the BOOL literal {@code TRUE} (the same entry the lexer creates when it
-     * reads {@code TRUE}) and returns the literal string.
-     *
-     * @param schema the schema to configure
-     * @return the literal string "TRUE"
-     */
-    public static String makeTrueBoolean(LexemeInfoMutator schema) {
-        makeLiteral(schema);
-        schema.subtype(Subtype.BOOL).initialValue(true);
-        return "TRUE";
     }
 
     /**

@@ -1,5 +1,6 @@
-package parser.publishers;
+package parser.publishers.leafs.single;
 
+import parser.publishers.leafs.Declaration;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 
@@ -43,24 +44,21 @@ public class SingleDeclaration extends Declaration {
     }
 
     @Override
-    public void publish() {
-        if (identifier == null) {
-            return;
-        }
-        symbolTable.put(key(), builder.build());
+    public List<String> keys() {
+        return (identifier.isEmpty())
+                ? Collections.emptyList()
+                : Collections.singletonList(key());
+    }
+
+    protected String key() {
+        return super.scope() + identifier;
     }
 
     @Override
-    public List<String> keys() {
-        return (identifier == null) ? Collections.emptyList() : Collections.singletonList(key());
-    }
-
-    /**
-     * Key under which this declaration is published: {@code [scope#]identifier}.
-     *
-     * @return the symbol table key
-     */
-    protected String key() {
-        return (declarationScope == null) ? identifier : declarationScope + "#" + identifier;
+    public void publish() {
+        if (identifier.isEmpty()) {
+            return;
+        }
+        symbolTable.put(key(), builder.build());
     }
 }

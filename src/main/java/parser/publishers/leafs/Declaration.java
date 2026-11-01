@@ -1,6 +1,7 @@
-package parser.publishers;
+package parser.publishers.leafs;
 
 import parser.initializations.Initialization;
+import parser.publishers.Publisher;
 import utils.builders.LexemeInfoBuilder;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -17,15 +18,23 @@ public abstract class Declaration implements Publisher {
      * Creates a new declaration publisher.
      */
     public Declaration() {
-        builder = new LexemeInfoBuilder();
+        this(new LexemeInfoBuilder());
     }
 
     public Declaration(LexemeInfoBuilder initBuilder) {
         builder = initBuilder;
+        declarationScope = "";
     }
 
-    public void setDeclarationScope(String newScope) {
+    public String scope() {
+        return (declarationScope.isEmpty())
+                ? ""
+                : declarationScope + '#';
+    }
+
+    public Declaration scope(String newScope) {
         declarationScope = newScope;
+        return this;
     }
 
     @Override

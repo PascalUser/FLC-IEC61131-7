@@ -1,4 +1,4 @@
-package parser.publishers;
+package parser.publishers.leafs.multiple;
 
 import parser.facades.MacrosPublisher;
 import utils.SymbolTable;
@@ -16,10 +16,7 @@ public final class AnnonymousEnumeratedVariable extends MultipleDeclaration {
     @Override
     public void publish() {
         List<String> macroNames = builder.parameters();
-        String prefix = (declarationScope == null)
-                ? ""
-                : declarationScope + "#";
-        MacrosPublisher.publish(symbolTable, macroNames, prefix);
+        MacrosPublisher.publish(symbolTable, macroNames, super.scope());
         super.publish();
     }
 }

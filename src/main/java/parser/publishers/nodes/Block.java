@@ -1,5 +1,7 @@
-package parser.publishers;
+package parser.publishers.nodes;
 
+import parser.publishers.leafs.Declaration;
+import parser.publishers.Publisher;
 import utils.enums.Source;
 import utils.enums.Subtype;
 import utils.enums.Type;
@@ -8,18 +10,30 @@ import utils.enums.Use;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeclarationGroup implements Publisher {
-    protected final List<Declaration> declarations;
+public abstract class Block<ConcreteDecl extends Declaration> implements Publisher {
+    protected final List<ConcreteDecl> declarations;
 
-    public DeclarationGroup() {
+    public Block() {
         this.declarations = new ArrayList<>();
     }
 
+    public abstract void add(ConcreteDecl declaration);
+
     @Override
-    public void setDeclarationScope(String newScope) {
+    public Block<ConcreteDecl> scope(String newScope) {
         for (Declaration declaration : declarations) {
-            declaration.setDeclarationScope(newScope);
+            declaration.scope(newScope);
         }
+        return this;
+    }
+
+    @Override
+    public List<String> keys() {
+        List<String> keys = new ArrayList<>();
+        for (ConcreteDecl declaration : declarations) {
+            keys.addAll(declaration.keys());
+        }
+        return keys;
     }
 
     @Override
@@ -30,16 +44,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public List<String> keys() {
-        List<String> keys = new ArrayList<>();
-        for (Declaration declaration : declarations) {
-            keys.addAll(declaration.keys());
-        }
-        return keys;
-    }
-
-    @Override
-    public DeclarationGroup type(Type newType) {
+    public Block<ConcreteDecl> type(Type newType) {
         for (Declaration declaration : declarations) {
             declaration.type(newType);
         }
@@ -47,7 +52,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup subtype(Subtype newSubtype) {
+    public Block<ConcreteDecl> subtype(Subtype newSubtype) {
         for (Declaration declaration : declarations) {
             declaration.subtype(newSubtype);
         }
@@ -55,7 +60,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup customType(String newCustomType) {
+    public Block<ConcreteDecl> customType(String newCustomType) {
         for (Declaration declaration : declarations) {
             declaration.customType(newCustomType);
         }
@@ -63,7 +68,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup source(Source newSource){
+    public Block<ConcreteDecl> source(Source newSource){
         for (Declaration declaration : declarations){
             declaration.source(newSource);
         }
@@ -71,7 +76,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup use(Use newUse) {
+    public Block<ConcreteDecl> use(Use newUse) {
         for (Declaration declaration : declarations){
             declaration.use(newUse);
         }
@@ -79,7 +84,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup inferiorLimits(List<String> newInferiorLimits) {
+    public Block<ConcreteDecl> inferiorLimits(List<String> newInferiorLimits) {
         for (Declaration declaration : declarations){
             declaration.inferiorLimits(newInferiorLimits);
         }
@@ -87,7 +92,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup superiorLimits(List<String> newSuperiorLimits) {
+    public Block<ConcreteDecl> superiorLimits(List<String> newSuperiorLimits) {
         for (Declaration declaration : declarations){
             declaration.superiorLimits(newSuperiorLimits);
         }
@@ -95,7 +100,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup parameters(List<String> newParameters) {
+    public Block<ConcreteDecl> parameters(List<String> newParameters) {
         for (Declaration declaration : declarations){
             declaration.parameters(newParameters);
         }
@@ -103,7 +108,7 @@ public class DeclarationGroup implements Publisher {
     }
 
     @Override
-    public DeclarationGroup initialValue(Object newInitialValue){
+    public Block<ConcreteDecl> initialValue(Object newInitialValue){
         for (Declaration declaration : declarations){
             declaration.initialValue(newInitialValue);
         }

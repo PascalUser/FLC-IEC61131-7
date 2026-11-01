@@ -64,7 +64,7 @@ public final class PragmaMetadata implements LexemeInfoView {
      */
     public static PragmaMetadata flag(final SymbolTable symbolTable) {
         LexemeInfoBuilder literal = new LexemeInfoBuilder();
-        String key = Director.makeTrueBoolean(literal);
+        String key = Director.makeBooleanTrueConstant(literal);
         symbolTable.putIfAbsent(key, literal.build());
         return new PragmaMetadata(Subtype.BOOL, key);
     }

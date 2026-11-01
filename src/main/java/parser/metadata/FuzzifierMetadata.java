@@ -1,6 +1,6 @@
 package parser.metadata;
 
-import parser.publishers.TermBlock;
+import parser.publishers.nodes.FuzzyBlock;
 import utils.builders.LexemeInfoView;
 import utils.enums.Source;
 import utils.enums.Subtype;
@@ -12,8 +12,8 @@ import java.util.List;
 public final class FuzzifierMetadata implements LexemeInfoView {
     List<String> terms;
 
-    public FuzzifierMetadata(TermBlock termBlock) {
-        this.terms = termBlock.getTermNames();
+    public FuzzifierMetadata(FuzzyBlock fuzzyBlock) {
+        this.terms = fuzzyBlock.getTermNames();
     }
 
     @Override

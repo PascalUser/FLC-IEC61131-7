@@ -21,7 +21,7 @@
  *
  * @see parser.Parser
  * @see parser.publishers.Publisher
- * @see parser.publishers.Declaration
+ * @see parser.publishers.leafs.Declaration
  * @since 1.0
  */
 package parser;

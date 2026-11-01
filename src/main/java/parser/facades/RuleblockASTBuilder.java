@@ -4,7 +4,7 @@ import ast.AbstractAstNode;
 import ast.ruleblock.*;
 import ast.ruleblock.operators.Operator;
 import ast.ruleblock.operators.OperatorNode;
-import parser.tree.TreeNode;
+import parser.tree.ParserTreeNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +15,7 @@ public final class RuleblockASTBuilder {
         // Utility class - not instantiable
     }
 
-    public static RuleBlockNode build(TreeNode ruleblockTree, List<Operator> configuration) {
+    public static RuleBlockNode build(ParserTreeNode ruleblockTree, List<Operator> configuration) {
         if (configuration.size() != 4) {
             throw new IllegalArgumentException("ASTBuilder: missing configuration parameters.");
         }
@@ -26,20 +26,20 @@ public final class RuleblockASTBuilder {
         return (RuleBlockNode) ruleblockAST;
     }
 
-    private static AbstractAstNode getASTWithTreeTraversal(TreeNode current, List<Operator> configuration) {
-        List<TreeNode> children = current.children();
+    private static AbstractAstNode getASTWithTreeTraversal(ParserTreeNode current, List<Operator> configuration) {
+        List<ParserTreeNode> children = current.children();
         if (children.isEmpty()) {
             return factory(current, Collections.emptyList(), configuration);
         }
         List<AbstractAstNode> astChildren = new ArrayList<>();
-        for (TreeNode child : children) {
+        for (ParserTreeNode child : children) {
             AbstractAstNode astChild = getASTWithTreeTraversal(child, configuration);
             astChildren.add(astChild);
         }
         return factory(current, astChildren, configuration);
     }
 
-    private static AbstractAstNode factory(TreeNode node, List<AbstractAstNode> children, List<Operator> configuration) {
+    private static AbstractAstNode factory(ParserTreeNode node, List<AbstractAstNode> children, List<Operator> configuration) {
         switch (node.label()) {
             case IDENTIFIER:
                 if (!children.isEmpty()) {

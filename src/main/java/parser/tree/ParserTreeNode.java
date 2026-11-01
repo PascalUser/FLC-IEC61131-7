@@ -2,22 +2,22 @@ package parser.tree;
 
 import java.util.List;
 
-public final class TreeNode {
-    private final Label label;
+public final class ParserTreeNode {
+    private final ParserLabel label;
     private final String symbolReference;
-    private final List<TreeNode> children;
+    private final List<ParserTreeNode> children;
 
-    public TreeNode(Label label, List<TreeNode> children) {
+    public ParserTreeNode(ParserLabel label, List<ParserTreeNode> children) {
         this(label, "", children);
     }
 
-    public TreeNode(Label label, String symbolReference, List<TreeNode> children) {
+    public ParserTreeNode(ParserLabel label, String symbolReference, List<ParserTreeNode> children) {
         this.label = label;
         this.symbolReference = symbolReference;
         this.children = children;
     }
 
-    public Label label() {
+    public ParserLabel label() {
         return label;
     }
 
@@ -25,7 +25,7 @@ public final class TreeNode {
         return symbolReference;
     }
 
-    public List<TreeNode> children() {
+    public List<ParserTreeNode> children() {
         return children;
     }
 }

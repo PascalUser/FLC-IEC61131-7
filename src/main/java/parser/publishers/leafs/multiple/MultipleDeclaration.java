@@ -1,6 +1,7 @@
-package parser.publishers;
+package parser.publishers.leafs.multiple;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import parser.publishers.leafs.Declaration;
 import utils.SymbolTable;
 import utils.builders.LexemeInfoBuilder;
 
@@ -50,13 +51,6 @@ public class MultipleDeclaration extends Declaration {
     }
 
     @Override
-    public void publish() {
-        for (String identifier : identifiers) {
-            symbolTable.put(keyOf(identifier), builder.build());
-        }
-    }
-
-    @Override
     public List<String> keys() {
         List<String> keys = new ArrayList<>();
         for (String identifier : identifiers) {
@@ -66,6 +60,13 @@ public class MultipleDeclaration extends Declaration {
     }
 
     private String keyOf(String identifier) {
-        return (declarationScope == null) ? identifier : declarationScope + "#" + identifier;
+        return super.scope() + identifier;
+    }
+
+    @Override
+    public void publish() {
+        for (String identifier : identifiers) {
+            symbolTable.put(keyOf(identifier), builder.build());
+        }
     }
 }

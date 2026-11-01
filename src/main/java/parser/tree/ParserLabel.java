@@ -1,6 +1,6 @@
 package parser.tree;
 
-public enum Label {
+public enum ParserLabel {
     ACCUMULATION,
     ACTIVATION,
     AND,

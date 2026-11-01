@@ -6,7 +6,7 @@ Last update: 2026-10-29
 
 ## Purpose
 
-The `ast` package (`ast` and subpackages) models the fuzzy rule block of a function block as an immutable tree of typed nodes. The parser builds the tree while reducing the `RULEBLOCK` grammar rules, through `parser.facades.RuleblockASTBuilder`, which maps the `parser.tree.TreeNode` built during the reductions into `ast` nodes. The resulting `ast.AbstractSyntaxTree` is the input of the lowering phase, which turns it into the rule matrix of the code generator.
+The `ast` package (`ast` and subpackages) models the fuzzy rule block of a function block as an immutable tree of typed nodes. The parser builds the tree while reducing the `RULEBLOCK` grammar rules, through `parser.facades.RuleblockASTBuilder`, which maps the `parser.tree.ParserTreeNode` built during the reductions into `ast` nodes. The resulting `ast.AbstractSyntaxTree` is the input of the lowering phase, which turns it into the rule matrix of the code generator.
 
 Every node extends `ast.AbstractAstNode` and answers with a semantic label, such as `ROOT`, `IF`, `WITH`, `IS`, `NOT`, `AND`, `OR`, `BODY`, `ACTIVATION`, `ACCUMULATION`, or `COMPONENT`, or with the name of the rule block it represents. Nodes hold their attributes in final fields and their children in an unmodifiable list.
 
