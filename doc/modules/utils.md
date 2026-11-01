@@ -2,7 +2,7 @@
 
 Shared compiler state and semantic metadata: symbol table, `LexemeInfo` DTO, diagnostics, builders, and classification enums.
 
-Last update: 2026-10-30
+Last update: 2026-11-01
 
 ## Purpose
 
@@ -277,7 +277,7 @@ Chart: `assets/test_coverage.png` — Line coverage per JaCoCo package.
 
 ### Package coupling
 
-Chart: `assets/package_coupling.png` — Afferent and efferent coupling between packages; `utils` has afferent 2, efferent 0, and instability 0.0.
+Chart: `assets/package_coupling.png` — Afferent and efferent coupling between packages; `utils` has afferent 4, efferent 0, and instability 0.0.
 *Source: import analysis in `scripts/extract_stats.py`*
 
 ## Storage in SymbolTable by type

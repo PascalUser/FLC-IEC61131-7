@@ -55,7 +55,7 @@ WORKDIR /workspace
 
 # Install OpenCode CLI
 RUN curl -fsSL https://opencode.ai/v2/install | bash
-ENV PATH="/home/devuser/.bun/bin:${PATH}"
+ENV PATH="/home/devuser/.opencode/bin:${PATH}"
 
 # Install Puppeteer
 ENV PUPPETEER_CACHE_DIR=/opt/puppeteer/cache
