@@ -57,6 +57,11 @@ public final class SymbolTable {
         return table.putIfAbsent(lexeme, info);
     }
 
+    /**
+     * Returns the iterator over all the symbol names of the table.
+     *
+     * @return an iterator over the entries of the table
+     */
     public Iterator<Map.Entry<String, LexemeInfo>> iterator() {
         return table.entrySet().iterator();
     }

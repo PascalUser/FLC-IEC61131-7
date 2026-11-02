@@ -4,6 +4,14 @@ import parser.publishers.nodes.FuzzyBlock;
 import utils.SymbolTable;
 import utils.enums.Source;
 
+/**
+ * Declaration of a fuzzy variable.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class FuzzyDeclaration extends SingleDeclaration {
     private final FuzzyBlock termDeclarations;
     private String suffix;

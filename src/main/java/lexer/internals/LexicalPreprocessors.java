@@ -36,7 +36,7 @@ public final class LexicalPreprocessors {
     public static final Transformer DATES           = new Nothing(null);
 
     // Interval literal
-    public static final Transformer INTERVALS       =
+    public static final Transformer INTERVALS =
             new UnderscoreRemover(
                 new UpperCaseConverter(
                     new OmitLeadingZeroMagnitudes(

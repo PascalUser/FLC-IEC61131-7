@@ -22,7 +22,6 @@ flowchart LR
     parser --> parser_initializations_leafs
     parser --> parser_initializations_nodes
     parser --> parser_metadata
-    parser --> parser_publishers
     parser --> parser_tree
     parser --> parser_utils
     parser --> utils
@@ -49,17 +48,11 @@ flowchart LR
     parser_metadata --> parser_initializations
     parser_metadata --> parser_initializations_leafs
     parser_metadata --> parser_initializations_nodes
-    parser_metadata --> parser_publishers
     parser_metadata --> parser_utils
     parser_metadata --> utils
     parser_metadata --> utils_builders
     parser_metadata --> utils_enums
-    parser_publishers --> parser_facades
-    parser_publishers --> parser_initializations
-    parser_publishers --> parser_utils
-    parser_publishers --> utils
     parser_publishers --> utils_builders
-    parser_publishers --> utils_enums
     parser_utils --> parser_initializations
     parser_utils --> parser_tree
     parser_utils --> utils_enums

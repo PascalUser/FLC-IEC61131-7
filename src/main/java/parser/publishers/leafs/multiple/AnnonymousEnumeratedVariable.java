@@ -7,6 +7,14 @@ import utils.builders.LexemeInfoBuilder;
 import java.util.List;
 
 
+/**
+ * Anonymous enumerated variable of a multiple declaration.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class AnnonymousEnumeratedVariable extends MultipleDeclaration {
 
     public AnnonymousEnumeratedVariable(SymbolTable symbolTable, LexemeInfoBuilder initBuilder) {

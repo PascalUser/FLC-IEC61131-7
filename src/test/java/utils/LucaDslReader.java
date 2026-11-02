@@ -11,6 +11,7 @@ import codegen.fuzzysets.SingletonFuzzySet;
 import codegen.fuzzysets.TrapezoidFuzzySet;
 import codegen.fuzzysets.TriangularFuzzySet;
 import codegen.fuzzysets.ZShapeFuzzySet;
+import lowering.utils.ControllerModelState;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -89,7 +90,13 @@ public final class LucaDslReader {
         for (Variable output : outputs) {
             defuzzifiers.put(output.name(), new CentroidDefuzzifier());
         }
-        return new ControllerModel(bitWidth, inputs, outputs, new MinMaxMethod(rules), defuzzifiers);
+        return new ControllerModel(new ControllerModelState(
+                bitWidth,
+                inputs,
+                outputs,
+                new MinMaxMethod(rules),
+                defuzzifiers
+        ));
     }
 
     private static List<FuzzySet> sets(String body) {

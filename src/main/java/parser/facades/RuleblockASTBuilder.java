@@ -10,12 +10,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Builder that creates the rule block syntax tree from the parser tree and the operator configuration.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class RuleblockASTBuilder {
     private RuleblockASTBuilder() {
         // Utility class - not instantiable
     }
 
-    public static RuleBlockNode build(ParserTreeNode ruleblockTree, List<Operator> configuration) {
+    /**
+     * Builds the rule block syntax tree from the parser tree and the operator configuration.
+     *
+     * @param ruleblockTree the parser tree of the rule block
+     * @param configuration the operator configuration of the rule block
+     * @return the built rule block syntax tree
+     * @throws IllegalArgumentException if the configuration is not valid or the tree is invalid
+     */
+    public static RuleBlockNode build(final ParserTreeNode ruleblockTree, final List<Operator> configuration) {
         if (configuration.size() != 4) {
             throw new IllegalArgumentException("ASTBuilder: missing configuration parameters.");
         }

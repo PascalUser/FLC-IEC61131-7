@@ -100,7 +100,7 @@ public class RuleBlockIT extends ParserTestSupport {
             ParsingResults results = parse(SourceCode.functionBlock());
             AbstractSyntaxTree ast = results.abstractSyntaxTree();
 
-            assertEquals("ROOT", ast.label());
+            assertEquals(SourceCode.key(), ast.label());
             assertTrue(ast.children().isEmpty());
         }
 
@@ -147,7 +147,7 @@ public class RuleBlockIT extends ParserTestSupport {
         @Test
         void Simple_rule_builds_accumulation_if_condition_and_body() throws Exception {
             String expectedTree = lines(
-                    "ROOT",
+                    SourceCode.key(),
                     "  MAIN#INFERENCE",
                     "    MAX",
                     "      IF",
@@ -170,7 +170,7 @@ public class RuleBlockIT extends ParserTestSupport {
         @Test
         void Multiple_rules_preserve_source_order() throws Exception {
             String expectedTree = lines(
-                    "ROOT",
+                    SourceCode.key(),
                     "  MAIN#INFERENCE",
                     "    MAX",
                     "      IF",
@@ -206,7 +206,7 @@ public class RuleBlockIT extends ParserTestSupport {
         @Test
         void Multiple_ruleblocks_with_rules_preserve_source_order() throws Exception {
             String expectedTree = lines(
-                    "ROOT",
+                    SourceCode.key(),
                     "  MAIN#FIRST",
                     "    MAX",
                     "      IF",

@@ -23,6 +23,14 @@ import java.util.List;
     value = {"EI_EXPOSE_REP2"},
     justification = "LexemeInfoBuilder is a builder of a DTO with direct collection references by design"
 )
+/**
+ * Builder that assembles the lexical information of a symbol.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class LexemeInfoBuilder implements LexemeInfoMutator, LexemeInfoView {
     private Type type                   = Type.UNKNOWN;
     private Subtype subtype             = Subtype.UNKNOWN;

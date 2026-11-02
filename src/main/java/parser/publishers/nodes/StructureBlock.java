@@ -6,6 +6,14 @@ import parser.utils.PathInitializationInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Block that groups the declarations of a structure.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class StructureBlock extends Block<SingleDeclaration> {
 
     @Override

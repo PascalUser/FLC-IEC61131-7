@@ -9,6 +9,14 @@ import utils.enums.Use;
 
 import java.util.List;
 
+/**
+ * Metadata of a fuzzifier.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class FuzzifierMetadata implements LexemeInfoView {
     List<String> terms;
 
@@ -18,7 +26,7 @@ public final class FuzzifierMetadata implements LexemeInfoView {
 
     @Override
     public Type type() {
-        return Type.SIMPLE;
+        return Type.FUNCTION;
     }
 
     @Override
@@ -51,6 +59,11 @@ public final class FuzzifierMetadata implements LexemeInfoView {
         return null;
     }
 
+    /**
+     * Returns the list of terms of the fuzzifier.
+     *
+     * @return the terms used by the fuzzifier
+     */
     public List<String> parameters() {
         return terms;
     }

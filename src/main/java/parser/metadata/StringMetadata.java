@@ -15,6 +15,14 @@ import java.util.List;
 
 import static utils.builders.Director.makeIntegerZeroConstant;
 
+/**
+ * Metadata of a string type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class StringMetadata implements LexemeInfoView {
     private final Subtype subtype;
     private final String inferiorLimit;
@@ -37,6 +45,11 @@ public final class StringMetadata implements LexemeInfoView {
         return Type.SIMPLE;
     }
 
+    /**
+     * Returns the subtype of this string type.
+     *
+     * @return the subtype of the string type
+     */
     public Subtype subtype() {
         return subtype;
     }

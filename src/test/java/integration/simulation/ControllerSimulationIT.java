@@ -31,7 +31,7 @@ public class ControllerSimulationIT extends ParserTestSupport {
         try (Reader source = TestResources.reader("golden/luca/" + example + "/" + example + ".fcl")) {
             results = parse(source);
         }
-        return new ControllerLowering(results.symbolTable(), example, new DiagnosticsHandler())
+        return new ControllerLowering(results.symbolTable(), new DiagnosticsHandler())
                 .lower(results.abstractSyntaxTree()).get();
     }
 

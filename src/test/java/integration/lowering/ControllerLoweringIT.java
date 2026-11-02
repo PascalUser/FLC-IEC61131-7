@@ -63,8 +63,7 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
     private Optional<ControllerModel> lower(String source) throws Exception {
         ParsingResults results = parse(new StringReader(source));
-        return new ControllerLowering(results.symbolTable(), "main", diagnostics)
-                .lower(results.abstractSyntaxTree());
+        return new ControllerLowering(results.symbolTable(), diagnostics).lower(results.abstractSyntaxTree());
     }
 
     private List<String> messagesOf(Class<? extends Diagnostic> kind) {
@@ -157,7 +156,7 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
         @Test
         void Bit_width_out_of_range() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "PRAGMA bit_width 40",
+            assertRejectedWith(UnsupportedFeature.class, "PRAGMA bit_width must be an integer between 1 and 30",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY, RULES,
                             "OPTION PRAGMA bit_width 40; END_OPTION"));
         }

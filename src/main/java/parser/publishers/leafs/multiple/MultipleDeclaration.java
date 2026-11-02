@@ -24,6 +24,14 @@ import java.util.List;
     value = {"EI_EXPOSE_REP"},
     justification = "LexemeInfoBuilder is a builder of a DTO with direct collection references by design"
 )
+/**
+ * Declaration that groups several symbols.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public class MultipleDeclaration extends Declaration {
     protected final SymbolTable symbolTable;
     protected final List<String> identifiers;

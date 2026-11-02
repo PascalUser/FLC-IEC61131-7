@@ -5,6 +5,7 @@ classDiagram
             +get()
             +put()
             +putIfAbsent()
+            +iterator()
             +size()
         }
         class LexemeInfo {
@@ -61,7 +62,7 @@ classDiagram
             +makeDefaultInteger(LexemeInfoMutator)
             +makeDefaultReal(LexemeInfoMutator)
             +makeDefaultBoolean(LexemeInfoMutator)
-            +makeTrueBoolean(LexemeInfoMutator)
+            +makeBooleanTrueConstant(LexemeInfoMutator)
             +makeDefaultString(LexemeInfoMutator)
             +makeDefaultWString(LexemeInfoMutator)
         }

@@ -57,7 +57,7 @@ public final class FunctionBlockMetadata implements LexemeInfoView {
 
     @Override
     public Use use() {
-        return Use.FUNCTION_BLOCK;
+        return Use.MAIN;
     }
 
     @Override

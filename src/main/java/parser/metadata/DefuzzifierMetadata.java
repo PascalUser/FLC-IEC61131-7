@@ -11,6 +11,14 @@ import utils.enums.Use;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Metadata of a defuzzifier.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class DefuzzifierMetadata implements LexemeInfoView {
     private final Subtype subtype;
     private final String inferiorLimit;
@@ -39,7 +47,7 @@ public final class DefuzzifierMetadata implements LexemeInfoView {
 
     @Override
     public Type type() {
-        return Type.SIMPLE;
+        return Type.FUNCTION;
     }
 
     @Override

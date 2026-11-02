@@ -22,13 +22,8 @@ public final class SourceCode {
 
     private SourceCode() {}
 
-    /**
-     * Starts a program with an empty {@code main} function block.
-     *
-     * @return a new builder
-     */
-    public static SourceCode functionBlock() {
-        return new SourceCode();
+    public static String key() {
+        return FUNCTION_BLOCK_NAME.toUpperCase();
     }
 
     /**
@@ -39,6 +34,15 @@ public final class SourceCode {
      */
     public static String key(String identifier) {
         return FUNCTION_BLOCK_NAME.toUpperCase() + "#" + identifier.toUpperCase();
+    }
+
+    /**
+     * Starts a program with an empty {@code main} function block.
+     *
+     * @return a new builder
+     */
+    public static SourceCode functionBlock() {
+        return new SourceCode();
     }
 
     /**

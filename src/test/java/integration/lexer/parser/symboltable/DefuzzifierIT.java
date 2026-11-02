@@ -53,7 +53,7 @@ public class DefuzzifierIT extends ParserTestSupport {
     void Anonymous_defuzzifier_is_published_with_its_term_names_and_default_value() throws Exception {
         String symbol = SourceCode.key(ANONYMOUS_DEFUZZIFIER) + DEFUZZ_SUFFIX;
         LexemeInfo expectedInfo = new LexemeInfoBuilder()
-                .type(Type.SIMPLE)
+                .type(Type.FUNCTION)
                 .subtype(Subtype.COGS)
                 .use(Use.COMPONENT)
                 .source(Source.DEFUZZIFY)

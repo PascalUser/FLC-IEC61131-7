@@ -10,6 +10,14 @@ import utils.enums.Use;
 
 import java.util.List;
 
+/**
+ * Metadata of a custom type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class CustomMetadata implements LexemeInfoView {
     private final String customType;
     private final Initialization initialValue;

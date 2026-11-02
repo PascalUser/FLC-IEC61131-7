@@ -60,6 +60,7 @@ classDiagram
             +get()
             +put()
             +putIfAbsent()
+            +iterator()
             +size()
         }
         class LexemeInfo {
@@ -116,7 +117,7 @@ classDiagram
             +makeDefaultInteger(LexemeInfoMutator)
             +makeDefaultReal(LexemeInfoMutator)
             +makeDefaultBoolean(LexemeInfoMutator)
-            +makeTrueBoolean(LexemeInfoMutator)
+            +makeBooleanTrueConstant(LexemeInfoMutator)
             +makeDefaultString(LexemeInfoMutator)
             +makeDefaultWString(LexemeInfoMutator)
         }
@@ -178,7 +179,7 @@ classDiagram
 
 | Class                                         | Responsibility                                                                                                                                                              | Pattern                       |
 |-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------|
-| `utils_SymbolTable`                           | Stores and retrieves `LexemeInfo` by lexeme name using a `HashMap`                                                                                                          | Repository                    |
+| `utils_SymbolTable`                           | Stores and retrieves `LexemeInfo` by lexeme name using a `HashMap`; exposes entry iteration for table cleanup                                                               | Repository                    |
 | `utils_LexemeInfo`                            | Mutable DTO with public fields for type, subtype, custom type, use, source, limits, parameters, and initial value; defines value-based `equals`, `hashCode`, and `toString` | DTO with value-based equality |
 | `utils_DiagnosticsHandler`                    | Collects diagnostics in insertion order and tracks whether any diagnostic is fatal                                                                                          | Collector                     |
 | `utils_builders_LexemeInfoMutator`            | Fluent setter contract for every `LexemeInfo` attribute                                                                                                                     | Builder interface             |
@@ -234,7 +235,7 @@ Counts and constants are read from `src/main/java/utils/enums/*.java`.
 | `makeDefaultInteger`      | Delegates to `makeIntegerZeroConstant`                   | `"0"`        |
 | `makeDefaultReal`         | Literal recipe plus `subtype=REAL`, `initialValue=0D`    | `"0.0"`      |
 | `makeDefaultBoolean`      | Literal recipe plus `subtype=BOOL`, `initialValue=false` | `"FALSE"`    |
-| `makeTrueBoolean`         | Literal recipe plus `subtype=BOOL`, `initialValue=true`  | `"TRUE"`     |
+| `makeBooleanTrueConstant` | Literal recipe plus `subtype=BOOL`, `initialValue=true`  | `"TRUE"`     |
 | `makeDefaultString`       | Literal recipe plus `subtype=STRING`, `initialValue=""`  | `''`         |
 | `makeDefaultWString`      | Literal recipe plus `subtype=WSTRING`, `initialValue=""` | `""`         |
 
@@ -262,7 +263,7 @@ Chart: `assets/cyclomatic_complexity.png` — Average cyclomatic complexity per 
 
 ### Lines of code per module
 
-Chart: `assets/loc_per_module.png` — Non-comment lines of code per module; `utils` is 1330 lines across 31 files.
+Chart: `assets/loc_per_module.png` — Non-comment lines of code per module; `utils` is 1334 lines across 31 files.
 *Source: `scripts/extract_stats.py`*
 
 ### Diagnostics distribution — errors vs warnings
@@ -313,7 +314,7 @@ classDiagram
     note for LexemeInfo "SUBRANGE\ntype=SUBRANGE\ninferiorLimits=[0], superiorLimits=[100]\ninitialValue=SubrangeInitialization"
 ```
 
-`SymbolTable` exposes `get`, `put`, `putIfAbsent`, and `size`; the backing `table` field is private. The notes summarize the metadata patterns that parser semantic actions publish for each `Type`.
+`SymbolTable` exposes `get`, `put`, `putIfAbsent`, `iterator`, and `size`; the backing `table` field is private. The `iterator` method returns the `Map.Entry` iterator of the backing `HashMap` and is used by `parser.facades.SymbolTableCleaner` to remove entries in place. The notes summarize the metadata patterns that parser semantic actions publish for each `Type`.
 
 ## Diagnostics Hierarchy
 

@@ -11,6 +11,14 @@ import utils.enums.Use;
 
 import java.util.List;
 
+/**
+ * Metadata of a primitive type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class PrimitiveMetadata implements LexemeInfoView {
     private final Subtype subtype;
     private final DefaultInitialization initialValue;

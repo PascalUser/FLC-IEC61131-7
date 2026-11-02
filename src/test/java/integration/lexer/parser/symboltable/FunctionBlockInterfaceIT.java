@@ -30,7 +30,7 @@ public class FunctionBlockInterfaceIT extends ParserTestSupport {
         return new LexemeInfoBuilder()
                 .type(Type.NONE)
                 .subtype(Subtype.NONE)
-                .use(Use.FUNCTION_BLOCK)
+                .use(Use.MAIN)
                 .source(Source.NONE)
                 .parameters(interfaceVariables)
                 .build();

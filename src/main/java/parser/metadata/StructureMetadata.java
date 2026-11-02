@@ -12,6 +12,14 @@ import utils.enums.Use;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Metadata of a structure type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class StructureMetadata implements LexemeInfoView {
     private final List<String> fields;
     private final StructInitialization initialValue;
@@ -67,6 +75,11 @@ public final class StructureMetadata implements LexemeInfoView {
         return fields;
     }
 
+    /**
+     * Returns the initialization of this structure.
+     *
+     * @return the initialization of the structure
+     */
     public StructInitialization initialValue() {
         return initialValue;
     }

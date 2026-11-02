@@ -3,6 +3,7 @@ package codegen;
 import codegen.defuzzification.Defuzzifier;
 import codegen.evaluation.EvaluationMethod;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lowering.utils.ControllerModelState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,34 +45,25 @@ public final class ControllerModel {
 
     /**
      * Creates the model of a controller.
-     *
-     * @param converterSize    bit width N of every value
-     * @param inputs           input variables, in the order of the controller signature
-     * @param outputs          output variables, in the order they are packed into the result
-     * @param evaluationMethod rule evaluation (it owns the rule matrix)
-     * @param defuzzifiers     defuzzifier of each output, by output name
-     * @throws IllegalArgumentException if the bit width is out of range, there are no inputs or outputs, or an
-     *                                  output has no defuzzifier
      */
-    public ControllerModel(final int converterSize, final List<Variable> inputs, final List<Variable> outputs,
-                           final EvaluationMethod evaluationMethod, final Map<String, Defuzzifier> defuzzifiers) {
-        if (converterSize < MIN_BIT_WIDTH || converterSize > MAX_BIT_WIDTH) {
-            throw new IllegalArgumentException("Bit width " + converterSize + " out of range "
+    public ControllerModel(ControllerModelState state) {
+        if (state.bitWidth < MIN_BIT_WIDTH || state.bitWidth > MAX_BIT_WIDTH) {
+            throw new IllegalArgumentException("Bit width " + state.bitWidth + " out of range "
                     + MIN_BIT_WIDTH + ".." + MAX_BIT_WIDTH);
         }
-        if (inputs.isEmpty() || outputs.isEmpty()) {
+        if (state.inputs.isEmpty() || state.outputs.isEmpty()) {
             throw new IllegalArgumentException("A controller needs at least one input and one output");
         }
-        for (Variable output : outputs) {
-            if (!defuzzifiers.containsKey(output.name())) {
+        for (Variable output : state.outputs) {
+            if (!state.defuzzifiers.containsKey(output.name())) {
                 throw new IllegalArgumentException("Output " + output.name() + " has no defuzzifier");
             }
         }
-        this.converterSize = converterSize;
-        this.inputs = Collections.unmodifiableList(new ArrayList<>(inputs));
-        this.outputs = Collections.unmodifiableList(new ArrayList<>(outputs));
-        this.evaluationMethod = Objects.requireNonNull(evaluationMethod, "evaluationMethod");
-        this.defuzzifiers = Collections.unmodifiableMap(new LinkedHashMap<>(defuzzifiers));
+        this.converterSize = state.bitWidth;
+        this.inputs = Collections.unmodifiableList(new ArrayList<>(state.inputs));
+        this.outputs = Collections.unmodifiableList(new ArrayList<>(state.outputs));
+        this.evaluationMethod = Objects.requireNonNull(state.evaluationMethod, "evaluationMethod");
+        this.defuzzifiers = Collections.unmodifiableMap(new LinkedHashMap<>(state.defuzzifiers));
     }
 
     /**

@@ -9,7 +9,10 @@ import codegen.evaluation.MinMaxMethod;
 import codegen.fuzzysets.FuzzySet;
 import codegen.fuzzysets.SingletonFuzzySet;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import parser.initializations.Initialization;
+import lowering.builders.ControllerModelBuilder;
+import lowering.semantics.BitWidthAnalyzer;
+import lowering.semantics.SemanticAnalyzer;
+import lowering.utils.ControllerModelState;
 import utils.DiagnosticsHandler;
 import utils.LexemeInfo;
 import utils.SymbolTable;
@@ -25,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 
 /**
@@ -69,25 +71,23 @@ public final class ControllerLowering {
     );
 
     private final SymbolTable symbolTable;
-    private final SymbolKeys keys;
+    private final DiagnosticsHandler diagnosticsHandler;
     private final LoweringReport report;
 
     /**
      * Creates the lowering of a function block.
      *
-     * @param symbolTable   the table filled by the lexer and the parser
-     * @param functionBlock name of the function block
-     * @param diagnostics   where problems are reported
+     * @param symbolTable           the table filled by the lexer and the parser
+     * @param diagnosticsHandler    where problems are reported
      */
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
             justification = "The symbol table is shared by every phase by design; the lowering only reads it"
     )
-    public ControllerLowering(final SymbolTable symbolTable, final String functionBlock,
-                              final DiagnosticsHandler diagnostics) {
+    public ControllerLowering(final SymbolTable symbolTable, final DiagnosticsHandler diagnosticsHandler) {
         this.symbolTable = symbolTable;
-        this.keys = new SymbolKeys(functionBlock);
-        this.report = new LoweringReport(diagnostics);
+        this.report = new LoweringReport(diagnosticsHandler);
+        this.diagnosticsHandler = diagnosticsHandler;
     }
 
     /**
@@ -100,12 +100,15 @@ public final class ControllerLowering {
      * @return the model, or empty if the program has something the generator does not support (reported)
      */
     public Optional<ControllerModel> lower(final AbstractSyntaxTree ast) {
-        OptionalInt bitWidth = bitWidth();
-        if (!bitWidth.isPresent()) {
+        SymbolKeys keys = new SymbolKeys(ast.label());
+
+        ControllerModelBuilder controller = new ControllerModelBuilder();
+        SemanticAnalyzer bitWidthAnalyzer = new BitWidthAnalyzer(symbolTable, keys, diagnosticsHandler);
+        if (!bitWidthAnalyzer.construct(controller)) {
             return Optional.empty();
         }
-        FuzzySetLowering sets = new FuzzySetLowering((1 << bitWidth.getAsInt()) - 1, report);
 
+        FuzzySetLowering sets = new FuzzySetLowering((1 << controller.bitWidth()) - 1, report);
         List<String> inputKeys = new ArrayList<>();
         List<String> outputKeys = new ArrayList<>();
         Map<String, List<String>> termsByVariable = new LinkedHashMap<>();
@@ -115,15 +118,15 @@ public final class ControllerLowering {
         for (String key : symbolTable.get(keys.functionBlock()).parameters) {
             boolean isInput = symbolTable.get(key).source == Source.IN;
             LexemeInfo block = symbolTable.get(isInput ? keys.fuzzifier(key) : keys.defuzzifier(key));
-            boolean integer = isIntegerVariable(key);
-            if (!hasBlock(key, block, isInput)) {
+            boolean integer = isIntegerVariable(keys, key);
+            if (!hasBlock(keys, key, block, isInput)) {
                 continue;
             }
             // Registered even if it cannot be lowered, so that the rules that use it are still checked.
             termsByVariable.put(key, block.parameters);
             (isInput ? inputKeys : outputKeys).add(key);
-            boolean supportedMethod = isInput || isCentroid(key, block);
-            Optional<Variable> variable = variable(key, block, sets);
+            boolean supportedMethod = isInput || isCentroid(keys, key, block);
+            Optional<Variable> variable = variable(keys, key, block, sets);
             if (!integer || !supportedMethod || !variable.isPresent()) {
                 continue;
             }
@@ -143,32 +146,18 @@ public final class ControllerLowering {
         if (report.failed()) {
             return Optional.empty();
         }
-        return Optional.of(new ControllerModel(bitWidth.getAsInt(), inputs, outputs, new MinMaxMethod(rules),
-                defuzzifiers));
+        return Optional.of(new ControllerModel(
+                new ControllerModelState(
+                        controller.bitWidth(),
+                        inputs,
+                        outputs,
+                        new MinMaxMethod(rules),
+                        defuzzifiers
+                )
+        ));
     }
 
-    private OptionalInt bitWidth() {
-        LexemeInfo pragma = symbolTable.get(keys.pragma("bit_width"));
-        if (pragma == null) {
-            report.warning(new GeneratorWarning("no PRAGMA bit_width in an OPTION block, using "
-                    + DEFAULT_BIT_WIDTH + " bits"));
-            return OptionalInt.of(DEFAULT_BIT_WIDTH);
-        }
-        String value = ((Initialization) pragma.initialValue).variableValue();
-        try {
-            int width = Integer.parseInt(value);
-            if (width >= ControllerModel.MIN_BIT_WIDTH && width <= ControllerModel.MAX_BIT_WIDTH) {
-                return OptionalInt.of(width);
-            }
-        } catch (NumberFormatException e) {
-            // reported below
-        }
-        report.error(new UnsupportedFeature("PRAGMA bit_width " + value + " (it must be an integer between "
-                + ControllerModel.MIN_BIT_WIDTH + " and " + ControllerModel.MAX_BIT_WIDTH + ")"));
-        return OptionalInt.empty();
-    }
-
-    private boolean isIntegerVariable(final String key) {
+    private boolean isIntegerVariable(final SymbolKeys keys, final String key) {
         LexemeInfo variable = symbolTable.get(key);
         boolean simpleOrSubrange = variable.type == Type.SIMPLE || variable.type == Type.SUBRANGE;
         if (simpleOrSubrange && INTEGER_TYPES.contains(variable.subtype)) {
@@ -179,7 +168,7 @@ public final class ControllerLowering {
         return false;
     }
 
-    private boolean hasBlock(final String key, final LexemeInfo block, final boolean isInput) {
+    private boolean hasBlock(final SymbolKeys keys, final String key, final LexemeInfo block, final boolean isInput) {
         if (block != null) {
             return true;
         }
@@ -188,7 +177,7 @@ public final class ControllerLowering {
         return false;
     }
 
-    private Optional<Variable> variable(final String key, final LexemeInfo block, final FuzzySetLowering sets) {
+    private Optional<Variable> variable(final SymbolKeys keys, final String key, final LexemeInfo block, final FuzzySetLowering sets) {
         List<FuzzySet> fuzzySets = new ArrayList<>();
         boolean complete = true;
         for (String termName : block.parameters) {
@@ -204,7 +193,7 @@ public final class ControllerLowering {
     }
 
     /** The defuzzification method must be CoGS; DEFAULT (mandatory in FCL) is not implemented by the generator. */
-    private boolean isCentroid(final String key, final LexemeInfo block) {
+    private boolean isCentroid(final SymbolKeys keys, final String key, final LexemeInfo block) {
         String name = keys.shortName(key);
         report.warning(new GeneratorWarning("DEFAULT of " + name + " is ignored: if no rule fires, the centroid "
                 + "divides by zero"));

@@ -7,6 +7,14 @@ import utils.builders.LexemeInfoBuilder;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Base declaration of a single symbol that is not grouped with other symbols.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public class SingleDeclaration extends Declaration {
     protected final SymbolTable symbolTable;
     protected String identifier;

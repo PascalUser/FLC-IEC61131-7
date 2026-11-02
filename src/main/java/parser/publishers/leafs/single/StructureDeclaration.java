@@ -3,6 +3,14 @@ package parser.publishers.leafs.single;
 import parser.publishers.nodes.StructureBlock;
 import utils.SymbolTable;
 
+/**
+ * Declaration of a structure type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class StructureDeclaration extends SingleDeclaration {
     private final StructureBlock structBlock;
 

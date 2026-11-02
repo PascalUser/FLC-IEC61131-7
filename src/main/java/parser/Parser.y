@@ -94,15 +94,6 @@
     public AbstractSyntaxTree getAST() {
         return ast;
     }
-
-    /**
-     * Returns the name of the function block, the scope of its symbols (e.g. MAIN in MAIN#X).
-     *
-     * @return the function block name as stored in the symbol table keys
-     */
-    public String getFunctionBlockName() {
-        return programName;
-    }
 }
 
 /**
@@ -253,6 +244,7 @@
     default_val
 
 %type <List<RuleBlockNode>>
+    opt_function_block_body
     opt_rule_block_list
 
 %type <RuleBlockNode>
@@ -341,6 +333,8 @@ function_block_declaration:
         SingleDeclaration functionBlock = new SingleDeclaration(this.symbolTable);
         Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata($3));
         functionBlock.identifier(programName).publish();
+
+        this.ast = new AbstractSyntaxTree(programName, $5);
     }
 ;
 
@@ -448,7 +442,7 @@ opt_function_block_body:
     opt_rule_block_list
     opt_option_block_list
     {
-        this.ast = new AbstractSyntaxTree($3);
+        $$ = $3;
     }
 ;
 

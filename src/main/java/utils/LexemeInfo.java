@@ -44,6 +44,14 @@ import java.util.Objects;
         },
         justification = "LexemeInfo is a DTO with public fields and direct collection references by design"
 )
+/**
+ * Lexical information of a symbol: type, subtype, custom type, source and use.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class LexemeInfo {
     /** The general type classification (simple, array, struct, etc.). */
     public Type type;

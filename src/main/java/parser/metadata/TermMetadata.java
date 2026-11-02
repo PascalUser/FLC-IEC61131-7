@@ -45,6 +45,11 @@ public final class TermMetadata implements LexemeInfoView {
         return Type.FUNCTION;
     }
 
+    /**
+     * Returns the subtype of this term, from its membership function shape.
+     *
+     * @return the subtype of the term
+     */
     public Subtype subtype() {
         return shape.subtype();
     }

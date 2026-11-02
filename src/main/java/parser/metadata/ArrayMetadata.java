@@ -15,6 +15,14 @@ import utils.enums.Use;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Metadata of an array type: element subtype and dimension ranges.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class ArrayMetadata implements LexemeInfoView {
     private final Subtype subtype;
     private final String customType;
@@ -44,6 +52,11 @@ public final class ArrayMetadata implements LexemeInfoView {
         return Type.ARRAY;
     }
 
+    /**
+     * Returns the subtype of this array: the subtype of its element.
+     *
+     * @return the subtype of the array element
+     */
     public Subtype subtype() {
         return subtype;
     }
@@ -77,6 +90,11 @@ public final class ArrayMetadata implements LexemeInfoView {
         return null;
     }
 
+    /**
+     * Returns the initial value of this array.
+     *
+     * @return the initial value of the array
+     */
     public RepeatedInitialization initialValue() {
         return initialValue;
     }

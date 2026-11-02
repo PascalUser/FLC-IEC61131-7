@@ -56,7 +56,7 @@ public class FuzzifierIT extends ParserTestSupport {
 
     private static LexemeInfoBuilder fuzzifierComponent(List<String> terms) {
         return new LexemeInfoBuilder()
-                .type(Type.SIMPLE)
+                .type(Type.FUNCTION)
                 .subtype(Subtype.NONE)
                 .use(Use.COMPONENT)
                 .source(Source.FUZZIFY)

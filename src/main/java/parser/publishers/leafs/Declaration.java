@@ -10,6 +10,14 @@ import utils.enums.Use;
 
 import java.util.List;
 
+/**
+ * Base declaration of a symbol that is published to the symbol table.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public abstract class Declaration implements Publisher {
     protected String declarationScope;
     protected final LexemeInfoBuilder builder;

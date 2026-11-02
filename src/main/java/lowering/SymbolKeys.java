@@ -99,6 +99,6 @@ public final class SymbolKeys {
      * @return its name, e.g. {@code ANGLE}
      */
     public String shortName(final String variableKey) {
-        return variableKey.substring(variableKey.indexOf(SEPARATOR) + 1);
+        return variableKey.substring(variableKey.lastIndexOf(SEPARATOR) + 1);
     }
 }

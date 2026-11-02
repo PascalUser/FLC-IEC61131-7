@@ -9,6 +9,14 @@ import utils.enums.Use;
 
 import java.util.List;
 
+/**
+ * Metadata of an enumerated type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class EnumeratedMetadata implements LexemeInfoView {
     private final List<String> values;
     private final EnumeratedInitialization initialValue;
@@ -58,6 +66,11 @@ public final class EnumeratedMetadata implements LexemeInfoView {
         return values;
     }
 
+    /**
+     * Returns the initialization of this enumerated type.
+     *
+     * @return the initialization of the enumerated type
+     */
     public EnumeratedInitialization initialValue() {
         return initialValue;
     }

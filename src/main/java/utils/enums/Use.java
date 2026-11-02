@@ -17,7 +17,7 @@ public enum Use {
     CONSTANT,
     FIELD,
     /** The function block; its {@code parameters} are its inputs and outputs in declaration order. */
-    FUNCTION_BLOCK,
+    MAIN,
     LITERAL,
     MACRO,
     /** Option of an {@code OPTION} block ({@code PRAGMA name [value];}). */

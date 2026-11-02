@@ -101,9 +101,9 @@
       "estimated_methods": 56
     },
     "parser": {
-      "avg_cyclomatic": 5.5,
-      "total_complexity": 875,
-      "estimated_methods": 159
+      "avg_cyclomatic": 6.3,
+      "total_complexity": 838,
+      "estimated_methods": 134
     },
     "utils": {
       "avg_cyclomatic": 2.4,
@@ -142,11 +142,11 @@
       "files": 21
     },
     "parser": {
-      "loc": 6283,
-      "files": 51
+      "loc": 5852,
+      "files": 40
     },
     "utils": {
-      "loc": 1330,
+      "loc": 1334,
       "files": 31
     },
     "ast": {
@@ -158,7 +158,7 @@
       "files": 15
     },
     "lowering": {
-      "loc": 639,
+      "loc": 646,
       "files": 5
     },
     "simulation": {

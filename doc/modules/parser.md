@@ -2,7 +2,7 @@
 
 One-line description: The IEC 61131-7 parser builds on Bison-generated LALR(1) grammar (Parser.y) to drive syntax analysis, publish symbol declarations to the symbol table, and construct initializations and rule-block ASTs.
 
-Last update: 2026-10-29
+Last update: 2026-11-01
 
 ## Purpose
 
@@ -303,19 +303,19 @@ classDiagram
 | Class                                                 | Responsibility                                                                                           | Pattern          |
 |-------------------------------------------------------|----------------------------------------------------------------------------------------------------------|------------------|
 | parser_Parser                                         | Bison-generated LALR(1) parser; drives syntax analysis and invokes semantic actions that publish symbols | Parser           |
-| parser_publishers_Publisher                           | Interface declaring setDeclarationScope, publish, and keys; extends LexemeInfoMutator                    | Interface        |
-| parser_publishers_Declaration                         | Abstract base holding a LexemeInfoBuilder and exposing fluent mutator setters                            | Abstract base    |
-| parser_publishers_DeclarationGroup                    | Groups multiple declarations and forwards mutator/publish/keys calls to each                             | Composite        |
-| parser_publishers_DeclarationBlock                    | Groups IO variable declarations (VAR_INPUT / VAR_OUTPUT)                                                 | Composite        |
-| parser_publishers_MultipleDeclaration                 | Publishes several identifiers sharing the same type and attributes                                       | Composite        |
-| parser_publishers_SingleDeclaration                   | Publishes a single identifier under scope#name key                                                       | Composite        |
-| parser_publishers_ComponentDeclaration                | Publishes a fuzzifier or defuzzifier component together with its term block                              | Composite        |
-| parser_publishers_StructureDeclaration                | Publishes a structure declaration and delegates to its field block                                       | Composite        |
-| parser_publishers_EnumeratedTypeDeclaration           | Publishes an enumerated type and registers its enum macros                                               | Composite        |
-| parser_publishers_StructureBlock                      | Groups structure field declarations and exposes initialization info per field                            | Composite        |
-| parser_publishers_TermBlock                           | Groups linguistic terms and exposes term names                                                           | Composite        |
-| parser_publishers_AnnonymousEnumeratedVariable        | Publishes an anonymous enumerated variable and its enum literal macros                                   | Composite        |
-| parser_publishers_AnnonymousEnumeratedField           | Publishes an anonymous enumerated field and its enum literal macros                                      | Composite        |
+| parser_publishers_Publisher                           | Interface declaring scope, publish, and keys; extends LexemeInfoMutator                                  | Interface        |
+| parser_publishers_leaves_Declaration                  | Abstract base holding a LexemeInfoBuilder and exposing fluent mutator setters                            | Abstract base    |
+| parser_publishers_nodes_Block                        | Abstract composite grouping declarations and forwarding mutator/publish/keys calls to each              | Composite        |
+| parser_publishers_nodes_DeclarationBlock              | Groups IO/variable declarations (VAR_INPUT / VAR_OUTPUT / VAR)                                          | Composite        |
+| parser_publishers_leaves_multiple_MultipleDeclaration | Publishes several identifiers sharing the same type and attributes                                       | Composite        |
+| parser_publishers_leaves_single_SingleDeclaration     | Publishes a single identifier under scope#name key                                                       | Composite        |
+| parser_publishers_leaves_single_FuzzyDeclaration      | Publishes a fuzzifier or defuzzifier component together with its term block (keys suffixed @fuzzifier/@defuzzifier) | Composite        |
+| parser_publishers_leaves_single_StructureDeclaration  | Publishes a structure declaration and delegates to its field block                                       | Composite        |
+| parser_publishers_leaves_single_EnumeratedTypeDeclaration | Publishes an enumerated type and registers its enum macros                                             | Composite        |
+| parser_publishers_nodes_StructureBlock                | Groups structure field declarations and exposes initialization info per field                            | Composite        |
+| parser_publishers_nodes_FuzzyBlock                    | Groups linguistic terms (SingleDeclaration)                                                              | Composite        |
+| parser_publishers_leaves_multiple_AnnonymousEnumeratedVariable | Publishes an anonymous enumerated variable and its enum literal macros                               | Composite        |
+| parser_publishers_leaves_single_AnnonymousEnumeratedField    | Publishes an anonymous enumerated field and its enum literal macros                                | Composite        |
 | parser_facades_DimensionCalculator                    | Computes total array element count as product of dimension sizes                                         | Utility Facade   |
 | parser_facades_RangesParser                           | Splits alternating range tokens into inferior and superior limit lists                                   | Utility Facade   |
 | parser_facades_MacrosPublisher                        | Publishes enumerated macro literals under a scope prefix                                                 | Facade           |
@@ -364,19 +364,23 @@ Excluded: deprecated LucaInfo (utils.LucaInfo) and local-only Parser.y / Luca.y 
 
 ## Sources by Subpackage
 
-| Subpackage                   | Directory                                   |
-|------------------------------|---------------------------------------------|
-| parser                       | src/main/java/parser/                       |
-| parser.publishers            | src/main/java/parser/publishers/            |
-| parser.facades               | src/main/java/parser/facades/               |
-| parser.initializations       | src/main/java/parser/initializations/       |
-| parser.initializations.leafs | src/main/java/parser/initializations/leafs/ |
-| parser.initializations.nodes | src/main/java/parser/initializations/nodes/ |
-| parser.metadata              | src/main/java/parser/metadata/              |
-| parser.tree                  | src/main/java/parser/tree/                  |
-| parser.utils                 | src/main/java/parser/utils/                 |
-| utils.builders               | src/main/java/utils/builders/               |
-| utils                        | src/main/java/utils/                        |
+| Subpackage                    | Directory                                    |
+|-------------------------------|----------------------------------------------|
+| parser                        | src/main/java/parser/                        |
+| parser.publishers             | src/main/java/parser/publishers/             |
+| parser.publishers.leaves      | src/main/java/parser/publishers/leaves/      |
+| parser.publishers.leaves.multiple | src/main/java/parser/publishers/leaves/multiple/ |
+| parser.publishers.leaves.single   | src/main/java/parser/publishers/leaves/single/   |
+| parser.publishers.nodes       | src/main/java/parser/publishers/nodes/       |
+| parser.facades                | src/main/java/parser/facades/                |
+| parser.initializations        | src/main/java/parser/initializations/        |
+| parser.initializations.leafs  | src/main/java/parser/initializations/leafs/  |
+| parser.initializations.nodes  | src/main/java/parser/initializations/nodes/  |
+| parser.metadata               | src/main/java/parser/metadata/               |
+| parser.tree                   | src/main/java/parser/tree/                   |
+| parser.utils                  | src/main/java/parser/utils/                  |
+| utils.builders                | src/main/java/utils/builders/                |
+| utils                         | src/main/java/utils/                         |
 
 ## Architecture Overview
 
@@ -400,7 +404,7 @@ The parser follows a Publisher + Director + Builder architecture. The Bison-gene
                  +-------------+        publish()        +--------------+
                  |  Publisher  | ----------------------> | SymbolTable  |
                  | (Declaration|        keys()           | (LexemeInfo) |
-                 |  / Multiple)|                          +--------------+
+                 |  / Block    )                          +--------------+
                  +-------------+
                         |
                         v (inline mangling scope#name)
@@ -436,23 +440,22 @@ These recipes guarantee consistent literal/default registration across semantic 
 
 ### Publisher Hierarchy
 
-`parser.publishers.Publisher` (interface) declares `setDeclarationScope(String)`, `publish()`, and `List<String> keys()`. It extends `LexemeInfoMutator`.
+`parser.publishers.Publisher` (interface) declares `scope(String)`, `publish()`, and `List<String> keys()`. It extends `LexemeInfoMutator`. Implementations live under `parser.publishers.leaves` (declarations) and `parser.publishers.nodes` (blocks).
 
 ```
 Publisher (interface)
-├── Declaration (abstract)  -- holds LexemeInfoBuilder
-│   ├── MultipleDeclaration  -- many identifiers, same attributes
-│   ├── SingleDeclaration    -- one identifier, key scope#name
-│   │   ├── ComponentDeclaration  -- fuzzifier/defuzzifier + terms
-│   │   ├── StructureDeclaration  -- struct + field block
-│   │   ├── EnumeratedTypeDeclaration -- enum + macro registration
-│   │   └── AnnonymousEnumeratedField -- anonymous enum field + macros
-│   └── DeclarationGroup (composite)
-│       ├── DeclarationBlock  -- IO variable declarations
-│       ├── StructureBlock    -- struct fields + init info
-│       └── TermBlock         -- linguistic terms
-└── MultipleDeclaration
-    └── AnnonymousEnumeratedVariable -- anonymous enum variable + macros
+├── leaves.Declaration (abstract)  -- holds LexemeInfoBuilder
+│   ├── leaves.multiple.MultipleDeclaration  -- many identifiers, same attributes
+│   │   └── leaves.multiple.AnnonymousEnumeratedVariable -- anonymous enum variable + macros
+│   └── leaves.single.SingleDeclaration    -- one identifier, key scope#name
+│       ├── leaves.single.FuzzyDeclaration  -- fuzzifier/defuzzifier + terms (@fuzzifier/@defuzzifier suffix)
+│       ├── leaves.single.StructureDeclaration  -- struct + field block
+│       ├── leaves.single.EnumeratedTypeDeclaration -- enum + macro registration
+│       └── leaves.single.AnnonymousEnumeratedField -- anonymous enum field + macros
+└── nodes.Block (abstract)  -- groups declarations
+    ├── nodes.DeclarationBlock  -- IO/variable declarations
+    ├── nodes.StructureBlock    -- struct fields + init info
+    └── nodes.FuzzyBlock        -- linguistic terms
 ```
 
 Keys are mangled inline: scoped variables use `FB#varName`, types use `TypeName`. Example: `x, y : INT` in block `MAIN` publishes as `MAIN#X`, `MAIN#Y`.
@@ -824,6 +827,8 @@ Parser module tests live in `src/test/java`:
 | StructInitializationTest         | src/test/java/unit/parser/initializations/StructInitializationTest.java          | Struct initialization paths              |
 | RepeatedInitializationTest       | src/test/java/unit/parser/initializations/RepeatedInitializationTest.java        | Repeated/array initialization intervals  |
 | MembershipFunctionClassifierTest | src/test/java/unit/parser/facades/MembershipFunctionClassifierTest.java          | Membership-function shape classification |
+| ParserSemanticActionsTest        | src/test/java/unit/parser/ParserSemanticActionsTest.java                         | Semantic actions and publishing          |
+| PublisherTest                    | src/test/java/unit/parser/publishers/PublisherTest.java                          | Publisher hierarchy                     |
 | PrimitiveIT                      | src/test/java/integration/lexer/parser/symboltable/PrimitiveIT.java              | Primitive type symbol-table population   |
 | ArrayIT                          | src/test/java/integration/lexer/parser/symboltable/ArrayIT.java                  | Array symbol-table population            |
 | StructIT                         | src/test/java/integration/lexer/parser/symboltable/StructIT.java                 | Structure symbol-table population        |
@@ -883,19 +888,28 @@ src/main/java/parser/
 │   ├── SubrangeMetadata.java
 │   └── TermMetadata.java
 ├── publishers/
-│   ├── AnnonymousEnumeratedVariable.java
-│   ├── AnnonymousEnumeratedField.java
-│   ├── ComponentDeclaration.java
-│   ├── Declaration.java
-│   ├── DeclarationBlock.java
-│   ├── DeclarationGroup.java
-│   ├── EnumeratedTypeDeclaration.java
-│   ├── MultipleDeclaration.java
 │   ├── Publisher.java
-│   ├── SingleDeclaration.java
-│   ├── StructureBlock.java
-│   ├── StructureDeclaration.java
-│   └── TermBlock.java
+│   ├── leaves/
+│   │   ├── Declaration.java
+│   │   ├── multiple/
+│   │   │   ├── AnnonymousEnumeratedVariable.java
+│   │   │   ├── MultipleDeclaration.java
+│   │   │   └── package-info.java
+│   │   ├── single/
+│   │   │   ├── AnnonymousEnumeratedField.java
+│   │   │   ├── EnumeratedTypeDeclaration.java
+│   │   │   ├── FuzzyDeclaration.java
+│   │   │   ├── SingleDeclaration.java
+│   │   │   ├── StructureDeclaration.java
+│   │   │   └── package-info.java
+│   │   └── package-info.java
+│   ├── nodes/
+│   │   ├── Block.java
+│   │   ├── DeclarationBlock.java
+│   │   ├── FuzzyBlock.java
+│   │   ├── StructureBlock.java
+│   │   └── package-info.java
+│   └── package-info.java
 ├── tree/
 │   ├── Label.java
 │   └── TreeNode.java

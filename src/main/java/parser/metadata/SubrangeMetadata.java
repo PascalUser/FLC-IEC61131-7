@@ -10,6 +10,14 @@ import utils.enums.Use;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Metadata of a subrange type.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class SubrangeMetadata implements LexemeInfoView {
     private final Subtype subtype;
     private final String ilimit;
@@ -28,6 +36,11 @@ public final class SubrangeMetadata implements LexemeInfoView {
         return Type.SUBRANGE;
     }
 
+    /**
+     * Returns the subtype of this subrange.
+     *
+     * @return the subtype of the subrange
+     */
     public Subtype subtype() {
         return subtype;
     }
@@ -62,6 +75,11 @@ public final class SubrangeMetadata implements LexemeInfoView {
         return null;
     }
 
+    /**
+     * Returns the initialization of this subrange.
+     *
+     * @return the initialization of the subrange
+     */
     public SubrangeInitialization initialValue() {
         return initialValue;
     }

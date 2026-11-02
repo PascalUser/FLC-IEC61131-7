@@ -10,6 +10,14 @@ import utils.enums.Use;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Base of the blocks that group declarations.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public abstract class Block<ConcreteDecl extends Declaration> implements Publisher {
     protected final List<ConcreteDecl> declarations;
 

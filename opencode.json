@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/flint-(free)",
+  "model": "opencode/flint-40b-free",
 
   "agent": {
     "readme-writer": {
@@ -81,7 +81,7 @@
         "bash": true
       }
     },
-    "java-doc-writer": {
+    "javadoc-writer": {
       "description": "Writes Javadoc for Java files according to project standards",
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/java-doc-writer.md}",
@@ -139,12 +139,12 @@
       "agent": "javadoc-updater",
       "template": "Run mvn javadoc:javadoc and confirm zero warnings. Report any remaining issues."
     },
-    "java-doc-write": {
+    "javadoc-write": {
       "description": "Writes Javadoc for a Java file",
       "agent": "java-doc-writer",
       "template": "Write Javadoc for $ARGUMENTS following project standards"
     },
-    "java-doc-verify": {
+    "javadoc-validate": {
       "description": "Verifies Javadoc for a Java file",
       "agent": "java-doc-writer",
       "template": "Run mvn javadoc:javadoc and confirm zero warnings for $ARGUMENTS. Report any remaining issues."

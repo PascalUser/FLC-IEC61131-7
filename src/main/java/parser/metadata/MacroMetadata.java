@@ -10,6 +10,14 @@ import utils.enums.Use;
 
 import java.util.List;
 
+/**
+ * Metadata of a macro.
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverria
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
 public final class MacroMetadata implements LexemeInfoView {
     private final MacroInitialization initialValue;
 
@@ -57,6 +65,11 @@ public final class MacroMetadata implements LexemeInfoView {
         return null;
     }
 
+    /**
+     * Returns the initialization of this macro.
+     *
+     * @return the initialization of the macro
+     */
     public MacroInitialization initialValue() {
         return initialValue;
     }
