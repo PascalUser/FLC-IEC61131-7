@@ -25,6 +25,7 @@ public final class TimeOfDayOutOfRange extends Error {
         this.timeLexeme = outOfBoundTime;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + timeLexeme + " time of day out of range";

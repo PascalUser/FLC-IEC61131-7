@@ -1,0 +1,60 @@
+classDiagram
+    namespace compiler {
+        class CommandLine {
+            <<utility>>
+            +OK int
+            +COMPILATION_ERRORS int
+            +USAGE_ERROR int
+            +INTERNAL_ERROR int
+            +run(String[], PrintStream, PrintStream) int
+            -baseName(Path) String
+        }
+        class FlcCompiler {
+            -diagnostics DiagnosticsHandler
+            +FlcCompiler(DiagnosticsHandler)
+            +compile(Reader, String) List~GeneratedFile~
+        }
+        class GeneratedFile {
+            -name String
+            -content String
+            +name() String
+            +content() String
+            +equals(Object) boolean
+            +hashCode() int
+        }
+    }
+    namespace ast {
+        class AbstractSyntaxTree
+    }
+    namespace codegen {
+        class CodeGenerator
+        class ControllerModel
+    }
+    namespace lexer {
+        class Lexer
+    }
+    namespace lowering_lowers {
+        class ControllerLower
+    }
+    namespace parser {
+        class Parser
+    }
+    namespace utils {
+        class DiagnosticsHandler
+        class SymbolTable
+    }
+    CommandLine ..> FlcCompiler : creates
+    CommandLine ..> GeneratedFile : writes
+    FlcCompiler --> DiagnosticsHandler : reports
+    FlcCompiler ..> Lexer : creates
+    FlcCompiler ..> Parser : creates
+    FlcCompiler ..> SymbolTable : creates
+    FlcCompiler ..> AbstractSyntaxTree : reads
+    FlcCompiler ..> ControllerLower : lowers
+    FlcCompiler ..> ControllerModel : consumes
+    FlcCompiler ..> CodeGenerator : generates
+    FlcCompiler ..> GeneratedFile : returns
+    Parser --> Lexer : reads tokens
+    Parser --> SymbolTable : publishes declarations
+    ControllerLower ..> ControllerModel : builds
+    CodeGenerator --> ControllerModel : uses

@@ -10,52 +10,62 @@ classDiagram
     namespace parser_publishers {
         class Publisher {
             <<interface>>
-            +setDeclarationScope(String)
-            +publish()
+            +scope(String) Publisher
             +keys() List~String~
+            +publish() void
         }
         class Declaration {
             <<abstract>>
             #declarationScope String
             #builder LexemeInfoBuilder
-            +setDeclarationScope(String)
-            +publish()
-            +keys() List~String~
+            +scope(String) Declaration
+            +type(Type) Declaration
+            +subtype(Subtype) Declaration
+            +customType(String) Declaration
+            +source(Source) Declaration
+            +use(Use) Declaration
+            +inferiorLimits(List~String~) Declaration
+            +superiorLimits(List~String~) Declaration
+            +parameters(List~String~) Declaration
+            +initialValue(Object) Declaration
         }
-        class DeclarationGroup {
-            #declarations List~Declaration~
-            +publish()
+        class Block {
+            <<abstract>>
+            #declarations List~ConcreteDecl~
+            +add(ConcreteDecl) void
+            +scope(String) Block
             +keys() List~String~
+            +publish() void
         }
         class DeclarationBlock {
-            +addDeclaration(Declaration)
+            +add(Declaration) void
         }
         class MultipleDeclaration {
             #identifiers List~String~
-            +identifiers(List~String~)
-            +publish()
+            +identifiers(List~String~) MultipleDeclaration
+            +publish() void
             +keys() List~String~
         }
         class SingleDeclaration {
             #identifier String
-            +identifier(String)
-            +publish()
+            +identifier(String) SingleDeclaration
+            +publish() void
             +keys() List~String~
         }
-        class ComponentDeclaration {
-            +source(Source)
-            +publish()
+        class FuzzyDeclaration {
+            +source(Source) FuzzyDeclaration
+            +publish() void
         }
         class StructureDeclaration {
-            +identifier(String)
-            +publish()
+            +identifier(String) StructureDeclaration
+            +publish() void
         }
         class StructureBlock {
-            +addField(SingleDeclaration)
+            +add(SingleDeclaration) void
             +getInitializationInfo() List~PathInitializationInfo~
         }
-        class TermBlock {
-            +addTerm(SingleDeclaration)
+        class FuzzyBlock {
+            +add(SingleDeclaration) void
             +getTermNames() List~String~
         }
         class EnumeratedTypeDeclaration {
@@ -70,6 +80,7 @@ classDiagram
     }
     namespace parser_facades {
         class DimensionCalculator {
+            <<utility>>
             +calculate(List~String~, List~String~) int
         }
         class IdentifierParser {
@@ -82,10 +93,14 @@ classDiagram
             +classify(List~String~, List~String~) MembershipFunctionShape
         }
         class RangesParser {
+            <<utility>>
             +parse(List~String~, List~String~, List~String~)
         }
         class RuleblockASTBuilder {
-            +build(TreeNode, List~Operator~) RuleBlockNode
+            +build(ParserTreeNode, List~Operator~) RuleBlockNode
+        }
+        class SymbolTableCleaner {
+            +clean(SymbolTable) void
         }
     }
     namespace parser_initializations {
@@ -96,6 +111,7 @@ classDiagram
             +copy() Initialization
         }
         class Factory {
+            <<utility>>
             +createPrimitiveInitialization(SymbolTable, Subtype) DefaultInitialization
         }
     }
@@ -154,12 +170,12 @@ classDiagram
         class PragmaMetadata
     }
     namespace parser_tree {
-        class TreeNode {
-            +label() Label
+        class ParserTreeNode {
+            +label() ParserLabel
             +symbolReference() String
-            +children() List~TreeNode~
+            +children() List~ParserTreeNode~
         }
-        class Label
+        class ParserLabel
     }
     namespace parser_utils {
         class ParsedIdentifier {
@@ -172,9 +188,9 @@ classDiagram
             +initialValue() Initialization
         }
         class ConditionParsingContext {
-            +addOperator(Label)
-            +addOperand(TreeNode)
-            +getConditionNode() TreeNode
+            +addOperator(ParserLabel)
+            +addOperand(ParserTreeNode)
+            +getConditionNode() ParserTreeNode
         }
         class ArrayParsingContext {
             +getMaxValue() int
@@ -211,8 +227,11 @@ classDiagram
             +build() LexemeInfo
         }
         class Director {
-            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView)
-            +makeLiteral(LexemeInfoMutator)
+            <<utility>>
+            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView) void
+            +makeLiteral(LexemeInfoMutator) void
+            +makeIntegerZeroConstant(LexemeInfoMutator) String
+            +makeBooleanTrueConstant(LexemeInfoMutator) String
             +makeDefaultInteger(LexemeInfoMutator) String
             +makeDefaultReal(LexemeInfoMutator) String
             +makeDefaultBoolean(LexemeInfoMutator) String
@@ -228,13 +247,13 @@ classDiagram
     }
     utils_builders_LexemeInfoMutator <|-- parser_publishers_Publisher
     parser_publishers_Publisher <|.. parser_publishers_Declaration
-    parser_publishers_Publisher <|.. parser_publishers_DeclarationGroup
+    parser_publishers_Publisher <|.. parser_publishers_Block
     parser_publishers_Declaration <|-- parser_publishers_MultipleDeclaration
     parser_publishers_Declaration <|-- parser_publishers_SingleDeclaration
-    parser_publishers_DeclarationGroup <|-- parser_publishers_DeclarationBlock
-    parser_publishers_DeclarationGroup <|-- parser_publishers_StructureBlock
-    parser_publishers_DeclarationGroup <|-- parser_publishers_TermBlock
-    parser_publishers_SingleDeclaration <|-- parser_publishers_ComponentDeclaration
+    parser_publishers_Block <|-- parser_publishers_DeclarationBlock
+    parser_publishers_Block <|-- parser_publishers_StructureBlock
+    parser_publishers_Block <|-- parser_publishers_FuzzyBlock
+    parser_publishers_SingleDeclaration <|-- parser_publishers_FuzzyDeclaration
     parser_publishers_SingleDeclaration <|-- parser_publishers_StructureDeclaration
     parser_publishers_SingleDeclaration <|-- parser_publishers_EnumeratedTypeDeclaration
     parser_publishers_SingleDeclaration <|-- parser_publishers_AnnonymousEnumeratedField
@@ -258,7 +277,7 @@ classDiagram
     parser_Parser --> parser_facades_RuleblockASTBuilder : builds AST
     parser_Parser --> utils_SymbolTable : writes
     parser_publishers_Declaration --> utils_builders_LexemeInfoBuilder : holds
-    parser_publishers_ComponentDeclaration --> parser_publishers_TermBlock : publishes terms
+    parser_publishers_FuzzyDeclaration --> parser_publishers_FuzzyBlock : publishes terms
     parser_publishers_StructureDeclaration --> parser_publishers_StructureBlock : publishes fields
     parser_publishers_StructureBlock ..> parser_utils_PathInitializationInfo : exposes
     parser_publishers_EnumeratedTypeDeclaration ..> parser_facades_MacrosPublisher : registers macros
@@ -268,7 +287,7 @@ classDiagram
     parser_facades_MacrosPublisher --> utils_SymbolTable : writes
     parser_facades_IdentifierParser ..> parser_utils_ParsedIdentifier : returns
     parser_facades_MembershipFunctionClassifier ..> parser_utils_MembershipFunctionShape : returns
-    parser_facades_RuleblockASTBuilder ..> parser_tree_TreeNode : traverses
+    parser_facades_RuleblockASTBuilder ..> parser_tree_ParserTreeNode : traverses
     parser_facades_RuleblockASTBuilder ..> ast_ruleblock_RuleBlockNode : returns
     parser_facades_RuleblockASTBuilder ..> ast_ruleblock_operators_Operator : configured by
     parser_initializations_Factory ..> parser_initializations_leafs_DefaultInitialization : creates
@@ -278,7 +297,7 @@ classDiagram
     parser_metadata_ArrayMetadata ..> parser_facades_DimensionCalculator : sizes
     parser_metadata_ArrayMetadata ..> parser_facades_RangesParser : splits ranges
     parser_metadata_ArrayMetadata ..> parser_initializations_nodes_RepeatedInitialization : creates
-    parser_utils_ConditionParsingContext --> parser_tree_TreeNode : builds
+    parser_utils_ConditionParsingContext --> parser_tree_ParserTreeNode : builds
     utils_builders_LexemeInfoView <|.. parser_metadata_FunctionBlockMetadata
     utils_builders_LexemeInfoView <|.. parser_metadata_PrimitiveMetadata
     utils_builders_LexemeInfoView <|.. parser_metadata_ArrayMetadata

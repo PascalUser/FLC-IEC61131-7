@@ -23,6 +23,7 @@ public final class StripTrailingZeros extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(String lexeme) {
         int end = lexeme.length();

@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant C as simulation_SimulationComparison
+    participant Q as simulation_QuantizedSimulator
+    participant R as simulation_ReferenceSimulator
+    participant M as simulation_MinMaxEvaluation
+    participant F as codegen_fuzzysets_FuzzySet
+    participant A as Accumulator
+    participant O as simulation_OutputComparison
+
+    C->>Q: new QuantizedSimulator(model)
+    Q->>M: requireSimulable(model)
+    Q->>F: quantizedDegree(x, range)
+    C->>R: new ReferenceSimulator(model)
+    R->>M: requireSimulable(model)
+    loop Input grid advanced like an odometer
+        C->>Q: evaluate(inputs)
+        Q->>M: outputDegrees(model, inputDegrees)
+        Q-->>C: OptionalInt[] generated
+        C->>R: evaluate(realInputs)
+        R->>F: degree(inputValue)
+        R->>M: outputDegrees(model, inputDegrees)
+        R-->>C: double[] ideal
+        loop Every output
+            C->>A: add(inputs, generated, ideal)
+        end
+        C->>C: next(inputs, step, converterRange)
+    end
+    loop Every output
+        C->>A: result(outputName)
+        A->>O: new OutputComparison(...)
+        A-->>C: OutputComparison
+    end
+    C-->>C: List of OutputComparison

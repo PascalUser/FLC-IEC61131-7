@@ -52,6 +52,7 @@ public final class MembershipFunctionShape {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(final Object other) {
         if (this == other) {
@@ -64,11 +65,13 @@ public final class MembershipFunctionShape {
         return subtype == that.subtype && Objects.equals(parameters, that.parameters);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hash(subtype, parameters);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return subtype + (parameters == null ? "" : parameters.toString());

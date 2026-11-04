@@ -69,46 +69,55 @@ public final class PragmaMetadata implements LexemeInfoView {
         return new PragmaMetadata(Subtype.BOOL, key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.SIMPLE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Subtype subtype() {
         return subtype;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.PRAGMA;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public VariableInitialization initialValue() {
         return initialValue;

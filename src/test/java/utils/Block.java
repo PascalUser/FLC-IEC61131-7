@@ -11,6 +11,7 @@ import utils.enums.Source;
 public enum Block {
     VAR_INPUT(Source.IN),
     VAR_OUTPUT(Source.OUT),
+    /** Internal variable block. */
     VAR(Source.INTERNAL);
 
     private final Source source;
@@ -19,6 +20,11 @@ public enum Block {
         source = initSource;
     }
 
+    /**
+     * Returns the source that the parser assigns to the variables of the block.
+     *
+     * @return the source of the block
+     */
     public Source source() {
         return source;
     }

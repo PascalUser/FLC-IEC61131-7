@@ -1,9 +1,10 @@
-package lowering.facades;
+package lowering.lowers;
 
 import codegen.Variable;
 import codegen.fuzzysets.FuzzySet;
 import codegen.fuzzysets.SingletonFuzzySet;
-import lowering.contexts.LoweringContext;
+import lowering.contexts.TermLoweringContext;
+import lowering.contexts.VarLoweringContext;
 import utils.LexemeInfo;
 import utils.diagnostics.GeneratorWarning;
 import utils.diagnostics.UnsupportedFeature;
@@ -13,9 +14,16 @@ import utils.enums.Type;
 
 import java.util.*;
 
-public class VariableLower {
-    private final LoweringContext ctx;
-    private final TermLower termLower;
+/**
+ * Lowers a controller variable into the {@link codegen.Variable} used by the code generator.
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
+public final class VariableLower implements Lower<Variable> {
+    private final VarLoweringContext ctx;
 
     private static final Set<Subtype> INTEGER_TYPES = EnumSet.of(
             Subtype.SINT,
@@ -48,35 +56,45 @@ public class VariableLower {
         return "term " + termName + " of the output " + outVarName + " is not supported (only singleton outputs)";
     }
 
-    public VariableLower(LoweringContext initContext, TermLower termLower) {
+    /**
+     * Creates the lowering of one controller variable.
+     *
+     * @param initContext context with the variable key and the bit-width resolver
+     */
+    public VariableLower(VarLoweringContext initContext) {
         this.ctx = initContext;
-        this.termLower = termLower;
     }
 
-    public Optional<Variable> adapt(String ioVarKey) {
-        String ioVarName = ctx.keys.shortName(ioVarKey);
-        LexemeInfo ioVarInfo = ctx.symbolTable.get(ioVarKey);
+    /**
+     * Builds the variable and its fuzzy sets.
+     *
+     * @return the variable, or empty if it is not supported by the generator
+     */
+    public Optional<Variable> adapt() {
+        String ioVarName = ctx.keys.shortName(ctx.varKey);
+        LexemeInfo ioVarInfo = ctx.symbolTable.get(ctx.varKey);
 
         boolean isInputVariable = ioVarInfo.source == Source.IN;
-        String componentName = isInputVariable ? ctx.keys.fuzzifier(ioVarKey) : ctx.keys.defuzzifier(ioVarKey);
+        String componentName = isInputVariable ? ctx.keys.fuzzifier(ctx.varKey) : ctx.keys.defuzzifier(ctx.varKey);
         LexemeInfo componentInfo = ctx.symbolTable.get(componentName);
 
-        if (hasNoFuzzifierOrDefuzzifier(ioVarKey, componentInfo)) {
+        if (hasNoFuzzifierOrDefuzzifier(componentInfo)) {
             return Optional.empty();
         }
         if (doesNotHaveIntegerVariable(ioVarName, ioVarInfo)) {
             return Optional.empty();
         }
-        if (!isInputVariable && hasUnsupportedDeffuzMethod(ioVarKey, componentInfo)) {
+        if (!isInputVariable && hasUnsupportedDeffuzMethod(componentInfo)) {
             return Optional.empty();
         }
         boolean notAllTermsCovered = false;
         List<String> terms = componentInfo.parameters;
         List<FuzzySet> termsSet = new ArrayList<>();
         for (String termName : terms) {
-            String termKey = ctx.keys.term(ioVarKey, termName);
-            LexemeInfo termInfo = ctx.symbolTable.get(termKey);
-            Optional<FuzzySet> varTermsSet = termLower.adapt(ioVarKey, termKey, termInfo);
+            String termKey = ctx.keys.term(ctx.varKey, termName);
+            TermLoweringContext termCtx = new TermLoweringContext(ctx, termKey);
+            TermLower termLower = new TermLower(termCtx);
+            Optional<FuzzySet> varTermsSet = termLower.adapt();
             if (varTermsSet.isPresent()) {
                 termsSet.add(varTermsSet.get());
             } else {
@@ -102,14 +120,14 @@ public class VariableLower {
         return true;
     }
 
-    private boolean hasNoFuzzifierOrDefuzzifier(final String key, final LexemeInfo componentInfo) {
-        String varName = ctx.keys.shortName(key);
+    private boolean hasNoFuzzifierOrDefuzzifier(final LexemeInfo componentInfo) {
+        String varName = ctx.keys.shortName(ctx.varKey);
         if (componentInfo != null) {
             return false;
         }
         String sourceType;
         String expectedBlock;
-        final boolean isInput = ctx.symbolTable.get(key).source == Source.IN;
+        final boolean isInput = ctx.symbolTable.get(ctx.varKey).source == Source.IN;
         if (isInput) {
             sourceType = "input";
             expectedBlock = "FUZZIFY";
@@ -121,8 +139,8 @@ public class VariableLower {
         return true;
     }
 
-    private boolean hasUnsupportedDeffuzMethod(final String key, final LexemeInfo componentInfo) {
-        String varName = ctx.keys.shortName(key);
+    private boolean hasUnsupportedDeffuzMethod(final LexemeInfo componentInfo) {
+        String varName = ctx.keys.shortName(ctx.varKey);
         ctx.diagnosticsHandler.add(new GeneratorWarning(WAR_WITH_DEFAULT(varName)));
         if (componentInfo.subtype == Subtype.COGS) {
             return false;

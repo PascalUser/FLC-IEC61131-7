@@ -17,6 +17,12 @@ public final class IsNode extends AbstractAstNode {
     private final IdentifierNode variable;
     private final IdentifierNode term;
 
+    /**
+     * Creates an is node.
+     *
+     * @param variable variable being tested
+     * @param term term the variable is compared against
+     */
     public IsNode(final IdentifierNode variable, final IdentifierNode term) {
         super(Arrays.asList(
                 Objects.requireNonNull(variable, "variable"),

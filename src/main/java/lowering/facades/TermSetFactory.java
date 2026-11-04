@@ -9,7 +9,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TermSetFactory {
+/**
+ * Creates the fuzzy set that corresponds to the membership function of a linguistic term.
+ * <p>
+ * The shape is taken from the term subtype and its points from the inferior limits of the symbol table
+ * entry: singleton, linear, triangle or trapezoid.
+ * </p>
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
+public final class TermSetFactory {
+    /**
+     * Creates the fuzzy set of a linguistic term.
+     *
+     * @param termName name of the term
+     * @param termInfo symbol table entry with the subtype and points of the term
+     * @return the matching fuzzy set
+     */
     public static Optional<FuzzySet> create(String termName, LexemeInfo termInfo) {
         List<String> membershipFunctionXValues = termInfo.inferiorLimits;
         List<Integer> X = toIntegerCollection(membershipFunctionXValues);

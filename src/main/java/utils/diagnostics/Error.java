@@ -22,11 +22,13 @@ public abstract class Error extends Diagnostic {
         super(line);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
          return "ERROR:" + super.getMessage() + ", ";
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean fatalForCompilation() {
         return true;

@@ -1,0 +1,75 @@
+classDiagram
+    namespace simulation {
+        class ReferenceSimulator {
+            -model ControllerModel
+            +ReferenceSimulator(ControllerModel)
+            +evaluate(double...) double[]
+            -centroid(Variable, double[]) double
+        }
+        class QuantizedSimulator {
+            -model ControllerModel
+            -degreeTables double[][][]
+            +QuantizedSimulator(ControllerModel)
+            +evaluate(int...) OptionalInt[]
+            -centroid(Variable, double[]) OptionalInt
+        }
+        class SimulationComparison {
+            <<utility>>
+            +compare(ControllerModel, int) List~OutputComparison~
+            -next(int[], int, int) boolean
+        }
+        class OutputComparison {
+            -output String
+            -evaluated long
+            -maxError double
+            -worstInputs int[]
+            -meanError double
+            -undefinedInHardware long
+            -undefinedInReference long
+            +output() String
+            +evaluated() long
+            +maxError() double
+            +worstInputs() int[]
+            +meanError() double
+            +undefinedInHardware() long
+            +undefinedInReference() long
+        }
+        class MinMaxEvaluation {
+            <<utility>>
+            ~requireSimulable(ControllerModel) void
+            ~outputDegrees(ControllerModel, double[][]) double[][]
+        }
+    }
+    namespace codegen {
+        class ControllerModel
+        class Variable
+    }
+    namespace codegen_evaluation {
+        class EvaluationMethod
+        class MinMaxMethod
+    }
+    namespace codegen_defuzzification {
+        class CentroidDefuzzifier
+    }
+    namespace codegen_fuzzysets {
+        class FuzzySet
+        class SingletonFuzzySet
+    }
+    QuantizedSimulator --> ControllerModel : model
+    ReferenceSimulator --> ControllerModel : model
+    QuantizedSimulator --> Variable : inputs and outputs
+    ReferenceSimulator --> Variable : inputs and outputs
+    SimulationComparison --> QuantizedSimulator : creates
+    SimulationComparison --> ReferenceSimulator : creates
+    SimulationComparison ..> OutputComparison : returns comparisons
+    SimulationComparison ..> ControllerModel : compares
+    QuantizedSimulator ..> MinMaxEvaluation : evaluates rules
+    ReferenceSimulator ..> MinMaxEvaluation : evaluates rules
+    QuantizedSimulator ..> FuzzySet : quantizedDegree
+    ReferenceSimulator ..> FuzzySet : degree
+    QuantizedSimulator ..> SingletonFuzzySet : centroid values
+    ReferenceSimulator ..> SingletonFuzzySet : centroid values
+    MinMaxEvaluation --> ControllerModel : reads inputs and outputs
+    MinMaxEvaluation ..> EvaluationMethod : iterates rule rows
+    MinMaxEvaluation ..> MinMaxMethod : requires
+    MinMaxEvaluation ..> CentroidDefuzzifier : requires

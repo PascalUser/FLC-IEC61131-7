@@ -32,7 +32,7 @@ Hard rules:
    * `11-conclusiones.md`: conclusions, future work
    * `12-bibliografia.md`
 6. No unnecessary anglicisms or filler; write direct academic Spanish without inventing claims.
-7. If user has `.docx` template, place at `doc/thesis/reference.docx` — `build_thesis.sh` uses it via `--reference-doc`.
+7. The pandoc template lives in `config/pandoc/` (`defaults.yaml`, `reference.docx`, `thesis.lua`, `references.bib`); `build_thesis.sh` uses it via `-d config/pandoc/defaults.yaml`. Do not override it per-build unless asked.
 8. **Module consumption mapping:**
    * `utils` → 04, 07
    * `parser` → 06, 07

@@ -31,6 +31,7 @@ public final class DayTimes implements SemanticAnalyzer {
             ResolverStyle.STRICT
     );
 
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

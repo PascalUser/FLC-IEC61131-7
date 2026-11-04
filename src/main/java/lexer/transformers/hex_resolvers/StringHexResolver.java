@@ -34,6 +34,7 @@ public final class StringHexResolver extends HexResolver {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getHexDigits() {
         return 2;

@@ -40,6 +40,7 @@ public final class TrapezoidFuzzySet extends FuzzySet {
         this.d = d;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileFuzzSet(final CppWriter out, final int converterRange, final String varName,
                                final int setNumber) {
@@ -57,6 +58,7 @@ public final class TrapezoidFuzzySet extends FuzzySet {
         out.write("\t\t\t\t" + varName + "Fuzz[" + setNumber + "] = " + converterRange + ";\n");
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileFunctionSlope(final CppWriter out, final int converterRange, final String slopeName) {
         out.write("const fixed_int " + slopeName + "1 = ");
@@ -65,6 +67,7 @@ public final class TrapezoidFuzzySet extends FuzzySet {
         out.write(converterRange + "/(" + d + " - " + c + "); \n");
     }
 
+    /** {@inheritDoc} */
     @Override
     public int quantizedDegree(final int x, final int converterRange) {
         if (x < a || x > d) {
@@ -79,6 +82,7 @@ public final class TrapezoidFuzzySet extends FuzzySet {
         return converterRange;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double degree(final double x) {
         if (x <= a || x >= d) {

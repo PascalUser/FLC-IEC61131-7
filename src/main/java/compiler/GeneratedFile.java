@@ -46,6 +46,7 @@ public final class GeneratedFile {
         return content;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(final Object other) {
         if (this == other) {
@@ -58,11 +59,13 @@ public final class GeneratedFile {
         return name.equals(that.name) && content.equals(that.content);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hash(name, content);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "GeneratedFile{" + name + ", " + content.length() + " chars}";

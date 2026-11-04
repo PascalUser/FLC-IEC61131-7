@@ -35,6 +35,7 @@ public final class SingletonFuzzySet extends FuzzySet {
         return value;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileFuzzSet(final CppWriter out, final int converterRange, final String varName,
                                final int setNumber) {
@@ -44,16 +45,19 @@ public final class SingletonFuzzySet extends FuzzySet {
         out.write("\t\t" + varName + "Fuzz[" + setNumber + "] = 0;\n");
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileFunctionSlope(final CppWriter out, final int converterRange, final String slopeName) {
         // A singleton has no slope.
     }
 
+    /** {@inheritDoc} */
     @Override
     public int quantizedDegree(final int x, final int converterRange) {
         return (x == value) ? converterRange : 0;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double degree(final double x) {
         return (x == value) ? 1 : 0;

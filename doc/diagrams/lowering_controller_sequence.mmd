@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant C as lowering_lowers_ControllerLower
+    participant B as lowering_constructors_BitWidthConstructor
+    participant V as lowering_constructors_FuzzyVariablesConstructor
+    participant L as lowering_lowers_VariableLower
+    participant T as lowering_lowers_TermLower
+    participant F as lowering_facades_TermSetFactory
+    participant R as lowering_constructors_RulesConstructor
+    participant U as lowering_lowers_RuleLower
+    participant M as lowering_builders_ControllerModelBuilder
+    participant O as codegen_ControllerModel
+
+    C->>B: construct(controller)
+    B-->>C: bit width or unsupported feature
+    C->>V: construct(controller)
+    loop every input and output
+        V->>L: adapt()
+        loop every declared term
+            L->>T: adapt()
+            T->>F: create(termName, termInfo)
+            F-->>T: FuzzySet
+        end
+        L-->>V: Variable
+    end
+    V->>M: inputs outputs defuzzifiers
+    C->>R: construct(controller)
+    loop every rule
+        R->>U: adapt()
+        U-->>R: int[] row
+    end
+    R->>M: evaluationMethod(MinMaxMethod)
+    C->>O: new ControllerModel(new ControllerModelState(...))
+    O-->>C: Optional.of(model) or Optional.empty()

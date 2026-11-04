@@ -45,6 +45,9 @@ public final class ControllerModel {
 
     /**
      * Creates the model of a controller.
+     *
+     * @param state values accumulated by the lowering stages
+     * @throws IllegalArgumentException if the state is not a valid controller
      */
     public ControllerModel(ControllerModelState state) {
         if (state.bitWidth < MIN_BIT_WIDTH || state.bitWidth > MAX_BIT_WIDTH) {

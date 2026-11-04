@@ -50,20 +50,22 @@ fi
 echo "Chapters to compile (in this order):"
 printf '  - %s\n' "${CHAPTERS[@]##*/}"
 
-REF_DOC_ARG=()
-if [[ -f "$THESIS_DIR/reference.docx" ]]; then
-  echo "Using style template: doc/thesis/reference.docx"
-  REF_DOC_ARG=(--reference-doc="$THESIS_DIR/reference.docx")
+CONFIG_DIR="$ROOT_DIR/config/pandoc"
+if [[ ! -f "$CONFIG_DIR/defaults.yaml" ]]; then
+  echo "ERROR: $CONFIG_DIR/defaults.yaml not found" >&2
+  exit 1
 fi
 
+echo "Using pandoc template: config/pandoc/defaults.yaml"
+
 echo "Compiling thesis with pandoc..."
-pandoc "${CHAPTERS[@]}" \
-  --from=markdown-raw_tex \
-  --to=docx \
-  --resource-path="$ROOT_DIR:$ASSETS_BUILD_DIR" \
-  --toc --toc-depth=2 \
-  --number-sections \
-  "${REF_DOC_ARG[@]}" \
-  -o "$OUT"
+(
+  cd "$CONFIG_DIR"
+  pandoc "${CHAPTERS[@]}" \
+    -d defaults.yaml \
+    --resource-path="$ROOT_DIR:$ASSETS_BUILD_DIR" \
+    --bibliography=references.bib \
+    -o "$OUT"
+)
 
 echo "OK -> $(realpath --relative-to="$ROOT_DIR" "$OUT" 2>/dev/null || echo "$OUT")"

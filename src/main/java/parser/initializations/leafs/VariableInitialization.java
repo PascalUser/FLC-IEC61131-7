@@ -17,15 +17,22 @@ import java.util.Objects;
 public final class VariableInitialization extends LeafInitialization {
     private final String value;
 
+    /**
+     * Creates an initialization that refers to another variable.
+     *
+     * @param value name of the referenced variable
+     */
     public VariableInitialization(String value) {
         this.value = value;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String variableValue() {
         return value;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -34,11 +41,13 @@ public final class VariableInitialization extends LeafInitialization {
         return value.equals(other.value);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hashCode(value);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "VariableInitialization{" + value + "}";

@@ -47,11 +47,13 @@ public final class MacroInitialization extends LeafInitialization {
         this.replaceValue = replaceValue;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String variableValue() {
         return replaceValue.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,11 +62,13 @@ public final class MacroInitialization extends LeafInitialization {
         return replaceValue.equals(other.replaceValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hashCode(replaceValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "MacroInitialization{" + replaceValue + "}";

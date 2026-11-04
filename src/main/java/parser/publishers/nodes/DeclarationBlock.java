@@ -12,10 +12,14 @@ import parser.publishers.leafs.Declaration;
  */
 public final class DeclarationBlock extends Block<Declaration> {
 
+    /**
+     * Creates an empty block of regular variable declarations.
+     */
     public DeclarationBlock() {
         super();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void add(Declaration newDeclaration) {
         declarations.add(newDeclaration);

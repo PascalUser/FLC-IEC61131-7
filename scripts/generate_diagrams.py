@@ -211,15 +211,16 @@ def generate_parser_class_diagram():
     selected = {
         "parser": ["Parser"],
         "parser_publishers": [
-            "Publisher", "Declaration", "DeclarationGroup", "DeclarationBlock",
-            "MultipleDeclaration", "SingleDeclaration", "ComponentDeclaration",
-            "StructureDeclaration", "StructureBlock", "TermBlock",
+            "Publisher", "Declaration", "Block", "DeclarationBlock",
+            "MultipleDeclaration", "SingleDeclaration", "FuzzyDeclaration",
+            "StructureDeclaration", "StructureBlock", "FuzzyBlock",
             "EnumeratedTypeDeclaration", "AnnonymousEnumeratedVariable",
             "AnnonymousEnumeratedField",
         ],
         "parser_facades": [
             "DimensionCalculator", "IdentifierParser", "MacrosPublisher",
             "MembershipFunctionClassifier", "RangesParser", "RuleblockASTBuilder",
+            "SymbolTableCleaner",
         ],
         "parser_initializations": ["Initialization", "Factory"],
         "parser_initializations_leafs": [
@@ -235,7 +236,7 @@ def generate_parser_class_diagram():
             "StructureMetadata", "MacroMetadata", "CustomMetadata", "TermMetadata",
             "FuzzifierMetadata", "DefuzzifierMetadata", "PragmaMetadata",
         ],
-        "parser_tree": ["TreeNode", "Label"],
+        "parser_tree": ["ParserTreeNode", "ParserLabel"],
         "parser_utils": [
             "ParsedIdentifier", "PathInitializationInfo", "ConditionParsingContext",
             "ArrayParsingContext", "MembershipFunctionShape",
@@ -255,56 +256,67 @@ def generate_parser_class_diagram():
         ],
         "Publisher": [
             "<<interface>>",
-            "+setDeclarationScope(String)",
-            "+publish()",
+            "+scope(String) Publisher",
             "+keys() List~String~",
+            "+publish() void",
         ],
         "Declaration": [
             "<<abstract>>",
             "#declarationScope String",
             "#builder LexemeInfoBuilder",
-            "+setDeclarationScope(String)",
-            "+publish()",
-            "+keys() List~String~",
+            "+scope(String) Declaration",
+            "+type(Type) Declaration",
+            "+subtype(Subtype) Declaration",
+            "+customType(String) Declaration",
+            "+source(Source) Declaration",
+            "+use(Use) Declaration",
+            "+inferiorLimits(List~String~) Declaration",
+            "+superiorLimits(List~String~) Declaration",
+            "+parameters(List~String~) Declaration",
+            "+initialValue(Object) Declaration",
         ],
-        "DeclarationGroup": [
-            "#declarations List~Declaration~",
-            "+publish()",
+        "Block": [
+            "<<abstract>>",
+            "#declarations List~ConcreteDecl~",
+            "+add(ConcreteDecl) void",
+            "+scope(String) Block",
             "+keys() List~String~",
+            "+publish() void",
         ],
-        "DeclarationBlock": ["+addDeclaration(Declaration)"],
+        "DeclarationBlock": ["+add(Declaration) void"],
         "MultipleDeclaration": [
             "#identifiers List~String~",
-            "+identifiers(List~String~)",
-            "+publish()",
+            "+identifiers(List~String~) MultipleDeclaration",
+            "+publish() void",
             "+keys() List~String~",
         ],
         "SingleDeclaration": [
             "#identifier String",
-            "+identifier(String)",
-            "+publish()",
+            "+identifier(String) SingleDeclaration",
+            "+publish() void",
             "+keys() List~String~",
         ],
-        "ComponentDeclaration": ["+source(Source)", "+publish()"],
-        "StructureDeclaration": ["+identifier(String)", "+publish()"],
-        "StructureBlock": ["+addField(SingleDeclaration)", "+getInitializationInfo() List~PathInitializationInfo~"],
-        "TermBlock": ["+addTerm(SingleDeclaration)", "+getTermNames() List~String~"],
+        "FuzzyDeclaration": ["+source(Source) FuzzyDeclaration", "+publish() void"],
+        "StructureDeclaration": ["+identifier(String) StructureDeclaration", "+publish() void"],
+        "StructureBlock": ["+add(SingleDeclaration) void", "+getInitializationInfo() List~PathInitializationInfo~"],
+        "FuzzyBlock": ["+add(SingleDeclaration) void", "+getTermNames() List~String~"],
         "EnumeratedTypeDeclaration": ["+publish()"],
         "AnnonymousEnumeratedVariable": ["+publish()"],
         "AnnonymousEnumeratedField": ["+publish()"],
-        "DimensionCalculator": ["+calculate(List~String~, List~String~) int"],
+        "DimensionCalculator": ["<<utility>>", "+calculate(List~String~, List~String~) int"],
         "IdentifierParser": ["+parse(String, String) ParsedIdentifier"],
         "MacrosPublisher": ["+publish(SymbolTable, List~String~, String)"],
         "MembershipFunctionClassifier": ["+classify(List~String~, List~String~) MembershipFunctionShape"],
-        "RangesParser": ["+parse(List~String~, List~String~, List~String~)"],
-        "RuleblockASTBuilder": ["+build(TreeNode, List~Operator~) RuleBlockNode"],
+        "RangesParser": ["<<utility>>", "+parse(List~String~, List~String~, List~String~)"],
+        "RuleblockASTBuilder": ["+build(ParserTreeNode, List~Operator~) RuleBlockNode"],
+        "SymbolTableCleaner": ["+clean(SymbolTable) void"],
         "Initialization": [
             "<<interface>>",
             "+find(String) Optional~Initialization~",
             "+variableValue() String",
             "+copy() Initialization",
         ],
-        "Factory": ["+createPrimitiveInitialization(SymbolTable, Subtype) DefaultInitialization"],
+        "Factory": ["<<utility>>", "+createPrimitiveInitialization(SymbolTable, Subtype) DefaultInitialization"],
         "LeafInitialization": ["<<abstract>>", "+find(String) Optional~Initialization~"],
         "DefaultInitialization": [
             "+bool(SymbolTable) DefaultInitialization",
@@ -333,10 +345,10 @@ def generate_parser_class_diagram():
         "FuzzifierMetadata": [],
         "DefuzzifierMetadata": [],
         "PragmaMetadata": [],
-        "TreeNode": ["+label() Label", "+symbolReference() String", "+children() List~TreeNode~"],
+        "ParserTreeNode": ["+label() ParserLabel", "+symbolReference() String", "+children() List~ParserTreeNode~"],
         "ParsedIdentifier": ["+mangled() String", "+scope() String", "+name() String"],
         "PathInitializationInfo": ["+name() String", "+initialValue() Initialization"],
-        "ConditionParsingContext": ["+addOperator(Label)", "+addOperand(TreeNode)", "+getConditionNode() TreeNode"],
+        "ConditionParsingContext": ["+addOperator(ParserLabel)", "+addOperand(ParserTreeNode)", "+getConditionNode() ParserTreeNode"],
         "ArrayParsingContext": ["+getMaxValue() int", "+getPathsInfo() List~PathInitializationInfo~"],
         "MembershipFunctionShape": ["+subtype() Subtype", "+parameters() List~String~"],
         "SymbolTable": ["+put(String, LexemeInfo) LexemeInfo", "+putIfAbsent(String, LexemeInfo) LexemeInfo", "+get(String) LexemeInfo", "+size() int"],
@@ -344,8 +356,11 @@ def generate_parser_class_diagram():
         "LexemeInfoView": ["<<interface>>", "+type() Type", "+subtype() Subtype", "+initialValue() Object"],
         "LexemeInfoBuilder": ["+build() LexemeInfo"],
         "Director": [
-            "+makeWithMetadata(LexemeInfoMutator, LexemeInfoView)",
-            "+makeLiteral(LexemeInfoMutator)",
+            "<<utility>>",
+            "+makeWithMetadata(LexemeInfoMutator, LexemeInfoView) void",
+            "+makeLiteral(LexemeInfoMutator) void",
+            "+makeIntegerZeroConstant(LexemeInfoMutator) String",
+            "+makeBooleanTrueConstant(LexemeInfoMutator) String",
             "+makeDefaultInteger(LexemeInfoMutator) String",
             "+makeDefaultReal(LexemeInfoMutator) String",
             "+makeDefaultBoolean(LexemeInfoMutator) String",
@@ -383,13 +398,13 @@ def generate_parser_class_diagram():
     lines += [
         "    utils_builders_LexemeInfoMutator <|-- parser_publishers_Publisher",
         "    parser_publishers_Publisher <|.. parser_publishers_Declaration",
-        "    parser_publishers_Publisher <|.. parser_publishers_DeclarationGroup",
+        "    parser_publishers_Publisher <|.. parser_publishers_Block",
         "    parser_publishers_Declaration <|-- parser_publishers_MultipleDeclaration",
         "    parser_publishers_Declaration <|-- parser_publishers_SingleDeclaration",
-        "    parser_publishers_DeclarationGroup <|-- parser_publishers_DeclarationBlock",
-        "    parser_publishers_DeclarationGroup <|-- parser_publishers_StructureBlock",
-        "    parser_publishers_DeclarationGroup <|-- parser_publishers_TermBlock",
-        "    parser_publishers_SingleDeclaration <|-- parser_publishers_ComponentDeclaration",
+        "    parser_publishers_Block <|-- parser_publishers_DeclarationBlock",
+        "    parser_publishers_Block <|-- parser_publishers_StructureBlock",
+        "    parser_publishers_Block <|-- parser_publishers_FuzzyBlock",
+        "    parser_publishers_SingleDeclaration <|-- parser_publishers_FuzzyDeclaration",
         "    parser_publishers_SingleDeclaration <|-- parser_publishers_StructureDeclaration",
         "    parser_publishers_SingleDeclaration <|-- parser_publishers_EnumeratedTypeDeclaration",
         "    parser_publishers_SingleDeclaration <|-- parser_publishers_AnnonymousEnumeratedField",
@@ -413,7 +428,7 @@ def generate_parser_class_diagram():
         "    parser_Parser --> parser_facades_RuleblockASTBuilder : builds AST",
         "    parser_Parser --> utils_SymbolTable : writes",
         "    parser_publishers_Declaration --> utils_builders_LexemeInfoBuilder : holds",
-        "    parser_publishers_ComponentDeclaration --> parser_publishers_TermBlock : publishes terms",
+        "    parser_publishers_FuzzyDeclaration --> parser_publishers_FuzzyBlock : publishes terms",
         "    parser_publishers_StructureDeclaration --> parser_publishers_StructureBlock : publishes fields",
         "    parser_publishers_StructureBlock ..> parser_utils_PathInitializationInfo : exposes",
         "    parser_publishers_EnumeratedTypeDeclaration ..> parser_facades_MacrosPublisher : registers macros",
@@ -423,7 +438,7 @@ def generate_parser_class_diagram():
         "    parser_facades_MacrosPublisher --> utils_SymbolTable : writes",
         "    parser_facades_IdentifierParser ..> parser_utils_ParsedIdentifier : returns",
         "    parser_facades_MembershipFunctionClassifier ..> parser_utils_MembershipFunctionShape : returns",
-        "    parser_facades_RuleblockASTBuilder ..> parser_tree_TreeNode : traverses",
+        "    parser_facades_RuleblockASTBuilder ..> parser_tree_ParserTreeNode : traverses",
         "    parser_facades_RuleblockASTBuilder ..> ast_ruleblock_RuleBlockNode : returns",
         "    parser_facades_RuleblockASTBuilder ..> ast_ruleblock_operators_Operator : configured by",
         "    parser_initializations_Factory ..> parser_initializations_leafs_DefaultInitialization : creates",
@@ -433,7 +448,7 @@ def generate_parser_class_diagram():
         "    parser_metadata_ArrayMetadata ..> parser_facades_DimensionCalculator : sizes",
         "    parser_metadata_ArrayMetadata ..> parser_facades_RangesParser : splits ranges",
         "    parser_metadata_ArrayMetadata ..> parser_initializations_nodes_RepeatedInitialization : creates",
-        "    parser_utils_ConditionParsingContext --> parser_tree_TreeNode : builds",
+        "    parser_utils_ConditionParsingContext --> parser_tree_ParserTreeNode : builds",
     ]
     for name in selected["parser_metadata"]:
         lines.append(f"    utils_builders_LexemeInfoView <|.. parser_metadata_{name}")
@@ -466,15 +481,15 @@ def generate_lexer_parser_sequence():
         "    participant D as DiagnosticsHandler",
         "    P->>L: yylex()",
         "    L->>T: transform(yytext())",
-        "    loop Transformers encadenados",
+        "    loop Chained transformers",
         "        T->>T: giveToNext(lexeme)",
         "    end",
         "    T-->>L: preprocessedLexeme",
         "    L->>A: analyze(LexicalContext)",
-        "    opt Advertencia o error semantico",
+        "    opt Semantic warning or error",
         "        A->>D: add(Diagnostic)",
         "    end",
-        "    opt Literal valido o fallback numerico",
+        "    opt Valid literal or numeric fallback",
         "        A->>S: putIfAbsent(lexeme, LexemeInfo)",
         "    end",
         "    A-->>L: Result(lexeme, token)",
@@ -492,7 +507,7 @@ def generate_lexer_parser_sequence():
 def generate_symboltable_storage_object():
     """Generate object diagram for SymbolTable storage per type"""
     mermaid = ["classDiagram", "    class SymbolTable {", "        -table: Map~String, LexemeInfo~", "        +get()",
-                "        +put()", "        +putIfAbsent()", "        +size()", "    }", "    class LexemeInfo {", "        +type: Type",
+                "        +put()", "        +putIfAbsent()", "        +iterator()", "        +size()", "    }", "    class LexemeInfo {", "        +type: Type",
                 "        +subtype: Subtype", "        +customType: String", "        +use: Use",
                 "        +source: Source", "        +inferiorLimits: List~String~",
                 "        +superiorLimits: List~String~", "        +parameters: List~String~",
@@ -555,6 +570,7 @@ def generate_utils_class_diagram():
             +get()
             +put()
             +putIfAbsent()
+            +iterator()
             +size()
         }
         class LexemeInfo {
@@ -611,7 +627,7 @@ def generate_utils_class_diagram():
             +makeDefaultInteger(LexemeInfoMutator)
             +makeDefaultReal(LexemeInfoMutator)
             +makeDefaultBoolean(LexemeInfoMutator)
-            +makeTrueBoolean(LexemeInfoMutator)
+            +makeBooleanTrueConstant(LexemeInfoMutator)
             +makeDefaultString(LexemeInfoMutator)
             +makeDefaultWString(LexemeInfoMutator)
         }
@@ -688,7 +704,7 @@ def generate_publisher_sequence():
         "    Director->>Metadata: read type, subtype, use, source, limits, parameters, initialValue",
         "    Director->>Builder: copy attributes into LexemeInfoBuilder",
         "    Parser->>Publisher: identifier(name) or identifiers(list)",
-        "    Parser->>Publisher: setDeclarationScope(programName)",
+        "    Parser->>Publisher: scope(programName)",
         "    Publisher->>Builder: build()",
         "    Publisher->>ST: put(scope#identifier, LexemeInfo)",
         "    ST-->>Publisher: previous LexemeInfo or null",
@@ -790,8 +806,745 @@ def generate_codegen_controller_sequence():
     ])
 
 
+def generate_lowering_package_flowchart():
+    """Import dependencies of the lowering package, its subpackages, and its direct consumers."""
+    sources = read_java_files(SRC_DIR)
+    module_packages = {
+        "lowering", "lowering.builders", "lowering.constructors", "lowering.contexts",
+        "lowering.facades", "lowering.lowers", "lowering.utils",
+    }
+    dependency_packages = {
+        "ast", "ast.ruleblock", "ast.ruleblock.operators",
+        "codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets",
+        "parser.initializations", "parser.metadata",
+        "utils", "utils.diagnostics", "utils.enums",
+    }
+    consumers = {"compiler"}
+    packages = module_packages | dependency_packages | consumers
+    edges = set()
+    for path, content in sources.items():
+        origin = ".".join(Path(path).parts[:-1])
+        if origin not in packages:
+            continue
+        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+            destination = imp if wildcard else imp.rsplit(".", 1)[0]
+            if destination not in packages or origin == destination:
+                continue
+            if origin in module_packages or destination in module_packages:
+                edges.add((origin, destination))
+    used = sorted({pkg for edge in edges for pkg in edge})
+    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+    lines = ["flowchart LR"]
+    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
+    return "\n".join(lines)
+
+
+def generate_lowering_class_diagram():
+    """Class structure of the lowering package read from the Java sources."""
+    sources = read_java_files(SRC_DIR / "lowering")
+    selected = {
+        "lowering_builders": ["ControllerModelBuilder", "ControllerModelSchema"],
+        "lowering_constructors": ["BitWidthConstructor", "FuzzyVariablesConstructor",
+                                  "ModelConstructor", "RulesConstructor"],
+        "lowering_contexts": ["LoweringContext", "RuleLoweringContext", "TermLoweringContext",
+                              "VarLoweringContext"],
+        "lowering_facades": ["TermSetFactory"],
+        "lowering_lowers": ["ControllerLower", "Lower", "RuleLower", "TermLower", "VariableLower"],
+        "lowering_utils": ["ControllerModelState", "SymbolKeys"],
+    }
+    known = {name for names in selected.values() for name in names}
+    for name in known:
+        matches = [(path, content) for path, content in sources.items() if Path(path).stem == name]
+        if len(matches) != 1 or not re.search(
+                r'\b(?:class|interface)\s+' + re.escape(name) + r'\b', matches[0][1]):
+            raise ValueError(f"Missing lowering type: {name}")
+
+    lines = ["classDiagram"]
+    for namespace, names in selected.items():
+        lines.append(f"    namespace {namespace} {{")
+        lines += [f"        class {name}" for name in names]
+        lines.append("    }")
+
+    lines += [
+        "    ControllerModelSchema <|.. ControllerModelBuilder",
+        "    ModelConstructor <|.. BitWidthConstructor",
+        "    ModelConstructor <|.. FuzzyVariablesConstructor",
+        "    ModelConstructor <|.. RulesConstructor",
+        "    Lower <|.. ControllerLower",
+        "    Lower <|.. RuleLower",
+        "    Lower <|.. TermLower",
+        "    Lower <|.. VariableLower",
+        "    LoweringContext <|-- VarLoweringContext",
+        "    LoweringContext <|-- RuleLoweringContext",
+        "    VarLoweringContext <|-- TermLoweringContext",
+        "    ControllerLower --> ControllerModelBuilder : builds",
+        "    ControllerLower --> BitWidthConstructor : uses",
+        "    ControllerLower --> FuzzyVariablesConstructor : uses",
+        "    ControllerLower --> RulesConstructor : uses",
+        "    FuzzyVariablesConstructor --> VariableLower : uses",
+        "    RulesConstructor --> RuleLower : uses",
+        "    VariableLower --> TermLower : uses",
+        "    TermLower --> TermSetFactory : creates",
+        "    ControllerModelBuilder --> ControllerModelState : holds",
+    ]
+    return "\n".join(lines)
+
+
+def generate_lowering_controller_sequence():
+    """Controller lowering flow checked against the method calls in the Java sources."""
+    controller_lower = (SRC_DIR / "lowering" / "lowers" / "ControllerLower.java").read_text()
+    fuzzy_variables = (SRC_DIR / "lowering" / "constructors" / "FuzzyVariablesConstructor.java").read_text()
+    rules_constructor = (SRC_DIR / "lowering" / "constructors" / "RulesConstructor.java").read_text()
+    variable_lower = (SRC_DIR / "lowering" / "lowers" / "VariableLower.java").read_text()
+    term_lower = (SRC_DIR / "lowering" / "lowers" / "TermLower.java").read_text()
+    for snippet, text in [
+            ("new BitWidthConstructor", controller_lower),
+            ("new FuzzyVariablesConstructor", controller_lower),
+            ("new RulesConstructor", controller_lower),
+            ("new ControllerModel(", controller_lower),
+            ("new ControllerModelState(", controller_lower),
+            ("new VariableLower", fuzzy_variables),
+            ("varLower.adapt", fuzzy_variables),
+            ("new RuleLower", rules_constructor),
+            ("ruleLower.adapt", rules_constructor),
+            ("new TermLower", variable_lower),
+            ("termLower.adapt", variable_lower),
+            ("TermSetFactory.create", term_lower),
+    ]:
+        if snippet not in text:
+            raise ValueError(f"Lowering sequence source changed: {snippet}")
+    return "\n".join([
+        "sequenceDiagram",
+        "    participant C as lowering_lowers_ControllerLower",
+        "    participant B as lowering_constructors_BitWidthConstructor",
+        "    participant V as lowering_constructors_FuzzyVariablesConstructor",
+        "    participant L as lowering_lowers_VariableLower",
+        "    participant T as lowering_lowers_TermLower",
+        "    participant F as lowering_facades_TermSetFactory",
+        "    participant R as lowering_constructors_RulesConstructor",
+        "    participant U as lowering_lowers_RuleLower",
+        "    participant M as lowering_builders_ControllerModelBuilder",
+        "    participant O as codegen_ControllerModel",
+        "",
+        "    C->>B: construct(controller)",
+        "    B-->>C: bit width or unsupported feature",
+        "    C->>V: construct(controller)",
+        "    loop every input and output",
+        "        V->>L: adapt()",
+        "        loop every declared term",
+        "            L->>T: adapt()",
+        "            T->>F: create(termName, termInfo)",
+        "            F-->>T: FuzzySet",
+        "        end",
+        "        L-->>V: Variable",
+        "    end",
+        "    V->>M: inputs outputs defuzzifiers",
+        "    C->>R: construct(controller)",
+        "    loop every rule",
+        "        R->>U: adapt()",
+        "        U-->>R: int[] row",
+        "    end",
+        "    R->>M: evaluationMethod(MinMaxMethod)",
+        "    C->>O: new ControllerModel(new ControllerModelState(...))",
+        "    O-->>C: Optional.of(model) or Optional.empty()",
+    ])
+
+
+def generate_ast_package_flowchart():
+    """Import dependencies between AST subpackages and their direct consumers."""
+    sources = read_java_files(SRC_DIR)
+    ast_packages = {"ast", "ast.ruleblock", "ast.ruleblock.operators"}
+    consumers = {
+        "compiler", "lowering", "lowering.constructors", "lowering.contexts",
+        "lowering.lowers", "parser", "parser.facades",
+    }
+    packages = ast_packages | consumers
+    edges = set()
+    for path, content in sources.items():
+        origin = ".".join(Path(path).parts[:-1])
+        if origin not in packages:
+            continue
+        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+            destination = imp if wildcard else imp.rsplit(".", 1)[0]
+            if (origin != destination and destination in packages
+                    and (origin in ast_packages or destination in ast_packages)):
+                edges.add((origin, destination))
+    used = sorted({p for edge in edges for p in edge})
+    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+    lines = ["flowchart LR"]
+    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
+    return "\n".join(lines)
+
+
+def generate_ast_class_diagram():
+    """Class hierarchy and final-field associations read from the AST sources."""
+    sources = read_java_files(SRC_DIR / "ast")
+    selected = {
+        "ast": ["AbstractAstNode", "AbstractSyntaxTree"],
+        "ast_ruleblock": [
+            "BodyNode", "CondNode", "IdentifierNode", "IfNode", "IsNode",
+            "NotNode", "RuleBlockNode", "WithNode",
+        ],
+        "ast_ruleblock_operators": [
+            "Operator", "OperatorFactory", "OperatorNode", "AsumNode", "BdifNode",
+            "BsumNode", "MaxNode", "MinNode", "NsumNode", "ProdNode",
+        ],
+    }
+    members = {
+        "AbstractAstNode": [
+            "-children List~AbstractAstNode~",
+            "+label() String",
+            "+children() List~AbstractAstNode~",
+        ],
+        "AbstractSyntaxTree": ["-programName String", "+label() String"],
+        "BodyNode": ["-act OperatorNode", "+act() OperatorNode", "+label() String"],
+        "CondNode": ["-condition AbstractAstNode", "+condition() AbstractAstNode", "+label() String"],
+        "IdentifierNode": ["-name String", "+name() String", "+label() String"],
+        "IfNode": [
+            "-condition CondNode", "-body BodyNode",
+            "+condition() CondNode", "+body() BodyNode", "+label() String",
+        ],
+        "IsNode": [
+            "-variable IdentifierNode", "-term IdentifierNode",
+            "+variable() IdentifierNode", "+term() IdentifierNode", "+label() String",
+        ],
+        "NotNode": ["-operand AbstractAstNode", "+operand() AbstractAstNode", "+label() String"],
+        "RuleBlockNode": [
+            "-name String", "-accumulation OperatorNode",
+            "+accumulation() OperatorNode", "+label() String",
+        ],
+        "WithNode": [
+            "-weight String", "-ifNode IfNode",
+            "+weight() String", "+ifNode() IfNode", "+label() String",
+        ],
+        "Operator": ["<<enumeration>>", "+ASUM", "+BDIF", "+BSUM", "+MAX", "+MIN", "+NSUM", "+PROD"],
+        "OperatorFactory": [
+            "<<utility>>", "+orDefault() Operator", "+andDefault() Operator",
+            "+actDefault() Operator", "+accuDefault() Operator",
+        ],
+        "OperatorNode": ["-operator Operator", "+operator() Operator", "+label() String"],
+    }
+    known = {name for names in selected.values() for name in names}
+    for name in known:
+        matches = [(path, content) for path, content in sources.items() if Path(path).stem == name]
+        if len(matches) != 1 or not re.search(
+                r'\b(?:class|interface|enum)\s+' + re.escape(name) + r'\b', matches[0][1]):
+            raise ValueError(f"Missing AST type: {name}")
+
+    lines = ["classDiagram"]
+    for namespace, names in selected.items():
+        lines.append(f"    namespace {namespace} {{")
+        for name in names:
+            if members.get(name):
+                lines.append(f"        class {name} {{")
+                lines += [f"            {member}" for member in members[name]]
+                lines.append("        }")
+            else:
+                lines.append(f"        class {name}")
+        lines.append("    }")
+
+    inheritances = set()
+    for path, content in sorted(sources.items()):
+        name = Path(path).stem
+        if name not in known:
+            continue
+        match = re.search(
+            r'\b(?:class|interface)\s+' + re.escape(name) + r'\s+extends\s+(\w+)', content)
+        if match and match.group(1) in known:
+            inheritances.add((match.group(1), name))
+    for parent, child in sorted(inheritances):
+        lines.append(f"    {parent} <|-- {child}")
+
+    associations = {}
+    by_name = {Path(path).stem: content for path, content in sources.items()}
+    for path, content in sorted(sources.items()):
+        name = Path(path).stem
+        if name not in known:
+            continue
+        for field_type, field_name in re.findall(
+                r'private\s+final\s+([A-Z]\w*)\s+(\w+)\s*;', content):
+            if field_type in known:
+                associations.setdefault((name, field_type), []).append(field_name)
+    for source, target, label in [
+            ("AbstractSyntaxTree", "RuleBlockNode", "ruleBlocks"),
+            ("OperatorNode", "AbstractAstNode", "operands"),
+    ]:
+        if not re.search(
+                r'public\s+' + source + r'\s*\([^)]*' + target + r'[^)]*\)',
+                by_name[source]):
+            raise ValueError(f"AST constructor changed: {source} -> {target}")
+        associations.setdefault((source, target), []).append(label)
+    for (source, target), labels in sorted(associations.items()):
+        lines.append(f"    {source} --> {target} : {', '.join(labels)}")
+    return "\n".join(lines)
+
+
+def generate_ast_construction_sequence():
+    """Parser-to-lowering construction flow checked against the Java sources."""
+    parser_y = (SRC_DIR / "parser" / "Parser.y").read_text()
+    builder = (SRC_DIR / "parser" / "facades" / "RuleblockASTBuilder.java").read_text()
+    controller_lower = (SRC_DIR / "lowering" / "lowers" / "ControllerLower.java").read_text()
+    rules_constructor = (SRC_DIR / "lowering" / "constructors" / "RulesConstructor.java").read_text()
+    rule_lower = (SRC_DIR / "lowering" / "lowers" / "RuleLower.java").read_text()
+    for snippet, text in [
+            ("RuleblockASTBuilder.build(componentNode, configuration)", parser_y),
+            ("new AbstractSyntaxTree(programName", parser_y),
+            ("new RuleBlockNode", builder),
+            ("new OperatorNode", builder),
+            ("new RulesConstructor", controller_lower),
+            ("rulesConstructor.construct", controller_lower),
+            ("new RuleLower", rules_constructor),
+            ("ruleLower.adapt", rules_constructor),
+            ("new MinMaxMethod", rules_constructor),
+            ("public Optional<int[]> adapt", rule_lower),
+    ]:
+        if snippet not in text:
+            raise ValueError(f"AST sequence source changed: {snippet}")
+    return "\n".join([
+        "sequenceDiagram",
+        "    participant P as parser.Parser",
+        "    participant B as parser.facades.RuleblockASTBuilder",
+        "    participant T as ast.AbstractSyntaxTree",
+        "    participant C as lowering.lowers.ControllerLower",
+        "    participant R as lowering.constructors.RulesConstructor",
+        "    participant L as lowering.lowers.RuleLower",
+        "    participant M as codegen.evaluation.MinMaxMethod",
+        "",
+        "    P->>B: build(COMPONENT, configuration)",
+        "    B->>B: traverse ParserTreeNode",
+        "    B->>B: new RuleBlockNode and OperatorNode",
+        "    B-->>P: RuleBlockNode",
+        "    P->>T: new AbstractSyntaxTree(programName, ruleBlocks)",
+        "    P-->>C: getAST()",
+        "    C->>R: construct(controller)",
+        "    R->>L: adapt()",
+        "    L-->>R: int[] row",
+        "    R->>M: new MinMaxMethod(loweredRules)",
+    ])
+
+
+def generate_simulation_package_flowchart():
+    """Import dependencies between simulation, codegen, and the codegen subpackages it reads."""
+    sources = read_java_files(SRC_DIR)
+    packages = {"simulation", "codegen", "codegen.defuzzification",
+                "codegen.evaluation", "codegen.fuzzysets"}
+    edges = set()
+    for path, content in sources.items():
+        origin = ".".join(Path(path).parts[:-1])
+        if origin not in packages:
+            continue
+        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+            destination = imp if wildcard else imp.rsplit(".", 1)[0]
+            if destination in packages and origin != destination:
+                edges.add((origin, destination))
+    used = sorted({pkg for edge in edges for pkg in edge})
+    if "simulation" not in used:
+        raise ValueError("Simulation package has no imports into codegen")
+    if any(origin == "codegen" and destination == "simulation" for origin, destination in edges):
+        raise ValueError("codegen must not import simulation")
+    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+    lines = ["flowchart LR"]
+    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
+    return "\n".join(lines)
+
+
+def generate_simulation_class_diagram():
+    """Simulator, comparison, and MIN-MAX helper associations read from the Java sources."""
+    sources = read_java_files(SRC_DIR / "simulation")
+    all_sources = {str(path.relative_to(SRC_DIR)): path.read_text()
+                   for path in SRC_DIR.rglob("*.java") if path.name != "package-info.java"}
+    selected = {
+        "simulation": ["ReferenceSimulator", "QuantizedSimulator", "SimulationComparison",
+                       "OutputComparison", "MinMaxEvaluation"],
+        "codegen": ["ControllerModel", "Variable"],
+        "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
+        "codegen_defuzzification": ["CentroidDefuzzifier"],
+        "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet"],
+    }
+    members = {
+        "ReferenceSimulator": [
+            "-model ControllerModel",
+            "+ReferenceSimulator(ControllerModel)",
+            "+evaluate(double...) double[]",
+            "-centroid(Variable, double[]) double",
+        ],
+        "QuantizedSimulator": [
+            "-model ControllerModel",
+            "-degreeTables double[][][]",
+            "+QuantizedSimulator(ControllerModel)",
+            "+evaluate(int...) OptionalInt[]",
+            "-centroid(Variable, double[]) OptionalInt",
+        ],
+        "SimulationComparison": [
+            "<<utility>>",
+            "+compare(ControllerModel, int) List~OutputComparison~",
+            "-next(int[], int, int) boolean",
+        ],
+        "OutputComparison": [
+            "-output String",
+            "-evaluated long",
+            "-maxError double",
+            "-worstInputs int[]",
+            "-meanError double",
+            "-undefinedInHardware long",
+            "-undefinedInReference long",
+            "+output() String",
+            "+evaluated() long",
+            "+maxError() double",
+            "+worstInputs() int[]",
+            "+meanError() double",
+            "+undefinedInHardware() long",
+            "+undefinedInReference() long",
+        ],
+        "MinMaxEvaluation": [
+            "<<utility>>",
+            "~requireSimulable(ControllerModel) void",
+            "~outputDegrees(ControllerModel, double[][]) double[][]",
+        ],
+    }
+    evidence = {
+        "ReferenceSimulator": [
+            "private final ControllerModel model;",
+            "MinMaxEvaluation.requireSimulable(model);",
+            "MinMaxEvaluation.outputDegrees(model, inputDegrees);",
+            "sets.get(term).degree(inputs[input])",
+        ],
+        "QuantizedSimulator": [
+            "private final ControllerModel model;",
+            "MinMaxEvaluation.requireSimulable(model);",
+            "MinMaxEvaluation.outputDegrees(model, inputDegrees);",
+            "sets.get(term).quantizedDegree(x, range)",
+        ],
+        "SimulationComparison": [
+            "new QuantizedSimulator(model)",
+            "new ReferenceSimulator(model)",
+            "new OutputComparison(output, evaluated",
+        ],
+        "OutputComparison": [
+            "private final double maxError;",
+            "public long undefinedInHardware()",
+        ],
+        "MinMaxEvaluation": [
+            "model.evaluationMethod() instanceof MinMaxMethod",
+            "model.defuzzifier(model.outputs().get(i).name()) instanceof CentroidDefuzzifier",
+            "rules.set(row, model.inputColumn(input))",
+        ],
+    }
+    known = {name for names in selected.values() for name in names}
+    for name in known:
+        matches = [(path, content) for path, content in all_sources.items()
+                   if Path(path).stem == name]
+        if len(matches) != 1 or not re.search(
+                r'\b(?:class|interface|enum)\s+' + re.escape(name) + r'\b', matches[0][1]):
+            raise ValueError(f"Missing simulation type: {name}")
+    by_name = {Path(path).stem: content for path, content in sources.items()}
+    for name, snippets in evidence.items():
+        for snippet in snippets:
+            if snippet not in by_name[name]:
+                raise ValueError(f"Simulation class source changed: {name}: {snippet}")
+
+    lines = ["classDiagram"]
+    for namespace, names in selected.items():
+        lines.append(f"    namespace {namespace} {{")
+        for name in names:
+            if members.get(name):
+                lines.append(f"        class {name} {{")
+                lines += [f"            {member}" for member in members[name]]
+                lines.append("        }")
+            else:
+                lines.append(f"        class {name}")
+        lines.append("    }")
+
+    lines += [
+        "    QuantizedSimulator --> ControllerModel : model",
+        "    ReferenceSimulator --> ControllerModel : model",
+        "    QuantizedSimulator --> Variable : inputs and outputs",
+        "    ReferenceSimulator --> Variable : inputs and outputs",
+        "    SimulationComparison --> QuantizedSimulator : creates",
+        "    SimulationComparison --> ReferenceSimulator : creates",
+        "    SimulationComparison ..> OutputComparison : returns comparisons",
+        "    SimulationComparison ..> ControllerModel : compares",
+        "    QuantizedSimulator ..> MinMaxEvaluation : evaluates rules",
+        "    ReferenceSimulator ..> MinMaxEvaluation : evaluates rules",
+        "    QuantizedSimulator ..> FuzzySet : quantizedDegree",
+        "    ReferenceSimulator ..> FuzzySet : degree",
+        "    QuantizedSimulator ..> SingletonFuzzySet : centroid values",
+        "    ReferenceSimulator ..> SingletonFuzzySet : centroid values",
+        "    MinMaxEvaluation --> ControllerModel : reads inputs and outputs",
+        "    MinMaxEvaluation ..> EvaluationMethod : iterates rule rows",
+        "    MinMaxEvaluation ..> MinMaxMethod : requires",
+        "    MinMaxEvaluation ..> CentroidDefuzzifier : requires",
+    ]
+    return "\n".join(lines)
+
+
+def generate_simulation_comparison_sequence():
+    """SimulationComparison.compare flow checked against the simulation Java sources."""
+    comparison = (SRC_DIR / "simulation" / "SimulationComparison.java").read_text()
+    quantized = (SRC_DIR / "simulation" / "QuantizedSimulator.java").read_text()
+    reference = (SRC_DIR / "simulation" / "ReferenceSimulator.java").read_text()
+    evaluation = (SRC_DIR / "simulation" / "MinMaxEvaluation.java").read_text()
+    for snippet, text in [
+            ("new QuantizedSimulator(model)", comparison),
+            ("new ReferenceSimulator(model)", comparison),
+            ("hardware.evaluate(inputs)", comparison),
+            ("reference.evaluate(realInputs)", comparison),
+            ("accumulators[output].add(inputs, generated[output], ideal[output]);", comparison),
+            ("} while (next(inputs, step, model.converterRange()));", comparison),
+            ("accumulators[output].result(model.outputs().get(output).name())", comparison),
+            ("return new OutputComparison(output, evaluated", comparison),
+            ("MinMaxEvaluation.requireSimulable(model);", quantized),
+            ("MinMaxEvaluation.outputDegrees(model, inputDegrees);", quantized),
+            ("sets.get(term).quantizedDegree(x, range)", quantized),
+            ("(numerator / denominator) & model.converterRange()", quantized),
+            ("MinMaxEvaluation.requireSimulable(model);", reference),
+            ("MinMaxEvaluation.outputDegrees(model, inputDegrees);", reference),
+            ("sets.get(term).degree(inputs[input])", reference),
+            ("model.evaluationMethod() instanceof MinMaxMethod", evaluation),
+    ]:
+        if snippet not in text:
+            raise ValueError(f"Simulation sequence source changed: {snippet}")
+    return "\n".join([
+        "sequenceDiagram",
+        "    participant C as simulation_SimulationComparison",
+        "    participant Q as simulation_QuantizedSimulator",
+        "    participant R as simulation_ReferenceSimulator",
+        "    participant M as simulation_MinMaxEvaluation",
+        "    participant F as codegen_fuzzysets_FuzzySet",
+        "    participant A as Accumulator",
+        "    participant O as simulation_OutputComparison",
+        "",
+        "    C->>Q: new QuantizedSimulator(model)",
+        "    Q->>M: requireSimulable(model)",
+        "    Q->>F: quantizedDegree(x, range)",
+        "    C->>R: new ReferenceSimulator(model)",
+        "    R->>M: requireSimulable(model)",
+        "    loop Input grid advanced like an odometer",
+        "        C->>Q: evaluate(inputs)",
+        "        Q->>M: outputDegrees(model, inputDegrees)",
+        "        Q-->>C: OptionalInt[] generated",
+        "        C->>R: evaluate(realInputs)",
+        "        R->>F: degree(inputValue)",
+        "        R->>M: outputDegrees(model, inputDegrees)",
+        "        R-->>C: double[] ideal",
+        "        loop Every output",
+        "            C->>A: add(inputs, generated, ideal)",
+        "        end",
+        "        C->>C: next(inputs, step, converterRange)",
+        "    end",
+        "    loop Every output",
+        "        C->>A: result(outputName)",
+        "        A->>O: new OutputComparison(...)",
+        "        A-->>C: OutputComparison",
+        "    end",
+        "    C-->>C: List of OutputComparison",
+    ])
+
+
+def generate_compiler_package_flowchart():
+    """Import dependencies of the compiler facade and its entry point."""
+    sources = read_java_files(SRC_DIR / "compiler")
+    packages = {
+        "compiler", "ast", "codegen", "lexer", "lowering", "lowering.lowers",
+        "parser", "utils", "utils.diagnostics",
+    }
+    edges = set()
+    for path, content in sources.items():
+        origin = ".".join(Path(path).parts[:-1])
+        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+            destination = imp if wildcard else imp.rsplit(".", 1)[0]
+            if origin in packages and destination in packages and origin != destination:
+                edges.add((origin, destination))
+    main_source = (SRC_DIR / "Main.java").read_text()
+    if "import compiler.CommandLine;" not in main_source:
+        raise ValueError("Main.java no longer imports compiler.CommandLine")
+    if "compiler" not in {pkg for edge in edges for pkg in edge}:
+        raise ValueError("Compiler package has no dependencies")
+    used = sorted({pkg for edge in edges for pkg in edge})
+    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+    lines = ["flowchart LR"]
+    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += ['    main["Main.java"]']
+    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
+    lines.append("    main --> compiler")
+    return "\n".join(lines)
+
+
+def generate_compiler_class_diagram():
+    """Compiler facade, command line, and generated file with the pipeline collaborators."""
+    sources = read_java_files(SRC_DIR / "compiler")
+    all_sources = {str(path.relative_to(SRC_DIR)): path.read_text()
+                   for path in SRC_DIR.rglob("*.java") if path.name != "package-info.java"}
+    selected = {
+        "compiler": ["CommandLine", "FlcCompiler", "GeneratedFile"],
+        "ast": ["AbstractSyntaxTree"],
+        "codegen": ["CodeGenerator", "ControllerModel"],
+        "lexer": ["Lexer"],
+        "lowering_lowers": ["ControllerLower"],
+        "parser": ["Parser"],
+        "utils": ["DiagnosticsHandler", "SymbolTable"],
+    }
+    members = {
+        "CommandLine": [
+            "<<utility>>",
+            "+OK int",
+            "+COMPILATION_ERRORS int",
+            "+USAGE_ERROR int",
+            "+INTERNAL_ERROR int",
+            "+run(String[], PrintStream, PrintStream) int",
+            "-baseName(Path) String",
+        ],
+        "FlcCompiler": [
+            "-diagnostics DiagnosticsHandler",
+            "+FlcCompiler(DiagnosticsHandler)",
+            "+compile(Reader, String) List~GeneratedFile~",
+        ],
+        "GeneratedFile": [
+            "-name String",
+            "-content String",
+            "+name() String",
+            "+content() String",
+            "+equals(Object) boolean",
+            "+hashCode() int",
+        ],
+    }
+    evidence = {
+        "CommandLine": [
+            "public static int run(final String[] args",
+            "new FlcCompiler(diagnostics).compile(source, baseName(program))",
+            "Files.write(target, file.content().getBytes(StandardCharsets.UTF_8))",
+        ],
+        "FlcCompiler": [
+            "new Parser(new Lexer(source, symbolTable, diagnostics), symbolTable)",
+            "ControllerLower.newInstance(symbolTable, root, diagnostics).adapt()",
+            "new CodeGenerator(model.get())",
+            "new GeneratedFile(baseName + \"_out.cpp\"",
+        ],
+        "GeneratedFile": [
+            "public String name()",
+            "public String content()",
+            "public boolean equals(final Object other)",
+        ],
+    }
+    known = {name for names in selected.values() for name in names}
+    for name in known:
+        matches = [(path, content) for path, content in all_sources.items()
+                   if Path(path).stem == name]
+        if len(matches) != 1 or not re.search(
+                r'\b(?:class|interface|enum)\s+' + re.escape(name) + r'\b', matches[0][1]):
+            raise ValueError(f"Missing compiler type: {name}")
+    by_name = {Path(path).stem: content for path, content in sources.items()}
+    for name, snippets in evidence.items():
+        for snippet in snippets:
+            if snippet not in by_name[name]:
+                raise ValueError(f"Compiler class source changed: {name}: {snippet}")
+
+    lines = ["classDiagram"]
+    for namespace, names in selected.items():
+        lines.append(f"    namespace {namespace} {{")
+        for name in names:
+            if members.get(name):
+                lines.append(f"        class {name} {{")
+                lines += [f"            {member}" for member in members[name]]
+                lines.append("        }")
+            else:
+                lines.append(f"        class {name}")
+        lines.append("    }")
+
+    lines += [
+        "    CommandLine ..> FlcCompiler : creates",
+        "    CommandLine ..> GeneratedFile : writes",
+        "    FlcCompiler --> DiagnosticsHandler : reports",
+        "    FlcCompiler ..> Lexer : creates",
+        "    FlcCompiler ..> Parser : creates",
+        "    FlcCompiler ..> SymbolTable : creates",
+        "    FlcCompiler ..> AbstractSyntaxTree : reads",
+        "    FlcCompiler ..> ControllerLower : lowers",
+        "    FlcCompiler ..> ControllerModel : consumes",
+        "    FlcCompiler ..> CodeGenerator : generates",
+        "    FlcCompiler ..> GeneratedFile : returns",
+        "    Parser --> Lexer : reads tokens",
+        "    Parser --> SymbolTable : publishes declarations",
+        "    ControllerLower ..> ControllerModel : builds",
+        "    CodeGenerator --> ControllerModel : uses",
+    ]
+    return "\n".join(lines)
+
+
+def generate_compiler_pipeline_sequence():
+    """End-to-end pipeline flow checked against the compiler Java sources."""
+    command_line = (SRC_DIR / "compiler" / "CommandLine.java").read_text()
+    compiler = (SRC_DIR / "compiler" / "FlcCompiler.java").read_text()
+    for snippet, text in [
+            ("new FlcCompiler(diagnostics).compile(source, baseName(program))", command_line),
+            ("Files.createDirectories(outputDirectory)", command_line),
+            ("Files.write(target, file.content().getBytes(StandardCharsets.UTF_8))", command_line),
+            ("new SymbolTable()", compiler),
+            ("new Parser(new Lexer(source, symbolTable, diagnostics), symbolTable)", compiler),
+            ("if (!parser.parse() || diagnostics.hasErrors())", compiler),
+            ("AbstractSyntaxTree root = parser.getAST()", compiler),
+            ("ControllerLower.newInstance(symbolTable, root, diagnostics).adapt()", compiler),
+            ("if (!model.isPresent())", compiler),
+            ("new CodeGenerator(model.get())", compiler),
+            ("generator.generateCpp()", compiler),
+            ("generator.generateHeader()", compiler),
+            ("generator.generateTestBench(header)", compiler),
+            ("new GeneratedFile(baseName + \"_out.cpp\"", compiler),
+    ]:
+        if snippet not in text:
+            raise ValueError(f"Compiler sequence source changed: {snippet}")
+    return "\n".join([
+        "sequenceDiagram",
+        "    participant CLI as compiler_CommandLine",
+        "    participant C as compiler_FlcCompiler",
+        "    participant L as lexer_Lexer",
+        "    participant P as parser_Parser",
+        "    participant S as utils_SymbolTable",
+        "    participant D as utils_DiagnosticsHandler",
+        "    participant R as lowering_lowers_ControllerLower",
+        "    participant M as codegen_ControllerModel",
+        "    participant G as codegen_CodeGenerator",
+        "    participant F as compiler_GeneratedFile",
+        "",
+        "    CLI->>C: new FlcCompiler(diagnostics)",
+        "    CLI->>C: compile(source, baseName)",
+        "    C->>S: new SymbolTable()",
+        "    C->>L: new Lexer(source, symbolTable, diagnostics)",
+        "    C->>P: new Parser(lexer, symbolTable)",
+        "    C->>P: parse()",
+        "    P->>L: yylex()",
+        "    P->>S: publish declarations",
+        "    P-->>C: true or false",
+        "    alt parse failed or diagnostics has errors",
+        "        C-->>CLI: empty List",
+        "    else parse succeeded",
+        "        C->>P: getAST()",
+        "        P-->>C: AbstractSyntaxTree",
+        "        C->>R: newInstance(symbolTable, root, diagnostics).adapt()",
+        "        R->>M: new ControllerModel(...)",
+        "        M-->>R: Optional model",
+        "        alt model present",
+        "            C->>G: new CodeGenerator(model)",
+        "            C->>G: generateCpp / generateHeader / generateTestBench",
+        "            G-->>C: C++ text",
+        "            C->>F: new GeneratedFile(name, content)",
+        "            C-->>CLI: List of GeneratedFile",
+        "            CLI->>CLI: createDirectories and write files",
+        "        else lowering failed",
+        "            C-->>CLI: empty List",
+        "        end",
+        "    end",
+    ])
+
+
 DIAGRAMS = {
     "package_dependencies": generate_package_flowchart,
+    "ast_package_flowchart": generate_ast_package_flowchart,
+    "ast_class_diagram": generate_ast_class_diagram,
+    "ast_construction_sequence": generate_ast_construction_sequence,
     "lexer_package_flowchart": generate_lexer_package_flowchart,
     "lexer_class_diagram": generate_lexer_class_diagram,
     "lexer_intervals_object": generate_lexer_intervals_object,
@@ -806,13 +1559,23 @@ DIAGRAMS = {
     "codegen_package_flowchart": generate_codegen_package_flowchart,
     "codegen_class_diagram": generate_codegen_class_diagram,
     "codegen_controller_sequence": generate_codegen_controller_sequence,
+    "lowering_package_flowchart": generate_lowering_package_flowchart,
+    "lowering_class_diagram": generate_lowering_class_diagram,
+    "lowering_controller_sequence": generate_lowering_controller_sequence,
+    "simulation_package_flowchart": generate_simulation_package_flowchart,
+    "simulation_class_diagram": generate_simulation_class_diagram,
+    "simulation_comparison_sequence": generate_simulation_comparison_sequence,
+    "compiler_package_flowchart": generate_compiler_package_flowchart,
+    "compiler_class_diagram": generate_compiler_class_diagram,
+    "compiler_pipeline_sequence": generate_compiler_pipeline_sequence,
 }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Generate mermaid diagrams from source code")
     parser.add_argument("--list", action="store_true", help="List available diagrams")
-    parser.add_argument("scope", nargs="?", default="all", help="Scope: all|lexer|parser|utils|codegen|architecture")
+    parser.add_argument("scope", nargs="?", default="all",
+                        help="Scope: all|lexer|parser|ast|utils|codegen|lowering|simulation|compiler|architecture")
     args = parser.parse_args()
 
     DIAGRAMS_DIR.mkdir(parents=True, exist_ok=True)
@@ -826,10 +1589,20 @@ def main():
         targets = ["lexer_package_flowchart", "lexer_class_diagram", "lexer_intervals_object", "lexer_parser_sequence"]
     elif scope == "parser":
         targets = ["parser_package_flowchart", "parser_class_diagram", "publisher_sequence", "symboltable_storage"]
+    elif scope == "ast":
+        targets = ["ast_package_flowchart", "ast_class_diagram", "ast_construction_sequence"]
     elif scope == "utils":
         targets = ["utils_class_diagram", "diagnostics_hierarchy", "symboltable_storage"]
     elif scope == "codegen":
         targets = ["codegen_package_flowchart", "codegen_class_diagram", "codegen_controller_sequence"]
+    elif scope == "lowering":
+        targets = ["lowering_package_flowchart", "lowering_class_diagram", "lowering_controller_sequence"]
+    elif scope == "simulation":
+        targets = ["simulation_package_flowchart", "simulation_class_diagram",
+                   "simulation_comparison_sequence"]
+    elif scope == "compiler":
+        targets = ["compiler_package_flowchart", "compiler_class_diagram",
+                   "compiler_pipeline_sequence"]
     elif scope == "architecture":
         targets = ["package_dependencies", "lexer_parser_sequence", "architecture_evolution"]
     else:
@@ -838,7 +1611,7 @@ def main():
             targets = [scope]
         else:
             print(f"Unknown scope: {scope}")
-            print(f"Available: all, lexer, parser, utils, codegen, architecture")
+            print(f"Available: all, lexer, parser, ast, utils, codegen, lowering, simulation, compiler, architecture")
             print(f"Or specific: {', '.join(DIAGRAMS.keys())}")
             return
 

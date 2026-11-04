@@ -15,6 +15,12 @@ import java.util.List;
 public class AbstractSyntaxTree extends AbstractAstNode {
     private final String programName;
 
+    /**
+     * Creates the syntax tree of a program.
+     *
+     * @param programName name of the function block
+     * @param ruleBlocks rule blocks of the program
+     */
     public AbstractSyntaxTree(String programName, List<RuleBlockNode> ruleBlocks) {
         super(ruleBlocks);
         this.programName = programName;

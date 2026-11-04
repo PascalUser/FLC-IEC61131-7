@@ -8,8 +8,9 @@ services:
     env_file: .env
     volumes:
       - ./.opencode:/workspace/.opencode:rw
+      - ./config:/workspace/config:ro
       - ./doc:/workspace/doc:rw
-      - ./scripts:/workspace/scripts:ro
+      - ./scripts:/workspace/scripts:rw
       - ./src:/workspace/src:rw
       - ./output:/workspace/output:rw
       - ./opencode.json:/workspace/opencode.json:ro

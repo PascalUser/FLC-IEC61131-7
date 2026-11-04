@@ -22,6 +22,11 @@ public final class SourceCode {
 
     private SourceCode() {}
 
+    /**
+     * Returns the symbol table key of the {@code main} function block.
+     *
+     * @return the upper-cased function block name
+     */
     public static String key() {
         return FUNCTION_BLOCK_NAME.toUpperCase();
     }

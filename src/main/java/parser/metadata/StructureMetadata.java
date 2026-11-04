@@ -24,6 +24,11 @@ public final class StructureMetadata implements LexemeInfoView {
     private final List<String> fields;
     private final StructInitialization initialValue;
 
+    /**
+     * Creates the metadata of a structure type from its field declarations.
+     *
+     * @param initBlock block with the fields of the structure
+     */
     public StructureMetadata(StructureBlock initBlock) {
         fields = new ArrayList<>();
         initialValue = new StructInitialization();
@@ -35,41 +40,49 @@ public final class StructureMetadata implements LexemeInfoView {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.STRUCT;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Subtype subtype() {
         return Subtype.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return fields;

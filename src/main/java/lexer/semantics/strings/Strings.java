@@ -18,6 +18,7 @@ import utils.enums.Subtype;
  */
 public final class Strings extends StringsAnalyzer {
 
+    /** {@inheritDoc} */
     @Override
     protected Subtype getSubtype() {
         return Subtype.STRING;

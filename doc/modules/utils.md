@@ -2,7 +2,7 @@
 
 Shared compiler state and semantic metadata: symbol table, `LexemeInfo` DTO, diagnostics, builders, and classification enums.
 
-Last update: 2026-11-01
+Last update: 2026-11-04
 
 ## Purpose
 
@@ -188,7 +188,7 @@ classDiagram
 | `utils_builders_Director`                     | Static recipes for literals, defaults, and copying metadata from a view into a mutator                                                                                      | Director                      |
 | `utils_enums_Type`                            | General type classification: `ARRAY`, `ENUMERATE`, `FUNCTION`, `NONE`, `SIMPLE`, `STRUCT`, `SUBRANGE`, `UNKNOWN`                                                            | Enum                          |
 | `utils_enums_Subtype`                         | Specific primitive, temporal, bit-string, fuzzy membership-function, and sentinel subtypes                                                                                  | Enum                          |
-| `utils_enums_Use`                             | Usage context: `COMPONENT`, `CONSTANT`, `FIELD`, `FUNCTION_BLOCK`, `LITERAL`, `MACRO`, `PRAGMA`, `RULE`, `TERM`, `TYPE`, `UNKNOWN`, `VARIABLE`                              | Enum                          |
+| `utils_enums_Use`                             | Usage context: `COMPONENT`, `CONSTANT`, `FIELD`, `MAIN`, `LITERAL`, `MACRO`, `PRAGMA`, `RULE`, `TERM`, `TYPE`, `UNKNOWN`, `VARIABLE`                                        | Enum                          |
 | `utils_enums_Source`                          | Declaration block: `DEFUZZIFY`, `FUZZIFY`, `IN`, `INTERNAL`, `NONE`, `OUT`, `UNKNOWN`                                                                                       | Enum                          |
 | `utils_diagnostics_Diagnostic`                | Abstract base holding a source line and the fatal/non-fatal contract                                                                                                        | Template Method               |
 | `utils_diagnostics_Error`                     | Fatal diagnostic; prefixes messages with `ERROR:`                                                                                                                           | Inheritance                   |
@@ -218,7 +218,7 @@ Counts and constants are read from `src/main/java/utils/enums/*.java`.
 |-----------------------|-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `utils_enums_Type`    | 8     | `ARRAY`, `ENUMERATE`, `FUNCTION`, `NONE`, `SIMPLE`, `STRUCT`, `SUBRANGE`, `UNKNOWN`                                                                                                                                                                                                                                                    |
 | `utils_enums_Subtype` | 35    | `BOOL`, `BYTE`, `COA`, `COG`, `COGS`, `COMPLEX`, `CUSTOM`, `DATE`, `DATE_AND_TIME`, `DINT`, `DWORD`, `INT`, `LINEAR`, `LINT`, `LM`, `LREAL`, `LWORD`, `NONE`, `REAL`, `RM`, `SINGLETON`, `SINT`, `STRING`, `TIME`, `TIME_OF_DAY`, `TRAPEZOID`, `TRIANGLE`, `UDINT`, `UINT`, `ULINT`, `UNKNOWN`, `USINT`, `VARIABLE`, `WORD`, `WSTRING` |
-| `utils_enums_Use`     | 12    | `COMPONENT`, `CONSTANT`, `FIELD`, `FUNCTION_BLOCK`, `LITERAL`, `MACRO`, `PRAGMA`, `RULE`, `TERM`, `TYPE`, `UNKNOWN`, `VARIABLE`                                                                                                                                                                                                        |
+| `utils_enums_Use`     | 12    | `COMPONENT`, `CONSTANT`, `FIELD`, `MAIN`, `LITERAL`, `MACRO`, `PRAGMA`, `RULE`, `TERM`, `TYPE`, `UNKNOWN`, `VARIABLE`                                                                                                                                                                                                                  |
 | `utils_enums_Source`  | 7     | `DEFUZZIFY`, `FUZZIFY`, `IN`, `INTERNAL`, `NONE`, `OUT`, `UNKNOWN`                                                                                                                                                                                                                                                                     |
 
 `Subtype` includes fuzzy membership-function shapes such as `COA`, `COG`, `COGS`, `COMPLEX`, `LINEAR`, `LM`, `RM`, `SINGLETON`, `TRAPEZOID`, `TRIANGLE`, and `VARIABLE`. These are not primitive IEC data types; they classify membership-function terms stored in `LexemeInfo`.
@@ -263,7 +263,7 @@ Chart: `assets/cyclomatic_complexity.png` — Average cyclomatic complexity per 
 
 ### Lines of code per module
 
-Chart: `assets/loc_per_module.png` — Non-comment lines of code per module; `utils` is 1334 lines across 31 files.
+Chart: `assets/loc_per_module.png` — Non-comment lines of code per module; `utils` is 1363 lines across 31 files.
 *Source: `scripts/extract_stats.py`*
 
 ### Diagnostics distribution — errors vs warnings
@@ -273,8 +273,8 @@ Chart: `assets/diagnostics_error_vs_warning.png` — Concrete diagnostic classes
 
 ### Test coverage per package
 
-Chart: `assets/test_coverage.png` — Line coverage per JaCoCo package.
-*Source: `target/site/jacoco/jacoco.xml` via `scripts/extract_stats.py`. Consult the JaCoCo report for package-level values; the extractor stores one percentage per module key, so the chart is not an aggregate of all `utils.*` packages.*
+Chart: `assets/test_coverage.png` — Line coverage per JaCoCo package; `utils` is 87% and the overall project is 89%.
+*Source: `target/site/jacoco/jacoco.xml` via `scripts/extract_stats.py`. The extractor stores one percentage per module key, so the chart is not an aggregate of all `utils.*` packages.*
 
 ### Package coupling
 
@@ -292,6 +292,7 @@ classDiagram
         +get()
         +put()
         +putIfAbsent()
+        +iterator()
         +size()
     }
     class LexemeInfo {

@@ -20,40 +20,52 @@ import java.util.List;
 public final class FuzzifierMetadata implements LexemeInfoView {
     List<String> terms;
 
+    /**
+     * Creates the metadata of a fuzzifier.
+     *
+     * @param fuzzyBlock block with the terms of the fuzzifier
+     */
     public FuzzifierMetadata(FuzzyBlock fuzzyBlock) {
         this.terms = fuzzyBlock.getTermNames();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.FUNCTION;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Subtype subtype() {
         return Subtype.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.FUZZIFY;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.COMPONENT;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return null;
@@ -68,6 +80,7 @@ public final class FuzzifierMetadata implements LexemeInfoView {
         return terms;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object initialValue() {
         return null;

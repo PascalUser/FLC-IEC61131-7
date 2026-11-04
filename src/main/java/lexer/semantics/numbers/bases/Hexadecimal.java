@@ -15,16 +15,19 @@ import utils.diagnostics.HexadecimalOutOfRange;
  * @since 1.0
  */
 public final class Hexadecimal extends BaseNumbersAnalyzer {
+    /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new HexadecimalOutOfRange(line, lexeme);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getMaxDigits() {
         return 16;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getBase() {
         return 16;

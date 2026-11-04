@@ -21,8 +21,19 @@ import java.util.List;
  */
 public interface Publisher extends LexemeInfoMutator {
 
+    /**
+     * Sets the scope in which the symbols are published.
+     *
+     * @param newScope name of the scope
+     * @return this publisher
+     */
     Publisher scope(String newScope);
 
+    /**
+     * Returns the symbol table keys of the symbols that this publisher will publish.
+     *
+     * @return the keys in declaration order
+     */
     List<String> keys();
 
     /**

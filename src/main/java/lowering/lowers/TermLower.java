@@ -1,8 +1,8 @@
-package lowering.facades;
+package lowering.lowers;
 
 import codegen.fuzzysets.*;
-import lowering.semantics.BitWidthAnalyzer;
-import lowering.contexts.LoweringContext;
+import lowering.contexts.TermLoweringContext;
+import lowering.facades.TermSetFactory;
 import utils.LexemeInfo;
 import utils.diagnostics.UnsupportedFeature;
 
@@ -12,18 +12,35 @@ import java.util.Optional;
 
 import static utils.enums.Subtype.*;
 
-public class TermLower {
-    private final LoweringContext ctx;
-    private final BitWidthAnalyzer bitWidthAnalyzer;
+/**
+ * Lowers a linguistic term into the {@link codegen.fuzzysets.FuzzySet} used by the code generator.
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
+public final class TermLower implements Lower<FuzzySet> {
+    private final TermLoweringContext ctx;
 
-    public TermLower(LoweringContext initContext, BitWidthAnalyzer bitWidthAnalyzer) {
+    /**
+     * Creates the lowering of one linguistic term.
+     *
+     * @param initContext context with the term key and the bit-width resolver
+     */
+    public TermLower(TermLoweringContext initContext) {
         this.ctx = initContext;
-        this.bitWidthAnalyzer = bitWidthAnalyzer;
     }
 
-    public Optional<FuzzySet> adapt(String varKey, String termKey, LexemeInfo termInfo) {
-        String varName = ctx.keys.shortName(varKey);
-        String termName = ctx.keys.shortName(termKey);
+    /**
+     * Builds the fuzzy set of the term.
+     *
+     * @return the fuzzy set, or empty if the term is not supported by the generator
+     */
+    public Optional<FuzzySet> adapt() {
+        LexemeInfo termInfo = ctx.symbolTable.get(ctx.termKey);
+        String varName = ctx.keys.shortName(ctx.varKey);
+        String termName = ctx.keys.shortName(ctx.termKey);
 
         if (termInfo.subtype == VARIABLE) {
             ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_VARIABLE(varName, termName)));
@@ -40,6 +57,15 @@ public class TermLower {
         return TermSetFactory.create(termName, termInfo);
     }
 
+    /**
+     * Checks that every point of a membership function is a non-negative integer that fits in the
+     * configured bit width.
+     *
+     * @param varName name of the variable that owns the term
+     * @param termName name of the term
+     * @param X points of the membership function
+     * @return {@code true} if at least one point is invalid (a diagnostic is recorded)
+     */
     public boolean invalidMembershipFunction(String varName, String termName, List<String> X) {
         for (String x : X) {
             BigDecimal value = new BigDecimal(x);
@@ -47,9 +73,9 @@ public class TermLower {
                 ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_POINT(varName, termName, x)));
                 return true;
             }
-            boolean cantBeRepresentedWithCurrentBits = !bitWidthAnalyzer.analyzeIfRepresentable(value);
+            boolean cantBeRepresentedWithCurrentBits = !ctx.bitWidthConstructor.analyzeIfRepresentable(value);
             if (value.signum() < 0 || cantBeRepresentedWithCurrentBits) {
-                String strBitWidth = String.valueOf(bitWidthAnalyzer.getBitWidth());
+                String strBitWidth = String.valueOf(ctx.bitWidthConstructor.getBitWidth());
                 ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_INVALID_POINT(x, strBitWidth)));
                 return true;
             }

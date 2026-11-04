@@ -52,11 +52,20 @@ public interface Initialization {
     Initialization copy();
 
     @Override
+    /**
+     * {@inheritDoc}
+     */
     boolean equals(Object o);
 
     @Override
+    /**
+     * {@inheritDoc}
+     */
     int hashCode();
 
     @Override
+    /**
+     * {@inheritDoc}
+     */
     String toString();
 }

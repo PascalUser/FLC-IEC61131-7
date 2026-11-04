@@ -17,10 +17,17 @@ import java.util.List;
  */
 public final class AnnonymousEnumeratedVariable extends MultipleDeclaration {
 
+    /**
+     * Creates the declaration of an anonymous enumerated variable.
+     *
+     * @param symbolTable symbol table that receives the published symbols
+     * @param initBuilder builder of the metadata of the variable
+     */
     public AnnonymousEnumeratedVariable(SymbolTable symbolTable, LexemeInfoBuilder initBuilder) {
         super(symbolTable, initBuilder);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void publish() {
         List<String> macroNames = builder.parameters();

@@ -1,4 +1,4 @@
-package lowering;
+package lowering.utils;
 
 import parser.metadata.PragmaMetadata;
 

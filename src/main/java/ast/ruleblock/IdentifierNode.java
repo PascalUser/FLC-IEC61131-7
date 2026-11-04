@@ -16,6 +16,11 @@ import java.util.Objects;
 public final class IdentifierNode extends AbstractAstNode {
     private final String name;
 
+    /**
+     * Creates an identifier node.
+     *
+     * @param name identifier name
+     */
     public IdentifierNode(final String name) {
         super(Collections.emptyList());
         this.name = Objects.requireNonNull(name, "name");

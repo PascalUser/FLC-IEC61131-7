@@ -24,6 +24,11 @@ public final class TermMetadata implements LexemeInfoView {
     private final List<String> inferiorLimits;
     private final List<String> superiorLimits;
 
+    /**
+     * Creates the metadata of a linguistic term from its points.
+     *
+     * @param points membership function points as written in the source
+     */
     public TermMetadata(List<String> points) {
         inferiorLimits = new ArrayList<>();
         superiorLimits = new ArrayList<>();
@@ -40,6 +45,7 @@ public final class TermMetadata implements LexemeInfoView {
         shape = MembershipFunctionClassifier.classify(inferiorLimits, superiorLimits);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.FUNCTION;
@@ -54,36 +60,43 @@ public final class TermMetadata implements LexemeInfoView {
         return shape.subtype();
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.TERM;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return inferiorLimits;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return superiorLimits;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return shape.parameters();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object initialValue() {
         return null;

@@ -25,6 +25,7 @@ public final class NaturalOutOfRange extends Warning {
         this.natLexeme = outOfBoundNatural;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + natLexeme + " is a natural bigger than 2^64 - 1";

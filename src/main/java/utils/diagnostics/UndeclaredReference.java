@@ -26,6 +26,7 @@ public final class UndeclaredReference extends Error {
         this.detail = detail;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return "ERROR: undeclared " + detail;

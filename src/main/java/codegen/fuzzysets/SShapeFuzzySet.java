@@ -29,6 +29,7 @@ public final class SShapeFuzzySet extends FuzzySet {
         this.b = b;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileFuzzSet(final CppWriter out, final int converterRange, final String varName,
                                final int setNumber) {
@@ -42,12 +43,14 @@ public final class SShapeFuzzySet extends FuzzySet {
                 + " * (" + varName + " - " + a + ");\n");
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileFunctionSlope(final CppWriter out, final int converterRange, final String slopeName) {
         out.write("const fixed_int " + slopeName + " = ");
         out.write(converterRange + "/(" + b + " - " + a + "); \n");
     }
 
+    /** {@inheritDoc} */
     @Override
     public int quantizedDegree(final int x, final int converterRange) {
         if (x < a) {
@@ -59,6 +62,7 @@ public final class SShapeFuzzySet extends FuzzySet {
         return truncate((long) slope(converterRange, b - a) * (x - a), converterRange);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double degree(final double x) {
         if (x <= a) {

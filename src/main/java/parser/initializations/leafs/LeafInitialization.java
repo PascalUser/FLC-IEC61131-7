@@ -24,22 +24,27 @@ import java.util.Optional;
  */
 public abstract class LeafInitialization implements Initialization {
 
+    /** {@inheritDoc} */
     @Override
     public final Optional<Initialization> find(final String path) {
         return path.isEmpty() ? Optional.of(this) : Optional.empty();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Initialization copy() {
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public abstract boolean equals(Object o);
 
+    /** {@inheritDoc} */
     @Override
     public abstract int hashCode();
 
+    /** {@inheritDoc} */
     @Override
     public abstract String toString();
 }

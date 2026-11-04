@@ -18,15 +18,22 @@ import java.util.Objects;
 public final class EnumeratedInitialization extends LeafInitialization {
     private final String enumeratedValue;
 
+    /**
+     * Creates an initialization that selects the first value of an enumerated type.
+     *
+     * @param enumeratedValues values of the enumerated type; the first one is used
+     */
     public EnumeratedInitialization(List<String> enumeratedValues) {
         this.enumeratedValue = enumeratedValues.get(0);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String variableValue() {
         return enumeratedValue;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -35,11 +42,13 @@ public final class EnumeratedInitialization extends LeafInitialization {
         return enumeratedValue.equals(other.enumeratedValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hashCode(enumeratedValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "EnumeratedInitialization{" + enumeratedValue + "}";

@@ -18,6 +18,7 @@ import utils.enums.Subtype;
  */
 public final class WStrings extends StringsAnalyzer {
 
+    /** {@inheritDoc} */
     @Override
     protected Subtype getSubtype() {
         return Subtype.WSTRING;

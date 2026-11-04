@@ -36,6 +36,7 @@ public final class StringEscapeResolver extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(@NonNull String lexeme) {
         StringBuilder result = new StringBuilder();

@@ -27,6 +27,14 @@ public final class DefuzzifierMetadata implements LexemeInfoView {
     private final VariableInitialization initialValue;
 
 
+    /**
+     * Creates the metadata of a defuzzifier.
+     *
+     * @param range optional range of the output variable
+     * @param fuzzyBlock optional block with the terms of the defuzzifier
+     * @param subtype subtype of the output variable
+     * @param defaultValue default value of the output variable
+     */
     public DefuzzifierMetadata(
             List<String> range,
             FuzzyBlock fuzzyBlock,
@@ -45,46 +53,55 @@ public final class DefuzzifierMetadata implements LexemeInfoView {
         this.initialValue = defaultValue;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.FUNCTION;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Subtype subtype() {
         return subtype;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.DEFUZZIFY;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.COMPONENT;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return (inferiorLimit == null) ? null : Collections.singletonList(inferiorLimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return (superiorLimit == null) ? null : Collections.singletonList(superiorLimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return terms;
     }
 
+    /** {@inheritDoc} */
     @Override
     public VariableInitialization initialValue() {
         return initialValue;

@@ -16,6 +16,11 @@ import java.util.Objects;
 public final class NotNode extends AbstractAstNode {
     private final AbstractAstNode operand;
 
+    /**
+     * Creates a negation node.
+     *
+     * @param operand operand to negate
+     */
     public NotNode(final AbstractAstNode operand) {
         super(Collections.singletonList(Objects.requireNonNull(operand, "operand")));
         this.operand = operand;

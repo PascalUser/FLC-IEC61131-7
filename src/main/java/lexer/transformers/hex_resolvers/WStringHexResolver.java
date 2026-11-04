@@ -34,6 +34,7 @@ public final class WStringHexResolver extends HexResolver {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getHexDigits() {
         return 4;

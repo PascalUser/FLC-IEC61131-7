@@ -7,15 +7,15 @@ sequenceDiagram
     participant D as DiagnosticsHandler
     P->>L: yylex()
     L->>T: transform(yytext())
-    loop Transformers encadenados
+    loop Chained transformers
         T->>T: giveToNext(lexeme)
     end
     T-->>L: preprocessedLexeme
     L->>A: analyze(LexicalContext)
-    opt Advertencia o error semantico
+    opt Semantic warning or error
         A->>D: add(Diagnostic)
     end
-    opt Literal valido o fallback numerico
+    opt Valid literal or numeric fallback
         A->>S: putIfAbsent(lexeme, LexemeInfo)
     end
     A-->>L: Result(lexeme, token)

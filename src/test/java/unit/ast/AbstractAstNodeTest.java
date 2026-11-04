@@ -63,6 +63,7 @@ class AbstractAstNodeTest {
             this.label = label;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String label() {
             return label;

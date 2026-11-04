@@ -4,9 +4,7 @@ import ast.AbstractSyntaxTree;
 import codegen.CodeGenerator;
 import codegen.ControllerModel;
 import lexer.Lexer;
-import lowering.ControllerLower;
-import lowering.SymbolKeys;
-import lowering.contexts.LoweringContext;
+import lowering.lowers.ControllerLower;
 import parser.Parser;
 import utils.DiagnosticsHandler;
 import utils.SymbolTable;
@@ -64,10 +62,7 @@ public final class FlcCompiler {
         }
         // Code Generation
         AbstractSyntaxTree root = parser.getAST();
-        String programName = root.label();
-        SymbolKeys keys = new SymbolKeys(programName);
-        LoweringContext loweringCtx = new LoweringContext(symbolTable, diagnostics, keys, root);
-        Optional<ControllerModel> model = new ControllerLower(loweringCtx).adapt();
+        Optional<ControllerModel> model = ControllerLower.newInstance(symbolTable, root, diagnostics).adapt();
         if (!model.isPresent()) {
             return Collections.emptyList();
         }

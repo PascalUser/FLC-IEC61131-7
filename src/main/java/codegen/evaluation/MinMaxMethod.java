@@ -31,6 +31,7 @@ public final class MinMaxMethod extends EvaluationMethod {
         super(rules);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileEvalMethod(final CppWriter out, final ControllerModel model) {
         List<Variable> inputs = model.inputs();
@@ -102,6 +103,7 @@ public final class MinMaxMethod extends EvaluationMethod {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileHeader(final CppWriter out) {
         out.write("void rulesEvaluation(); \n");

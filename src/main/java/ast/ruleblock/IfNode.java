@@ -17,6 +17,12 @@ public final class IfNode extends AbstractAstNode {
     private final CondNode condition;
     private final BodyNode body;
 
+    /**
+     * Creates an if node.
+     *
+     * @param condition condition of the if
+     * @param body body executed when the condition holds
+     */
     public IfNode(final CondNode condition, final BodyNode body) {
         super(Arrays.asList(
                 Objects.requireNonNull(condition, "condition"),

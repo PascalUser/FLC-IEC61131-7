@@ -15,16 +15,19 @@ import utils.diagnostics.OctalOutOfRange;
  * @since 1.0
  */
 public final class Octal extends BaseNumbersAnalyzer {
+    /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new OctalOutOfRange(line, lexeme);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getMaxDigits() {
         return 22;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getBase() {
         return 8;

@@ -25,6 +25,7 @@ public final class BinaryOutOfRange extends Warning {
         this.binLexeme = outOfBoundBinary;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + binLexeme + " binary out of range";

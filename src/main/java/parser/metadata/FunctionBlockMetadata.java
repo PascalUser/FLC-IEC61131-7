@@ -35,46 +35,55 @@ public final class FunctionBlockMetadata implements LexemeInfoView {
         this.interfaceVariables = new ArrayList<>(interfaceVariables);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Subtype subtype() {
         return Subtype.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.MAIN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return new ArrayList<>(interfaceVariables);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object initialValue() {
         return null;

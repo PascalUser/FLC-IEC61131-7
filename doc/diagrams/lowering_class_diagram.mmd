@@ -1,0 +1,51 @@
+classDiagram
+    namespace lowering_builders {
+        class ControllerModelBuilder
+        class ControllerModelSchema
+    }
+    namespace lowering_constructors {
+        class BitWidthConstructor
+        class FuzzyVariablesConstructor
+        class ModelConstructor
+        class RulesConstructor
+    }
+    namespace lowering_contexts {
+        class LoweringContext
+        class RuleLoweringContext
+        class TermLoweringContext
+        class VarLoweringContext
+    }
+    namespace lowering_facades {
+        class TermSetFactory
+    }
+    namespace lowering_lowers {
+        class ControllerLower
+        class Lower
+        class RuleLower
+        class TermLower
+        class VariableLower
+    }
+    namespace lowering_utils {
+        class ControllerModelState
+        class SymbolKeys
+    }
+    ControllerModelSchema <|.. ControllerModelBuilder
+    ModelConstructor <|.. BitWidthConstructor
+    ModelConstructor <|.. FuzzyVariablesConstructor
+    ModelConstructor <|.. RulesConstructor
+    Lower <|.. ControllerLower
+    Lower <|.. RuleLower
+    Lower <|.. TermLower
+    Lower <|.. VariableLower
+    LoweringContext <|-- VarLoweringContext
+    LoweringContext <|-- RuleLoweringContext
+    VarLoweringContext <|-- TermLoweringContext
+    ControllerLower --> ControllerModelBuilder : builds
+    ControllerLower --> BitWidthConstructor : uses
+    ControllerLower --> FuzzyVariablesConstructor : uses
+    ControllerLower --> RulesConstructor : uses
+    FuzzyVariablesConstructor --> VariableLower : uses
+    RulesConstructor --> RuleLower : uses
+    VariableLower --> TermLower : uses
+    TermLower --> TermSetFactory : creates
+    ControllerModelBuilder --> ControllerModelState : holds

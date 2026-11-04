@@ -1,4 +1,4 @@
-package lowering.semantics;
+package lowering.constructors;
 
 import ast.AbstractAstNode;
 import ast.ruleblock.RuleBlockNode;
@@ -7,7 +7,7 @@ import ast.ruleblock.operators.OperatorNode;
 import codegen.evaluation.MinMaxMethod;
 import lowering.builders.ControllerModelBuilder;
 import lowering.contexts.RuleLoweringContext;
-import lowering.facades.RuleLower;
+import lowering.lowers.RuleLower;
 import lowering.contexts.LoweringContext;
 import utils.diagnostics.UnsupportedFeature;
 
@@ -15,13 +15,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class RuleAnalyzer implements SemanticAnalyzer {
+/**
+ * Builds the rule matrix of a controller from the single declared rule block.
+ * <p>
+ * Only one rule block with {@code ACCU: MAX} is supported; every rule becomes one row of the matrix.
+ * </p>
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
+public final class RulesConstructor implements ModelConstructor {
     private final LoweringContext ctx;
 
-    public RuleAnalyzer(LoweringContext ctx) {
+    /**
+     * Creates the stage that lowers the declared rule blocks.
+     *
+     * @param ctx lowering context shared by the stages
+     */
+    public RulesConstructor(LoweringContext ctx) {
         this.ctx = ctx;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean construct(ControllerModelBuilder controller) {
         List<AbstractAstNode> ruleblocks = ctx.ast.children();

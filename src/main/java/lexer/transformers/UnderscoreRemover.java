@@ -22,6 +22,7 @@ public final class UnderscoreRemover extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(String lexeme) {
         return super.giveToNext(lexeme.replace("_", ""));

@@ -18,15 +18,23 @@ import java.util.Objects;
 public final class SubrangeInitialization extends LeafInitialization {
     private final String ilimit;
 
+    /**
+     * Creates an initialization for a subrange.
+     *
+     * @param ilimit inferior limit of the subrange
+     * @param ignoredSlimit superior limit; accepted for compatibility but not stored
+     */
     public SubrangeInitialization(String ilimit, String ignoredSlimit) {
         this.ilimit = ilimit;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String variableValue() {
         return ilimit;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -35,11 +43,13 @@ public final class SubrangeInitialization extends LeafInitialization {
         return ilimit.equals(other.ilimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hashCode(ilimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "SubrangeInitialization{" + ilimit + "}";

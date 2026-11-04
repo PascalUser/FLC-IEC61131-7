@@ -56,13 +56,13 @@ Also, invocable directly with `@agent-name` inside an OpenCode session.
 
 1. **Full refresh (recommended)**: `python run_all_agents.py`
 2. **Incremental**:
-   - Code changed (added Transformer, Diagnostic, enum value, etc.).
-   - `/chart-refresh` — recalculates metrics (CYCLO, LOC, COVERAGE, coupling, etc.) and regenerates PNGs in `doc/assets/`.
-   - `/diagram-refresh <scope>` — regenerates mermaid diagrams in `doc/diagrams/`.
-   - `/docs-update <affected package>` — updates module docs with new diagrams/charts.
-   - `/readme-update` — if change affects overall structure or build process.
-   - `/thesis-build` — when you want a new thesis `.docx` with up-to-date chapters.
-   - `/javadoc-fix` — fix Javadoc issues after code changes.
+   * Code changed (added Transformer, Diagnostic, enum value, etc.).
+   * `/chart-refresh` — recalculates metrics (CYCLO, LOC, COVERAGE, coupling, etc.) and regenerates PNGs in `doc/assets/`.
+   * `/diagram-refresh <scope>` — regenerates mermaid diagrams in `doc/diagrams/`.
+   * `/docs-update <affected package>` — updates module docs with new diagrams/charts.
+   * `/readme-update` — if change affects overall structure or build process.
+   * `/thesis-build` — when you want a new thesis `.docx` with up-to-date chapters.
+   * `/javadoc-fix` — fix Javadoc issues after code changes.
 
 ## Statistical Charts — No Invented Data
 
@@ -75,16 +75,17 @@ python3 scripts/extract_stats.py enum_sizes    # regenerates specific chart
 ```
 
 Charts produced (statistical only — pie, bar, histogram):
-- `enum_sizes.png` — enum constant distribution
-- `transformer_chain_lengths.png` — transformer chain length per lexeme category
-- `diagnostics_error_vs_warning.png` — diagnostics by severity
-- `parser_grammar_stats.png` — tokens, productions, initialization types
-- `symboltable_type_distribution.png` — SymbolTable entries by Type
-- `lexemeinfo_field_population.png` — LexemeInfo fields per symbol type
-- `cyclomatic_complexity.png` — CYCLO per package
-- `loc_per_module.png` — lines of code per module
-- `test_coverage.png` — test coverage per package
-- `package_coupling.png` — afferent/efferent coupling
+
+* `enum_sizes.png` — enum constant distribution
+* `transformer_chain_lengths.png` — transformer chain length per lexeme category
+* `diagnostics_error_vs_warning.png` — diagnostics by severity
+* `parser_grammar_stats.png` — tokens, productions, initialization types
+* `symboltable_type_distribution.png` — SymbolTable entries by Type
+* `lexemeinfo_field_population.png` — LexemeInfo fields per symbol type
+* `cyclomatic_complexity.png` — CYCLO per package
+* `loc_per_module.png` — lines of code per module
+* `test_coverage.png` — test coverage per package
+* `package_coupling.png` — afferent/efferent coupling
 
 Also outputs `doc/stats.json` with all metrics for synthesis.
 
@@ -96,29 +97,46 @@ Also outputs `doc/stats.json` with all metrics for synthesis.
 python3 scripts/generate_diagrams.py all           # all diagrams
 python3 scripts/generate_diagrams.py lexer         # lexer diagrams
 python3 scripts/generate_diagrams.py parser        # parser diagrams
+python3 scripts/generate_diagrams.py ast           # AST diagrams
 python3 scripts/generate_diagrams.py utils         # utils diagrams
+python3 scripts/generate_diagrams.py codegen       # codegen diagrams
+python3 scripts/generate_diagrams.py lowering      # lowering diagrams
+python3 scripts/generate_diagrams.py simulation    # simulation diagrams
+python3 scripts/generate_diagrams.py compiler      # compiler facade diagrams
 python3 scripts/generate_diagrams.py architecture  # architecture diagrams
 ```
 
 Outputs `.mmd` files to `doc/diagrams/` (raw Mermaid, no Markdown fences):
 
-| Diagram                        | Type                | Purpose                                                |
-|--------------------------------|---------------------|--------------------------------------------------------|
-| `package_dependencies.mmd`     | flowchart           | Lexer → Parser → SymbolTable → Diagnostics             |
-| `lexer_class_diagram.mmd`      | classDiagram        | Transformers, SemanticAnalyzers hierarchy              |
-| `parser_class_diagram.mmd`     | classDiagram        | ContextHandler, ParsingContext, NameMangler, Publisher |
-| `lexer_parser_sequence.mmd`    | sequenceDiagram     | Lexer → Transformer → Analyzer → SymbolTable           |
-| `symboltable_storage.mmd`      | classDiagram/object | STRUCT, ARRAY, ENUM, SUBRANGE storage in LexemeInfo    |
-| `diagnostics_hierarchy.mmd`    | classDiagram        | Error/Warning hierarchy                                |
-| `architecture_evolution.mmd`   | flowchart           | Architecture evolution timeline                        |
-| `utils_class_diagram.mmd`      | classDiagram        | SymbolTable, LexemeInfo, Builder, Director, enums      |
-| `context_handler_sequence.mmd` | sequenceDiagram     | ContextHandler stack operations                        |
+| Diagram                              | Type                | Purpose                                                 |
+|--------------------------------------|---------------------|---------------------------------------------------------|
+| `package_dependencies.mmd`           | flowchart           | Lexer → Parser → SymbolTable → Diagnostics              |
+| `lexer_class_diagram.mmd`            | classDiagram        | Transformers, SemanticAnalyzers hierarchy               |
+| `parser_class_diagram.mmd`           | classDiagram        | ContextHandler, ParsingContext, NameMangler, Publisher  |
+| `lexer_parser_sequence.mmd`          | sequenceDiagram     | Lexer → Transformer → Analyzer → SymbolTable            |
+| `symboltable_storage.mmd`            | classDiagram/object | STRUCT, ARRAY, ENUM, SUBRANGE storage in LexemeInfo     |
+| `diagnostics_hierarchy.mmd`          | classDiagram        | Error/Warning hierarchy                                 |
+| `architecture_evolution.mmd`         | flowchart           | Architecture evolution timeline                         |
+| `ast_package_flowchart.mmd`          | flowchart           | AST packages and their parser/lowering consumers        |
+| `ast_class_diagram.mmd`              | classDiagram        | AST node hierarchy and operator nodes                   |
+| `ast_construction_sequence.mmd`      | sequenceDiagram     | Parser to AST to lowering construction flow             |
+| `lowering_package_flowchart.mmd`     | flowchart           | Lowering subpackages and their parser/codegen deps      |
+| `lowering_class_diagram.mmd`         | classDiagram        | Lowering contexts, strategies, builder, factory         |
+| `lowering_controller_sequence.mmd`   | sequenceDiagram     | ControllerLower to VariableLower, RuleLower, model      |
+| `simulation_package_flowchart.mmd`   | flowchart           | Simulation imports from codegen and codegen.fuzzysets   |
+| `simulation_class_diagram.mmd`       | classDiagram        | Simulators, comparison result, MIN-MAX evaluation       |
+| `simulation_comparison_sequence.mmd` | sequenceDiagram     | Quantized vs reference over the input grid              |
+| `compiler_package_flowchart.mmd`     | flowchart           | Compiler imports and the Main.java entry point          |
+| `compiler_class_diagram.mmd`         | classDiagram        | FlcCompiler, CommandLine, GeneratedFile, collaborators  |
+| `compiler_pipeline_sequence.mmd`     | sequenceDiagram     | CommandLine to FlcCompiler to parser, lowering, codegen |
+| `utils_class_diagram.mmd`            | classDiagram        | SymbolTable, LexemeInfo, Builder, Director, enums       |
+| `context_handler_sequence.mmd`       | sequenceDiagram     | ContextHandler stack operations                         |
 
 Diagrams are rendered to PNG by `scripts/render_mermaid.py` during thesis build, saved to `doc/assets/rendered_diagrams/`, and referenced in thesis chapters.
 
 ## Thesis Compilation
 
-`doc/thesis/*.md` concatenated alphabetically → `pandoc` → `Tesis.docx`:
+`doc/thesis/*.md` concatenated alphabetically → `pandoc` (config/pandoc template) → `Tesis.docx`:
 
 ```bash
 bash scripts/build_thesis.sh                  # generates Tesis.docx in root
@@ -126,10 +144,12 @@ bash scripts/build_thesis.sh --out other.docx  # custom output name
 ```
 
 The build process:
-1. Runs `scripts/render_mermaid.py` to convert all ```mermaid``` code blocks in thesis chapters to PNG images (saved in `doc/assets/rendered_diagrams/`)
+
+1. Runs `scripts/render_mermaid.py` to convert all `mermaid` code blocks in thesis chapters to PNG images (saved in `doc/assets/rendered_diagrams/`)
 2. Replaces mermaid code blocks with image references
-3. Compiles all chapters with pandoc using `markdown-raw_tex` to avoid TeX math conflicts with mermaid syntax
-4. Uses `doc/thesis/reference.docx` as style template if present
+3. Compiles all chapters with pandoc using `config/pandoc/defaults.yaml` as base configuration (format, styles, filters)
+4. Uses `config/pandoc/reference.docx` as style template and `config/pandoc/thesis.lua` for title page, TOC and image sizing
+5. Uses `config/pandoc/references.bib` for citations via `citeproc`
 
 Validates all referenced images exist; fails with chapter/image name if missing.
 
@@ -146,18 +166,21 @@ doc/_synthesis_context.json
 
 ### Module → Chapter Mapping
 
-| Module   | Thesis Chapters | Key Content                                                               |
-|----------|-----------------|---------------------------------------------------------------------------|
-| `utils`  | 04, 07          | Repository, SymbolTable, LexemeInfo, Diagnostics, Builder/Director, Enums |
-| `parser` | 06, 07          | Grammar, Publisher, Initialization hierarchy, Grammar coverage            |
-| `lexer`  | 05, 07          | Transformer chains, SemanticAnalyzers, Diagnostics classification         |
+| Module       | Thesis Chapters        | Key Content                                                               |
+|--------------|------------------------|---------------------------------------------------------------------------|
+| `utils`      | 04, 07                 | Repository, SymbolTable, LexemeInfo, Diagnostics, Builder/Director, Enums |
+| `parser`     | 06, 07                 | Grammar, Publisher, Initialization hierarchy, Grammar coverage            |
+| `lexer`      | 05, 07                 | Transformer chains, SemanticAnalyzers, Diagnostics classification         |
+| `lowering`   | 04.1, 04.2, 04.3, 04.5 | AST to controller model, unsupported-feature diagnostics, symbol keys     |
+| `simulation` | 04.4, 07, 08, 10       | Ideal vs quantized simulation, comparison metrics, integration test       |
+| `compiler`   | 04.5                   | End-to-end pipeline facade, command line, exit codes, generated files     |
 
 ### Synthesis Script
 
 `scripts/synthesize_thesis_context.py` reads all `doc/modules/*.md` + `doc/stats.json` + `doc/diagrams/*.mmd`, filters out deprecated (`@deprecated`, `LucaInfo`, `Luca.y`), outputs `doc/_synthesis_context.json` with:
 
-- **thesis_view**: full structured data per module + diagrams (fenced with ```mermaid```) + stats + `module_chapter_mapping`
-- **readme_view**: condensed architecture summary (pipeline mermaid + key classes)
+* **thesis_view**: full structured data per module + diagrams (fenced with `mermaid`) + stats + `module_chapter_mapping`
+* **readme_view**: condensed architecture summary (pipeline mermaid + key classes)
 
 ## Validation — Mandatory on Every Markdown Write
 
@@ -170,7 +193,7 @@ doc/_synthesis_context.json
 | No brackets in headings    | `grep '^#.*\[\]' doc/` = empty                                                             |
 | No braces in headings      | `grep '^#.*{}' doc/` = empty                                                               |
 | PNG refs exist             | Every `assets/*.png` referenced exists in `doc/assets/` or `doc/assets/rendered_diagrams/` |
-| Mermaid valid              | All ```mermaid``` blocks parse                                                             |
+| Mermaid valid              | All `mermaid` blocks parse                                                                 |
 | No LucaInfo refs           | `grep -r 'LucaInfo' doc/` = empty                                                          |
 | Heading hierarchy          | No skipped levels                                                                          |
 
@@ -197,23 +220,27 @@ Run manually: `/doc-validate`
 ## Adding a New Module Doc
 
 Simply run:
+
 ```bash
 /docs-update <package-name>
 ```
+
 Example: `/docs-update lexer` creates `doc/modules/lexer.md` following standard structure. Synthesis picks it up automatically.
 
 ## Chart Quality Standards
 
 `scripts/chart_style.mplstyle` enforces:
-- Min 800px width (thesis), 600px (modules)
-- No overlapping text (auto-rotate labels, adjust margins)
-- Clear descriptive titles
-- Clean source citation: "Source: `utils/enums/Type.java`"
-- Consistent thesis color palette
+
+* Min 800px width (thesis), 600px (modules)
+* No overlapping text (auto-rotate labels, adjust margins)
+* Clear descriptive titles
+* Clean source citation: "Source: `utils/enums/Type.java`"
+* Consistent thesis color palette
 
 ## Extending the Harness
 
 To add a new agent:
+
 1. Create `.opencode/agents/new-agent.md` with prompt
 2. Add to `opencode.json` under `agent`
 3. Add command under `command` if needed
@@ -223,7 +250,8 @@ To add a new agent:
 ## Lifecycle Integration
 
 The harness integrates with the **iterative development lifecycle with single release**:
-- Week N: requirements → design → implement → test
-- Documentation updated continuously via agents
-- Single release at end with complete thesis
-- Extensibility path to IEC 61131-3 documented in Chapter 10
+
+* Week N: requirements → design → implement → test
+* Documentation updated continuously via agents
+* Single release at end with complete thesis
+* Extensibility path to IEC 61131-3 documented in Chapter 10

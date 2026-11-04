@@ -22,11 +22,13 @@ public abstract class Warning extends Diagnostic {
         super(line);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return "WARNING: " + super.getMessage() + ", ";
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean fatalForCompilation() {
         return false;

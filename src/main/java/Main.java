@@ -15,6 +15,11 @@ class Main {
      *
      * @param args the FCL program and, optionally, the output directory
      */
+    /**
+     * Runs the compiler as a command-line program.
+     *
+     * @param args source file and optional output directory
+     */
     public static void main(final String[] args) {
         int status = CommandLine.run(args, System.out, System.err);
         if (status != CommandLine.OK) {

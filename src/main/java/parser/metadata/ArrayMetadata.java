@@ -30,6 +30,14 @@ public final class ArrayMetadata implements LexemeInfoView {
     private final List<String> superiorLimits;
     private final RepeatedInitialization initialValue;
 
+    /**
+     * Creates the metadata of an array type.
+     *
+     * @param symbolTable symbol table of the program
+     * @param subtype subtype of the array elements
+     * @param customType custom type name of the elements, or {@code null} for primitive elements
+     * @param ranges dimension ranges as written in the source
+     */
     public ArrayMetadata(SymbolTable symbolTable, Subtype subtype, String customType, List<String> ranges) {
         this.subtype = subtype;
         this.customType = customType;
@@ -47,6 +55,7 @@ public final class ArrayMetadata implements LexemeInfoView {
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.ARRAY;
@@ -61,30 +70,40 @@ public final class ArrayMetadata implements LexemeInfoView {
         return subtype;
     }
 
+    /**
+     * Returns the custom type name of the array elements.
+     *
+     * @return the custom type name, or {@code null} for primitive elements
+     */
     public String customType() {
         return customType;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return inferiorLimits;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return superiorLimits;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return null;

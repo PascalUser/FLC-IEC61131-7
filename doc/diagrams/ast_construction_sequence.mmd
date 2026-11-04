@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant P as parser.Parser
+    participant B as parser.facades.RuleblockASTBuilder
+    participant T as ast.AbstractSyntaxTree
+    participant C as lowering.lowers.ControllerLower
+    participant R as lowering.constructors.RulesConstructor
+    participant L as lowering.lowers.RuleLower
+    participant M as codegen.evaluation.MinMaxMethod
+
+    P->>B: build(COMPONENT, configuration)
+    B->>B: traverse ParserTreeNode
+    B->>B: new RuleBlockNode and OperatorNode
+    B-->>P: RuleBlockNode
+    P->>T: new AbstractSyntaxTree(programName, ruleBlocks)
+    P-->>C: getAST()
+    C->>R: construct(controller)
+    R->>L: adapt()
+    L-->>R: int[] row
+    R->>M: new MinMaxMethod(loweredRules)

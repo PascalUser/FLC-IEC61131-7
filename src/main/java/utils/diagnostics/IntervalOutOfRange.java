@@ -25,6 +25,7 @@ public final class IntervalOutOfRange extends Error {
         this.intervalLexeme = outOfBoundInterval;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + intervalLexeme + " interval out of range (exceeds Long nanoseconds)";

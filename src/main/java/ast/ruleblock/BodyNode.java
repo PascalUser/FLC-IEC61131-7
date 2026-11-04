@@ -17,6 +17,11 @@ import java.util.Objects;
 public final class BodyNode extends AbstractAstNode {
     private final OperatorNode act;
 
+    /**
+     * Creates the body of a rule.
+     *
+     * @param act operator applied to the operands of the rule
+     */
     public BodyNode(final OperatorNode act) {
         super(Collections.singletonList(Objects.requireNonNull(act, "act")));
         this.act = act;

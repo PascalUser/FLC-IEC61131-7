@@ -26,6 +26,7 @@ import java.time.format.DateTimeParseException;
  */
 public final class DateAndDayTimes implements SemanticAnalyzer {
 
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

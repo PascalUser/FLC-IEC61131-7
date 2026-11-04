@@ -18,12 +18,19 @@ public final class FuzzyDeclaration extends SingleDeclaration {
 
     private final static String ERR = "FuzzyDeclaration: the component source was not FUZZIFY or DEFUZZIFY";
 
+    /**
+     * Creates the declaration of a fuzzy variable.
+     *
+     * @param initTable symbol table that receives the published symbols
+     * @param terms terms declared in the FUZZIFY or DEFUZZIFY block
+     */
     public FuzzyDeclaration(SymbolTable initTable, FuzzyBlock terms) {
         super(initTable);
         termDeclarations = terms;
         suffix = "";
     }
 
+    /** {@inheritDoc} */
     @Override
     public FuzzyDeclaration source(Source newSource) {
         if (termDeclarations != null) {
@@ -43,6 +50,7 @@ public final class FuzzyDeclaration extends SingleDeclaration {
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void publish() {
         if (termDeclarations != null) {
@@ -51,6 +59,7 @@ public final class FuzzyDeclaration extends SingleDeclaration {
         super.publish();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected String key() {
         return super.key() + suffix;

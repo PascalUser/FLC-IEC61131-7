@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant CLI as compiler_CommandLine
+    participant C as compiler_FlcCompiler
+    participant L as lexer_Lexer
+    participant P as parser_Parser
+    participant S as utils_SymbolTable
+    participant D as utils_DiagnosticsHandler
+    participant R as lowering_lowers_ControllerLower
+    participant M as codegen_ControllerModel
+    participant G as codegen_CodeGenerator
+    participant F as compiler_GeneratedFile
+
+    CLI->>C: new FlcCompiler(diagnostics)
+    CLI->>C: compile(source, baseName)
+    C->>S: new SymbolTable()
+    C->>L: new Lexer(source, symbolTable, diagnostics)
+    C->>P: new Parser(lexer, symbolTable)
+    C->>P: parse()
+    P->>L: yylex()
+    P->>S: publish declarations
+    P-->>C: true or false
+    alt parse failed or diagnostics has errors
+        C-->>CLI: empty List
+    else parse succeeded
+        C->>P: getAST()
+        P-->>C: AbstractSyntaxTree
+        C->>R: newInstance(symbolTable, root, diagnostics).adapt()
+        R->>M: new ControllerModel(...)
+        M-->>R: Optional model
+        alt model present
+            C->>G: new CodeGenerator(model)
+            C->>G: generateCpp / generateHeader / generateTestBench
+            G-->>C: C++ text
+            C->>F: new GeneratedFile(name, content)
+            C-->>CLI: List of GeneratedFile
+            CLI->>CLI: createDirectories and write files
+        else lowering failed
+            C-->>CLI: empty List
+        end
+    end

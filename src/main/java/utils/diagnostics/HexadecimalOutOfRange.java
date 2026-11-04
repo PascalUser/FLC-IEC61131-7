@@ -25,6 +25,7 @@ public final class HexadecimalOutOfRange extends Warning {
         this.hexLexeme = outOfBoundHexadecimal;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + hexLexeme + " hexadecimal out of range";

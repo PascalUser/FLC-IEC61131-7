@@ -198,7 +198,8 @@ def extract_cyclomatic_complexity():
         "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"],
         "ast": ["ast", "ast.ruleblock", "ast.ruleblock.operators"],
         "codegen": ["codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"],
-        "lowering": ["lowering"],
+        "lowering": ["lowering", "lowering.builders", "lowering.constructors", "lowering.contexts",
+                     "lowering.facades", "lowering.lowers", "lowering.utils"],
         "simulation": ["simulation"],
         "compiler": ["compiler"],
     }
@@ -249,7 +250,8 @@ def extract_loc():
         "utils": ["utils", "utils.builders", "utils.enums", "utils.diagnostics"],
         "ast": ["ast", "ast.ruleblock", "ast.ruleblock.operators"],
         "codegen": ["codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"],
-        "lowering": ["lowering"],
+        "lowering": ["lowering", "lowering.builders", "lowering.constructors", "lowering.contexts",
+                     "lowering.facades", "lowering.lowers", "lowering.utils"],
         "simulation": ["simulation"],
         "compiler": ["compiler"],
     }
@@ -341,45 +343,61 @@ def extract_test_coverage():
     return {"overall": overall, "packages": packages_data}
 
 
+def _project_imports(pkg):
+    """Return the set of top-level project packages imported by src/main/java/<pkg>/**/*.java.
+
+    Source: every `import` (including static imports) in the non-package-info Java
+    files directly or recursively below the package directory. Only imports whose
+    first segment is one of the eight top-level project packages are kept, so
+    JDK imports (java.*, javax.*) and third-party imports are ignored.
+    """
+    project_packages = {"lexer", "parser", "utils", "ast", "codegen", "lowering", "simulation", "compiler"}
+    imported = set()
+    pkg_path = SRC_DIR / pkg
+    if not pkg_path.exists():
+        return imported
+    for java_file in pkg_path.rglob("*.java"):
+        if java_file.name == "package-info.java":
+            continue
+        for line in java_file.read_text().splitlines():
+            match = re.match(r"\s*import\s+(?:static\s+)?([\w.]+)\s*;", line)
+            if not match:
+                continue
+            top_level = match.group(1).split(".")[0]
+            if top_level in project_packages and top_level != pkg:
+                imported.add(top_level)
+    return imported
+
+
 def extract_coupling():
-    """Calculate afferent/efferent coupling between packages"""
+    """Calculate afferent/efferent coupling between packages.
+
+    Both directions use the same unit (distinct top-level project packages) so
+    the instability metric I = E / (A + E) is meaningful:
+      - efferent E: project packages imported by this package's source files.
+      - afferent A: project packages whose source files import this package.
+    Source: import statements under src/main/java/**/*.java.
+    """
     packages = ["lexer", "parser", "utils", "ast", "codegen", "lowering", "simulation", "compiler"]
+
+    # Efferent: package -> project packages it imports (deduplicated per package).
+    efferent_map = {pkg: _project_imports(pkg) for pkg in packages}
+
+    # Afferent: transpose of the efferent relation, still counted per package.
+    afferent_map = {
+        pkg: {other for other in packages if pkg in efferent_map[other]}
+        for pkg in packages
+    }
+
     coupling = {}
-    
     for pkg in packages:
-        pkg_path = SRC_DIR / pkg
-        imports = set()
-        if pkg_path.exists():
-            for java_file in pkg_path.rglob("*.java"):
-                if java_file.name == "package-info.java":
-                    continue
-                content = java_file.read_text()
-                for line in content.split('\n'):
-                    line = line.strip()
-                    if line.startswith("import ") and "lexer" in line or "parser" in line or "utils" in line:
-                        # Extract package
-                        parts = line.split()
-                        if len(parts) >= 2:
-                            imp = parts[1].rstrip(';')
-                            if imp.startswith("lexer.") or imp.startswith("parser.") or imp.startswith("utils."):
-                                imports.add(imp.split('.')[0])
-        
-        efferent = len(imports - {pkg})
-        # Afferent would need reverse analysis - simplified
-        afferent = 0
-        for other_pkg in packages:
-            if other_pkg != pkg:
-                other_path = SRC_DIR / other_pkg
-                if other_path.exists():
-                    for java_file in other_path.rglob("*.java"):
-                        if java_file.name == "package-info.java":
-                            continue
-                        content = java_file.read_text()
-                        if f"import {pkg}." in content:
-                            afferent += 1
-                            break
-        
-        coupling[pkg] = {"afferent": afferent, "efferent": efferent, "instability": round(efferent / max(1, afferent + efferent), 2)}
+        afferent = len(afferent_map[pkg])
+        efferent = len(efferent_map[pkg])
+        coupling[pkg] = {
+            "afferent": afferent,
+            "efferent": efferent,
+            "instability": round(efferent / max(1, afferent + efferent), 2),
+        }
     return coupling
 
 
@@ -411,17 +429,21 @@ def extract_ast_nodes():
 
 
 def extract_lowering():
-    """Count lowering classes and transformers"""
+    """Count lowering types per subpackage under src/main/java/lowering/**/*.java."""
     lowering_dir = SRC_DIR / "lowering"
     classes = []
-    transformers = 0
-    for f in lowering_dir.glob("*.java"):
+    by_package = {}
+    for f in lowering_dir.rglob("*.java"):
         if f.name == "package-info.java":
             continue
         classes.append(f.stem)
-        content = f.read_text()
-        transformers += content.count("Transformer")  # rough
-    return {"classes": len(classes), "class_names": classes, "transformer_refs": transformers}
+        subpackage = f.parent.name
+        by_package[subpackage] = by_package.get(subpackage, 0) + 1
+    return {
+        "classes": len(classes),
+        "class_names": sorted(classes),
+        "by_package": dict(sorted(by_package.items())),
+    }
 
 
 def generate_chart_enum_sizes(data):
@@ -630,7 +652,7 @@ def generate_chart_coupling(data):
         axes[1].text(i, v + 0.03, f"{v:.2f}", ha='center', fontsize=11)
     
     plt.tight_layout()
-    return _save(fig, "package_coupling", "Import analysis across src/main/java")
+    return _save(fig, "package_coupling", "import statements under src/main/java/**/*.java")
 
 
 def generate_chart_ast_nodes(data):
@@ -654,15 +676,20 @@ def generate_chart_ast_nodes(data):
 def generate_chart_lowering(data):
     if not data:
         return None
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(["Classes"], [data.get("classes", 0)], color='#3498db')
-    ax.set_ylabel("Count", fontsize=11)
-    ax.set_title("Lowering Module Overview", fontsize=14, fontweight='bold')
-    v = data.get("classes", 0)
-    ax.set_ylim(0, max(1, v) * 1.2)
-    ax.text(0, v + max(1, v) * 0.02, str(v), ha='center', fontsize=12)
+    by_package = data.get("by_package") or {"lowering": data.get("classes", 0)}
+    labels = list(by_package.keys())
+    values = list(by_package.values())
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    ax.bar(labels, values, color='#3498db')
+    ax.set_ylabel("Java files", fontsize=11)
+    ax.set_title("Lowering Types per Subpackage", fontsize=14, fontweight='bold')
+    max_val = max(values) if values else 1
+    ax.set_ylim(0, max_val * 1.25)
+    for i, v in enumerate(values):
+        ax.text(i, v + max_val * 0.02, str(v), ha='center', fontsize=11)
+    plt.xticks(rotation=20, ha='right')
     plt.tight_layout()
-    return _save(fig, "lowering_overview", "src/main/java/lowering/*.java")
+    return _save(fig, "lowering_overview", "src/main/java/lowering/**/*.java")
 
 
 def main():

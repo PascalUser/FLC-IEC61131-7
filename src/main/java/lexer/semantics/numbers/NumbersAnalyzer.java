@@ -26,10 +26,20 @@ public abstract class NumbersAnalyzer implements SemanticAnalyzer {
      * Parsed numeric value with its determined subtype.
      */
     protected static final class ParsedValue {
+        /** Raw lexeme that was analyzed. */
         public final String lexeme;
+        /** Subtype determined for the value. */
         public final Subtype subtype;
+        /** Numeric value of the literal. */
         public final Object value;
 
+        /**
+         * Creates a parsed numeric value.
+         *
+         * @param lexeme raw lexeme that was analyzed
+         * @param subtype subtype determined for the value
+         * @param value numeric value of the literal
+         */
         public ParsedValue(String lexeme, Subtype subtype, Object value) {
             this.lexeme = lexeme;
             this.subtype = subtype;
@@ -37,6 +47,7 @@ public abstract class NumbersAnalyzer implements SemanticAnalyzer {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

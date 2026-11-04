@@ -108,6 +108,7 @@ public final class FakeReservedWords implements Iterable<Map.Entry<String, Integ
     }
 
     @NonNull
+    /** {@inheritDoc} */
     @Override
     public Iterator<Map.Entry<String, Integer>> iterator() {
         return table.entrySet().iterator();

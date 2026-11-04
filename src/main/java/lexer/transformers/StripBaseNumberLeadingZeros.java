@@ -22,6 +22,7 @@ public final class StripBaseNumberLeadingZeros extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(String lexeme) {
         final int index = lexeme.indexOf('#');

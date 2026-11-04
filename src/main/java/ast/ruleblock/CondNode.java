@@ -16,6 +16,11 @@ import java.util.Objects;
 public final class CondNode extends AbstractAstNode {
     private final AbstractAstNode condition;
 
+    /**
+     * Creates a condition node.
+     *
+     * @param condition expression that evaluates to a boolean condition
+     */
     public CondNode(final AbstractAstNode condition) {
         super(Collections.singletonList(Objects.requireNonNull(condition, "condition")));
         this.condition = condition;

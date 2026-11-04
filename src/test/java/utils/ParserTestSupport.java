@@ -23,6 +23,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public abstract class ParserTestSupport {
 
+    /**
+     * Parses a program and asserts that it is accepted without diagnostics.
+     *
+     * @param reader program reader
+     * @return the symbol table and syntax tree produced by the parser
+     * @throws Exception if the lexer fails with an I/O error
+     */
     protected ParsingResults parse(Reader reader) throws Exception {
         SymbolTable symbolTable = new SymbolTable();
         DiagnosticsHandler diagnosticHandler = new DiagnosticsHandler();
@@ -37,6 +44,13 @@ public abstract class ParserTestSupport {
         return new ParsingResults(symbolTable, ast);
     }
 
+    /**
+     * Builds and parses a program.
+     *
+     * @param sourceCode program builder
+     * @return the symbol table and syntax tree produced by the parser
+     * @throws Exception if the lexer fails with an I/O error
+     */
     protected ParsingResults parse(SourceCode sourceCode) throws Exception {
         System.out.println(sourceCode.build());
         return this.parse(new StringReader(sourceCode.build()));
@@ -62,6 +76,12 @@ public abstract class ParserTestSupport {
         assertTrue(mustBeTrue, "Expected the program to be rejected:\n" + reader.toString());
     }
 
+    /**
+     * Asserts that a program is rejected.
+     *
+     * @param sourceCode program builder of the invalid program
+     * @throws Exception if the lexer fails with an I/O error
+     */
     protected void assertRejected(SourceCode sourceCode) throws Exception {
         this.assertRejected(new StringReader(sourceCode.build()));
     }
@@ -79,22 +99,48 @@ public abstract class ParserTestSupport {
         assertTrue(diffs.isEmpty(), symbol + ": " + diffs);
     }
 
+    /**
+     * Returns a BOOL default value.
+     *
+     * @return the default initialization
+     */
     protected static Initialization boolDefault() {
         return DefaultInitialization.bool(new SymbolTable());
     }
 
+    /**
+     * Returns an INT default value.
+     *
+     * @return the default initialization
+     */
     protected static Initialization intDefault() {
         return DefaultInitialization.integer(new SymbolTable());
     }
 
+    /**
+     * Returns a REAL default value.
+     *
+     * @return the default initialization
+     */
     protected static Initialization realDefault() {
         return DefaultInitialization.real(new SymbolTable());
     }
 
+    /**
+     * Returns a STRING default value.
+     *
+     * @return the default initialization
+     */
     protected static Initialization stringDefault() {
         return DefaultInitialization.string(new SymbolTable());
     }
 
+    /**
+     * Returns the default initialization of a primitive subtype.
+     *
+     * @param subtype primitive subtype
+     * @return the default initialization
+     */
     protected static Initialization defaultValue(Subtype subtype) {
         return Factory.createPrimitiveInitialization(new SymbolTable(), subtype);
     }

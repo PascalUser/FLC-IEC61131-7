@@ -16,7 +16,9 @@ import java.util.List;
  * @since 1.0-SNAPSHOT
  */
 public class SingleDeclaration extends Declaration {
+    /** Symbol table that receives the published symbol. */
     protected final SymbolTable symbolTable;
+    /** Name of the declared symbol. */
     protected String identifier;
 
     /**
@@ -42,15 +44,27 @@ public class SingleDeclaration extends Declaration {
         identifier = "";
     }
 
+    /**
+     * Sets the name of the declared symbol.
+     *
+     * @param newIdentifier name of the symbol
+     * @return this declaration
+     */
     public SingleDeclaration identifier(String newIdentifier) {
         identifier = newIdentifier;
         return this;
     }
 
+    /**
+     * Returns the name of the declared symbol.
+     *
+     * @return the symbol name
+     */
     public String identifier() {
         return identifier;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> keys() {
         return (identifier.isEmpty())
@@ -58,10 +72,16 @@ public class SingleDeclaration extends Declaration {
                 : Collections.singletonList(key());
     }
 
+    /**
+     * Returns the full key under which the symbol is published: scope plus identifier.
+     *
+     * @return the symbol table key
+     */
     protected String key() {
         return super.scope() + identifier;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void publish() {
         if (identifier.isEmpty()) {

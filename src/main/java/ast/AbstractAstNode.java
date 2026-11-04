@@ -16,6 +16,11 @@ import java.util.Objects;
 public abstract class AbstractAstNode {
     private final List<AbstractAstNode> children;
 
+    /**
+     * Creates a node with the given children.
+     *
+     * @param children child nodes, copied into an unmodifiable list
+     */
     protected AbstractAstNode(final List<? extends AbstractAstNode> children) {
         Objects.requireNonNull(children, "children");
         List<AbstractAstNode> copy = new ArrayList<>(children.size());

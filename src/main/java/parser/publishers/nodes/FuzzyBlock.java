@@ -15,11 +15,17 @@ import java.util.List;
  */
 public final class FuzzyBlock extends Block<SingleDeclaration> {
 
+    /** {@inheritDoc} */
     @Override
     public void add(SingleDeclaration declaration) {
         declarations.add(declaration);
     }
 
+    /**
+     * Returns the names of the terms declared in the block.
+     *
+     * @return the term names in source order
+     */
     public List<String> getTermNames() {
         List<String> copy = new ArrayList<>();
         for (SingleDeclaration declaration : declarations) {

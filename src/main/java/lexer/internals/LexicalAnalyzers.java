@@ -37,20 +37,33 @@ import lexer.semantics.numbers.bases.*;
  */
 public final class LexicalAnalyzers  {
     // Time Literals
+    /** Analyzer of date and time literals. */
     public static final SemanticAnalyzer DATE_AND_TIMES  = new DateAndDayTimes();
+    /** Analyzer of daytime literals. */
     public static final SemanticAnalyzer DAYTIMES        = new DayTimes();
+    /** Analyzer of date literals. */
     public static final SemanticAnalyzer DATES           = new Dates();
+    /** Analyzer of interval literals. */
     public static final SemanticAnalyzer INTERVALS       = new Intervals();
     // Numeric Literals
+    /** Analyzer of natural (unsigned) literals. */
     public static final SemanticAnalyzer NATURALS    = new Naturals();
+    /** Analyzer of integer literals. */
     public static final SemanticAnalyzer INTEGERS    = new Integers();
+    /** Analyzer of real literals. */
     public static final SemanticAnalyzer REALS       = new Reals();
+    /** Analyzer of binary literals. */
     public static final SemanticAnalyzer BINARY      = new Binary();
+    /** Analyzer of octal literals. */
     public static final SemanticAnalyzer OCTAL       = new Octal();
+    /** Analyzer of hexadecimal literals. */
     public static final SemanticAnalyzer HEXADECIMAL = new Hexadecimal();
     // String Literals
+    /** Analyzer of single-quoted string literals. */
     public static final SemanticAnalyzer STRINGS  = new Strings();
+    /** Analyzer of double-quoted wide string literals. */
     public static final SemanticAnalyzer WSTRINGS = new WStrings();
     // Identifiers
+    /** Analyzer of identifiers. */
     public static final SemanticAnalyzer IDENTIFIERS = new Identifiers();
 }

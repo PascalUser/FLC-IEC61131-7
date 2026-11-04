@@ -35,6 +35,7 @@ public final class Dates implements SemanticAnalyzer {
             .toFormatter()
             .withResolverStyle(ResolverStyle.STRICT);
 
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

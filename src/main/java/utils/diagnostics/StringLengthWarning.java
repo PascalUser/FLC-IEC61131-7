@@ -28,6 +28,7 @@ public final class StringLengthWarning extends Warning {
         this.message = message;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return "WARNING: Line " + line + ", " + message;

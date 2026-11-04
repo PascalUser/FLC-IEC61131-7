@@ -8,8 +8,8 @@ import codegen.fuzzysets.SShapeFuzzySet;
 import codegen.fuzzysets.SingletonFuzzySet;
 import codegen.fuzzysets.TriangularFuzzySet;
 import codegen.fuzzysets.ZShapeFuzzySet;
-import lowering.ControllerLower;
-import lowering.SymbolKeys;
+import lowering.lowers.ControllerLower;
+import lowering.utils.SymbolKeys;
 import lowering.contexts.LoweringContext;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -66,11 +66,7 @@ public class ControllerLowerIT extends ParserTestSupport {
 
     private Optional<ControllerModel> lower(String source) throws Exception {
         ParsingResults results = parse(new StringReader(source));
-        AbstractSyntaxTree root = results.abstractSyntaxTree();
-        String programName = root.label();
-        SymbolKeys keys = new SymbolKeys(programName);
-        LoweringContext loweringContext = new LoweringContext(results.symbolTable(), diagnostics, keys, root);
-        return new ControllerLower(loweringContext).adapt();
+        return ControllerLower.newInstance(results.symbolTable(), results.abstractSyntaxTree(), diagnostics).adapt();
     }
 
     private List<String> messagesOf(Class<? extends Diagnostic> kind) {

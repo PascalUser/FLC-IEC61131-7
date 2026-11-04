@@ -24,6 +24,13 @@ public final class SubrangeMetadata implements LexemeInfoView {
     private final String slimit;
     private final SubrangeInitialization initialValue;
 
+    /**
+     * Creates the metadata of a subrange type.
+     *
+     * @param initSubtype subtype of the subrange
+     * @param initIlimit inferior limit
+     * @param initSlimit superior limit
+     */
     public SubrangeMetadata(Subtype initSubtype, String initIlimit, String initSlimit) {
         subtype = initSubtype;
         ilimit = initIlimit;
@@ -31,6 +38,7 @@ public final class SubrangeMetadata implements LexemeInfoView {
         initialValue = new SubrangeInitialization(initIlimit, initSlimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.SUBRANGE;
@@ -45,31 +53,37 @@ public final class SubrangeMetadata implements LexemeInfoView {
         return subtype;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return Collections.singletonList(ilimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return Collections.singletonList(slimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return null;

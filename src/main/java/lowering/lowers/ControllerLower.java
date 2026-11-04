@@ -1,14 +1,17 @@
-package lowering;
+package lowering.lowers;
 
+import ast.AbstractSyntaxTree;
 import codegen.ControllerModel;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lowering.builders.ControllerModelBuilder;
-import lowering.semantics.BitWidthAnalyzer;
-import lowering.semantics.FuzzyVariablesAnalyzer;
-import lowering.semantics.RuleAnalyzer;
+import lowering.constructors.BitWidthConstructor;
+import lowering.constructors.FuzzyVariablesConstructor;
+import lowering.constructors.RulesConstructor;
 import lowering.utils.ControllerModelState;
 import lowering.contexts.LoweringContext;
+import lowering.utils.SymbolKeys;
 import utils.DiagnosticsHandler;
+import utils.SymbolTable;
 
 import java.util.Optional;
 
@@ -26,7 +29,6 @@ import java.util.Optional;
  *       in {@code 0 .. 2^N - 1};</li>
  *   <li>each input needs a FUZZIFY block and each output a DEFUZZIFY block with {@code METHOD: CoGS} and only
  *       singleton terms; {@code DEFAULT} is ignored with a warning (the generator has no default value);</li>
- *   <li>the rules must follow {@link RuleLowering}.</li>
  * </ul>
  * <p>
  * Every problem is reported to the {@link DiagnosticsHandler}; the model is built only if there was no error.
@@ -37,8 +39,29 @@ import java.util.Optional;
  * @version 1.0
  * @since 1.0
  */
-public final class ControllerLower {
+public final class ControllerLower implements Lower<ControllerModel> {
     private final LoweringContext ctx;
+
+    /**
+     * Creates the lowering of a whole program.
+     *
+     * @param symbolTable symbol table produced by the parser
+     * @param root syntax tree of the program
+     * @param diagnosticsHandler collector of lowering diagnostics
+     * @return the lowering of the function block
+     */
+    public static ControllerLower newInstance(
+            SymbolTable symbolTable,
+            AbstractSyntaxTree root,
+            DiagnosticsHandler diagnosticsHandler
+    )  {
+        return new ControllerLower(new LoweringContext(
+                symbolTable,
+                diagnosticsHandler,
+                new SymbolKeys(root.label()),
+                root
+        ));
+    }
 
     /**
      * Creates the lowering of a function block.
@@ -47,7 +70,7 @@ public final class ControllerLower {
             value = "EI_EXPOSE_REP2",
             justification = "The symbol table is shared by every phase by design; the lowering only reads it"
     )
-    public ControllerLower(final LoweringContext initContext) {
+    private ControllerLower(final LoweringContext initContext) {
         this.ctx = initContext;
     }
 
@@ -62,18 +85,18 @@ public final class ControllerLower {
     public Optional<ControllerModel> adapt() {
         ControllerModelBuilder controller = new ControllerModelBuilder();
 
-        BitWidthAnalyzer bitWidthAnalyzer = new BitWidthAnalyzer(ctx);
-        if (!bitWidthAnalyzer.construct(controller)) {
+        BitWidthConstructor bitWidthConstructor = new BitWidthConstructor(ctx);
+        if (!bitWidthConstructor.construct(controller)) {
             return Optional.empty();
         }
 
-        FuzzyVariablesAnalyzer fuzzyVariablesAnalyzer = new FuzzyVariablesAnalyzer(ctx, bitWidthAnalyzer);
-        if (!fuzzyVariablesAnalyzer.construct(controller)) {
+        FuzzyVariablesConstructor fuzzyVariablesConstructor = new FuzzyVariablesConstructor(ctx, bitWidthConstructor);
+        if (!fuzzyVariablesConstructor.construct(controller)) {
             return Optional.empty();
         }
 
-        RuleAnalyzer ruleAnalyzer = new RuleAnalyzer(ctx);
-        if (!ruleAnalyzer.construct(controller)) {
+        RulesConstructor rulesConstructor = new RulesConstructor(ctx);
+        if (!rulesConstructor.construct(controller)) {
             return Optional.empty();
         }
 

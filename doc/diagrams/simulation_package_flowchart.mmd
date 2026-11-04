@@ -1,0 +1,16 @@
+flowchart LR
+    codegen["codegen"]
+    codegen_defuzzification["codegen.defuzzification"]
+    codegen_evaluation["codegen.evaluation"]
+    codegen_fuzzysets["codegen.fuzzysets"]
+    simulation["simulation"]
+    codegen --> codegen_defuzzification
+    codegen --> codegen_evaluation
+    codegen --> codegen_fuzzysets
+    codegen_defuzzification --> codegen
+    codegen_evaluation --> codegen
+    codegen_fuzzysets --> codegen
+    simulation --> codegen
+    simulation --> codegen_defuzzification
+    simulation --> codegen_evaluation
+    simulation --> codegen_fuzzysets

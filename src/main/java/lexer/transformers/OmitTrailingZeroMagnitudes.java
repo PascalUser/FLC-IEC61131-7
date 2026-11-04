@@ -22,6 +22,7 @@ public final class OmitTrailingZeroMagnitudes extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(String lexeme) {
         if (lexeme == null || lexeme.isEmpty()) {

@@ -67,6 +67,7 @@ public final class OutputComparison {
         return undefinedInReference;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return String.format(Locale.ROOT, "%s: %d inputs, max error %.2f at %s, mean error %.2f, "

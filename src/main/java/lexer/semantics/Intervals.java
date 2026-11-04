@@ -42,6 +42,7 @@ public final class Intervals implements SemanticAnalyzer {
 
     private static final double NANOS_PER_MILLIS = 1_000_000D;
 
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

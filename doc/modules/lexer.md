@@ -203,6 +203,31 @@ classDiagram
 
 **Table sources:** `src/main/java/lexer/internals/LexicalPreprocessors.java`, `src/main/java/lexer/internals/LexicalAnalyzers.java`, `src/main/java/lexer/transformers/`, `src/main/java/lexer/semantics/` and `src/main/java/lexer/Lexer.flex`.
 
+## Scanner Rules
+
+`src/main/java/lexer/Lexer.flex` declares the patterns that feed `processAndSaveYylval`; the generated `src/main/java/lexer/Lexer.java` executes them. The scanner is `%int`, `%line`, and `%final`, implements `Parser.Lexer`, and receives a `SymbolTable` and a `DiagnosticsHandler` through its constructor arguments.
+
+| Lexical rule              | Analyzer          | Token returned                                          |
+|---------------------------|-------------------|---------------------------------------------------------|
+| `DATE_AND_TIME`           | `DateAndDayTimes` | `TIME_LITERAL`                                          |
+| `DAYTIME`                 | `DayTimes`        | `TIME_LITERAL`                                          |
+| `DATE`                    | `Dates`           | `TIME_LITERAL`                                          |
+| `INTERVAL`                | `Intervals`       | `TIME_LITERAL`                                          |
+| `NATURAL_NUMBER`          | `Naturals`        | `NUMERIC_LITERAL`                                       |
+| `INTEGER_NUMBER`          | `Integers`        | `NUMERIC_LITERAL`                                       |
+| `REAL_NUMBER`             | `Reals`           | `NUMERIC_LITERAL`                                       |
+| `BINARY`                  | `Binary`          | `NUMERIC_LITERAL`                                       |
+| `OCTAL`                   | `Octal`           | `NUMERIC_LITERAL`                                       |
+| `HEXADECIMAL`             | `Hexadecimal`     | `NUMERIC_LITERAL`                                       |
+| `SINGLE_BYTE_STRING`      | `Strings`         | `STRING_LITERAL`                                        |
+| `DOUBLE_BYTE_STRING`      | `WStrings`        | `STRING_LITERAL`                                        |
+| `IDENTIFIER`              | `Identifiers`     | reserved-word token, `BOOLEAN_LITERAL`, or `IDENTIFIER` |
+| punctuation and operators | none              | character code, `ASSIGN_OP`, or `RANGE_OP`              |
+| whitespace and comments   | none              | skipped                                                 |
+| any other character       | none              | `yyerror`, which adds a `SyntaxError`                   |
+
+**Source:** `src/main/java/lexer/Lexer.flex`, `src/main/java/lexer/Lexer.java` and `src/main/java/lexer/semantics/utils/ReservedWords.java`.
+
 ## Normalization and Validation
 
 | Category                              | Transformation Sequence                                                                                                                                          | Analyzer                               |
@@ -258,7 +283,7 @@ sequenceDiagram
     participant D as DiagnosticsHandler
     P->>L: yylex()
     L->>T: transform(yytext())
-    loop Chained Transformers
+    loop Chained transformers
         T->>T: giveToNext(lexeme)
     end
     T-->>L: preprocessedLexeme

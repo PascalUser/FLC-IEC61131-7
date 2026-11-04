@@ -32,6 +32,7 @@ public abstract class StringsAnalyzer implements SemanticAnalyzer {
      */
     protected abstract Subtype getSubtype();
 
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

@@ -28,6 +28,7 @@ public final class IntervalConstructionError extends Error {
         this.intervalLexeme = invalidInterval;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + intervalLexeme + " interval construction error: minor magnitude exceeds limit";

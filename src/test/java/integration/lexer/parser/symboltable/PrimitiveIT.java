@@ -46,6 +46,7 @@ public class PrimitiveIT extends ParserTestSupport {
             this.storedLiteral = storedLiteral;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String toString() {
             return typeName;

@@ -19,6 +19,7 @@ import utils.enums.Subtype;
  * @since 1.0
  */
 public final class Identifiers implements SemanticAnalyzer {
+    /** {@inheritDoc} */
     @Override
     public Result analyze(LexicalContext ctx) {
         String lexeme = ctx.preprocessedLexeme;

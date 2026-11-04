@@ -26,6 +26,7 @@ public final class UnsupportedFeature extends Error {
         this.detail = detail;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return "ERROR: not supported by the code generator: " + detail;

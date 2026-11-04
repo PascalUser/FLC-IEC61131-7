@@ -53,6 +53,7 @@ public class LucaInfo {
         this.tokenType = tokenType;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "<" + tokenType + ", " + idRole + ", " + varType + ", " + fuzzType + ", " + fuzzSetPosition + ", " + varSize + ">";

@@ -15,10 +15,17 @@ import java.util.List;
  * @since 1.0-SNAPSHOT
  */
 public final class AnnonymousEnumeratedField extends SingleDeclaration {
+    /**
+     * Creates the declaration of an anonymous enumerated field.
+     *
+     * @param symbolTable symbol table that receives the published symbols
+     * @param initBuilder builder of the metadata of the field
+     */
     public AnnonymousEnumeratedField(SymbolTable symbolTable, LexemeInfoBuilder initBuilder) {
         super(symbolTable, initBuilder);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void publish() {
         List<String> macroNames = builder.parameters();

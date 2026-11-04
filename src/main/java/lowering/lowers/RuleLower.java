@@ -1,4 +1,4 @@
-package lowering.facades;
+package lowering.lowers;
 
 import ast.AbstractAstNode;
 import ast.ruleblock.*;
@@ -14,7 +14,15 @@ import utils.enums.Source;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class RuleLower {
+/**
+ * Lowers the rules of one rule block into rows of the rule matrix.
+ *
+ * @author Matías Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0-SNAPSHOT
+ * @since 1.0-SNAPSHOT
+ */
+public final class RuleLower implements Lower<int[]> {
     private final static int UNUSED = -1;
     private static final List<Operator> INVALID_OPERATORS = Arrays.asList(
             Operator.MAX,
@@ -23,10 +31,20 @@ public class RuleLower {
     );
     private final RuleLoweringContext ctx;
 
+    /**
+     * Creates the lowering of one rule block.
+     *
+     * @param initContext context with the controller builder, rule block and diagnostics handler
+     */
     public RuleLower(RuleLoweringContext initContext) {
         this.ctx = initContext;
     }
 
+    /**
+     * Builds the rule matrix rows for the rules of the block.
+     *
+     * @return the rows, or empty if a rule cannot be lowered
+     */
     public Optional<int[]> adapt() {
         Optional<IfNode> ifNodeObj = parseIfNode();
         if (!ifNodeObj.isPresent()) {

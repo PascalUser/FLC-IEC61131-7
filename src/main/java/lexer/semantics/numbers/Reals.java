@@ -20,6 +20,7 @@ import utils.enums.Subtype;
  */
 public final class Reals extends NumbersAnalyzer {
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue parse(String lexeme) {
         Double initialValue;
@@ -34,6 +35,7 @@ public final class Reals extends NumbersAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
         boolean isNegative = lexeme.startsWith("-");
@@ -43,6 +45,7 @@ public final class Reals extends NumbersAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new RealOutOfRange(line, lexeme);

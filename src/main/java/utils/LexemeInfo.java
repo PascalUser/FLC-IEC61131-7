@@ -115,6 +115,7 @@ public final class LexemeInfo {
         this.initialValue = initialValue;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -135,6 +136,7 @@ public final class LexemeInfo {
                 && Objects.equals(initialValue, other.initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hash(
@@ -143,6 +145,7 @@ public final class LexemeInfo {
         );
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "LexemeInfo{"

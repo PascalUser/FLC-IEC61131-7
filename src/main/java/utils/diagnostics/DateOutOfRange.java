@@ -25,6 +25,7 @@ public final class DateOutOfRange extends Error {
         this.dateLexeme = outOfBoundDate;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + dateLexeme + " date out of range";

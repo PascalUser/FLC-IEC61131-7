@@ -29,6 +29,13 @@ public final class StringMetadata implements LexemeInfoView {
     private final String superiorLimit;
     private final Initialization initialValue;
 
+    /**
+     * Creates the metadata of a string type.
+     *
+     * @param symbolTable symbol table of the program
+     * @param initSubtype STRING or WSTRING subtype
+     * @param initLength maximum length of the string
+     */
     public StringMetadata(SymbolTable symbolTable, Subtype initSubtype, String initLength) {
         subtype = initSubtype;
         superiorLimit = initLength;
@@ -40,6 +47,7 @@ public final class StringMetadata implements LexemeInfoView {
         initialValue = Factory.createPrimitiveInitialization(symbolTable, subtype).copy();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return Type.SIMPLE;
@@ -54,36 +62,43 @@ public final class StringMetadata implements LexemeInfoView {
         return subtype;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return Source.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return Use.UNKNOWN;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return Collections.singletonList(inferiorLimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return Collections.singletonList(superiorLimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Initialization initialValue() {
         return initialValue;

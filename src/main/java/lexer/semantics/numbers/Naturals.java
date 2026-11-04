@@ -29,6 +29,7 @@ public final class Naturals extends NumbersAnalyzer {
     private static final BigInteger MAX_UDINT = new BigInteger("4294967295");
     private static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615");
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue parse(String lexeme) {
         BigInteger initialValue = (lexeme.length() <= MAX_CONSTANT_LENGTH) ? new BigInteger(lexeme) : null;
@@ -36,6 +37,7 @@ public final class Naturals extends NumbersAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
         String newLexeme = MAX_ULINT.toString();
@@ -43,6 +45,7 @@ public final class Naturals extends NumbersAnalyzer {
         return new ParsedValue(newLexeme, subtype, MAX_ULINT);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(final int line, final String lexeme) {
         return new NaturalOutOfRange(line, lexeme);

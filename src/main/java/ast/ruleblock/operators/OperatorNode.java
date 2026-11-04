@@ -16,6 +16,12 @@ import java.util.Objects;
 public class OperatorNode extends AbstractAstNode {
     private final Operator operator;
 
+    /**
+     * Creates an operator node.
+     *
+     * @param operator fuzzy operator applied to the operands
+     * @param operands operands of the operator
+     */
     public OperatorNode(final Operator operator, final List<? extends AbstractAstNode> operands) {
         super(operands);
         this.operator = Objects.requireNonNull(operator, "operator");

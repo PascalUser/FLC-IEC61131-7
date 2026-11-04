@@ -53,7 +53,7 @@ Cambio de código
 | `scripts/generate_diagrams.py`         | Diagramas relacionales (class, sequence, flow, package, object) → `.mmd`                            |
 | `scripts/render_mermaid.py`            | Renderiza `mermaid` en capítulos tesis → PNG en `../assets/rendered_diagrams/`                      |
 | `scripts/synthesize_thesis_context.py` | Lee modules + stats + diagrams → `doc/_synthesis_context.json` (single source of truth)             |
-| `scripts/build_thesis.sh`              | Concatena capítulos + pandoc (markdown-raw_tex) → `Tesis.docx`                                      |
+| `scripts/build_thesis.sh`              | Concatena capítulos + pandoc (`config/pandoc/defaults.yaml`) → `Tesis.docx`                         |
 | `scripts/validate_docs.py`             | Valida markdown (sin imágenes markdown, sin paréntesis en headings, PNGs existen, mermaid válido)   |
 
 ## Flujo mermaid → PNG en tesis
@@ -64,7 +64,7 @@ Cambio de código
    * Extrae contenido, renderiza con `npx mmdc` (config puppeteer: `--no-sandbox --disable-setuid-sandbox`)
    * Guarda PNG en `../assets/rendered_diagrams/diagram_<hash>.png`
    * Reemplaza bloque `mermaid` por `![Caption](../assets/rendered_diagrams/diagram_<hash>.png)`
-3. `pandoc` compila con `--resource-path="$ROOT_DIR:$ROOT_DIR/doc/assets:$ROOT_DIR/doc/assets/rendered_diagrams"`
+3. `pandoc` compila con `-d config/pandoc/defaults.yaml` y `--resource-path="$ROOT_DIR:$ROOT_DIR/doc/assets:$ROOT_DIR/doc/assets/rendered_diagrams"`
 
 ## Agents y validación
 

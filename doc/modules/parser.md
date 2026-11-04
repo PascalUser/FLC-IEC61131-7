@@ -1,36 +1,75 @@
 # Parser Module Documentation
 
-One-line description: The IEC 61131-7 parser builds on Bison-generated LALR(1) grammar (Parser.y) to drive syntax analysis, publish symbol declarations to the symbol table, and construct initializations and rule-block ASTs.
+One-line description: The IEC 61131-7 parser builds on the Bison-generated LALR(1) grammar to drive syntax analysis, publish symbol declarations to the symbol table, and construct initializations and rule-block ASTs.
 
-Last update: 2026-11-01
+Last update: 2026-11-04
 
 ## Purpose
 
-The parser package (`parser` and subpackages) consumes tokens from the lexer through the Bison-generated `Parser` class, executes semantic actions bound to grammar reductions, and populates the `utils.SymbolTable` through `Publisher` implementations. It owns declaration publishing, type metadata, initializations (primitive, enumerated, subrange, array, struct, macro), fuzzify/defuzzify/rule-block linguistic terms, and facade utilities for array ranges, dimensions, macros, identifiers, and membership-function classification.
+The parser package consumes tokens from the lexer through the Bison-generated `Parser` class, executes semantic actions bound to grammar reductions, and populates the `utils.SymbolTable` through `Publisher` implementations. It owns declaration publishing, type metadata, initializations (primitive, enumerated, subrange, array, struct, macro), fuzzify/defuzzify/rule-block linguistic terms, and facade utilities for array ranges, dimensions, macros, identifiers, and membership-function classification.
 
 ## Package Diagram
 
 ```mermaid
-flowchart TD
-    lexer_Lexer:::external --> parser_Parser
-    parser_Parser --> utils_SymbolTable:::util
-    parser_Parser --> utils_DiagnosticsHandler:::util
-    parser_Parser --> utils_builders_Director:::builder
-    parser_Parser --> utils_builders_LexemeInfoBuilder:::builder
-    parser_Parser --> parser_facades_RuleblockASTBuilder:::facade
-    parser_publishers_Publisher:::pub --> utils_SymbolTable
-    parser_publishers_Publisher:::pub --> utils_builders_LexemeInfoMutator:::builder
-    parser_publishers_Declaration:::pub --> parser_publishers_Publisher
-    parser_initializations_Factory:::init --> utils_builders_Director
-    parser_initializations_Initialization:::init --> parser_initializations_leafs_DefaultInitialization
-    parser_initializations_Initialization:::init --> parser_initializations_nodes_StructInitialization
-    parser_initializations_Initialization:::init --> parser_initializations_nodes_RepeatedInitialization
-    classDef external fill:#e1f5e1,stroke:#333;
-    classDef util fill:#fff3e0,stroke:#333;
-    classDef builder fill:#e3f2fd,stroke:#333;
-    classDef pub fill:#fce4ec,stroke:#333;
-    classDef facade fill:#e8eaf6,stroke:#333;
-    classDef init fill:#f3e5f5,stroke:#333;
+flowchart LR
+    ast["ast"]
+    ast_ruleblock["ast.ruleblock"]
+    ast_ruleblock_operators["ast.ruleblock.operators"]
+    parser["parser"]
+    parser_facades["parser.facades"]
+    parser_initializations["parser.initializations"]
+    parser_initializations_leafs["parser.initializations.leafs"]
+    parser_initializations_nodes["parser.initializations.nodes"]
+    parser_metadata["parser.metadata"]
+    parser_publishers["parser.publishers"]
+    parser_tree["parser.tree"]
+    parser_utils["parser.utils"]
+    utils["utils"]
+    utils_builders["utils.builders"]
+    utils_enums["utils.enums"]
+    parser --> ast
+    parser --> ast_ruleblock
+    parser --> ast_ruleblock_operators
+    parser --> parser_facades
+    parser --> parser_initializations
+    parser --> parser_initializations_leafs
+    parser --> parser_initializations_nodes
+    parser --> parser_metadata
+    parser --> parser_publishers
+    parser --> parser_tree
+    parser --> parser_utils
+    parser --> utils
+    parser --> utils_builders
+    parser --> utils_enums
+    parser_facades --> ast
+    parser_facades --> ast_ruleblock
+    parser_facades --> ast_ruleblock_operators
+    parser_facades --> parser_metadata
+    parser_facades --> parser_tree
+    parser_facades --> parser_utils
+    parser_facades --> utils
+    parser_facades --> utils_builders
+    parser_facades --> utils_enums
+    parser_initializations --> parser_initializations_leafs
+    parser_initializations --> utils
+    parser_initializations --> utils_enums
+    parser_initializations_leafs --> parser_initializations
+    parser_initializations_leafs --> utils
+    parser_initializations_leafs --> utils_builders
+    parser_initializations_leafs --> utils_enums
+    parser_initializations_nodes --> parser_initializations
+    parser_metadata --> parser_facades
+    parser_metadata --> parser_initializations
+    parser_metadata --> parser_initializations_leafs
+    parser_metadata --> parser_initializations_nodes
+    parser_metadata --> parser_utils
+    parser_metadata --> utils
+    parser_metadata --> utils_builders
+    parser_metadata --> utils_enums
+    parser_publishers --> utils_builders
+    parser_utils --> parser_initializations
+    parser_utils --> parser_tree
+    parser_utils --> utils_enums
 ```
 
 The flow moves from the lexer into `parser_Parser`, which coordinates `utils_builders_Director` and `utils_builders_LexemeInfoBuilder` recipes, delegates declaration publishing to `parser_publishers_Publisher` implementations, and writes results into `utils_SymbolTable`. Metadata objects implement `utils_builders_LexemeInfoView` to describe symbol attributes.
@@ -39,29 +78,26 @@ The flow moves from the lexer into `parser_Parser`, which coordinates `utils_bui
 
 ```mermaid
 classDiagram
-    %% parser
-    class parser_Parser {
-        <<Bison>> <<LLR1>> <<parser>>
-        +Parser(Lexer, SymbolTable)
-        +getNumberOfErrors() int
-        symbolTable SymbolTable
-        programName String
-        ast AbstractSyntaxTree
+    namespace parser {
+        class Parser {
+            <<Bison_3_8_2>>
+            +Parser(Lexer, SymbolTable)
+            +parse() boolean
+            +getNumberOfErrors() int
+        }
     }
-    parser_Parser ..|> parser_publishers_Publisher : uses
-    parser_Parser ..|> parser_facades_RuleblockASTBuilder : uses
-
-    %% parser.publishers
     namespace parser_publishers {
         class Publisher {
             <<interface>>
-            +setDeclarationScope(String)
-            +publish()
+            +scope(String) Publisher
             +keys() List~String~
+            +publish() void
         }
         class Declaration {
             <<abstract>>
-            +setDeclarationScope(String)
+            #declarationScope String
+            #builder LexemeInfoBuilder
+            +scope(String) Declaration
             +type(Type) Declaration
             +subtype(Subtype) Declaration
             +customType(String) Declaration
@@ -71,50 +107,48 @@ classDiagram
             +superiorLimits(List~String~) Declaration
             +parameters(List~String~) Declaration
             +initialValue(Object) Declaration
-            builder LexemeInfoBuilder
         }
-        class DeclarationGroup {
-            +setDeclarationScope(String)
-            +publish()
+        class Block {
+            <<abstract>>
+            #declarations List~ConcreteDecl~
+            +add(ConcreteDecl) void
+            +scope(String) Block
             +keys() List~String~
-            declarations List~Declaration~
+            +publish() void
         }
         class DeclarationBlock {
-            +addDeclaration(Declaration)
+            +add(Declaration) void
         }
         class MultipleDeclaration {
-            +publish()
+            #identifiers List~String~
+            +identifiers(List~String~) MultipleDeclaration
+            +publish() void
             +keys() List~String~
-            symbolTable SymbolTable
-            identifiers List~String~
         }
         class SingleDeclaration {
+            #identifier String
             +identifier(String) SingleDeclaration
-            +publish()
+            +publish() void
             +keys() List~String~
-            symbolTable SymbolTable
-            identifier String
         }
-        class ComponentDeclaration {
-            +source(Source) ComponentDeclaration
-            +publish()
-            termDeclarations TermBlock
+        class FuzzyDeclaration {
+            +source(Source) FuzzyDeclaration
+            +publish() void
         }
         class StructureDeclaration {
             +identifier(String) StructureDeclaration
-            +publish()
-            structBlock StructureBlock
+            +publish() void
+        }
+        class StructureBlock {
+            +add(SingleDeclaration) void
+            +getInitializationInfo() List~PathInitializationInfo~
+        }
+        class FuzzyBlock {
+            +add(SingleDeclaration) void
+            +getTermNames() List~String~
         }
         class EnumeratedTypeDeclaration {
             +publish()
-        }
-        class StructureBlock {
-            +addField(SingleDeclaration)
-            +getInitializationInfo() List~PathInitializationInfo~
-        }
-        class TermBlock {
-            +addTerm(SingleDeclaration)
-            +getTermNames() List~String~
         }
         class AnnonymousEnumeratedVariable {
             +publish()
@@ -123,43 +157,31 @@ classDiagram
             +publish()
         }
     }
-    Publisher <|.. Declaration
-    DeclarationGroup <|.. DeclarationBlock
-    DeclarationGroup <|.. StructureBlock
-    DeclarationGroup <|.. TermBlock
-    Declaration <|.. MultipleDeclaration
-    Declaration <|.. SingleDeclaration
-    SingleDeclaration <|.. ComponentDeclaration
-    SingleDeclaration <|.. StructureDeclaration
-    SingleDeclaration <|.. EnumeratedTypeDeclaration
-    MultipleDeclaration <|.. AnnonymousEnumeratedVariable
-    SingleDeclaration <|.. AnnonymousEnumeratedField
-
-    %% parser.facades
     namespace parser_facades {
         class DimensionCalculator {
             <<utility>>
             +calculate(List~String~, List~String~) int
         }
-        class RangesParser {
-            <<utility>>
-            +parse(List~String~, List~String~, List~String~) void
-        }
-        class MacrosPublisher {
-            +publish(SymbolTable, List~String~, String) void
-        }
         class IdentifierParser {
             +parse(String, String) ParsedIdentifier
+        }
+        class MacrosPublisher {
+            +publish(SymbolTable, List~String~, String)
         }
         class MembershipFunctionClassifier {
             +classify(List~String~, List~String~) MembershipFunctionShape
         }
+        class RangesParser {
+            <<utility>>
+            +parse(List~String~, List~String~, List~String~)
+        }
         class RuleblockASTBuilder {
-            +build(TreeNode, List~Operator~) RuleBlockNode
+            +build(ParserTreeNode, List~Operator~) RuleBlockNode
+        }
+        class SymbolTableCleaner {
+            +clean(SymbolTable) void
         }
     }
-
-    %% parser.initializations
     namespace parser_initializations {
         class Initialization {
             <<interface>>
@@ -176,7 +198,6 @@ classDiagram
         class LeafInitialization {
             <<abstract>>
             +find(String) Optional~Initialization~
-            +copy() Initialization
         }
         class DefaultInitialization {
             +bool(SymbolTable) DefaultInitialization
@@ -186,19 +207,15 @@ classDiagram
             +wstring(SymbolTable) DefaultInitialization
         }
         class VariableInitialization {
-            +VariableInitialization(String)
             +variableValue() String
         }
         class EnumeratedInitialization {
-            +EnumeratedInitialization(List~String~)
             +variableValue() String
         }
         class SubrangeInitialization {
-            +SubrangeInitialization(String, String)
             +variableValue() String
         }
         class MacroInitialization {
-            +MacroInitialization(SymbolTable, Integer)
             +variableValue() String
         }
     }
@@ -206,31 +223,63 @@ classDiagram
         class NodeInitialization {
             <<abstract>>
             +put(String, Initialization) Initialization
-            +find(String) Optional~Initialization~
         }
         class StructInitialization {
             +put(String, Initialization) Initialization
             +find(String) Optional~Initialization~
-            +variableValue() String
         }
         class RepeatedInitialization {
             +put(String, Initialization) Initialization
             +find(String) Optional~Initialization~
-            +variableValue() String
         }
     }
-    Initialization <|.. LeafInitialization
-    Initialization <|.. NodeInitialization
-    LeafInitialization <|.. DefaultInitialization
-    LeafInitialization <|.. VariableInitialization
-    LeafInitialization <|.. EnumeratedInitialization
-    LeafInitialization <|.. SubrangeInitialization
-    LeafInitialization <|.. MacroInitialization
-    NodeInitialization <|.. StructInitialization
-    NodeInitialization <|.. RepeatedInitialization
-    Factory ..> DefaultInitialization : creates
-
-    %% utils
+    namespace parser_metadata {
+        class FunctionBlockMetadata
+        class PrimitiveMetadata
+        class ArrayMetadata
+        class StringMetadata
+        class EnumeratedMetadata
+        class SubrangeMetadata
+        class StructureMetadata
+        class MacroMetadata
+        class CustomMetadata
+        class TermMetadata
+        class FuzzifierMetadata
+        class DefuzzifierMetadata
+        class PragmaMetadata
+    }
+    namespace parser_tree {
+        class ParserTreeNode {
+            +label() ParserLabel
+            +symbolReference() String
+            +children() List~ParserTreeNode~
+        }
+        class ParserLabel
+    }
+    namespace parser_utils {
+        class ParsedIdentifier {
+            +mangled() String
+            +scope() String
+            +name() String
+        }
+        class PathInitializationInfo {
+            +name() String
+            +initialValue() Initialization
+        }
+        class ConditionParsingContext {
+            +addOperator(ParserLabel)
+            +addOperand(ParserTreeNode)
+            +getConditionNode() ParserTreeNode
+        }
+        class ArrayParsingContext {
+            +getMaxValue() int
+            +getPathsInfo() List~PathInitializationInfo~
+        }
+        class MembershipFunctionShape {
+            +subtype() Subtype
+            +parameters() List~String~
+        }
+    }
     namespace utils {
         class SymbolTable {
             +put(String, LexemeInfo) LexemeInfo
@@ -238,153 +287,199 @@ classDiagram
             +get(String) LexemeInfo
             +size() int
         }
-        class LexemeInfo {
-            type Type
-            subtype Subtype
-            customType String
-            use Use
-            source Source
-            inferiorLimits List~String~
-            superiorLimits List~String~
-            parameters List~String~
-            initialValue Object
-        }
+        class LexemeInfo
     }
     namespace utils_builders {
-        class Director {
-            <<utility>>
-            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView) void
-            +makeLiteral(LexemeInfoMutator) void
-            +makeIntegerZeroConstant(LexemeInfoMutator) String
-            +makeDefaultInteger(LexemeInfoMutator) String
-            +makeDefaultReal(LexemeInfoMutator) String
-            +makeDefaultBoolean(LexemeInfoMutator) String
-            +makeTrueBoolean(LexemeInfoMutator) String
-            +makeDefaultString(LexemeInfoMutator) String
-            +makeDefaultWString(LexemeInfoMutator) String
-        }
-        class LexemeInfoBuilder {
-            <<implements>> LexemeInfoMutator, LexemeInfoView
-            +build() LexemeInfo
-        }
         class LexemeInfoMutator {
             <<interface>>
-            +type(Type) LexemeInfoMutator
-            +subtype(Subtype) LexemeInfoMutator
-            +customType(String) LexemeInfoMutator
-            +source(Source) LexemeInfoMutator
-            +use(Use) LexemeInfoMutator
-            +inferiorLimits(List~String~) LexemeInfoMutator
-            +superiorLimits(List~String~) LexemeInfoMutator
-            +parameters(List~String~) LexemeInfoMutator
-            +initialValue(Object) LexemeInfoMutator
+            +type(Type)
+            +subtype(Subtype)
+            +initialValue(Object)
         }
         class LexemeInfoView {
             <<interface>>
             +type() Type
             +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
             +initialValue() Object
         }
+        class LexemeInfoBuilder {
+            +build() LexemeInfo
+        }
+        class Director {
+            <<utility>>
+            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView) void
+            +makeLiteral(LexemeInfoMutator) void
+            +makeIntegerZeroConstant(LexemeInfoMutator) String
+            +makeBooleanTrueConstant(LexemeInfoMutator) String
+            +makeDefaultInteger(LexemeInfoMutator) String
+            +makeDefaultReal(LexemeInfoMutator) String
+            +makeDefaultBoolean(LexemeInfoMutator) String
+            +makeDefaultString(LexemeInfoMutator) String
+            +makeDefaultWString(LexemeInfoMutator) String
+        }
     }
-    LexemeInfoBuilder ..|> LexemeInfoMutator : implements
-    LexemeInfoBuilder ..|> LexemeInfoView : implements
-    Publisher ..|> LexemeInfoMutator : extends
-    Declaration ..> LexemeInfoBuilder : holds
+    namespace ast_ruleblock {
+        class RuleBlockNode
+    }
+    namespace ast_ruleblock_operators {
+        class Operator
+    }
+    utils_builders_LexemeInfoMutator <|-- parser_publishers_Publisher
+    parser_publishers_Publisher <|.. parser_publishers_Declaration
+    parser_publishers_Publisher <|.. parser_publishers_Block
+    parser_publishers_Declaration <|-- parser_publishers_MultipleDeclaration
+    parser_publishers_Declaration <|-- parser_publishers_SingleDeclaration
+    parser_publishers_Block <|-- parser_publishers_DeclarationBlock
+    parser_publishers_Block <|-- parser_publishers_StructureBlock
+    parser_publishers_Block <|-- parser_publishers_FuzzyBlock
+    parser_publishers_SingleDeclaration <|-- parser_publishers_FuzzyDeclaration
+    parser_publishers_SingleDeclaration <|-- parser_publishers_StructureDeclaration
+    parser_publishers_SingleDeclaration <|-- parser_publishers_EnumeratedTypeDeclaration
+    parser_publishers_SingleDeclaration <|-- parser_publishers_AnnonymousEnumeratedField
+    parser_publishers_MultipleDeclaration <|-- parser_publishers_AnnonymousEnumeratedVariable
+    parser_initializations_Initialization <|.. parser_initializations_leafs_LeafInitialization
+    parser_initializations_Initialization <|.. parser_initializations_nodes_NodeInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_DefaultInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_VariableInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_EnumeratedInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_SubrangeInitialization
+    parser_initializations_leafs_LeafInitialization <|-- parser_initializations_leafs_MacroInitialization
+    parser_initializations_nodes_NodeInitialization <|-- parser_initializations_nodes_StructInitialization
+    parser_initializations_nodes_NodeInitialization <|-- parser_initializations_nodes_RepeatedInitialization
+    utils_builders_LexemeInfoMutator <|.. utils_builders_LexemeInfoBuilder
+    utils_builders_LexemeInfoView <|.. utils_builders_LexemeInfoBuilder
+    utils_SymbolTable --> utils_LexemeInfo : stores
+    utils_builders_LexemeInfoBuilder ..> utils_LexemeInfo : builds
+    utils_builders_Director ..> utils_builders_LexemeInfoMutator : configures
+    utils_builders_Director ..> utils_builders_LexemeInfoView : reads
+    parser_Parser --> parser_publishers_Publisher : creates
+    parser_Parser --> parser_facades_RuleblockASTBuilder : builds AST
+    parser_Parser --> utils_SymbolTable : writes
+    parser_publishers_Declaration --> utils_builders_LexemeInfoBuilder : holds
+    parser_publishers_FuzzyDeclaration --> parser_publishers_FuzzyBlock : publishes terms
+    parser_publishers_StructureDeclaration --> parser_publishers_StructureBlock : publishes fields
+    parser_publishers_StructureBlock ..> parser_utils_PathInitializationInfo : exposes
+    parser_publishers_EnumeratedTypeDeclaration ..> parser_facades_MacrosPublisher : registers macros
+    parser_publishers_AnnonymousEnumeratedField ..> parser_facades_MacrosPublisher : registers macros
+    parser_publishers_AnnonymousEnumeratedVariable ..> parser_facades_MacrosPublisher : registers macros
+    parser_facades_MacrosPublisher ..> parser_metadata_MacroMetadata : builds
+    parser_facades_MacrosPublisher --> utils_SymbolTable : writes
+    parser_facades_IdentifierParser ..> parser_utils_ParsedIdentifier : returns
+    parser_facades_MembershipFunctionClassifier ..> parser_utils_MembershipFunctionShape : returns
+    parser_facades_RuleblockASTBuilder ..> parser_tree_ParserTreeNode : traverses
+    parser_facades_RuleblockASTBuilder ..> ast_ruleblock_RuleBlockNode : returns
+    parser_facades_RuleblockASTBuilder ..> ast_ruleblock_operators_Operator : configured by
+    parser_initializations_Factory ..> parser_initializations_leafs_DefaultInitialization : creates
+    parser_initializations_nodes_StructInitialization --> parser_initializations_Initialization : fields
+    parser_initializations_nodes_RepeatedInitialization --> parser_initializations_Initialization : intervals
+    parser_metadata_TermMetadata ..> parser_facades_MembershipFunctionClassifier : classifies
+    parser_metadata_ArrayMetadata ..> parser_facades_DimensionCalculator : sizes
+    parser_metadata_ArrayMetadata ..> parser_facades_RangesParser : splits ranges
+    parser_metadata_ArrayMetadata ..> parser_initializations_nodes_RepeatedInitialization : creates
+    parser_utils_ConditionParsingContext --> parser_tree_ParserTreeNode : builds
+    utils_builders_LexemeInfoView <|.. parser_metadata_FunctionBlockMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_PrimitiveMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_ArrayMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_StringMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_EnumeratedMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_SubrangeMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_StructureMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_MacroMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_CustomMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_TermMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_FuzzifierMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_DefuzzifierMetadata
+    utils_builders_LexemeInfoView <|.. parser_metadata_PragmaMetadata
 ```
 
 ## Class Table
 
-| Class                                                 | Responsibility                                                                                           | Pattern          |
-|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------|------------------|
-| parser_Parser                                         | Bison-generated LALR(1) parser; drives syntax analysis and invokes semantic actions that publish symbols | Parser           |
-| parser_publishers_Publisher                           | Interface declaring scope, publish, and keys; extends LexemeInfoMutator                                  | Interface        |
-| parser_publishers_leaves_Declaration                  | Abstract base holding a LexemeInfoBuilder and exposing fluent mutator setters                            | Abstract base    |
-| parser_publishers_nodes_Block                        | Abstract composite grouping declarations and forwarding mutator/publish/keys calls to each              | Composite        |
-| parser_publishers_nodes_DeclarationBlock              | Groups IO/variable declarations (VAR_INPUT / VAR_OUTPUT / VAR)                                          | Composite        |
-| parser_publishers_leaves_multiple_MultipleDeclaration | Publishes several identifiers sharing the same type and attributes                                       | Composite        |
-| parser_publishers_leaves_single_SingleDeclaration     | Publishes a single identifier under scope#name key                                                       | Composite        |
-| parser_publishers_leaves_single_FuzzyDeclaration      | Publishes a fuzzifier or defuzzifier component together with its term block (keys suffixed @fuzzifier/@defuzzifier) | Composite        |
-| parser_publishers_leaves_single_StructureDeclaration  | Publishes a structure declaration and delegates to its field block                                       | Composite        |
-| parser_publishers_leaves_single_EnumeratedTypeDeclaration | Publishes an enumerated type and registers its enum macros                                             | Composite        |
-| parser_publishers_nodes_StructureBlock                | Groups structure field declarations and exposes initialization info per field                            | Composite        |
-| parser_publishers_nodes_FuzzyBlock                    | Groups linguistic terms (SingleDeclaration)                                                              | Composite        |
-| parser_publishers_leaves_multiple_AnnonymousEnumeratedVariable | Publishes an anonymous enumerated variable and its enum literal macros                               | Composite        |
-| parser_publishers_leaves_single_AnnonymousEnumeratedField    | Publishes an anonymous enumerated field and its enum literal macros                                | Composite        |
-| parser_facades_DimensionCalculator                    | Computes total array element count as product of dimension sizes                                         | Utility Facade   |
-| parser_facades_RangesParser                           | Splits alternating range tokens into inferior and superior limit lists                                   | Utility Facade   |
-| parser_facades_MacrosPublisher                        | Publishes enumerated macro literals under a scope prefix                                                 | Facade           |
-| parser_facades_IdentifierParser                       | Splits an identifier into scope and name using the # separator (inline mangling)                         | Utility Facade   |
-| parser_facades_MembershipFunctionClassifier           | Classifies membership function shape from point/degree lists                                             | Utility Facade   |
-| parser_facades_RuleblockASTBuilder                    | Builds the rule-block AST from a TreeNode using operator configuration                                   | Builder          |
-| parser_initializations_Initialization                 | Interface for path-based lookup, value rendering, and copying                                            | Composite        |
-| parser_initializations_Factory                        | Static utility creating default primitive initializations for BOOL/INT/REAL/STRING/WSTRING               | Factory          |
-| parser_initializations_leafs_LeafInitialization       | Abstract base for atomic (leaf) initializations; find resolves only empty path                           | Abstract base    |
-| parser_initializations_leafs_DefaultInitialization    | Default literal initialization registered in the symbol table via Director                               | Factory method   |
-| parser_initializations_leafs_VariableInitialization   | Initialization referencing another variable by name                                                      | Leaf             |
-| parser_initializations_leafs_EnumeratedInitialization | Initialization holding the selected enumerated literal                                                   | Leaf             |
-| parser_initializations_leafs_SubrangeInitialization   | Lower bound initialization for a subrange type                                                           | Leaf             |
-| parser_initializations_leafs_MacroInitialization      | Enum literal macro; registers an INT literal in the symbol table                                         | Leaf             |
-| parser_initializations_nodes_NodeInitialization       | Abstract base for composite initializations supporting put and find                                      | Abstract base    |
-| parser_initializations_nodes_StructInitialization     | Struct initialization with named fields and nested path access                                           | Composite        |
-| parser_initializations_nodes_RepeatedInitialization   | Array initialization over disjoint contiguous intervals                                                  | Composite        |
-| parser_metadata_FunctionBlockMetadata                 | Symbol table entry of the function block; parameters are interface variable keys                         | Metadata View    |
-| parser_metadata_PrimitiveMetadata                     | Primitive type metadata with default initialization from Factory                                         | Metadata View    |
-| parser_metadata_ArrayMetadata                         | Array metadata with bounds and RepeatedInitialization default                                            | Metadata View    |
-| parser_metadata_StringMetadata                        | String metadata with length bounds and default initialization                                            | Metadata View    |
-| parser_metadata_EnumeratedMetadata                    | Enumerated type metadata with parameter values                                                           | Metadata View    |
-| parser_metadata_SubrangeMetadata                      | Subrange metadata with inferior/superior limits                                                          | Metadata View    |
-| parser_metadata_StructureMetadata                     | Structure metadata with field names and StructInitialization                                             | Metadata View    |
-| parser_metadata_MacroMetadata                         | Macro metadata registering an enum ordinal literal                                                       | Metadata View    |
-| parser_metadata_CustomMetadata                        | Custom type metadata copying the referenced type's initial value                                         | Metadata View    |
-| parser_metadata_TermMetadata                          | Linguistic term metadata with classified membership-function shape                                       | Metadata View    |
-| parser_metadata_FuzzifierMetadata                     | Fuzzifier component metadata listing term names                                                          | Metadata View    |
-| parser_metadata_DefuzzifierMetadata                   | Defuzzifier component metadata with range, terms, and default value                                      | Metadata View    |
-| parser_metadata_PragmaMetadata                        | Pragma entry under <fb>@option#<NAME> with value literal key                                             | Metadata View    |
-| parser_tree_TreeNode                                  | Tree node with label, symbol reference, and children for rule blocks                                     | Tree Composite   |
-| parser_tree_Label                                     | Enumeration of rule-block tree labels (AND, OR, IF, IS, NOT, ...)                                        | Enum             |
-| parser_utils_ParsedIdentifier                         | Holds mangled complete name, scope, and base identifier                                                  | Value object     |
-| parser_utils_PathInitializationInfo                   | Pairs a field name with its initialization value                                                         | Value object     |
-| parser_utils_ConditionParsingContext                  | Builds a condition tree from operands and operators during parsing                                       | Context          |
-| parser_utils_ArrayParsingContext                      | Holds max array value and per-path initialization info                                                   | Context          |
-| parser_utils_MembershipFunctionShape                  | Recognized membership-function subtype and defining x coordinates                                        | Value object     |
-| utils_builders_Director                               | Predefined recipes (makeLiteral, makeDefaultXxx, makeWithMetadata) for LexemeInfo                        | Director Builder |
-| utils_builders_LexemeInfoBuilder                      | Fluent builder implementing LexemeInfoMutator and LexemeInfoView                                         | Builder          |
-| utils_builders_LexemeInfoMutator                      | Fluent interface to set LexemeInfo semantic attributes                                                   | Fluent interface |
-| utils_builders_LexemeInfoView                         | Read-only view of LexemeInfo attributes                                                                  | View             |
-| utils_SymbolTable                                     | Map from symbol name to LexemeInfo; put, putIfAbsent, get, size                                          | Registry         |
-| utils_LexemeInfo                                      | Immutable DTO holding type, subtype, customType, use, source, limits, parameters, initialValue           | Value object     |
+| Class                                                 | Responsibility                                                                                            | Pattern          |
+|-------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|------------------|
+| parser_Parser                                         | Bison-generated LALR(1) parser; drives syntax analysis and invokes semantic actions that publish symbols  | Generator        |
+| parser_publishers_Publisher                           | Interface declaring scope, publish, and keys; extends LexemeInfoMutator                                   | Interface        |
+| parser_publishers_Declaration                         | Abstract base holding a LexemeInfoBuilder and exposing fluent mutator setters                             | Abstract base    |
+| parser_publishers_Block                               | Abstract composite grouping declarations and forwarding mutator and publish calls to each                 | Composite        |
+| parser_publishers_DeclarationBlock                    | Groups IO and variable declarations such as VAR_INPUT, VAR_OUTPUT, and VAR                                | Composite        |
+| parser_publishers_StructureBlock                      | Groups structure field declarations and exposes initialization info per field                             | Composite        |
+| parser_publishers_FuzzyBlock                          | Groups linguistic terms of a fuzzifier or defuzzifier                                                     | Composite        |
+| parser_publishers_MultipleDeclaration                 | Publishes several identifiers sharing the same type and attributes                                        | Composite        |
+| parser_publishers_SingleDeclaration                   | Publishes a single identifier under the scope name key                                                    | Composite        |
+| parser_publishers_FuzzyDeclaration                    | Publishes a fuzzifier or defuzzifier component with its term block and suffixed keys                      | Composite        |
+| parser_publishers_StructureDeclaration                | Publishes a structure declaration and delegates to its field block                                        | Composite        |
+| parser_publishers_EnumeratedTypeDeclaration           | Publishes an enumerated type and registers its enum macros                                                | Composite        |
+| parser_publishers_AnnonymousEnumeratedVariable        | Publishes an anonymous enumerated variable and its enum literal macros                                    | Composite        |
+| parser_publishers_AnnonymousEnumeratedField           | Publishes an anonymous enumerated field and its enum literal macros                                       | Composite        |
+| parser_facades_DimensionCalculator                    | Computes total array element count as product of dimension sizes                                          | Utility Facade   |
+| parser_facades_RangesParser                           | Splits alternating range tokens into inferior and superior limit lists                                    | Utility Facade   |
+| parser_facades_MacrosPublisher                        | Publishes enumerated macro literals under a scope prefix                                                  | Facade           |
+| parser_facades_IdentifierParser                       | Splits an identifier into scope and name using the hash separator                                         | Utility Facade   |
+| parser_facades_MembershipFunctionClassifier           | Classifies membership function shape from point and degree lists                                          | Utility Facade   |
+| parser_facades_RuleblockASTBuilder                    | Builds the rule block AST from a tree node using operator configuration                                   | Builder          |
+| parser_facades_SymbolTableCleaner                     | Removes symbol table entries whose use is unknown                                                         | Utility Facade   |
+| parser_initializations_Initialization                 | Interface for path based lookup, value rendering, and copying                                             | Composite        |
+| parser_initializations_Factory                        | Static utility creating default primitive initializations for BOOL, integer, REAL, LREAL, STRING, WSTRING | Factory          |
+| parser_initializations_leafs_LeafInitialization       | Abstract base for atomic initializations; find resolves only the empty path                               | Abstract base    |
+| parser_initializations_leafs_DefaultInitialization    | Default literal initialization registered in the symbol table via Director                                | Factory method   |
+| parser_initializations_leafs_VariableInitialization   | Initialization referencing another variable by name                                                       | Leaf             |
+| parser_initializations_leafs_EnumeratedInitialization | Initialization holding the selected enumerated literal                                                    | Leaf             |
+| parser_initializations_leafs_SubrangeInitialization   | Lower bound initialization for a subrange type                                                            | Leaf             |
+| parser_initializations_leafs_MacroInitialization      | Enum literal macro; registers an INT literal in the symbol table                                          | Leaf             |
+| parser_initializations_nodes_NodeInitialization       | Abstract base for composite initializations supporting put and find                                       | Abstract base    |
+| parser_initializations_nodes_StructInitialization     | Struct initialization with named fields and nested path access                                            | Composite        |
+| parser_initializations_nodes_RepeatedInitialization   | Array initialization over disjoint contiguous intervals                                                   | Composite        |
+| parser_metadata_FunctionBlockMetadata                 | Symbol table entry of the function block; parameters are interface variable keys                          | Metadata View    |
+| parser_metadata_PrimitiveMetadata                     | Primitive type metadata with default initialization from Factory                                          | Metadata View    |
+| parser_metadata_ArrayMetadata                         | Array metadata with bounds and RepeatedInitialization default                                             | Metadata View    |
+| parser_metadata_StringMetadata                        | String metadata with length bounds and default initialization                                             | Metadata View    |
+| parser_metadata_EnumeratedMetadata                    | Enumerated type metadata with parameter values                                                            | Metadata View    |
+| parser_metadata_SubrangeMetadata                      | Subrange metadata with inferior and superior limits                                                       | Metadata View    |
+| parser_metadata_StructureMetadata                     | Structure metadata with field names and StructInitialization                                              | Metadata View    |
+| parser_metadata_MacroMetadata                         | Macro metadata registering an enum ordinal literal                                                        | Metadata View    |
+| parser_metadata_CustomMetadata                        | Custom type metadata copying the referenced type initial value                                            | Metadata View    |
+| parser_metadata_TermMetadata                          | Linguistic term metadata with classified membership function shape                                        | Metadata View    |
+| parser_metadata_FuzzifierMetadata                     | Fuzzifier component metadata listing term names                                                           | Metadata View    |
+| parser_metadata_DefuzzifierMetadata                   | Defuzzifier component metadata with range, terms, and default value                                       | Metadata View    |
+| parser_metadata_PragmaMetadata                        | Pragma entry under function block scope and option name with value literal key                            | Metadata View    |
+| parser_tree_ParserTreeNode                            | Tree node with label, symbol reference, and children for rule blocks                                      | Tree Composite   |
+| parser_tree_ParserLabel                               | Enumeration of rule block tree labels                                                                     | Enum             |
+| parser_utils_ParsedIdentifier                         | Holds mangled complete name, scope, and base identifier                                                   | Value object     |
+| parser_utils_PathInitializationInfo                   | Pairs a field name with its initialization value                                                          | Value object     |
+| parser_utils_ConditionParsingContext                  | Builds a condition tree from operands and operators during parsing                                        | Context          |
+| parser_utils_ArrayParsingContext                      | Holds max array value and per path initialization info                                                    | Context          |
+| parser_utils_MembershipFunctionShape                  | Recognized membership function subtype and defining x coordinates                                         | Value object     |
+| utils_SymbolTable                                     | Map from symbol name to LexemeInfo; put, putIfAbsent, get, size                                           | Registry         |
+| utils_LexemeInfo                                      | Immutable DTO holding type, subtype, customType, use, source, limits, parameters, initialValue            | Value object     |
+| utils_builders_Director                               | Predefined recipes for LexemeInfo literals, defaults, and metadata copies                                 | Director Builder |
+| utils_builders_LexemeInfoBuilder                      | Fluent builder implementing LexemeInfoMutator and LexemeInfoView                                          | Builder          |
+| utils_builders_LexemeInfoMutator                      | Fluent interface to set LexemeInfo semantic attributes                                                    | Fluent interface |
+| utils_builders_LexemeInfoView                         | Read only view of LexemeInfo attributes                                                                   | View             |
 
-Excluded: deprecated LucaInfo (utils.LucaInfo) and local-only Parser.y / Luca.y references per EXCLUDE_PATTERNS. Old classes ContextHandler, ParsingContext, NameMangler do not exist.
+Excluded: deprecated types and local only files. The old declaration context classes ContextHandler, ParsingContext, and NameMangler do not exist in the current source.
 
 ## Sources by Subpackage
 
-| Subpackage                    | Directory                                    |
-|-------------------------------|----------------------------------------------|
-| parser                        | src/main/java/parser/                        |
-| parser.publishers             | src/main/java/parser/publishers/             |
-| parser.publishers.leaves      | src/main/java/parser/publishers/leaves/      |
-| parser.publishers.leaves.multiple | src/main/java/parser/publishers/leaves/multiple/ |
-| parser.publishers.leaves.single   | src/main/java/parser/publishers/leaves/single/   |
-| parser.publishers.nodes       | src/main/java/parser/publishers/nodes/       |
-| parser.facades                | src/main/java/parser/facades/                |
-| parser.initializations        | src/main/java/parser/initializations/        |
-| parser.initializations.leafs  | src/main/java/parser/initializations/leafs/  |
-| parser.initializations.nodes  | src/main/java/parser/initializations/nodes/  |
-| parser.metadata               | src/main/java/parser/metadata/               |
-| parser.tree                   | src/main/java/parser/tree/                   |
-| parser.utils                  | src/main/java/parser/utils/                  |
-| utils.builders                | src/main/java/utils/builders/                |
-| utils                         | src/main/java/utils/                         |
+| Subpackage                       | Directory                                       |
+|----------------------------------|-------------------------------------------------|
+| parser                           | src/main/java/parser/                           |
+| parser.facades                   | src/main/java/parser/facades/                   |
+| parser.initializations           | src/main/java/parser/initializations/           |
+| parser.initializations.leafs     | src/main/java/parser/initializations/leafs/     |
+| parser.initializations.nodes     | src/main/java/parser/initializations/nodes/     |
+| parser.metadata                  | src/main/java/parser/metadata/                  |
+| parser.publishers                | src/main/java/parser/publishers/                |
+| parser.publishers.leafs          | src/main/java/parser/publishers/leafs/          |
+| parser.publishers.leafs.multiple | src/main/java/parser/publishers/leafs/multiple/ |
+| parser.publishers.leafs.single   | src/main/java/parser/publishers/leafs/single/   |
+| parser.publishers.nodes          | src/main/java/parser/publishers/nodes/          |
+| parser.tree                      | src/main/java/parser/tree/                      |
+| parser.utils                     | src/main/java/parser/utils/                     |
+| utils                            | src/main/java/utils/                            |
+| utils.builders                   | src/main/java/utils/builders/                   |
 
 ## Architecture Overview
 
-The parser follows a Publisher + Director + Builder architecture. The Bison-generated `Parser` reduces grammar rules and, in semantic actions, builds `Publisher` instances, configures them through `Director` recipes and `LexemeInfoBuilder`, then calls `publish()` to write into `utils.SymbolTable`. Mangling (`FB#varName` for scoped variables, `TypeName` for types) is inline in Publisher implementations and `IdentifierParser`; there is no separate NameMangler class.
+The parser follows a Publisher, Director, and Builder architecture. The Bison generated `Parser` reduces grammar rules and, in semantic actions, builds `Publisher` instances, configures them through `Director` recipes and `LexemeInfoBuilder`, then calls `publish` to write into `utils.SymbolTable`. Mangling uses the hash separator inline in publisher implementations and `IdentifierParser`; there is no separate NameMangler class.
 
 ```
                  Parser.y semantic action
@@ -394,7 +489,7 @@ The parser follows a Publisher + Director + Builder architecture. The Bison-gene
                  |   Director  |  makeWithMetadata / makeDefaultXxx recipes
                  +-------------+
                         |
-                        v (configures)
+                        v
                  +-------------+
                  | LexemeInfo  |  fluent build of semantic attributes
                  |   Builder   |
@@ -419,136 +514,66 @@ The parser follows a Publisher + Director + Builder architecture. The Bison-gene
 
 ### LexemeInfoBuilder
 
-`utils.builders.LexemeInfoBuilder` implements both `LexemeInfoMutator` and `LexemeInfoView`. It holds the mutable attributes (`type`, `subtype`, `customType`, `use`, `source`, `inferiorLimit`, `superiorLimit`, `parameters`, `initialValue`) and `build()` produces an immutable `utils.LexemeInfo`. Used by `Declaration` and directly in semantic actions (e.g. linguistic terms).
+`utils.builders.LexemeInfoBuilder` implements both `utils.builders.LexemeInfoMutator` and `utils.builders.LexemeInfoView`. It holds the mutable attributes and `build` produces an immutable `utils.LexemeInfo`. Used by `Declaration` and directly in semantic actions for linguistic terms.
 
 ### Director
 
 `utils.builders.Director` is a static utility providing predefined recipes:
 
-| Recipe                         | Effect                                                               |
-|--------------------------------|----------------------------------------------------------------------|
-| makeWithMetadata(schema, view) | Copies all attributes from a LexemeInfoView into a LexemeInfoMutator |
-| makeLiteral(schema)            | Sets type=SIMPLE, use=LITERAL, source=NONE                           |
-| makeDefaultInteger(schema)     | Returns "0"; subtype INT, initialValue 0                             |
-| makeDefaultReal(schema)        | Returns "0.0"; subtype REAL, initialValue 0.0                        |
-| makeDefaultBoolean(schema)     | Returns "FALSE"; subtype BOOL, initialValue false                    |
-| makeTrueBoolean(schema)        | Returns "TRUE"; subtype BOOL, initialValue true                      |
-| makeDefaultString(schema)      | Returns "''"; subtype STRING, initialValue ""                        |
-| makeDefaultWString(schema)     | Returns '""'; subtype WSTRING, initialValue ""                       |
+| Recipe                  | Effect                                                                 |
+|-------------------------|------------------------------------------------------------------------|
+| makeWithMetadata        | Copies all attributes from a LexemeInfoView into a LexemeInfoMutator   |
+| makeLiteral             | Sets type SIMPLE, use LITERAL, source NONE                             |
+| makeIntegerZeroConstant | Returns 0; subtype INT, initialValue 0                                 |
+| makeBooleanTrueConstant | Returns TRUE; subtype BOOL, initialValue true                          |
+| makeDefaultInteger      | Delegates to makeIntegerZeroConstant; returns 0                        |
+| makeDefaultReal         | Returns 0.0; subtype REAL, initialValue 0.0                            |
+| makeDefaultBoolean      | Returns FALSE; subtype BOOL, initialValue false                        |
+| makeDefaultString       | Returns the empty STRING literal; subtype STRING, initialValue empty   |
+| makeDefaultWString      | Returns the empty WSTRING literal; subtype WSTRING, initialValue empty |
 
-These recipes guarantee consistent literal/default registration across semantic actions.
+These recipes guarantee consistent literal and default registration across semantic actions.
 
 ### Publisher Hierarchy
 
-`parser.publishers.Publisher` (interface) declares `scope(String)`, `publish()`, and `List<String> keys()`. It extends `LexemeInfoMutator`. Implementations live under `parser.publishers.leaves` (declarations) and `parser.publishers.nodes` (blocks).
+`parser.publishers.Publisher` is the interface that declares `scope`, `keys`, and `publish`. It extends `utils.builders.LexemeInfoMutator`. Implementations live under `parser.publishers.leafs` for declarations and `parser.publishers.nodes` for blocks.
 
 ```
 Publisher (interface)
-├── leaves.Declaration (abstract)  -- holds LexemeInfoBuilder
-│   ├── leaves.multiple.MultipleDeclaration  -- many identifiers, same attributes
-│   │   └── leaves.multiple.AnnonymousEnumeratedVariable -- anonymous enum variable + macros
-│   └── leaves.single.SingleDeclaration    -- one identifier, key scope#name
-│       ├── leaves.single.FuzzyDeclaration  -- fuzzifier/defuzzifier + terms (@fuzzifier/@defuzzifier suffix)
-│       ├── leaves.single.StructureDeclaration  -- struct + field block
-│       ├── leaves.single.EnumeratedTypeDeclaration -- enum + macro registration
-│       └── leaves.single.AnnonymousEnumeratedField -- anonymous enum field + macros
-└── nodes.Block (abstract)  -- groups declarations
+├── leafs.Declaration (abstract)  -- holds LexemeInfoBuilder and declarationScope
+│   ├── leafs.multiple.MultipleDeclaration  -- many identifiers, same attributes
+│   │   └── leafs.multiple.AnnonymousEnumeratedVariable -- anonymous enum variable + macros
+│   └── leafs.single.SingleDeclaration    -- one identifier, key scope#name
+│       ├── leafs.single.FuzzyDeclaration  -- fuzzifier/defuzzifier + terms (@fuzzifier/@defuzzifier suffix)
+│       ├── leafs.single.StructureDeclaration  -- struct + field block
+│       ├── leafs.single.EnumeratedTypeDeclaration -- enum + macro registration
+│       └── leafs.single.AnnonymousEnumeratedField -- anonymous enum field + macros
+└── nodes.Block (abstract, generic over declaration type)  -- groups declarations
     ├── nodes.DeclarationBlock  -- IO/variable declarations
     ├── nodes.StructureBlock    -- struct fields + init info
     └── nodes.FuzzyBlock        -- linguistic terms
 ```
 
-Keys are mangled inline: scoped variables use `FB#varName`, types use `TypeName`. Example: `x, y : INT` in block `MAIN` publishes as `MAIN#X`, `MAIN#Y`.
+`Block` forwards `scope`, `type`, `subtype`, `customType`, `source`, `use`, `inferiorLimits`, `superiorLimits`, `parameters`, and `initialValue` to every child declaration before publishing. Keys are mangled inline: scoped variables use `FB#varName`, types use type names. Example: `x, y : INT` in block `MAIN` publishes as `MAIN#X`, `MAIN#Y`.
 
 ### Factory and Initialization Hierarchy
 
-`parser.initializations.Factory.createPrimitiveInitialization(SymbolTable, Subtype)` returns a `DefaultInitialization` and supports BOOL, REAL/LREAL, STRING, WSTRING, and all integer subtypes SINT through ULINT (throws IllegalArgumentException otherwise).
+`parser.initializations.Factory.createPrimitiveInitialization(SymbolTable, Subtype)` returns a `parser.initializations.leafs.DefaultInitialization` and supports BOOL, LREAL, REAL, STRING, WSTRING, and all integer subtypes SINT through ULINT; it throws `IllegalArgumentException` otherwise.
 
 ```
-Initialization (interface: find, variableValue, copy)
-├── LeafInitialization (abstract; find only empty path)
-│   ├── DefaultInitialization   -- BOOL / INT / REAL / STRING / WSTRING default
-│   ├── VariableInitialization  -- reference to another variable
-│   ├── EnumeratedInitialization -- selected enum literal
-│   ├── SubrangeInitialization  -- lower bound of subrange
-│   └── MacroInitialization     -- enum ordinal, registered as INT literal
-└── NodeInitialization (abstract; put / find over paths)
-    ├── StructInitialization    -- named fields, nested # paths
-    └── RepeatedInitialization  -- array over disjoint intervals
+parser.initializations.Initialization (interface: find, variableValue, copy)
+├── parser.initializations.leafs.LeafInitialization (abstract; find only empty path)
+│   ├── parser.initializations.leafs.DefaultInitialization   -- BOOL / INT / REAL / STRING / WSTRING default
+│   ├── parser.initializations.leafs.VariableInitialization  -- reference to another variable
+│   ├── parser.initializations.leafs.EnumeratedInitialization -- selected enum literal
+│   ├── parser.initializations.leafs.SubrangeInitialization  -- lower bound of subrange
+│   └── parser.initializations.leafs.MacroInitialization     -- enum ordinal, registered as INT literal
+└── parser.initializations.nodes.NodeInitialization (abstract; put / find over paths)
+    ├── parser.initializations.nodes.StructInitialization    -- named fields, nested # paths
+    └── parser.initializations.nodes.RepeatedInitialization  -- array over disjoint intervals
 ```
 
-Path syntax uses `#` as separator (e.g. `RGB#R`, `2#X`, `0..3#field`).
-
-## Charts
-
-Chart: `assets/parser_grammar_stats.png` — Bison grammar statistics: declared tokens, non-terminals, and initialization types, counted from `src/main/java/parser/Parser.y` and `src/main/java/parser/Parser.java`.
-Chart: `assets/loc_per_module.png` — non-comment lines of code per module (lexer, parser, utils), counted from `src/main/java`.
-Chart: `assets/cyclomatic_complexity.png` — average cyclomatic complexity per package, estimated from decision points in `src/main/java`.
-
-## Supported Grammar Summary
-
-### Grammar Metrics
-
-| Metric               | Value           | Source                                                           |
-|----------------------|-----------------|------------------------------------------------------------------|
-| Declared tokens      | 82              | Parser.java SymbolKind terminals TYPE..ARRAY                     |
-| Non-terminals        | 141             | Parser.java SymbolKind S_YYACCEPT..last production               |
-| Initialization types | 7               | Default, Variable, Enumerated, Subrange, Macro, Struct, Repeated |
-| Parser generator     | GNU Bison 3.8.2 | Parser.java bisonVersion                                         |
-
-### Main IEC 61131-7 Blocks
-
-| Block                 | Tokens                                   | Purpose                                   |
-|-----------------------|------------------------------------------|-------------------------------------------|
-| Function block        | FUNCTION_BLOCK ... END_FUNCTION_BLOCK    | Top-level program unit with name and body |
-| Fuzzify               | FUZZIFY ... END_FUZZIFY                  | Linguistic fuzzifier component            |
-| Defuzzify             | DEFUZZIFY ... END_DEFUZZIFY              | Linguistic defuzzifier component          |
-| Rule block            | RULEBLOCK ... END_RULEBLOCK              | Fuzzy rule with operators and activation  |
-| Option                | OPTION ... END_OPTION                    | Manufacturer-specific pragmas             |
-| Variable declarations | VAR / VAR_INPUT / VAR_OUTPUT ... END_VAR | Declared variables with scope             |
-
-### Fuzzify / Defuzzify
-
-Fuzzify blocks declare linguistic terms (`TERM name := value;` or membership functions) and are published as components with source FUZZIFY. Defuzzify blocks add an optional `RANGE ( lo .. hi );`, a default value, and a defuzzification method (COG, COGS, COA, LM, RM) and are published with source DEFUZZIFY. Both register term names as parameters.
-
-### Rule Block
-
-A rule block declares OR/AND operators, an activation method, an accumulation method, and rules (`IF condition WITH body`). The parser builds a `TreeNode` via `ConditionParsingContext` and converts it to a `RuleBlockNode` AST using `RuleblockASTBuilder` with an operator configuration list.
-
-### Variable Declarations Annex B
-
-Variables are declared under `VAR`, `VAR_INPUT`, or `VAR_OUTPUT` with optional RETAIN/NON_RETAIN retain spec and an initialization list. Each `DeclarationBlock` is configured with source (IN/OUT), use VARIABLE, declaration scope (function block name), then published. Keys are `scope#identifier`.
-
-### Data Types
-
-Elementary types: BOOL, SINT/INT/DINT/LINT, USINT/UINT/UDINT/ULINT, REAL/LREAL, STRING, WSTRING, TIME, DATE, DATE_AND_TIME, TIME_OF_DAY, BYTE/WORD/DWORD/LWORD, plus bit-string and date types. User-defined types: enumerated, subrange, array, structure.
-
-### Initializations
-
-Initialization grammar covers simple spec (numeric/string/boolean constant), boolean spec (edge), custom spec (constant/identifier/structure), enumerated spec, array spec (with repeated initial elements), structure spec (field inits), string spec, and standard function block spec.
-
-### Data Type Declaration
-
-`TYPE ... END_TYPE` encloses a list of type declarations (`type_name_declaration`), each with a type specification (structure, enumerated, subrange, array, string).
-
-## Key Semantic Actions
-
-Excerpt from `src/main/java/parser/Parser.y` (reflected in generated `Parser.java`):
-
-| Grammar rule                               | Semantic action                                                                                                                                                                                                                                                         | Effect                                                                   |
-|--------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| function_block_declaration                 | `SingleDeclaration functionBlock = new SingleDeclaration(symbolTable); Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata(list)); functionBlock.identifier(programName).publish();`                                                                     | Publishes the function block under its name with interface variable keys |
-| io_var_decl: VAR_INPUT                     | `yyval = Source.IN;`                                                                                                                                                                                                                                                    | Sets input source direction                                              |
-| io_var_decl: VAR_OUTPUT                    | `yyval = Source.OUT;`                                                                                                                                                                                                                                                   | Sets output source direction                                             |
-| fb_io_var_declarations                     | `DeclarationBlock.source(...).use(Use.VARIABLE).setDeclarationScope(programName).publish(); yyval = keys();`                                                                                                                                                            | Publishes IO variables under `programName#identifier` and returns keys   |
-| fuzzify block                              | `ComponentDeclaration fuzzifierDeclaration = new ComponentDeclaration(symbolTable, fuzzyBlock); Director.makeWithMetadata(..., new FuzzifierMetadata(fuzzyBlock)); fuzzifierDeclaration.identifier(programName + '#' + name).publish();`                                | Publishes fuzzifier component scoped to the function block               |
-| defuzzify block                            | `ComponentDeclaration defuzzifierDeclaration = new ComponentDeclaration(symbolTable, fuzzyBlock); Director.makeWithMetadata(..., new DefuzzifierMetadata(range, fuzzyBlock, subtype, default)); defuzzifierDeclaration.identifier(programName + '#' + name).publish();` | Publishes defuzzifier component with range, terms, default               |
-| linguistic_term                            | `yyval = new SingleDeclaration(symbolTable, builder).identifier(name);`                                                                                                                                                                                                 | Declares a linguistic term as a single declaration                       |
-| linguistic_term_value: IDENTIFIER          | `Director.makeWithMetadata(builder, new CustomMetadata(symbolTable, ref));`                                                                                                                                                                                             | Resolves a custom term reference                                         |
-| linguistic_term_value: membership_function | `Director.makeWithMetadata(builder, new TermMetadata(points));`                                                                                                                                                                                                         | Classifies membership-function shape via MembershipFunctionClassifier    |
-| defuzz_method: COG/COGS/COA/LM/RM          | `yyval = Subtype.COG;` etc.                                                                                                                                                                                                                                             | Maps method token to Subtype                                             |
-| default_val: numeric_constant              | `yyval = new VariableInitialization(value);`                                                                                                                                                                                                                            | Wraps a default value literal                                            |
-| rule_block                                 | `RuleblockASTBuilder.build(componentNode, configuration);`                                                                                                                                                                                                              | Builds the rule-block AST from the tree                                  |
+Path syntax uses `#` as separator, for example `RGB#R` or `2#X`.
 
 ## Initializations Hierarchy and Usage
 
@@ -562,60 +587,74 @@ classDiagram
     }
     class LeafInitialization {
         <<abstract>>
+        +find(String) Optional~Initialization~
         +copy() Initialization
     }
     class DefaultInitialization {
-        +literal String
+        +bool(SymbolTable) DefaultInitialization
+        +real(SymbolTable) DefaultInitialization
+        +integer(SymbolTable) DefaultInitialization
+        +string(SymbolTable) DefaultInitialization
+        +wstring(SymbolTable) DefaultInitialization
+        +variableValue() String
     }
     class VariableInitialization {
-        +value String
+        +VariableInitialization(String)
+        +variableValue() String
     }
     class EnumeratedInitialization {
-        +enumeratedValue String
+        +EnumeratedInitialization(List~String~)
+        +variableValue() String
     }
     class SubrangeInitialization {
-        +ilimit String
+        +SubrangeInitialization(String, String)
+        +variableValue() String
     }
     class MacroInitialization {
-        +replaceValue Integer
+        +MacroInitialization(SymbolTable, Integer)
+        +variableValue() String
     }
     class NodeInitialization {
         <<abstract>>
         +put(String, Initialization) Initialization
+        +find(String) Optional~Initialization~
     }
     class StructInitialization {
-        +map Map~String, Initialization~
+        +put(String, Initialization) Initialization
+        +find(String) Optional~Initialization~
+        +variableValue() String
     }
     class RepeatedInitialization {
-        +dimension int
-        +intervals List~Interval~
+        +put(String, Initialization) Initialization
+        +find(String) Optional~Initialization~
+        +variableValue() String
     }
-    Initialization <|.. LeafInitialization
-    Initialization <|.. NodeInitialization
-    LeafInitialization <|.. DefaultInitialization
-    LeafInitialization <|.. VariableInitialization
-    LeafInitialization <|.. EnumeratedInitialization
-    LeafInitialization <|.. SubrangeInitialization
-    LeafInitialization <|.. MacroInitialization
-    NodeInitialization <|.. StructInitialization
-    NodeInitialization <|.. RepeatedInitialization
+    Initialization <|-- LeafInitialization
+    Initialization <|-- NodeInitialization
+    LeafInitialization <|-- DefaultInitialization
+    LeafInitialization <|-- VariableInitialization
+    LeafInitialization <|-- EnumeratedInitialization
+    LeafInitialization <|-- SubrangeInitialization
+    LeafInitialization <|-- MacroInitialization
+    NodeInitialization <|-- StructInitialization
+    NodeInitialization <|-- RepeatedInitialization
 ```
 
 ### Default Value Table
 
-| Initialization class          | Default literal  | Subtype support                                  | Registered in SymbolTable                |
-|-------------------------------|------------------|--------------------------------------------------|------------------------------------------|
-| DefaultInitialization.bool    | FALSE            | BOOL                                             | Yes, via Director.makeDefaultBoolean     |
-| DefaultInitialization.integer | 0                | SINT, INT, LINT, DINT, USINT, UINT, UDINT, ULINT | Yes, via Director.makeDefaultInteger     |
-| DefaultInitialization.real    | 0.0              | REAL, LREAL                                      | Yes, via Director.makeDefaultReal        |
-| DefaultInitialization.string  | ''               | STRING                                           | Yes, via Director.makeDefaultString      |
-| DefaultInitialization.wstring | ""               | WSTRING                                          | Yes, via Director.makeDefaultWString     |
-| VariableInitialization        | variable name    | n/a                                              | No                                       |
-| EnumeratedInitialization      | first enum value | INT                                              | No                                       |
-| SubrangeInitialization        | lower bound      | subtype                                          | No                                       |
-| MacroInitialization           | ordinal value    | INT                                              | Yes, via MacroInitialization constructor |
-| StructInitialization          | {field=value...} | STRUCT                                           | No                                       |
-| RepeatedInitialization        | \[val...]        | ARRAY                                            | No                                       |
+| Initialization class          | Default literal   | Subtype support                                  | Registered in SymbolTable                |
+|-------------------------------|-------------------|--------------------------------------------------|------------------------------------------|
+| DefaultInitialization.bool    | FALSE             | BOOL                                             | Yes, via Director.makeDefaultBoolean     |
+| DefaultInitialization.integer | 0                 | SINT, INT, LINT, DINT, USINT, UINT, UDINT, ULINT | Yes, via Director.makeDefaultInteger     |
+| DefaultInitialization.real    | 0.0               | REAL, LREAL                                      | Yes, via Director.makeDefaultReal        |
+| DefaultInitialization.string  | empty string      | STRING                                           | Yes, via Director.makeDefaultString      |
+| DefaultInitialization.wstring | empty wide string | WSTRING                                          | Yes, via Director.makeDefaultWString     |
+| VariableInitialization        | variable name     | n/a                                              | No                                       |
+| EnumeratedInitialization      | first enum value  | INT                                              | No                                       |
+| SubrangeInitialization        | lower bound       | subtype                                          | No                                       |
+| MacroInitialization           | ordinal value     | INT                                              | Yes, via MacroInitialization constructor |
+| StructInitialization          | brace value       | STRUCT                                           | No                                       |
+| RepeatedInitialization        | interval list     | ARRAY                                            | No                                       |
 
 ## Lexer Parser SymbolTable Flow
 
@@ -644,19 +683,35 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Parser as parser.Parser
-    participant PD as parser.publishers.nodes.DeclarationBlock
-    participant MD as parser.publishers.leafs.multiple.MultipleDeclaration
+    participant Publisher as parser.publishers.*
+    participant Director as utils.builders.Director
+    participant Metadata as Metadata View
+    participant Builder as utils.builders.LexemeInfoBuilder
     participant ST as utils.SymbolTable
+    participant MacroPub as parser.facades.MacrosPublisher
+    participant Factory as parser.initializations.Factory
 
-    Parser->>PD: new DeclarationBlock()
-    Parser->>PD: source(IN|OUT).use(VARIABLE).setDeclarationScope(programName)
-    PD->>MD: addDeclaration(declaration)
-    Parser->>PD: publish()
-    PD->>MD: publish()
-    MD->>ST: put(programName#identifier, builder.build()) for each identifier
-    ST-->>MD: previous value or null
-    MD-->>PD: keys() = [programName#id1, programName#id2]
-    PD-->>Parser: keys()
+    Parser->>Publisher: new SingleDeclaration / MultipleDeclaration / DeclarationBlock
+    Parser->>Director: makeWithMetadata(publisher, metadata)
+    Director->>Metadata: read type, subtype, use, source, limits, parameters, initialValue
+    Director->>Builder: copy attributes into LexemeInfoBuilder
+    Parser->>Publisher: identifier(name) or identifiers(list)
+    Parser->>Publisher: scope(programName)
+    Publisher->>Builder: build()
+    Publisher->>ST: put(scope#identifier, LexemeInfo)
+    ST-->>Publisher: previous LexemeInfo or null
+    Publisher-->>Parser: keys()
+
+    opt Array or STRING metadata
+        Metadata->>Factory: createPrimitiveInitialization(symbolTable, subtype)
+        Factory-->>Metadata: DefaultInitialization
+    end
+
+    opt Enumeration declaration
+        Publisher->>MacroPub: publish(symbolTable, macroNames, prefix)
+        MacroPub->>Director: makeWithMetadata(builder, new MacroMetadata(...))
+        MacroPub->>ST: put(prefix + macroName, LexemeInfo)
+    end
 ```
 
 ## Symbol Table Population from the Parser
@@ -664,7 +719,6 @@ sequenceDiagram
 ```mermaid
 classDiagram
     class SymbolTable {
-        +Map~String, LexemeInfo~ table
         +put(String, LexemeInfo) LexemeInfo
         +putIfAbsent(String, LexemeInfo) LexemeInfo
         +get(String) LexemeInfo
@@ -683,7 +737,7 @@ classDiagram
     }
     class Publisher {
         <<interface>>
-        +publish()
+        +publish() void
         +keys() List~String~
     }
     SymbolTable "1" <-- "many" Publisher : writes to
@@ -707,11 +761,87 @@ classDiagram
 | Pragma                | <fb>@option#NAME         | PragmaMetadata        | MAIN\@option#BIT_WIDTH |
 | Default literal       | literal spelling         | DefaultInitialization | 0, FALSE, 0.0          |
 
+## Charts
+
+Chart: `assets/parser_grammar_stats.png` — Bison grammar statistics: declared tokens, non-terminals, and initialization types, counted from `src/main/java/parser/Parser.y` and `src/main/java/parser/Parser.java`.
+
+Chart: `assets/loc_per_module.png` — non-comment lines of code per module, counted from `src/main/java`.
+
+Chart: `assets/cyclomatic_complexity.png` — average cyclomatic complexity per package, estimated from decision points in `src/main/java`.
+
+Chart: `assets/test_coverage.png` — line coverage per package from the JaCoCo report; the parser package records 87 percent.
+
+## Supported Grammar Summary
+
+### Grammar Metrics
+
+| Metric               | Value           | Source                                                           |
+|----------------------|-----------------|------------------------------------------------------------------|
+| Declared tokens      | 82              | src/main/java/parser/Parser.y %token declarations                |
+| Non-terminals        | 141             | src/main/java/parser/Parser.java SymbolKind S_YYACCEPT and above |
+| Initialization types | 7               | concrete parser.initializations leafs and nodes classes          |
+| Parser generator     | GNU Bison 3.8.2 | src/main/java/parser/Parser.java bisonVersion                    |
+
+### Main IEC 61131-7 Blocks
+
+| Block                 | Tokens                                   | Purpose                                   |
+|-----------------------|------------------------------------------|-------------------------------------------|
+| Function block        | FUNCTION_BLOCK ... END_FUNCTION_BLOCK    | Top-level program unit with name and body |
+| Fuzzify               | FUZZIFY ... END_FUZZIFY                  | Linguistic fuzzifier component            |
+| Defuzzify             | DEFUZZIFY ... END_DEFUZZIFY              | Linguistic defuzzifier component          |
+| Rule block            | RULEBLOCK ... END_RULEBLOCK              | Fuzzy rule with operators and activation  |
+| Option                | OPTION ... END_OPTION                    | Manufacturer-specific pragmas             |
+| Variable declarations | VAR / VAR_INPUT / VAR_OUTPUT ... END_VAR | Declared variables with scope             |
+
+### Fuzzify / Defuzzify
+
+Fuzzify blocks declare linguistic terms (`TERM name := value;` or membership functions) and are published as components with source FUZZIFY. Defuzzify blocks add an optional `RANGE ( lo .. hi );`, a default value, and a defuzzification method (COG, COGS, COA, LM, RM) and are published with source DEFUZZIFY. Both register term names as parameters.
+
+### Rule Block
+
+A rule block declares OR/AND operators, an activation method, an accumulation method, and rules (`IF condition WITH body`). The parser builds a tree node through `ConditionParsingContext` and converts it to a rule block AST using `RuleblockASTBuilder` with an operator configuration list.
+
+### Variable Declarations Annex B
+
+Variables are declared under `VAR`, `VAR_INPUT`, or `VAR_OUTPUT` with optional retain and initialization lists. Each `DeclarationBlock` is configured with source, use, and declaration scope, then published. Keys use the hash separator.
+
+### Data Types
+
+Elementary types: BOOL, SINT/INT/DINT/LINT, USINT/UINT/UDINT/ULINT, REAL/LREAL, STRING, WSTRING, TIME, DATE, DATE_AND_TIME, TIME_OF_DAY, BYTE/WORD/DWORD/LWORD, plus bit-string and date types. User-defined types: enumerated, subrange, array, structure.
+
+### Initializations
+
+Initialization grammar covers simple spec, boolean spec, custom spec, enumerated spec, array spec, structure spec, string spec, and standard function block spec.
+
+### Data Type Declaration
+
+`TYPE ... END_TYPE` encloses type declarations such as structure, enumerated, subrange, array, and string.
+
+## Key Semantic Actions
+
+Excerpt from `src/main/java/parser/Parser.y` (reflected in generated `src/main/java/parser/Parser.java`):
+
+| Grammar rule                               | Semantic action                                                                                                                                                                                                                                             | Effect                                                                                      |
+|--------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| program                                    | SymbolTableCleaner.clean(symbolTable)                                                                                                                                                                                                                       | Removes symbol table entries whose use is unknown                                           |
+| function_block_declaration                 | SingleDeclaration functionBlock = new SingleDeclaration(symbolTable); Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata(list)); functionBlock.identifier(programName).publish(); ast = new AbstractSyntaxTree(programName, ruleBlockNodes) | Publishes the function block under its name with interface variable keys and builds the AST |
+| fb_io_var_declarations                     | DeclarationBlock.source(Source).use(Use.VARIABLE).scope(programName).publish(); yyval = keys()                                                                                                                                                              | Publishes IO variables under programName#identifier and returns keys                        |
+| io_var_decl: VAR_INPUT                     | yyval = Source.IN                                                                                                                                                                                                                                           | Sets input source direction                                                                 |
+| io_var_decl: VAR_OUTPUT                    | yyval = Source.OUT                                                                                                                                                                                                                                          | Sets output source direction                                                                |
+| fuzzify_block                              | Director.makeWithMetadata(fuzzifierDeclaration, new FuzzifierMetadata(fuzzyBlock)); fuzzifierDeclaration.identifier(...).scope(programName).publish()                                                                                                       | Publishes fuzzifier component scoped to the function block                                  |
+| defuzzify_block                            | Director.makeWithMetadata(defuzzifierDeclaration, new DefuzzifierMetadata(range, fuzzyBlock, subtype, default)); defuzzifierDeclaration.identifier(...).scope(programName).publish()                                                                        | Publishes defuzzifier component with range, terms, default                                  |
+| linguistic_term                            | yyval = new SingleDeclaration(this.symbolTable, builder).identifier(name);                                                                                                                                                                                  | Declares a linguistic term as a single declaration                                          |
+| linguistic_term_value: IDENTIFIER          | Director.makeWithMetadata(customTermBuilder, new CustomMetadata(this.symbolTable, ref));                                                                                                                                                                    | Resolves a custom term reference                                                            |
+| linguistic_term_value: membership_function | Director.makeWithMetadata(termBuilder, new TermMetadata(points));                                                                                                                                                                                           | Classifies membership function shape via MembershipFunctionClassifier                       |
+| defuzz_method: COG                         | yyval = Subtype.COG                                                                                                                                                                                                                                         | Maps method token to Subtype                                                                |
+| default_val: numeric_constant              | yyval = new VariableInitialization(value);                                                                                                                                                                                                                  | Wraps a default value literal                                                               |
+| rule_block                                 | yyval = RuleblockASTBuilder.build(componentNode, configuration);                                                                                                                                                                                            | Builds the rule block AST from the tree                                                     |
+
 ## Facade Utilities
 
 ### DimensionCalculator
 
-`src/main/java/parser/facades/DimensionCalculator.java`
+Source: `src/main/java/parser/facades/DimensionCalculator.java`.
 
 ```java
 public static int calculate(List<String> inferiorLimits, List<String> superiorLimits) {
@@ -725,14 +855,15 @@ public static int calculate(List<String> inferiorLimits, List<String> superiorLi
 }
 ```
 
-Computes the total number of array elements as the product of all dimension sizes. Used by `ArrayMetadata` to size the `RepeatedInitialization`.
+Computes the total number of array elements as the product of all dimension sizes.
 
 ### RangesParser
 
-`src/main/java/parser/facades/RangesParser.java`
+Source: `src/main/java/parser/facades/RangesParser.java`.
 
 ```java
-public static void parse(List<String> ranges, List<String> inferiorLimits, List<String> superiorLimits) {
+public static void parse(final List<String> ranges, final List<String> inferiorLimits,
+        final List<String> superiorLimits) {
     boolean toInferior = true;
     for (String rangeLimit : ranges) {
         if (toInferior) {
@@ -745,14 +876,14 @@ public static void parse(List<String> ranges, List<String> inferiorLimits, List<
 }
 ```
 
-Splits alternating range-limit tokens into inferior and superior limit lists. Used by `ArrayMetadata`, `StringMetadata`, and `SubrangeMetadata`.
+Splits alternating range limit tokens into inferior and superior limit lists.
 
 ### MacrosPublisher
 
-`src/main/java/parser/facades/MacrosPublisher.java`
+Source: `src/main/java/parser/facades/MacrosPublisher.java`.
 
 ```java
-public static void publish(SymbolTable symbolTable, List<String> macroNames, String prefix) {
+public static void publish(final SymbolTable symbolTable, final List<String> macroNames, final String prefix) {
     LexemeInfoBuilder macroBuilder = new LexemeInfoBuilder();
     for (int i = 0; i < macroNames.size(); i++) {
         String macroName = macroNames.get(i);
@@ -762,14 +893,14 @@ public static void publish(SymbolTable symbolTable, List<String> macroNames, Str
 }
 ```
 
-Publishes enumerated macro literals under a scope prefix (e.g. `COLOR#RED`). Used by `EnumeratedTypeDeclaration.publish()`.
+Publishes enumerated macro literals under a scope prefix.
 
 ### IdentifierParser
 
-`src/main/java/parser/facades/IdentifierParser.java`
+Source: `src/main/java/parser/facades/IdentifierParser.java`.
 
 ```java
-public static ParsedIdentifier parse(String identifier, String possibleScope) {
+public static ParsedIdentifier parse(final String identifier, final String possibleScope) {
     int octothorpeIdx = identifier.indexOf('#');
     if (-1 == octothorpeIdx) {
         if (possibleScope != null && !possibleScope.isEmpty()) {
@@ -783,59 +914,67 @@ public static ParsedIdentifier parse(String identifier, String possibleScope) {
 }
 ```
 
-Splits a possibly mangled identifier into complete name, scope, and base name. There is no separate `NameMangler` class; mangling is inline in Publisher implementations and `IdentifierParser`.
+Splits a possibly mangled identifier into complete name, scope, and base name.
 
 ### MembershipFunctionClassifier
 
-`src/main/java/parser/facades/MembershipFunctionClassifier.java`
+Source: `src/main/java/parser/facades/MembershipFunctionClassifier.java`.
 
-Classifies a membership function shape from x coordinates and degrees: VARIABLE (x given by identifier), SINGLETON (one point degree 1), COMPLEX (invalid), LINEAR (1,0 or 0,1), TRIANGLE (0,1,0), TRAPEZOID (0,1,1,0). Used by `TermMetadata`.
+Classifies a membership function shape from x coordinates and degrees. It returns VARIABLE when an x coordinate is a variable, SINGLETON for one point with degree 1, and COMPLEX for empty lists, mismatched sizes, non-ascending x values, or degrees other than 0 and 1. Redundant points on a flat segment or flat extension are removed before classification: the remaining pattern 1,0 or 0,1 is LINEAR, 0,1,0 is TRIANGLE, 0,1,1,0 is TRAPEZOID, and any other pattern is COMPLEX.
 
 ### RuleblockASTBuilder
 
-`src/main/java/parser/facades/RuleblockASTBuilder.java`
+Source: `src/main/java/parser/facades/RuleblockASTBuilder.java`.
 
 ```java
-public static RuleBlockNode build(TreeNode ruleblockTree, List<Operator> configuration) {
+public static RuleBlockNode build(final ParserTreeNode ruleblockTree, final List<Operator> configuration) {
     if (configuration.size() != 4) {
         throw new IllegalArgumentException("ASTBuilder: missing configuration parameters.");
     }
-    // ...
+    AbstractAstNode ruleblockAST = getASTWithTreeTraversal(ruleblockTree, configuration);
+    if (!(ruleblockAST instanceof RuleBlockNode)) {
+        throw new IllegalArgumentException("ASTBuilder: invalid ruleblock tree.");
+    }
+    return (RuleBlockNode) ruleblockAST;
 }
 ```
 
-Builds the rule-block AST from a `TreeNode` using operator configuration (OR, AND, activation, accumulation). Maps tree labels (IDENTIFIER, IS, OR, AND, NOT, IF, WITH, ACCUMULATION, COMPONENT) to AST nodes.
+Builds the rule block AST from a `ParserTreeNode` using operator configuration (OR, AND, activation, accumulation).
 
 ## Differences from Previous Architecture
 
-| Aspect              | Previous (removed)          | Current                                                                         |
-|---------------------|-----------------------------|---------------------------------------------------------------------------------|
-| Declaration context | ContextHandler              | Publisher implementations (Declaration, MultipleDeclaration, SingleDeclaration) |
-| Parsing context     | ParsingContext              | ConditionParsingContext / ArrayParsingContext / PathInitializationInfo          |
-| Name mangling       | NameMangler class           | Inline scope#name in Publisher; IdentifierParser utility                        |
-| Symbol-table writes | Direct ContextHandler calls | Publisher.publish() writing LexemeInfo via SymbolTable.put                      |
-| Default values      | scattered literal handling  | Director recipes + Factory.createPrimitiveInitialization                        |
-| Deprecated class    | LucaInfo (utils.LucaInfo)   | Excluded; LexemeInfo is the current DTO                                         |
+| Aspect                 | Previous (removed)          | Current                                                                |
+|------------------------|-----------------------------|------------------------------------------------------------------------|
+| Declaration context    | ContextHandler              | Publisher implementations such as Declaration, Block, DeclarationBlock |
+| Parsing context        | ParsingContext              | ConditionParsingContext, ArrayParsingContext, PathInitializationInfo   |
+| Name mangling          | NameMangler class           | Inline scope#name in Publisher implementations and IdentifierParser    |
+| Symbol-table writes    | Direct ContextHandler calls | Publisher publish methods writing LexemeInfo via SymbolTable put       |
+| Default values         | Scattered literal handling  | Director recipes and Factory createPrimitiveInitialization             |
+| Legacy metadata holder | Prior DTO design            | Excluded; LexemeInfo is the current DTO                                |
 
 ## How to Test
 
-Parser module tests live in `src/test/java`:
+| Test class                       | Directory                                                                 | Coverage                                    |
+|----------------------------------|---------------------------------------------------------------------------|---------------------------------------------|
+| ParserTest                       | src/test/java/unit/parser/ParserTest.java                                 | Parser grammar and semantic actions         |
+| StructInitializationTest         | src/test/java/unit/parser/initializations/StructInitializationTest.java   | Struct initialization paths                 |
+| RepeatedInitializationTest       | src/test/java/unit/parser/initializations/RepeatedInitializationTest.java | Repeated and array initialization intervals |
+| MembershipFunctionClassifierTest | src/test/java/unit/parser/facades/MembershipFunctionClassifierTest.java   | Membership function shape classification    |
 
-| Test class                       | Directory                                                                        | Coverage                                 |
-|----------------------------------|----------------------------------------------------------------------------------|------------------------------------------|
-| ParserTest                       | src/test/java/unit/parser/ParserTest.java                                        | Parser grammar and semantic actions      |
-| StructInitializationTest         | src/test/java/unit/parser/initializations/StructInitializationTest.java          | Struct initialization paths              |
-| RepeatedInitializationTest       | src/test/java/unit/parser/initializations/RepeatedInitializationTest.java        | Repeated/array initialization intervals  |
-| MembershipFunctionClassifierTest | src/test/java/unit/parser/facades/MembershipFunctionClassifierTest.java          | Membership-function shape classification |
-| ParserSemanticActionsTest        | src/test/java/unit/parser/ParserSemanticActionsTest.java                         | Semantic actions and publishing          |
-| PublisherTest                    | src/test/java/unit/parser/publishers/PublisherTest.java                          | Publisher hierarchy                     |
-| PrimitiveIT                      | src/test/java/integration/lexer/parser/symboltable/PrimitiveIT.java              | Primitive type symbol-table population   |
-| ArrayIT                          | src/test/java/integration/lexer/parser/symboltable/ArrayIT.java                  | Array symbol-table population            |
-| StructIT                         | src/test/java/integration/lexer/parser/symboltable/StructIT.java                 | Structure symbol-table population        |
-| EnumerateIT                      | src/test/java/integration/lexer/parser/symboltable/EnumerateIT.java              | Enumerated type population               |
-| FuzzifierIT / DefuzzifierIT      | src/test/java/integration/lexer/parser/symboltable/                              | Fuzzify/defuzzify population             |
-| FunctionBlockInterfaceIT         | src/test/java/integration/lexer/parser/symboltable/FunctionBlockInterfaceIT.java | Function block interface keys            |
-| RuleBlockIT                      | src/test/java/integration/lexer/parser/ast/RuleBlockIT.java                      | Rule-block AST                           |
+Integration tests live in `src/test/java/integration/lexer/parser/`:
+
+| Test class               | Directory                                                                        | Coverage                               |
+|--------------------------|----------------------------------------------------------------------------------|----------------------------------------|
+| PrimitiveIT              | src/test/java/integration/lexer/parser/symboltable/PrimitiveIT.java              | Primitive type symbol table population |
+| ArrayIT                  | src/test/java/integration/lexer/parser/symboltable/ArrayIT.java                  | Array symbol table population          |
+| StructIT                 | src/test/java/integration/lexer/parser/symboltable/StructIT.java                 | Structure symbol table population      |
+| EnumerateIT              | src/test/java/integration/lexer/parser/symboltable/EnumerateIT.java              | Enumerated type population             |
+| FuzzifierIT              | src/test/java/integration/lexer/parser/symboltable/FuzzifierIT.java              | Fuzzify block population               |
+| DefuzzifierIT            | src/test/java/integration/lexer/parser/symboltable/DefuzzifierIT.java            | Defuzzify block population             |
+| FunctionBlockInterfaceIT | src/test/java/integration/lexer/parser/symboltable/FunctionBlockInterfaceIT.java | Function block interface keys          |
+| OptionIT                 | src/test/java/integration/lexer/parser/symboltable/OptionIT.java                 | Option pragma publication              |
+| DeclarationErrorsIT      | src/test/java/integration/lexer/parser/symboltable/DeclarationErrorsIT.java      | Declaration error cases                |
+| RuleBlockIT              | src/test/java/integration/lexer/parser/ast/RuleBlockIT.java                      | Rule block AST                         |
 
 Run the module tests with Maven:
 
@@ -850,7 +989,6 @@ mvn verify -Dit.test=*IT
 src/main/java/parser/
 ├── Parser.java
 ├── Parser.y
-├── Luca.y
 ├── package-info.java
 ├── facades/
 │   ├── DimensionCalculator.java
@@ -858,7 +996,8 @@ src/main/java/parser/
 │   ├── MacrosPublisher.java
 │   ├── MembershipFunctionClassifier.java
 │   ├── RangesParser.java
-│   └── RuleblockASTBuilder.java
+│   ├── RuleblockASTBuilder.java
+│   └── SymbolTableCleaner.java
 ├── initializations/
 │   ├── Factory.java
 │   ├── Initialization.java
@@ -889,30 +1028,25 @@ src/main/java/parser/
 │   └── TermMetadata.java
 ├── publishers/
 │   ├── Publisher.java
-│   ├── leaves/
+│   ├── leafs/
 │   │   ├── Declaration.java
 │   │   ├── multiple/
 │   │   │   ├── AnnonymousEnumeratedVariable.java
-│   │   │   ├── MultipleDeclaration.java
-│   │   │   └── package-info.java
-│   │   ├── single/
-│   │   │   ├── AnnonymousEnumeratedField.java
-│   │   │   ├── EnumeratedTypeDeclaration.java
-│   │   │   ├── FuzzyDeclaration.java
-│   │   │   ├── SingleDeclaration.java
-│   │   │   ├── StructureDeclaration.java
-│   │   │   └── package-info.java
-│   │   └── package-info.java
-│   ├── nodes/
-│   │   ├── Block.java
-│   │   ├── DeclarationBlock.java
-│   │   ├── FuzzyBlock.java
-│   │   ├── StructureBlock.java
-│   │   └── package-info.java
-│   └── package-info.java
+│   │   │   └── MultipleDeclaration.java
+│   │   └── single/
+│   │       ├── AnnonymousEnumeratedField.java
+│   │       ├── EnumeratedTypeDeclaration.java
+│   │       ├── FuzzyDeclaration.java
+│   │       ├── SingleDeclaration.java
+│   │       └── StructureDeclaration.java
+│   └── nodes/
+│       ├── Block.java
+│       ├── DeclarationBlock.java
+│       ├── FuzzyBlock.java
+│       └── StructureBlock.java
 ├── tree/
-│   ├── Label.java
-│   └── TreeNode.java
+│   ├── ParserLabel.java
+│   └── ParserTreeNode.java
 └── utils/
     ├── ArrayParsingContext.java
     ├── ConditionParsingContext.java
@@ -920,3 +1054,7 @@ src/main/java/parser/
     ├── ParsedIdentifier.java
     └── PathInitializationInfo.java
 ```
+
+## Usage in Thesis
+
+According to the module to chapter mapping, this module provides grammar, publisher, initialization, and rule block content to the thesis chapter `doc/thesis/06-analisis-sintactico.md`, and maintainability and testing decisions to the thesis chapter `doc/thesis/07-mantenibilidad.md`.

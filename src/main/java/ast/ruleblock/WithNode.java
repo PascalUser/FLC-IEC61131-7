@@ -17,6 +17,12 @@ public final class WithNode extends AbstractAstNode {
     private final String weight;
     private final IfNode ifNode;
 
+    /**
+     * Creates a with node.
+     *
+     * @param weight weight of the fuzzy set
+     * @param ifNode condition that selects the fuzzy set
+     */
     public WithNode(final String weight, final IfNode ifNode) {
         super(Collections.singletonList(Objects.requireNonNull(ifNode, "ifNode")));
         this.weight = Objects.requireNonNull(weight, "weight");

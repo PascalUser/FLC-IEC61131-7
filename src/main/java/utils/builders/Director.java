@@ -23,6 +23,12 @@ public final class Director {
         // Utility class - not instantiable
     }
 
+    /**
+     * Copies every attribute of a lexeme view into a mutable schema.
+     *
+     * @param schema schema that receives the attributes
+     * @param lexemeData attributes to copy
+     */
     public static void makeWithMetadata(LexemeInfoMutator schema, LexemeInfoView lexemeData) {
         schema.type(lexemeData.type())
                 .customType(lexemeData.customType())
@@ -49,6 +55,12 @@ public final class Director {
                 .source(Source.NONE);
     }
 
+    /**
+     * Configures the schema for the integer literal {@code 0} and returns the literal string.
+     *
+     * @param schema the schema to configure
+     * @return the literal string "0"
+     */
     public static String makeIntegerZeroConstant(LexemeInfoMutator schema) {
         makeLiteral(schema);
         schema.subtype(Subtype.INT).initialValue(0);
@@ -68,6 +80,12 @@ public final class Director {
         return "TRUE";
     }
 
+    /**
+     * Configures the schema for the default integer value and returns the literal string.
+     *
+     * @param schema the schema to configure
+     * @return the default literal string "0"
+     */
     public static String makeDefaultInteger(LexemeInfoMutator schema) {
         return makeIntegerZeroConstant(schema);
     }

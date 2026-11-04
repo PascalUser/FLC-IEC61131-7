@@ -22,6 +22,7 @@ public final class DateAndTimeOutOfRange extends Error {
         this.dateTimeLexeme = outOfBoundDateTime;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + dateTimeLexeme + " date and time out of range";

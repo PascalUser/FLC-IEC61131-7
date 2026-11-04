@@ -13,7 +13,7 @@ sequenceDiagram
     Director->>Metadata: read type, subtype, use, source, limits, parameters, initialValue
     Director->>Builder: copy attributes into LexemeInfoBuilder
     Parser->>Publisher: identifier(name) or identifiers(list)
-    Parser->>Publisher: setDeclarationScope(programName)
+    Parser->>Publisher: scope(programName)
     Publisher->>Builder: build()
     Publisher->>ST: put(scope#identifier, LexemeInfo)
     ST-->>Publisher: previous LexemeInfo or null

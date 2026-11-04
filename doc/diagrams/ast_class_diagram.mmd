@@ -1,0 +1,120 @@
+classDiagram
+    namespace ast {
+        class AbstractAstNode {
+            -children List~AbstractAstNode~
+            +label() String
+            +children() List~AbstractAstNode~
+        }
+        class AbstractSyntaxTree {
+            -programName String
+            +label() String
+        }
+    }
+    namespace ast_ruleblock {
+        class BodyNode {
+            -act OperatorNode
+            +act() OperatorNode
+            +label() String
+        }
+        class CondNode {
+            -condition AbstractAstNode
+            +condition() AbstractAstNode
+            +label() String
+        }
+        class IdentifierNode {
+            -name String
+            +name() String
+            +label() String
+        }
+        class IfNode {
+            -condition CondNode
+            -body BodyNode
+            +condition() CondNode
+            +body() BodyNode
+            +label() String
+        }
+        class IsNode {
+            -variable IdentifierNode
+            -term IdentifierNode
+            +variable() IdentifierNode
+            +term() IdentifierNode
+            +label() String
+        }
+        class NotNode {
+            -operand AbstractAstNode
+            +operand() AbstractAstNode
+            +label() String
+        }
+        class RuleBlockNode {
+            -name String
+            -accumulation OperatorNode
+            +accumulation() OperatorNode
+            +label() String
+        }
+        class WithNode {
+            -weight String
+            -ifNode IfNode
+            +weight() String
+            +ifNode() IfNode
+            +label() String
+        }
+    }
+    namespace ast_ruleblock_operators {
+        class Operator {
+            <<enumeration>>
+            +ASUM
+            +BDIF
+            +BSUM
+            +MAX
+            +MIN
+            +NSUM
+            +PROD
+        }
+        class OperatorFactory {
+            <<utility>>
+            +orDefault() Operator
+            +andDefault() Operator
+            +actDefault() Operator
+            +accuDefault() Operator
+        }
+        class OperatorNode {
+            -operator Operator
+            +operator() Operator
+            +label() String
+        }
+        class AsumNode
+        class BdifNode
+        class BsumNode
+        class MaxNode
+        class MinNode
+        class NsumNode
+        class ProdNode
+    }
+    AbstractAstNode <|-- AbstractSyntaxTree
+    AbstractAstNode <|-- BodyNode
+    AbstractAstNode <|-- CondNode
+    AbstractAstNode <|-- IdentifierNode
+    AbstractAstNode <|-- IfNode
+    AbstractAstNode <|-- IsNode
+    AbstractAstNode <|-- NotNode
+    AbstractAstNode <|-- OperatorNode
+    AbstractAstNode <|-- RuleBlockNode
+    AbstractAstNode <|-- WithNode
+    OperatorNode <|-- AsumNode
+    OperatorNode <|-- BdifNode
+    OperatorNode <|-- BsumNode
+    OperatorNode <|-- MaxNode
+    OperatorNode <|-- MinNode
+    OperatorNode <|-- NsumNode
+    OperatorNode <|-- ProdNode
+    AbstractSyntaxTree --> RuleBlockNode : ruleBlocks
+    BodyNode --> OperatorNode : act
+    CondNode --> AbstractAstNode : condition
+    IfNode --> BodyNode : body
+    IfNode --> CondNode : condition
+    IsNode --> IdentifierNode : variable, term
+    NotNode --> AbstractAstNode : operand
+    OperatorNode --> AbstractAstNode : operands
+    OperatorNode --> Operator : operator
+    RuleBlockNode --> OperatorNode : accumulation
+    WithNode --> IfNode : ifNode

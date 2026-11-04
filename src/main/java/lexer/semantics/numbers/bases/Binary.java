@@ -17,16 +17,19 @@ import utils.diagnostics.BinaryOutOfRange;
 public final class Binary extends BaseNumbersAnalyzer {
     private static final int MAX_DIGITS = 64;
 
+    /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(final int line, final String lexeme) {
         return new BinaryOutOfRange(line, lexeme);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getMaxDigits() {
         return MAX_DIGITS;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected int getBase() {
         return 2;

@@ -18,6 +18,12 @@ public final class RuleBlockNode extends AbstractAstNode {
     private final String name;
     private final OperatorNode accumulation;
 
+    /**
+     * Creates a rule block.
+     *
+     * @param name name of the rule block
+     * @param accumulation accumulation operator of the block
+     */
     public RuleBlockNode(final String name, final OperatorNode accumulation) {
         super(Collections.singletonList(Objects.requireNonNull(accumulation, "accumulation")));
         this.name = Objects.requireNonNull(name, "name");

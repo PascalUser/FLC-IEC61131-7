@@ -25,6 +25,7 @@ public final class OctalOutOfRange extends Warning {
         this.octLexeme = outOfBoundOctal;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + octLexeme + " octal out of range";

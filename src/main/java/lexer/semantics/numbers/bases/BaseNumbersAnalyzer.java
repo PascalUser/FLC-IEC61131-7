@@ -23,6 +23,7 @@ public abstract class BaseNumbersAnalyzer extends NumbersAnalyzer {
     private static final BigInteger MAX_UDINT = new BigInteger("4294967295");
     private static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615");
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue parse(final String lexeme) {
         final int prefixIndex = lexeme.indexOf("#");
@@ -42,6 +43,7 @@ public abstract class BaseNumbersAnalyzer extends NumbersAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
         String newLexeme = MAX_ULINT.toString();

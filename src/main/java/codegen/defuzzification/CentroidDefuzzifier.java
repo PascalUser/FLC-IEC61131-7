@@ -19,6 +19,7 @@ import codegen.Variable;
  */
 public final class CentroidDefuzzifier extends Defuzzifier {
 
+    /** {@inheritDoc} */
     @Override
     public void compileDefuzz(final CppWriter out, final ControllerModel model, final int outputIndex) {
         Variable output = model.outputs().get(outputIndex);
@@ -40,6 +41,7 @@ public final class CentroidDefuzzifier extends Defuzzifier {
         out.write("}\n");
     }
 
+    /** {@inheritDoc} */
     @Override
     public void compileHeader(final CppWriter out, final ControllerModel model, final int outputIndex) {
         out.write("fixed_int defuzzifier" + model.outputs().get(outputIndex).name() + "();\n");

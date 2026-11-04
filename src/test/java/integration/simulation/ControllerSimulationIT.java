@@ -2,8 +2,8 @@ package integration.simulation;
 
 import ast.AbstractSyntaxTree;
 import codegen.ControllerModel;
-import lowering.ControllerLower;
-import lowering.SymbolKeys;
+import lowering.lowers.ControllerLower;
+import lowering.utils.SymbolKeys;
 import lowering.contexts.LoweringContext;
 import org.junit.jupiter.api.Test;
 import simulation.OutputComparison;
@@ -31,16 +31,10 @@ public class ControllerSimulationIT extends ParserTestSupport {
         try (Reader source = TestResources.reader("golden/luca/" + example + "/" + example + ".fcl")) {
             results = parse(source);
         }
+        SymbolTable symbolTable = results.symbolTable();
         AbstractSyntaxTree root = results.abstractSyntaxTree();
-        String programName = root.label();
-        SymbolKeys keys = new SymbolKeys(programName);
-        LoweringContext loweringContext = new LoweringContext(
-                results.symbolTable(),
-                new DiagnosticsHandler(),
-                keys,
-                root
-        );
-        return new ControllerLower(loweringContext).adapt().get();
+        DiagnosticsHandler diagnostics = new DiagnosticsHandler();
+        return ControllerLower.newInstance(symbolTable, root, diagnostics).adapt().get();
     }
 
     /**

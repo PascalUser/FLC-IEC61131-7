@@ -26,6 +26,7 @@ public final class IntegerOutOfRange extends Warning {
         this.intLexeme = outOfBoundInteger;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + intLexeme + " integer out of range";

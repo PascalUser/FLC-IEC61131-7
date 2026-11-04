@@ -25,6 +25,7 @@ public final class RealOutOfRange extends Warning {
         this.realLexeme = outOfBoundReal;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return super.getMessage() + realLexeme + " real out of range";

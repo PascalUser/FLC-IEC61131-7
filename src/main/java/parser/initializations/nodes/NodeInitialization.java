@@ -19,8 +19,21 @@ import parser.initializations.Initialization;
  * @see RepeatedInitialization
  */
 public abstract class NodeInitialization implements Initialization {
+    /**
+     * Inserts an initialization at a path.
+     *
+     * @param path path of the child, using {@code #} as separator
+     * @param initialization initialization to insert
+     * @return this node, so calls can be chained
+     */
     public abstract Initialization put(String path, Initialization initialization);
 
+    /**
+     * Splits a path at its first {@code #}.
+     *
+     * @param path path to split
+     * @return a two-element array with the head and the tail of the path; both are empty for an empty path
+     */
     protected static String[] breakStringPath(final String path) {
         String[] brokenStringPath = new String[2];
 

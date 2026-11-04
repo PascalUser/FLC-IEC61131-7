@@ -36,6 +36,7 @@ public abstract class HexResolver extends Transformer {
      */
     protected abstract int getHexDigits();
 
+    /** {@inheritDoc} */
     @Override
     public String transform(@NonNull String lexeme) {
         StringBuilder result = new StringBuilder();

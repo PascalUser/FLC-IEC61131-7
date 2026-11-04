@@ -22,6 +22,7 @@ public final class GeneratorWarning extends Warning {
         this.detail = detail;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getMessage() {
         return "WARNING: code generator: " + detail;

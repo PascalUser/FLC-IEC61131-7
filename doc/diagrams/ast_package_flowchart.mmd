@@ -1,0 +1,28 @@
+flowchart LR
+    ast["ast"]
+    ast_ruleblock["ast.ruleblock"]
+    ast_ruleblock_operators["ast.ruleblock.operators"]
+    compiler["compiler"]
+    lowering_constructors["lowering.constructors"]
+    lowering_contexts["lowering.contexts"]
+    lowering_lowers["lowering.lowers"]
+    parser["parser"]
+    parser_facades["parser.facades"]
+    ast --> ast_ruleblock
+    ast_ruleblock --> ast
+    ast_ruleblock --> ast_ruleblock_operators
+    ast_ruleblock_operators --> ast
+    compiler --> ast
+    lowering_constructors --> ast
+    lowering_constructors --> ast_ruleblock
+    lowering_constructors --> ast_ruleblock_operators
+    lowering_contexts --> ast
+    lowering_lowers --> ast
+    lowering_lowers --> ast_ruleblock
+    lowering_lowers --> ast_ruleblock_operators
+    parser --> ast
+    parser --> ast_ruleblock
+    parser --> ast_ruleblock_operators
+    parser_facades --> ast
+    parser_facades --> ast_ruleblock
+    parser_facades --> ast_ruleblock_operators

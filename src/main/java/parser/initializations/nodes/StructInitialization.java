@@ -55,6 +55,7 @@ public final class StructInitialization extends NodeInitialization {
         return childNode.put(brokenPath[1], initialization);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Optional<Initialization> find(final String path) {
         String[] brokenPath = breakStringPath(path);
@@ -80,6 +81,7 @@ public final class StructInitialization extends NodeInitialization {
         return sb.append('}').toString();
     }
 
+    /** {@inheritDoc} */
     @Override
     public StructInitialization copy() {
         StructInitialization copy = new StructInitialization();
@@ -89,6 +91,7 @@ public final class StructInitialization extends NodeInitialization {
         return copy;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -97,11 +100,13 @@ public final class StructInitialization extends NodeInitialization {
         return map.equals(other.map);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hashCode(map);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "StructInitialization" + map;

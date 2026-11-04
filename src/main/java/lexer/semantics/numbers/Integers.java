@@ -27,6 +27,7 @@ public final class Integers extends NumbersAnalyzer {
     private static final long MIN_LINT = Long.MIN_VALUE;
     private static final long MAX_LINT = Long.MAX_VALUE;
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue parse(String lexeme) {
         Long initialValue;
@@ -41,6 +42,7 @@ public final class Integers extends NumbersAnalyzer {
         return new NumbersAnalyzer.ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
         boolean isNegative = lexeme.startsWith("-");
@@ -50,6 +52,7 @@ public final class Integers extends NumbersAnalyzer {
         return new ParsedValue(lexeme, subtype, initialValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
         return new IntegerOutOfRange(line, lexeme);

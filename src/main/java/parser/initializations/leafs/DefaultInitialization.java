@@ -91,11 +91,13 @@ public final class DefaultInitialization extends LeafInitialization {
         return new DefaultInitialization(literal);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String variableValue() {
         return literal;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -104,11 +106,13 @@ public final class DefaultInitialization extends LeafInitialization {
         return literal.equals(other.literal);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return literal.hashCode();
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "DefaultInitialization{" + literal + "}";

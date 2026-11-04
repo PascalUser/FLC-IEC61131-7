@@ -29,6 +29,7 @@ public final class OmitLeadingZeroMagnitudes extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(String lexeme) {
         StringBuilder result = new StringBuilder();

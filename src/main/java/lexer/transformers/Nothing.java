@@ -22,6 +22,7 @@ public final class Nothing extends Transformer {
         super(next);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String transform(String lexeme) {
         return lexeme;

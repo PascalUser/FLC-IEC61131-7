@@ -42,100 +42,118 @@ public final class LexemeInfoBuilder implements LexemeInfoMutator, LexemeInfoVie
     private List<String> parameters     = null;
     private Object initialValue         = null;
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder type(Type type) {
         this.type = type;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Type type() {
         return type;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder subtype(Subtype subtype) {
         this.subtype = subtype;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Subtype subtype() {
         return subtype;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder customType(String customType) {
         this.customType = customType;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String customType() {
         return customType;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder source(Source source) {
         this.source = source;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Source source() {
         return source;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder use(Use use) {
         this.use = use;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Use use() {
         return use;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder inferiorLimits(List<String> inferiorLimits) {
         this.inferiorLimit = inferiorLimits;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> inferiorLimits() {
         return inferiorLimit;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder superiorLimits(List<String> superiorLimits) {
         this.superiorLimit = superiorLimits;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> superiorLimits() {
         return superiorLimit;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder parameters(List<String> parameters) {
         this.parameters = parameters;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LexemeInfoBuilder initialValue(Object initialValue) {
         this.initialValue = initialValue;
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object initialValue() {
         return initialValue;
