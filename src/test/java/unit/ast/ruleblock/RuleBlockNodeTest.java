@@ -20,7 +20,6 @@ class RuleBlockNodeTest {
         );
 
         assertEquals("rule_temperature", node.label());
-        assertEquals("rule_temperature", node.name());
     }
 
     @Test

@@ -103,7 +103,7 @@ public class CommandLineIT {
         int status = run(program.toString());
 
         assertEquals(CommandLine.COMPILATION_ERRORS, status);
-        assertTrue(errors().contains("rule 1 of PENDULO_INVERTIDO#REGLAS uses OR"), errors());
+        assertTrue(errors().contains("rule 1 of REGLAS uses OR"), errors());
         assertFalse(Files.exists(directory.resolve("pendulo_invertido_out.cpp")));
     }
 

@@ -10,6 +10,7 @@ import ast.ruleblock.RuleBlockNode;
 import ast.ruleblock.WithNode;
 import ast.ruleblock.operators.Operator;
 import ast.ruleblock.operators.OperatorNode;
+import codegen.evaluation.MinMaxMethod;
 import utils.diagnostics.UndeclaredReference;
 import utils.diagnostics.UnsupportedFeature;
 
@@ -80,16 +81,16 @@ final class RuleLowering {
         RuleBlockNode block = (RuleBlockNode) blocks.get(0);
         OperatorNode accumulation = block.accumulation();
         if (accumulation.operator() != Operator.MAX) {
-            unsupported("ACCU: " + accumulation.operator() + " in " + block.name() + " (only MAX)");
+            unsupported("ACCU: " + accumulation.operator() + " in " + block.label() + " (only MAX)");
         }
         if (accumulation.children().isEmpty()) {
-            unsupported(block.name() + " has no rules");
+            unsupported(block.label() + " has no rules");
         }
         List<int[]> rows = new ArrayList<>();
         int number = 0;
         for (AbstractAstNode rule : accumulation.children()) {
             number++;
-            Optional<int[]> row = row(rule, "rule " + number + " of " + block.name());
+            Optional<int[]> row = row(rule, "rule " + number + " of " + block.label());
             row.ifPresent(rows::add);
         }
         return rows;

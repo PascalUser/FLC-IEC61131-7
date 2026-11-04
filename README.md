@@ -104,7 +104,7 @@ The back end lowers the symbol table and the rule-block AST into an immutable Co
 |----------------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | compiler       | `compiler.FlcCompiler`             | Chains lexer, parser, lowering, and code generation; returns generated files                                           |
 | compiler       | `compiler.CommandLine`             | Command-line entry point; writes generated files and maps failures to exit statuses                                    |
-| lowering       | `lowering.ControllerLowering`      | Builds the ControllerModel from the symbol table and rule-block AST; reports unsupported features                      |
+| lowering       | `lowering.ControllerLower`      | Builds the ControllerModel from the symbol table and rule-block AST; reports unsupported features                      |
 | codegen        | `codegen.ControllerModel`          | Immutable input model consumed by the code generator                                                                   |
 | codegen        | `codegen.CodeGenerator`            | Emits the Vivado HLS C++ implementation, header, and test bench                                                        |
 | ast            | `ast.AbstractSyntaxTree`           | Immutable rule-block tree produced by the parser and consumed by lowering                                              |

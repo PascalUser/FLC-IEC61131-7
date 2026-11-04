@@ -1,9 +1,12 @@
 package compiler;
 
+import ast.AbstractSyntaxTree;
 import codegen.CodeGenerator;
 import codegen.ControllerModel;
 import lexer.Lexer;
-import lowering.ControllerLowering;
+import lowering.ControllerLower;
+import lowering.SymbolKeys;
+import lowering.contexts.LoweringContext;
 import parser.Parser;
 import utils.DiagnosticsHandler;
 import utils.SymbolTable;
@@ -20,7 +23,7 @@ import java.util.Optional;
  * Entry point of the whole pipeline: FCL program to Vivado HLS C++ files.
  * <p>
  * The pipeline is lexer + parser (symbol table, rule block AST and order of the inputs and outputs), lowering
- * to the controller model ({@link ControllerLowering}, which also reports what the generator does not support)
+ * to the controller model ({@link ControllerLower}, which also reports what the generator does not support)
  * and code generation with the port of Luca Sarramone's generator ({@link CodeGenerator}). The generated files
  * follow the naming of that generator: {@code <base>_out.cpp}, {@code <base>_out.h} and {@code <base>_outTB.cpp}.
  * </p>
@@ -53,12 +56,18 @@ public final class FlcCompiler {
     public List<GeneratedFile> compile(final Reader source, final String baseName) throws IOException {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(baseName, "baseName");
+        // AST creation
         SymbolTable symbolTable = new SymbolTable();
         Parser parser = new Parser(new Lexer(source, symbolTable, diagnostics), symbolTable);
         if (!parser.parse() || diagnostics.hasErrors()) {
             return Collections.emptyList();
         }
-        Optional<ControllerModel> model = new ControllerLowering(symbolTable, diagnostics).lower(parser.getAST());
+        // Code Generation
+        AbstractSyntaxTree root = parser.getAST();
+        String programName = root.label();
+        SymbolKeys keys = new SymbolKeys(programName);
+        LoweringContext loweringCtx = new LoweringContext(symbolTable, diagnostics, keys, root);
+        Optional<ControllerModel> model = new ControllerLower(loweringCtx).adapt();
         if (!model.isPresent()) {
             return Collections.emptyList();
         }

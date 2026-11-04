@@ -25,15 +25,6 @@ public final class RuleBlockNode extends AbstractAstNode {
     }
 
     /**
-     * Returns the name of this rule block.
-     *
-     * @return the rule block name
-     */
-    public String name() {
-        return name;
-    }
-
-    /**
      * Returns the accumulation operator of this rule block.
      *
      * @return the operator that accumulates the rule

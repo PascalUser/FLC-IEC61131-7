@@ -1,5 +1,6 @@
 package integration.lowering;
 
+import ast.AbstractSyntaxTree;
 import codegen.ControllerModel;
 import codegen.Variable;
 import codegen.fuzzysets.FuzzySet;
@@ -7,7 +8,9 @@ import codegen.fuzzysets.SShapeFuzzySet;
 import codegen.fuzzysets.SingletonFuzzySet;
 import codegen.fuzzysets.TriangularFuzzySet;
 import codegen.fuzzysets.ZShapeFuzzySet;
-import lowering.ControllerLowering;
+import lowering.ControllerLower;
+import lowering.SymbolKeys;
+import lowering.contexts.LoweringContext;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import utils.DiagnosticsHandler;
@@ -37,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * and changes one part.
  * </p>
  */
-public class ControllerLoweringIT extends ParserTestSupport {
+public class ControllerLowerIT extends ParserTestSupport {
 
     private static final String VARIABLES = "VAR_INPUT a : USINT; b : USINT; END_VAR\nVAR_OUTPUT y : USINT; END_VAR";
     private static final String FUZZIFY_A = "FUZZIFY a TERM lo := (0,1) (100,0); TERM hi := (0,0) (100,1); END_FUZZIFY";
@@ -63,7 +66,11 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
     private Optional<ControllerModel> lower(String source) throws Exception {
         ParsingResults results = parse(new StringReader(source));
-        return new ControllerLowering(results.symbolTable(), diagnostics).lower(results.abstractSyntaxTree());
+        AbstractSyntaxTree root = results.abstractSyntaxTree();
+        String programName = root.label();
+        SymbolKeys keys = new SymbolKeys(programName);
+        LoweringContext loweringContext = new LoweringContext(results.symbolTable(), diagnostics, keys, root);
+        return new ControllerLower(loweringContext).adapt();
     }
 
     private List<String> messagesOf(Class<? extends Diagnostic> kind) {
@@ -146,7 +153,7 @@ public class ControllerLoweringIT extends ParserTestSupport {
             ControllerModel model = lower(program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY, RULES,
                     "")).get();
 
-            assertEquals(ControllerLowering.DEFAULT_BIT_WIDTH, model.converterSize());
+            assertEquals(8, model.converterSize());
             assertTrue(messagesOf(GeneratorWarning.class).stream().anyMatch(m -> m.contains("bit_width")));
         }
     }
@@ -163,7 +170,7 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
         @Test
         void Real_variable() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "variable A is REAL",
+            assertRejectedWith(UnsupportedFeature.class, "only integer types are supported but variable A is REAL",
                     program("VAR_INPUT a : REAL; b : USINT; END_VAR\nVAR_OUTPUT y : USINT; END_VAR",
                             FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY, RULES, OPTION));
         }
@@ -177,7 +184,7 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
         @Test
         void Point_outside_the_bit_width() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "point 300 outside 0..255",
+            assertRejectedWith(UnsupportedFeature.class, "the point 300 cannot be representable with 8 bits",
                     program(VARIABLES, FUZZIFY_A.replace("(100,0)", "(300,0)") + "\n" + FUZZIFY_B, DEFUZZIFY,
                             RULES, OPTION));
         }
@@ -211,28 +218,28 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
         @Test
         void Output_term_that_is_not_a_singleton() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "term ON of the output Y is not a singleton",
+            assertRejectedWith(UnsupportedFeature.class, "term ON of the output Y is not supported (only singleton outputs)",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B,
                             DEFUZZIFY.replace("TERM on := 255;", "TERM on := (0,0) (255,1);"), RULES, OPTION));
         }
 
         @Test
         void Or_in_a_rule() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "rule 1 of MAIN#R uses OR",
+            assertRejectedWith(UnsupportedFeature.class, "rule 1 of R uses OR",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY,
                             RULES.replace("a IS lo AND b IS lo", "a IS lo OR b IS lo"), OPTION));
         }
 
         @Test
         void Not_in_a_rule() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "rule 2 of MAIN#R uses NOT",
+            assertRejectedWith(UnsupportedFeature.class, "rule 2 of R uses NOT",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY,
                             RULES.replace("a IS hi AND b IS hi", "a IS hi AND b IS NOT hi"), OPTION));
         }
 
         @Test
         void Rule_that_does_not_use_every_input() throws Exception {
-            assertRejectedWith(UnsupportedFeature.class, "rule 1 of MAIN#R does not use the input B",
+            assertRejectedWith(UnsupportedFeature.class, "B is not used in rule 1 of R",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY,
                             RULES.replace("a IS lo AND b IS lo", "a IS lo"), OPTION));
         }
@@ -266,14 +273,14 @@ public class ControllerLoweringIT extends ParserTestSupport {
 
         @Test
         void Term_used_in_a_rule() throws Exception {
-            assertRejectedWith(UndeclaredReference.class, "term MID of A in rule 1 of MAIN#R",
+            assertRejectedWith(UndeclaredReference.class, "undeclared in rule 1 of R, the MID is not from A",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY,
                             RULES.replace("a IS lo AND b IS lo", "a IS mid AND b IS lo"), OPTION));
         }
 
         @Test
         void Variable_used_in_a_rule() throws Exception {
-            assertRejectedWith(UndeclaredReference.class, "variable C in rule 2 of MAIN#R",
+            assertRejectedWith(UndeclaredReference.class, "undeclared conditions must have inputs variables and conclusion outputs, but rule 2 of R uses C",
                     program(VARIABLES, FUZZIFY_A + "\n" + FUZZIFY_B, DEFUZZIFY,
                             RULES.replace("b IS hi THEN", "c IS hi THEN"), OPTION));
         }

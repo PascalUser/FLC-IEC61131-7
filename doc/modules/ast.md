@@ -201,7 +201,7 @@ sequenceDiagram
 
 `lowering.RuleLowering.lower(ast.AbstractSyntaxTree)` returns the rows of the supported rules: one row per rule, one column per input and then per output, each cell holding the index of the term of that variable.
 
-`lowering.ControllerLowering.lower(ast.AbstractSyntaxTree)` builds the `codegen.ControllerModel` from the AST and the symbol table. The model is built only if the program follows the Basic Level subset: exactly one rule block, accumulation `ACCU: MAX`, each rule an `AND: MIN` of `input IS term` propositions that uses every input once and concludes `output IS term` for every output, and no weighting factor other than one.
+`lowering.ControllerLower.lower(ast.AbstractSyntaxTree)` builds the `codegen.ControllerModel` from the AST and the symbol table. The model is built only if the program follows the Basic Level subset: exactly one rule block, accumulation `ACCU: MAX`, each rule an `AND: MIN` of `input IS term` propositions that uses every input once and concludes `output IS term` for every output, and no weighting factor other than one.
 
 Every problem is reported through `utils.DiagnosticsHandler` as an `utils.diagnostics.UnsupportedFeature` or an `utils.diagnostics.UndeclaredReference`.
 
