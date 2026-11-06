@@ -3,10 +3,12 @@ package compiler.generator.lowers;
 import compiler.generator.fuzzysets.FuzzySet;
 import compiler.generator.lowers.contexts.TermLoweringContext;
 import compiler.generator.lowers.facades.TermSetFactory;
+import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.repository.LexemeInfo;
 import compiler.repository.diagnostics.UnsupportedFeature;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +57,8 @@ public final class TermLower implements Lower<FuzzySet> {
         if (invalidMembershipFunction(varName, termName, membershipFunctionXValues)) {
             return Optional.empty();
         }
-        return TermSetFactory.create(termName, termInfo);
+        BigInteger lowerBound = ctx.varAdaptedValueRange.offset();
+        return TermSetFactory.create(termName, termInfo, lowerBound);
     }
 
     /**
@@ -68,16 +71,19 @@ public final class TermLower implements Lower<FuzzySet> {
      * @return {@code true} if at least one point is invalid (a diagnostic is recorded)
      */
     public boolean invalidMembershipFunction(String varName, String termName, List<String> X) {
+        BigDecimal lowerBound = new BigDecimal(ctx.varAdaptedValueRange.offset());
         for (String x : X) {
             BigDecimal value = new BigDecimal(x);
             if (value.signum() != 0 && value.stripTrailingZeros().scale() > 0) {
                 ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_POINT(varName, termName, x)));
                 return true;
             }
-            boolean cantBeRepresentedWithCurrentBits = !ctx.bitWidthLower.analyzeIfRepresentable(value);
-            if (value.signum() < 0 || cantBeRepresentedWithCurrentBits) {
+            BigDecimal relative = value.subtract(lowerBound);
+            boolean cantBeRepresentedWithCurrentBits = !ctx.bitWidthLower.analyzeIfRepresentable(relative);
+            if (cantBeRepresentedWithCurrentBits) {
                 String strBitWidth = String.valueOf(ctx.bitWidthLower.getBitWidth());
-                ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_INVALID_POINT(x, strBitWidth)));
+                String errMssg = ERR_INVALID_POINT(x, strBitWidth, ctx.varAdaptedValueRange, varName);
+                ctx.diagnosticsHandler.add(new UnsupportedFeature(errMssg));
                 return true;
             }
         }
@@ -96,8 +102,11 @@ public final class TermLower implements Lower<FuzzySet> {
         return "term " + termName + " of " + varName + " has the non-integer point " + x;
     }
 
-    private static String ERR_INVALID_POINT(String x, String bitWidth) {
-        return "the point " + x + " cannot be representable with " + bitWidth + " bits";
+    private static String ERR_INVALID_POINT(String x, String bitWidth, IntegerDomain domain, String varName) {
+        String hint = domain.isShifted()
+                ? " (relative to the lower bound " + domain.offset() + " of " + varName + ")"
+                : "";
+        return "the point " + x + " cannot be representable with " + bitWidth + " bits" + hint;
     }
 }
 

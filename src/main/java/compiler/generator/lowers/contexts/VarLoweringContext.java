@@ -16,9 +16,9 @@ import compiler.repository.SymbolTable;
  */
 public class VarLoweringContext extends LoweringContext {
     /** Symbol table key of the variable being lowered. */
-    public String varKey;
+    public final String varKey;
     /** Resolver of the controller bit width. */
-    public BitWidthLower bitWidthLower;
+    public final BitWidthLower bitWidthLower;
 
     /**
      * Creates a variable context from an existing context.

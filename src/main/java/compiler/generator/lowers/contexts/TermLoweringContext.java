@@ -2,6 +2,7 @@ package compiler.generator.lowers.contexts;
 
 import compiler.ast.AbstractSyntaxTree;
 import compiler.generator.lowers.BitWidthLower;
+import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.generator.lowers.utils.SymbolKeys;
 import compiler.repository.DiagnosticsHandler;
 import compiler.repository.SymbolTable;
@@ -16,7 +17,8 @@ import compiler.repository.SymbolTable;
  */
 public final class TermLoweringContext extends VarLoweringContext {
     /** Symbol table key of the term being lowered. */
-    public String termKey;
+    public final String termKey;
+    public final IntegerDomain varAdaptedValueRange;
 
     /**
      * Creates a term context from an existing variable context.
@@ -26,7 +28,8 @@ public final class TermLoweringContext extends VarLoweringContext {
      */
     public TermLoweringContext(
             VarLoweringContext initContext,
-            String termKey
+            String termKey,
+            IntegerDomain varAdaptedValueRange
     ) {
         this(
                 initContext.symbolTable,
@@ -35,7 +38,8 @@ public final class TermLoweringContext extends VarLoweringContext {
                 initContext.ast,
                 initContext.varKey,
                 initContext.bitWidthLower,
-                termKey
+                termKey,
+                varAdaptedValueRange
         );
     }
 
@@ -57,9 +61,11 @@ public final class TermLoweringContext extends VarLoweringContext {
             AbstractSyntaxTree ast,
             String varKey,
             BitWidthLower bitWidthLower,
-            String termKey
+            String termKey,
+            IntegerDomain varAdaptedValueRange
     ) {
         super(symbolTable, diagnosticsHandler, keys, ast, varKey, bitWidthLower);
         this.termKey = termKey;
+        this.varAdaptedValueRange = varAdaptedValueRange;
     }
 }

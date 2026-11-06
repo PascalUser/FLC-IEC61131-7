@@ -2,20 +2,18 @@ package compiler.generator.lowers;
 
 import compiler.generator.ControllerModel;
 import compiler.generator.lowers.contexts.LoweringContext;
-import compiler.generator.lowers.facades.UnsignedIntegerTypes;
+import compiler.generator.lowers.facades.IntegerDomainResolver;
+import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.parser.initializations.Initialization;
 import compiler.repository.LexemeInfo;
 import compiler.repository.diagnostics.InvalidUse;
 import compiler.repository.diagnostics.UnsupportedFeature;
-import compiler.repository.enums.Subtype;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 public final class BitWidthLower implements Lower<Integer> {
-    /** Pragma or inferred width out of range; already reported. */
     private static final int UNRESOLVED = -1;
-    /** No supported variable to infer from; the variables are reported by their own lowering. */
     private static final int NOTHING_TO_INFER = 0;
 
     private final int bitWidth;
@@ -41,58 +39,48 @@ public final class BitWidthLower implements Lower<Integer> {
 
     private static int fromVariables(LoweringContext ctx) {
         int bitsNeeded = NOTHING_TO_INFER;
-        Subtype widestType = Subtype.UNKNOWN;
+        String widest = null;
         for (String key : ctx.ioVarKeys()) {
-            LexemeInfo keyInfo = ctx.symbolTable.get(key);
-            if (!UnsignedIntegerTypes.accepts(keyInfo)) {
-                continue;
-            }
-            int bits = UnsignedIntegerTypes.bits(keyInfo.subtype);
-            if (bits > bitsNeeded) {
-                bitsNeeded = bits;
-                widestType = keyInfo.subtype;
+            Optional<IntegerDomain> domain = IntegerDomainResolver.resolve(ctx.symbolTable.get(key), ctx.symbolTable);
+            if (domain.isPresent() && domain.get().bits() > bitsNeeded) {
+                bitsNeeded = domain.get().bits();
+                widest = ctx.keys.shortName(key);
             }
         }
         if (bitsNeeded > ControllerModel.MAX_BIT_WIDTH) {
-            ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_TYPE_TOO_WIDE(widestType, bitsNeeded)));
+            ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_TOO_WIDE(widest, bitsNeeded)));
             return UNRESOLVED;
         }
         return bitsNeeded;
     }
 
-    public boolean analyzeIfRepresentable(BigDecimal integerValue) {
-        if (bitWidth > 0) {
-            return integerValue.compareTo(BigDecimal.valueOf(1L << bitWidth)) < 0;
-        }
-        return false;
+    public boolean analyzeIfRepresentable(BigDecimal relativeValue) {
+        return bitWidth > 0
+                && relativeValue.signum() >= 0
+                && relativeValue.compareTo(BigDecimal.valueOf(1L << bitWidth)) < 0;
     }
 
-    /** @return the bit width, or a non-positive value if it could not be resolved */
-    public int getBitWidth() {
-        return bitWidth;
-    }
+    public int getBitWidth() { return bitWidth; }
 
     @Override
     public Optional<Integer> adapt() {
-        if (bitWidth > 0) {
-            return Optional.of(bitWidth);
-        }
-        return Optional.empty();
+        return (bitWidth > 0) ? Optional.of(bitWidth) : Optional.empty();
     }
 
     private static String ERR_UNSUPPORTED_WIDTH() {
-        int min = ControllerModel.MIN_BIT_WIDTH;
-        int max = ControllerModel.MAX_BIT_WIDTH;
+        final int min =  ControllerModel.MIN_BIT_WIDTH;
+        final int max =  ControllerModel.MAX_BIT_WIDTH;
         return "PRAGMA bit_width must be an integer between " + min + " and " + max;
     }
 
     private static String ERR_INVALID_WIDTH() {
-        return "PRAGMA bit_width should declare a number o bits";
+        return "PRAGMA bit_width should declare a number of bits";
     }
 
-    private static String ERR_TYPE_TOO_WIDE(Subtype type, int bits) {
-        return "the bit width is taken from the widest type of the inputs and outputs (" + type + ", " + bits
-                + " bits), but at most " + ControllerModel.MAX_BIT_WIDTH
-                + " bits are supported: declare PRAGMA bit_width or use a narrower type";
+    private static String ERR_TOO_WIDE(String variable, int bits) {
+        final int max =  ControllerModel.MAX_BIT_WIDTH;
+        return "the bit width is taken from the widest variable (" + variable + " needs " + bits + " bits), " +
+                "but at most " + max + " bits are supported: " +
+                "declare PRAGMA bit_width or use a narrower type or subrange";
     }
 }

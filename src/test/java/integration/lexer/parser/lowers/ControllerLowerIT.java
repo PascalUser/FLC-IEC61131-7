@@ -23,6 +23,7 @@ import compiler.repository.diagnostics.UnsupportedFeature;
 import java.io.StringReader;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,28 +44,28 @@ public class ControllerLowerIT extends ParserTestSupport {
             "FUZZIFY a " +
                     "TERM lo := (0,1) (100,0); " +
                     "TERM hi := (0,0) (100,1); " +
-            "END_FUZZIFY";
+                    "END_FUZZIFY";
     private static final String FUZZIFY_B =
             "FUZZIFY b " +
                     "TERM lo := (0,1) (100,0); " +
                     "TERM hi := (0,0) (100,1); " +
-            "END_FUZZIFY";
+                    "END_FUZZIFY";
     private static final String DEFUZZIFY =
             "DEFUZZIFY y " +
                     "TERM off := 0; " +
                     "TERM on := 255; " +
                     "METHOD : CoGS; " +
                     "DEFAULT := 0; " +
-            "END_DEFUZZIFY";
+                    "END_DEFUZZIFY";
     private static final String RULES =
             "RULEBLOCK r AND : MIN; ACCU : MAX;\n" +
-                "RULE 1 : IF a IS lo AND b IS lo THEN y IS off;\n" +
-                "RULE 2 : IF a IS hi AND b IS hi THEN y IS on;\n" +
-            "END_RULEBLOCK";
+                    "RULE 1 : IF a IS lo AND b IS lo THEN y IS off;\n" +
+                    "RULE 2 : IF a IS hi AND b IS hi THEN y IS on;\n" +
+                    "END_RULEBLOCK";
     private static final String OPTION =
             "OPTION " +
                     "PRAGMA bit_width 8; " +
-            "END_OPTION";
+                    "END_OPTION";
 
     private final DiagnosticsHandler diagnostics = new DiagnosticsHandler();
 
@@ -86,6 +87,21 @@ public class ControllerLowerIT extends ParserTestSupport {
                 .body(RULES)
                 .body(OPTION)
                 .build();
+    }
+
+    private static SourceCode variables(String a, String b, String y) {
+        return SourceCode.functionBlock()
+                .var(Block.VAR_INPUT, "a : " + a)
+                .var(Block.VAR_INPUT, "b : " + b)
+                .var(Block.VAR_OUTPUT, "y : " + y);
+    }
+
+    private static String fuzzify(String name, String lo, String hi) {
+        return "FUZZIFY " + name + " TERM lo := (" + lo + ",1) (" + hi + ",0); TERM hi := (" + lo + ",0) (" + hi + ",1); END_FUZZIFY";
+    }
+
+    private static String defuzzify(String on) {
+        return "DEFUZZIFY y TERM off := " + "0" + "; TERM on := " + on + "; METHOD : CoGS; DEFAULT := 0; END_DEFUZZIFY";
     }
 
     private Optional<ControllerModel> lower(String source) throws Exception {
@@ -119,8 +135,12 @@ public class ControllerLowerIT extends ParserTestSupport {
         List<String> messages = messagesOf(kind);
         boolean hasMatch = messages.stream().anyMatch(message -> message.contains(fragment));
 
-        assertTrue(hasMatch, () -> String.format("Expected a %s containing '%s' but found:\n%s",
-                kind.getSimpleName(), fragment, String.join("\n", messages)));
+        assertTrue(hasMatch, () -> String.format(
+                "Expected a %s containing '%s' but found:\n%s",
+                kind.getSimpleName(),
+                fragment,
+                String.join("\n", messages)
+        ));
     }
 
     @Nested
@@ -152,7 +172,7 @@ public class ControllerLowerIT extends ParserTestSupport {
             String rules =
                     "RULEBLOCK r AND : MIN; ACCU : MAX;\n" +
                             "RULE 1 : IF b IS hi AND a IS lo THEN y IS on;\n" +
-                    "END_RULEBLOCK";
+                            "END_RULEBLOCK";
             String source = baseProgram()
                     .body(FUZZIFY_A)
                     .body(FUZZIFY_B)
@@ -172,11 +192,11 @@ public class ControllerLowerIT extends ParserTestSupport {
                     "FUZZIFY a " +
                             "TERM mid := (0,0) (50,1) (100,0); " +
                             "TERM hi := (0,0) (100,1); " +
-                    "END_FUZZIFY";
+                            "END_FUZZIFY";
             String rules =
                     "RULEBLOCK r AND : MIN; ACCU : MAX;\n" +
                             "RULE 1 : IF a IS mid AND b IS lo THEN y IS on;\n" +
-                    "END_RULEBLOCK";
+                            "END_RULEBLOCK";
             String source = baseProgram()
                     .body(fuzzifyA)
                     .body(FUZZIFY_B)
@@ -247,6 +267,52 @@ public class ControllerLowerIT extends ParserTestSupport {
 
             assertEquals(8, model.converterSize());
         }
+
+        @Test
+        void Subrange_far_from_zero_with_two_values_needs_one_bit() throws Exception {
+            String source = variables("UDINT (10000000..10000001)", "USINT (0..1)", "USINT (0..1)")
+                    .body(fuzzify("a", "10000000", "10000001"))
+                    .body(fuzzify("b", "0", "1"))
+                    .body(defuzzify("1"))
+                    .body(RULES)
+                    .build();
+
+            ControllerModel model = lowerAndGet(source);
+
+            Stream<String> errMssgs = messagesOf(GeneratorWarning.class).stream();
+            boolean hasExpectedMssg = errMssgs.anyMatch(m -> m.contains("starting at 10000000"));
+            FuzzySet terms = model.inputs().get(0).sets().get(0);
+
+            assertEquals(1, model.converterSize());
+            assertEquals(1.0, terms.degree(0), 1e-12);
+            assertEquals(0.0, terms.degree(1), 1e-12);
+            assertTrue(hasExpectedMssg);
+        }
+
+        @Test
+        void Signed_subrange_is_supported_through_its_offset() throws Exception {
+            String source = variables("INT (-5..5)", "USINT (0..15)", "USINT (0..15)")
+                    .body(fuzzify("a", "-5", "5"))
+                    .body(fuzzify("b", "0", "15"))
+                    .body(defuzzify("15"))
+                    .body(RULES)
+                    .build();
+
+            assertEquals(4, lowerAndGet(source).converterSize());
+        }
+
+        @Test
+        void Pragma_wins_over_the_span_of_a_subrange() throws Exception {
+            String source = variables("UDINT (10000000..10000001)", "USINT (0..1)", "USINT (0..1)")
+                    .body(fuzzify("a", "10000000", "10000001"))
+                    .body(fuzzify("b", "0", "1"))
+                    .body(defuzzify("1"))
+                    .body(RULES)
+                    .body("OPTION PRAGMA bit_width 4; END_OPTION")
+                    .build();
+
+            assertEquals(4, lowerAndGet(source).converterSize());
+        }
     }
 
     @Nested
@@ -268,7 +334,7 @@ public class ControllerLowerIT extends ParserTestSupport {
 
         @Test
         void Real_variable() throws Exception {
-            String errMssg = "only unsigned integer types are supported but variable A is REAL";
+            String errMssg = "only unsigned integer types or integer subranges are supported but variable A is REAL";
             String sourceCode = SourceCode.functionBlock()
                     .var(Block.VAR_INPUT, "a : REAL")
                     .var(Block.VAR_INPUT, "b : USINT")
@@ -466,6 +532,47 @@ public class ControllerLowerIT extends ParserTestSupport {
             String errMssg = messagesOf(UnsupportedFeature.class).toString();
             assertEquals(3, numberOfProblemsFound, errMssg);
         }
+
+        @Test
+        void Signed_variable() throws Exception {
+            String errMssg = "only unsigned integer types or integer subranges are supported but variable A is INT";
+            String sourceCode = variables("INT", "USINT", "USINT")
+                    .body(FUZZIFY_A)
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(RULES)
+                    .build();
+
+            assertRejectedWith(UnsupportedFeature.class, errMssg, sourceCode);
+        }
+
+        @Test
+        void Subrange_wider_than_the_supported_width() throws Exception {
+            String errMssg =
+                    "the bit width is taken from the widest variable (A needs 33 bits), " +
+                    "but at most 30 bits are supported: declare PRAGMA bit_width or use a narrower type or subrange";
+            String sourceCode = variables("ULINT (0..4294967296)", "USINT", "USINT")
+                    .body(FUZZIFY_A)
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(RULES)
+                    .build();
+
+            assertRejectedWith(UnsupportedFeature.class, errMssg, sourceCode);
+        }
+
+        @Test
+        void Point_below_the_lower_bound_of_a_subrange() throws Exception {
+            String errMssg = "the point 5 cannot be representable";
+            String sourceCode = variables("USINT (10..20)", "USINT", "USINT")
+                    .body(fuzzify("a", "5", "20"))
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(RULES)
+                    .build();
+
+            assertRejectedWith(UnsupportedFeature.class, errMssg, sourceCode);
+        }
     }
 
     @Nested
@@ -487,7 +594,9 @@ public class ControllerLowerIT extends ParserTestSupport {
 
         @Test
         void Variable_used_in_a_rule() throws Exception {
-            String errMssg = "undeclared conditions must have inputs variables and conclusion outputs, but rule 2 of R uses C";
+            String errMssg =
+                    "undeclared conditions must have inputs variables and conclusion outputs, " +
+                    "but rule 2 of R uses C";
             String sourceCode = baseProgram()
                     .body(FUZZIFY_A)
                     .body(FUZZIFY_B)

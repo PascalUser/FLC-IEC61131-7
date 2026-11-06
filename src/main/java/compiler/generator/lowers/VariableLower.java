@@ -5,13 +5,15 @@ import compiler.generator.fuzzysets.FuzzySet;
 import compiler.generator.fuzzysets.SingletonFuzzySet;
 import compiler.generator.lowers.contexts.TermLoweringContext;
 import compiler.generator.lowers.contexts.VarLoweringContext;
-import compiler.generator.lowers.facades.UnsignedIntegerTypes;
+import compiler.generator.lowers.facades.IntegerDomainResolver;
+import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.repository.LexemeInfo;
 import compiler.repository.diagnostics.GeneratorWarning;
 import compiler.repository.diagnostics.UnsupportedFeature;
 import compiler.repository.enums.Source;
 import compiler.repository.enums.Subtype;
 
+import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -50,9 +52,10 @@ public final class VariableLower implements Lower<Variable> {
         if (hasNoFuzzifierOrDefuzzifier(componentInfo)) {
             return Optional.empty();
         }
-        if (doesNotHaveUnsignedIntegerVariable(ioVarName, ioVarInfo)) {
+        if (doesNotHaveASupportedType(ioVarName, ioVarInfo)) {
             return Optional.empty();
         }
+        IntegerDomain varAdaptedValueRange = getIntegerDomain(ioVarInfo);
         if (!isInputVariable && hasUnsupportedDeffuzMethod(componentInfo)) {
             return Optional.empty();
         }
@@ -61,7 +64,7 @@ public final class VariableLower implements Lower<Variable> {
         List<FuzzySet> termsSet = new ArrayList<>();
         for (String termName : terms) {
             String termKey = ctx.keys.term(ctx.varKey, termName);
-            TermLoweringContext termCtx = new TermLoweringContext(ctx, termKey);
+            TermLoweringContext termCtx = new TermLoweringContext(ctx, termKey, varAdaptedValueRange);
             TermLower termLower = new TermLower(termCtx);
             Optional<FuzzySet> varTermsSet = termLower.adapt();
             if (varTermsSet.isPresent()) {
@@ -80,12 +83,24 @@ public final class VariableLower implements Lower<Variable> {
         return Optional.of(ioVar);
     }
 
-    private boolean doesNotHaveUnsignedIntegerVariable(String varName, final LexemeInfo ioVarInfo) {
-        if (UnsignedIntegerTypes.accepts(ioVarInfo)) {
-            return false;
+    private boolean doesNotHaveASupportedType(String varName, final LexemeInfo varInfo) {
+        Optional<IntegerDomain> domain = IntegerDomainResolver.resolve(varInfo, ctx.symbolTable);
+        if (!domain.isPresent()) {
+            ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_TYPE(varName, varInfo.subtype.name())));
+            return true;
         }
-        ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_TYPE(varName, ioVarInfo.subtype.name())));
-        return true;
+        if (domain.get().isShifted()) {
+            ctx.diagnosticsHandler.add(new GeneratorWarning(WAR_SHIFTED(varName, domain.get().offset())));
+        }
+        return false;
+    }
+
+    private IntegerDomain getIntegerDomain(final LexemeInfo ioVarInfo) {
+        Optional<IntegerDomain> domain = IntegerDomainResolver.resolve(ioVarInfo, ctx.symbolTable);
+        if (!domain.isPresent()) {
+            throw new RuntimeException("VariableLower: unexpected argument");
+        }
+        return domain.get();
     }
 
     private boolean hasNoFuzzifierOrDefuzzifier(final LexemeInfo componentInfo) {
@@ -132,7 +147,13 @@ public final class VariableLower implements Lower<Variable> {
     }
 
     private static String ERR_UNSUPPORTED_TYPE(String varName, String varType) {
-        return "only unsigned integer types are supported but variable " + varName + " is " + varType;
+        return "only unsigned integer types or integer subranges are supported " +
+                "but variable " + varName + " is " + varType;
+    }
+
+    private static String WAR_SHIFTED(String varName, BigInteger lowerBound) {
+        return "variable " + varName + " is a subrange starting at " + lowerBound + ": " +
+                "the generated controller works with " + varName + " - " + lowerBound;
     }
 
     private static String ERR_MISSING_COMPONENT(String varName, String sourceType, String expectedBlock) {
