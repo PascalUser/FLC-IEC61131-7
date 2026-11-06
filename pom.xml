@@ -11,7 +11,7 @@
 
     <!-- ============================= Properties ============================= -->
     <properties>
-        <!-- Compilation (Garantiza compatibilidad con Java 8) -->
+        <!-- Compilation (Ensures Java 8 compatibility) -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,7 +28,7 @@
         <!-- Dependency Versions -->
         <spotbugs.annotations.version>4.8.3</spotbugs.annotations.version>
         <junit.version>5.11.4</junit.version>
-        <!-- Mockito 4.11.0: Última versión compatible con Java 8 runtime -->
+        <!-- Mockito 4.11.0: Last version compatible with Java 8 runtime -->
         <mockito.version>4.11.0</mockito.version>
 
         <!-- ================= SonarQube & Coverage Properties ================= -->
@@ -54,7 +54,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JUnit 5: API y Engine explícito para Surefire -->
+        <!-- JUnit 5: Explicit API and Engine for Surefire -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -68,7 +68,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito 4 Inline: Permite mockear clases final sobre Java 8 -->
+        <!-- Mockito 4 Inline: Allows mocking final classes on Java 8 -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
@@ -96,25 +96,25 @@
                 </configuration>
             </plugin>
 
-            <!-- Surefire: Ejecución sin flags específicos de JVM 21 que rompan Java 8 -->
+            <!-- Surefire: Executes Unit Tests (*Test.java) during the 'test' phase -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
                     <argLine>@{argLine}</argLine>
+                    <!-- No need to exclude *ST.java or *IT.java because Surefire
+                         only looks for *Test.java by default -->
                 </configuration>
             </plugin>
 
-            <!-- Failsafe: Ejecución de integration tests (*IT.java) en la fase test -->
+            <!-- Failsafe: Executes Integration (*IT.java) & System (*ST.java) tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <executions>
                     <execution>
-                        <id>integration-test</id>
-                        <phase>test</phase>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
@@ -126,7 +126,7 @@
                 </configuration>
             </plugin>
 
-            <!-- JaCoCo: Generación del reporte XML para SonarQube -->
+            <!-- JaCoCo: XML report generation for SonarQube -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -155,14 +155,14 @@
                 <version>${sonar.plugin.version}</version>
             </plugin>
 
-            <!-- JFlex: Generador del lexer -->
+            <!-- JFlex: Lexer generator -->
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>
                 <version>${jflex.plugin.version}</version>
                 <configuration>
                     <lexDefinitions>
-                        <lexDefinition>src/main/java/lexer/Lexer.flex</lexDefinition>
+                        <lexDefinition>src/main/java/compiler/lexer/Lexer.flex</lexDefinition>
                     </lexDefinitions>
                     <outputDirectory>src/main/java</outputDirectory>
                 </configuration>

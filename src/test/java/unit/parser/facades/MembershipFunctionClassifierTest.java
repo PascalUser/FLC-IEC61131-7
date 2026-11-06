@@ -3,9 +3,9 @@ package unit.parser.facades;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import parser.facades.MembershipFunctionClassifier;
-import parser.utils.MembershipFunctionShape;
-import utils.enums.Subtype;
+import compiler.parser.facades.MembershipFunctionClassifier;
+import compiler.parser.utils.MembershipFunctionShape;
+import compiler.repository.enums.Subtype;
 
 import java.util.Arrays;
 import java.util.Collections;

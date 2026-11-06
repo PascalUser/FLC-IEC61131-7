@@ -31,7 +31,7 @@ docker compose build
 
 # Run container
 docker compose up -d
-docker compose exec docs bash
+docker compose exec -u devuser docs bash
 
 # Inside container, run full pipeline
 python3 run_all_agents.py
@@ -54,7 +54,7 @@ Also, invocable directly with `@agent-name` inside an OpenCode session.
 
 ## Typical Workflow
 
-1. **Full refresh (recommended)**: `python run_all_agents.py`
+1. **Full refresh (recommended)**: `python3 run_all_agents.py`
 2. **Incremental**:
    * Code changed (added Transformer, Diagnostic, enum value, etc.).
    * `/chart-refresh` — recalculates metrics (CYCLO, LOC, COVERAGE, coupling, etc.) and regenerates PNGs in `doc/assets/`.
@@ -99,8 +99,8 @@ python3 scripts/generate_diagrams.py lexer         # lexer diagrams
 python3 scripts/generate_diagrams.py parser        # parser diagrams
 python3 scripts/generate_diagrams.py ast           # AST diagrams
 python3 scripts/generate_diagrams.py utils         # utils diagrams
-python3 scripts/generate_diagrams.py codegen       # codegen diagrams
-python3 scripts/generate_diagrams.py lowering      # lowering diagrams
+python3 scripts/generate_diagrams.py generator       # generator diagrams
+python3 scripts/generate_diagrams.py lowers      # lowers diagrams
 python3 scripts/generate_diagrams.py simulation    # simulation diagrams
 python3 scripts/generate_diagrams.py compiler      # compiler facade diagrams
 python3 scripts/generate_diagrams.py architecture  # architecture diagrams
@@ -117,18 +117,18 @@ Outputs `.mmd` files to `doc/diagrams/` (raw Mermaid, no Markdown fences):
 | `symboltable_storage.mmd`            | classDiagram/object | STRUCT, ARRAY, ENUM, SUBRANGE storage in LexemeInfo     |
 | `diagnostics_hierarchy.mmd`          | classDiagram        | Error/Warning hierarchy                                 |
 | `architecture_evolution.mmd`         | flowchart           | Architecture evolution timeline                         |
-| `ast_package_flowchart.mmd`          | flowchart           | AST packages and their parser/lowering consumers        |
+| `ast_package_flowchart.mmd`          | flowchart           | AST packages and their parser/lowers consumers        |
 | `ast_class_diagram.mmd`              | classDiagram        | AST node hierarchy and operator nodes                   |
-| `ast_construction_sequence.mmd`      | sequenceDiagram     | Parser to AST to lowering construction flow             |
-| `lowering_package_flowchart.mmd`     | flowchart           | Lowering subpackages and their parser/codegen deps      |
+| `ast_construction_sequence.mmd`      | sequenceDiagram     | Parser to AST to lowers construction flow             |
+| `lowering_package_flowchart.mmd`     | flowchart           | Lowering subpackages and their parser/generator deps      |
 | `lowering_class_diagram.mmd`         | classDiagram        | Lowering contexts, strategies, builder, factory         |
 | `lowering_controller_sequence.mmd`   | sequenceDiagram     | ControllerLower to VariableLower, RuleLower, model      |
-| `simulation_package_flowchart.mmd`   | flowchart           | Simulation imports from codegen and codegen.fuzzysets   |
+| `simulation_package_flowchart.mmd`   | flowchart           | Simulation imports from generator and generator.fuzzysets   |
 | `simulation_class_diagram.mmd`       | classDiagram        | Simulators, comparison result, MIN-MAX evaluation       |
 | `simulation_comparison_sequence.mmd` | sequenceDiagram     | Quantized vs reference over the input grid              |
 | `compiler_package_flowchart.mmd`     | flowchart           | Compiler imports and the Main.java entry point          |
-| `compiler_class_diagram.mmd`         | classDiagram        | FlcCompiler, CommandLine, GeneratedFile, collaborators  |
-| `compiler_pipeline_sequence.mmd`     | sequenceDiagram     | CommandLine to FlcCompiler to parser, lowering, codegen |
+| `compiler_class_diagram.mmd`         | classDiagram        | FlcCompiler, api.Application, GeneratedFile, collaborators  |
+| `compiler_pipeline_sequence.mmd`     | sequenceDiagram     | api.Application to FlcCompiler to parser, lowers, generator |
 | `utils_class_diagram.mmd`            | classDiagram        | SymbolTable, LexemeInfo, Builder, Director, enums       |
 | `context_handler_sequence.mmd`       | sequenceDiagram     | ContextHandler stack operations                         |
 
@@ -171,7 +171,7 @@ doc/_synthesis_context.json
 | `utils`      | 04, 07                 | Repository, SymbolTable, LexemeInfo, Diagnostics, Builder/Director, Enums |
 | `parser`     | 06, 07                 | Grammar, Publisher, Initialization hierarchy, Grammar coverage            |
 | `lexer`      | 05, 07                 | Transformer chains, SemanticAnalyzers, Diagnostics classification         |
-| `lowering`   | 04.1, 04.2, 04.3, 04.5 | AST to controller model, unsupported-feature diagnostics, symbol keys     |
+| `lowers`   | 04.1, 04.2, 04.3, 04.5 | AST to controller model, unsupported-feature diagnostics, symbol keys     |
 | `simulation` | 04.4, 07, 08, 10       | Ideal vs quantized simulation, comparison metrics, integration test       |
 | `compiler`   | 04.5                   | End-to-end pipeline facade, command line, exit codes, generated files     |
 

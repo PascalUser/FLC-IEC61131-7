@@ -1,7 +1,8 @@
 package utils;
 
 
-import ast.AbstractSyntaxTree;
+import compiler.ast.AbstractSyntaxTree;
+import compiler.repository.SymbolTable;
 
 /**
  * Symbol table and syntax tree produced by a parser test.

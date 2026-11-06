@@ -1,14 +1,14 @@
 package integration.lexer.parser.symboltable;
 
 import org.junit.jupiter.api.Test;
-import utils.LexemeInfo;
-import utils.ParserTestSupport;
+import compiler.repository.LexemeInfo;
+import utils.supports.ParserTestSupport;
 import utils.ParsingResults;
-import utils.builders.LexemeInfoBuilder;
-import utils.enums.Source;
-import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
+import compiler.repository.builders.LexemeInfoBuilder;
+import compiler.repository.enums.Source;
+import compiler.repository.enums.Subtype;
+import compiler.repository.enums.Type;
+import compiler.repository.enums.Use;
 
 import java.io.StringReader;
 import java.util.Arrays;

@@ -1,13 +1,13 @@
 package compiler;
 
-import ast.AbstractSyntaxTree;
-import codegen.CodeGenerator;
-import codegen.ControllerModel;
-import lexer.Lexer;
-import lowering.lowers.ControllerLower;
-import parser.Parser;
-import utils.DiagnosticsHandler;
-import utils.SymbolTable;
+import compiler.ast.AbstractSyntaxTree;
+import compiler.generator.CodeGenerator;
+import compiler.generator.ControllerModel;
+import compiler.lexer.Lexer;
+import compiler.generator.lowers.ControllerLower;
+import compiler.parser.Parser;
+import compiler.repository.DiagnosticsHandler;
+import compiler.repository.SymbolTable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -32,45 +32,60 @@ import java.util.Optional;
  * @since 1.0
  */
 public final class FlcCompiler {
-    private final DiagnosticsHandler diagnostics;
+    private final String sourceName;
+    private final Reader sourceCode;
+    private String report;
 
     /**
      * Creates a compiler that reports every lexical, syntactic and semantic problem to the given handler.
-     *
-     * @param diagnostics collector of errors and warnings of the whole pipeline
      */
-    public FlcCompiler(final DiagnosticsHandler diagnostics) {
-        this.diagnostics = Objects.requireNonNull(diagnostics, "diagnostics");
+    public FlcCompiler(final String sourceName, final Reader sourceCode) {
+        Objects.requireNonNull(sourceCode, "sourceCode");
+        Objects.requireNonNull(sourceName, "sourceName");
+        this.sourceName = sourceName;
+        this.sourceCode = sourceCode;
+        this.report = "";
     }
 
     /**
      * Compiles an FCL program.
      *
-     * @param source   the FCL program
-     * @param baseName base name of the generated files (it also appears inside the test bench)
      * @return the generated files; empty if the program has errors (see the diagnostics handler)
-     * @throws IOException if the source cannot be read
+     * @throws RuntimeException if an unexpected error happend
      */
-    public List<GeneratedFile> compile(final Reader source, final String baseName) throws IOException {
-        Objects.requireNonNull(source, "source");
-        Objects.requireNonNull(baseName, "baseName");
+    public List<GeneratedFile> compile() {
         // AST creation
         SymbolTable symbolTable = new SymbolTable();
-        Parser parser = new Parser(new Lexer(source, symbolTable, diagnostics), symbolTable);
-        if (!parser.parse() || diagnostics.hasErrors()) {
+        DiagnosticsHandler diagnostics = new DiagnosticsHandler();
+        Parser parser = new Parser(new Lexer(sourceCode, symbolTable, diagnostics), symbolTable);
+        try {
+            boolean hasErrors = !parser.parse() || diagnostics.hasErrors();
+            if (hasErrors) {
+                report = diagnostics.getOutput();
+                return Collections.emptyList();
+            }
+        } catch (IOException e) {
+            report = diagnostics.getOutput();
             return Collections.emptyList();
         }
         // Code Generation
         AbstractSyntaxTree root = parser.getAST();
         Optional<ControllerModel> model = ControllerLower.newInstance(symbolTable, root, diagnostics).adapt();
         if (!model.isPresent()) {
+            report = diagnostics.getOutput();
             return Collections.emptyList();
         }
         CodeGenerator generator = new CodeGenerator(model.get());
-        String header = baseName + "_out.h";
+        report = diagnostics.getOutput();
+        String header = sourceName + "_out.h";
         return Arrays.asList(
-                new GeneratedFile(baseName + "_out.cpp", generator.generateCpp()),
+                new GeneratedFile(sourceName + "_out.cpp", generator.generateCpp()),
                 new GeneratedFile(header, generator.generateHeader()),
-                new GeneratedFile(baseName + "_outTB.cpp", generator.generateTestBench(header)));
+                new GeneratedFile(sourceName + "_outTB.cpp", generator.generateTestBench(header))
+        );
+    }
+
+    public String log() {
+        return report;
     }
 }

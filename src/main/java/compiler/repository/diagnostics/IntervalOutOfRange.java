@@ -1,0 +1,33 @@
+package compiler.repository.diagnostics;
+
+/**
+ * Error for TIME (interval) literals where total milliseconds exceed Long range.
+ * <p>
+ * Long.MAX_VALUE ms ≈ 106751991 days, Long.MIN_VALUE ms ≈ -106751992 days.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
+public final class IntervalOutOfRange extends Error {
+    private final String intervalLexeme;
+
+    /**
+     * Creates a diagnostic for the specified source line.
+     *
+     * @param line the one-based source line of the diagnostic
+     * @param outOfBoundInterval the supplied out of bound interval
+     */
+    public IntervalOutOfRange(int line, String outOfBoundInterval) {
+        super(line);
+        this.intervalLexeme = outOfBoundInterval;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getMessage() {
+        return super.getMessage() + intervalLexeme + " interval out of range (exceeds Long nanoseconds)";
+    }
+}

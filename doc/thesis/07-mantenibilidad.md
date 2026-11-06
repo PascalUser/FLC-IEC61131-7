@@ -45,7 +45,7 @@ El proyecto usa **JUnit 5 + Mockito** para:
 # Tests unitarios
 ./gradlew test --tests unit.lexer.LexerTest
 ./gradlew test --tests unit.parser.ParserTest
-./gradlew test --tests unit.utils.SymbolTableTest
+./gradlew test --tests unit.repository.SymbolTableTest
 
 # Tests de integración por tipo derivado
 ./gradlew test --tests integration.EnumerateTypeIT

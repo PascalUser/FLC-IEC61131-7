@@ -724,9 +724,9 @@ def generate_publisher_sequence():
 
 
 def generate_codegen_package_flowchart():
-    """Import dependencies of the codegen package and its consumers."""
-    sources = read_java_files(SRC_DIR / "codegen")
-    packages = {"codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets"}
+    """Import dependencies of the generator package and its consumers."""
+    sources = read_java_files(SRC_DIR / "generator")
+    packages = {"generator", "generator.defuzzification", "generator.evaluation", "generator.fuzzysets"}
     edges = set()
     for path, content in sources.items():
         origin = ".".join(Path(path).parts[:-1])
@@ -734,8 +734,8 @@ def generate_codegen_package_flowchart():
             destination = imp if wildcard else imp.rsplit(".", 1)[0]
             if origin in packages and destination in packages and origin != destination:
                 edges.add((origin, destination))
-    for consumer in ("compiler", "lowering", "simulation"):
-        edges.add((consumer, "codegen"))
+    for consumer in ("compiler", "lowers", "simulation"):
+        edges.add((consumer, "generator"))
     used = sorted({p for edge in edges for p in edge})
     ids = {pkg: pkg.replace(".", "_") for pkg in used}
     lines = ["flowchart LR"]
@@ -745,10 +745,10 @@ def generate_codegen_package_flowchart():
 
 
 def generate_codegen_class_diagram():
-    """Class diagram of the codegen package: generator stages, controller model, fuzzy sets."""
-    sources = read_java_files(SRC_DIR / "codegen")
+    """Class diagram of the generator package: generator stages, controller model, fuzzy sets."""
+    sources = read_java_files(SRC_DIR / "generator")
     selected = {
-        "codegen": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
+        "generator": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
         "codegen_defuzzification": ["Defuzzifier", "CentroidDefuzzifier"],
         "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
         "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet", "SShapeFuzzySet", "TrapezoidFuzzySet", "TriangularFuzzySet", "ZShapeFuzzySet"],
@@ -759,7 +759,7 @@ def generate_codegen_class_diagram():
         for name in names:
             matches = [(path, content) for path, content in sources.items() if Path(path).stem == name]
             if len(matches) != 1 or not re.search(r'\b(class|interface)\s+' + name + r'\b', matches[0][1]):
-                raise ValueError(f"Missing codegen type: {name}")
+                raise ValueError(f"Missing generator type: {name}")
             lines.append(f"        class {name}")
         lines.append("    }")
     lines += [
@@ -807,15 +807,15 @@ def generate_codegen_controller_sequence():
 
 
 def generate_lowering_package_flowchart():
-    """Import dependencies of the lowering package, its subpackages, and its direct consumers."""
+    """Import dependencies of the lowers package, its subpackages, and its direct consumers."""
     sources = read_java_files(SRC_DIR)
     module_packages = {
-        "lowering", "lowering.builders", "lowering.constructors", "lowering.contexts",
-        "lowering.facades", "lowering.lowers", "lowering.utils",
+        "lowers", "lowers.builders", "lowers.constructors", "lowers.contexts",
+        "lowers.facades", "lowers.lowers", "lowers.utils",
     }
     dependency_packages = {
         "ast", "ast.ruleblock", "ast.ruleblock.operators",
-        "codegen", "codegen.defuzzification", "codegen.evaluation", "codegen.fuzzysets",
+        "generator", "generator.defuzzification", "generator.evaluation", "generator.fuzzysets",
         "parser.initializations", "parser.metadata",
         "utils", "utils.diagnostics", "utils.enums",
     }
@@ -841,8 +841,8 @@ def generate_lowering_package_flowchart():
 
 
 def generate_lowering_class_diagram():
-    """Class structure of the lowering package read from the Java sources."""
-    sources = read_java_files(SRC_DIR / "lowering")
+    """Class structure of the lowers package read from the Java sources."""
+    sources = read_java_files(SRC_DIR / "lowers")
     selected = {
         "lowering_builders": ["ControllerModelBuilder", "ControllerModelSchema"],
         "lowering_constructors": ["BitWidthConstructor", "FuzzyVariablesConstructor",
@@ -858,7 +858,7 @@ def generate_lowering_class_diagram():
         matches = [(path, content) for path, content in sources.items() if Path(path).stem == name]
         if len(matches) != 1 or not re.search(
                 r'\b(?:class|interface)\s+' + re.escape(name) + r'\b', matches[0][1]):
-            raise ValueError(f"Missing lowering type: {name}")
+            raise ValueError(f"Missing lowers type: {name}")
 
     lines = ["classDiagram"]
     for namespace, names in selected.items():
@@ -892,12 +892,12 @@ def generate_lowering_class_diagram():
 
 
 def generate_lowering_controller_sequence():
-    """Controller lowering flow checked against the method calls in the Java sources."""
-    controller_lower = (SRC_DIR / "lowering" / "lowers" / "ControllerLower.java").read_text()
-    fuzzy_variables = (SRC_DIR / "lowering" / "constructors" / "FuzzyVariablesConstructor.java").read_text()
-    rules_constructor = (SRC_DIR / "lowering" / "constructors" / "RulesConstructor.java").read_text()
-    variable_lower = (SRC_DIR / "lowering" / "lowers" / "VariableLower.java").read_text()
-    term_lower = (SRC_DIR / "lowering" / "lowers" / "TermLower.java").read_text()
+    """Controller lowers flow checked against the method calls in the Java sources."""
+    controller_lower = (SRC_DIR / "lowers" / "lowers" / "ControllerLower.java").read_text()
+    fuzzy_variables = (SRC_DIR / "lowers" / "constructors" / "FuzzyVariablesConstructor.java").read_text()
+    rules_constructor = (SRC_DIR / "lowers" / "constructors" / "RulesConstructor.java").read_text()
+    variable_lower = (SRC_DIR / "lowers" / "lowers" / "VariableLower.java").read_text()
+    term_lower = (SRC_DIR / "lowers" / "lowers" / "TermLower.java").read_text()
     for snippet, text in [
             ("new BitWidthConstructor", controller_lower),
             ("new FuzzyVariablesConstructor", controller_lower),
@@ -956,8 +956,8 @@ def generate_ast_package_flowchart():
     sources = read_java_files(SRC_DIR)
     ast_packages = {"ast", "ast.ruleblock", "ast.ruleblock.operators"}
     consumers = {
-        "compiler", "lowering", "lowering.constructors", "lowering.contexts",
-        "lowering.lowers", "parser", "parser.facades",
+        "compiler", "lowers", "lowers.constructors", "lowers.contexts",
+        "lowers.lowers", "parser", "parser.facades",
     }
     packages = ast_packages | consumers
     edges = set()
@@ -1082,12 +1082,12 @@ def generate_ast_class_diagram():
 
 
 def generate_ast_construction_sequence():
-    """Parser-to-lowering construction flow checked against the Java sources."""
+    """Parser-to-lowers construction flow checked against the Java sources."""
     parser_y = (SRC_DIR / "parser" / "Parser.y").read_text()
     builder = (SRC_DIR / "parser" / "facades" / "RuleblockASTBuilder.java").read_text()
-    controller_lower = (SRC_DIR / "lowering" / "lowers" / "ControllerLower.java").read_text()
-    rules_constructor = (SRC_DIR / "lowering" / "constructors" / "RulesConstructor.java").read_text()
-    rule_lower = (SRC_DIR / "lowering" / "lowers" / "RuleLower.java").read_text()
+    controller_lower = (SRC_DIR / "lowers" / "lowers" / "ControllerLower.java").read_text()
+    rules_constructor = (SRC_DIR / "lowers" / "constructors" / "RulesConstructor.java").read_text()
+    rule_lower = (SRC_DIR / "lowers" / "lowers" / "RuleLower.java").read_text()
     for snippet, text in [
             ("RuleblockASTBuilder.build(componentNode, configuration)", parser_y),
             ("new AbstractSyntaxTree(programName", parser_y),
@@ -1107,10 +1107,10 @@ def generate_ast_construction_sequence():
         "    participant P as parser.Parser",
         "    participant B as parser.facades.RuleblockASTBuilder",
         "    participant T as ast.AbstractSyntaxTree",
-        "    participant C as lowering.lowers.ControllerLower",
-        "    participant R as lowering.constructors.RulesConstructor",
-        "    participant L as lowering.lowers.RuleLower",
-        "    participant M as codegen.evaluation.MinMaxMethod",
+        "    participant C as lowers.ControllerLower",
+        "    participant R as lowers.constructors.RulesConstructor",
+        "    participant L as lowers.RuleLower",
+        "    participant M as generator.evaluation.MinMaxMethod",
         "",
         "    P->>B: build(COMPONENT, configuration)",
         "    B->>B: traverse ParserTreeNode",
@@ -1126,10 +1126,10 @@ def generate_ast_construction_sequence():
 
 
 def generate_simulation_package_flowchart():
-    """Import dependencies between simulation, codegen, and the codegen subpackages it reads."""
+    """Import dependencies between simulation, generator, and the generator subpackages it reads."""
     sources = read_java_files(SRC_DIR)
-    packages = {"simulation", "codegen", "codegen.defuzzification",
-                "codegen.evaluation", "codegen.fuzzysets"}
+    packages = {"simulation", "generator", "generator.defuzzification",
+                "generator.evaluation", "generator.fuzzysets"}
     edges = set()
     for path, content in sources.items():
         origin = ".".join(Path(path).parts[:-1])
@@ -1141,9 +1141,9 @@ def generate_simulation_package_flowchart():
                 edges.add((origin, destination))
     used = sorted({pkg for edge in edges for pkg in edge})
     if "simulation" not in used:
-        raise ValueError("Simulation package has no imports into codegen")
-    if any(origin == "codegen" and destination == "simulation" for origin, destination in edges):
-        raise ValueError("codegen must not import simulation")
+        raise ValueError("Simulation package has no imports into generator")
+    if any(origin == "generator" and destination == "simulation" for origin, destination in edges):
+        raise ValueError("generator must not import simulation")
     ids = {pkg: pkg.replace(".", "_") for pkg in used}
     lines = ["flowchart LR"]
     lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
@@ -1159,7 +1159,7 @@ def generate_simulation_class_diagram():
     selected = {
         "simulation": ["ReferenceSimulator", "QuantizedSimulator", "SimulationComparison",
                        "OutputComparison", "MinMaxEvaluation"],
-        "codegen": ["ControllerModel", "Variable"],
+        "generator": ["ControllerModel", "Variable"],
         "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
         "codegen_defuzzification": ["CentroidDefuzzifier"],
         "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet"],
@@ -1348,7 +1348,7 @@ def generate_compiler_package_flowchart():
     """Import dependencies of the compiler facade and its entry point."""
     sources = read_java_files(SRC_DIR / "compiler")
     packages = {
-        "compiler", "ast", "codegen", "lexer", "lowering", "lowering.lowers",
+        "compiler", "ast", "generator", "lexer", "lowers", "lowers.lowers",
         "parser", "utils", "utils.diagnostics",
     }
     edges = set()
@@ -1379,16 +1379,16 @@ def generate_compiler_class_diagram():
     all_sources = {str(path.relative_to(SRC_DIR)): path.read_text()
                    for path in SRC_DIR.rglob("*.java") if path.name != "package-info.java"}
     selected = {
-        "compiler": ["CommandLine", "FlcCompiler", "GeneratedFile"],
+        "compiler": ["compiler.CommandLine", "FlcCompiler", "GeneratedFile"],
         "ast": ["AbstractSyntaxTree"],
-        "codegen": ["CodeGenerator", "ControllerModel"],
+        "generator": ["CodeGenerator", "ControllerModel"],
         "lexer": ["Lexer"],
         "lowering_lowers": ["ControllerLower"],
         "parser": ["Parser"],
         "utils": ["DiagnosticsHandler", "SymbolTable"],
     }
     members = {
-        "CommandLine": [
+        "compiler.CommandLine": [
             "<<utility>>",
             "+OK int",
             "+COMPILATION_ERRORS int",
@@ -1412,7 +1412,7 @@ def generate_compiler_class_diagram():
         ],
     }
     evidence = {
-        "CommandLine": [
+        "compiler.CommandLine": [
             "public static int run(final String[] args",
             "new FlcCompiler(diagnostics).compile(source, baseName(program))",
             "Files.write(target, file.content().getBytes(StandardCharsets.UTF_8))",
@@ -1455,8 +1455,8 @@ def generate_compiler_class_diagram():
         lines.append("    }")
 
     lines += [
-        "    CommandLine ..> FlcCompiler : creates",
-        "    CommandLine ..> GeneratedFile : writes",
+        "    compiler.CommandLine ..> FlcCompiler : creates",
+        "    compiler.CommandLine ..> GeneratedFile : writes",
         "    FlcCompiler --> DiagnosticsHandler : reports",
         "    FlcCompiler ..> Lexer : creates",
         "    FlcCompiler ..> Parser : creates",
@@ -1476,7 +1476,7 @@ def generate_compiler_class_diagram():
 
 def generate_compiler_pipeline_sequence():
     """End-to-end pipeline flow checked against the compiler Java sources."""
-    command_line = (SRC_DIR / "compiler" / "CommandLine.java").read_text()
+    command_line = (SRC_DIR / "compiler" / "compiler.CommandLine.java").read_text()
     compiler = (SRC_DIR / "compiler" / "FlcCompiler.java").read_text()
     for snippet, text in [
             ("new FlcCompiler(diagnostics).compile(source, baseName(program))", command_line),
@@ -1533,7 +1533,7 @@ def generate_compiler_pipeline_sequence():
         "            C->>F: new GeneratedFile(name, content)",
         "            C-->>CLI: List of GeneratedFile",
         "            CLI->>CLI: createDirectories and write files",
-        "        else lowering failed",
+        "        else lowers failed",
         "            C-->>CLI: empty List",
         "        end",
         "    end",
@@ -1575,7 +1575,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate mermaid diagrams from source code")
     parser.add_argument("--list", action="store_true", help="List available diagrams")
     parser.add_argument("scope", nargs="?", default="all",
-                        help="Scope: all|lexer|parser|ast|utils|codegen|lowering|simulation|compiler|architecture")
+                        help="Scope: all|lexer|parser|ast|utils|generator|lowers|simulation|compiler|architecture")
     args = parser.parse_args()
 
     DIAGRAMS_DIR.mkdir(parents=True, exist_ok=True)
@@ -1593,9 +1593,9 @@ def main():
         targets = ["ast_package_flowchart", "ast_class_diagram", "ast_construction_sequence"]
     elif scope == "utils":
         targets = ["utils_class_diagram", "diagnostics_hierarchy", "symboltable_storage"]
-    elif scope == "codegen":
+    elif scope == "generator":
         targets = ["codegen_package_flowchart", "codegen_class_diagram", "codegen_controller_sequence"]
-    elif scope == "lowering":
+    elif scope == "lowers":
         targets = ["lowering_package_flowchart", "lowering_class_diagram", "lowering_controller_sequence"]
     elif scope == "simulation":
         targets = ["simulation_package_flowchart", "simulation_class_diagram",
@@ -1611,7 +1611,7 @@ def main():
             targets = [scope]
         else:
             print(f"Unknown scope: {scope}")
-            print(f"Available: all, lexer, parser, ast, utils, codegen, lowering, simulation, compiler, architecture")
+            print(f"Available: all, lexer, parser, ast, utils, generator, lowers, simulation, compiler, architecture")
             print(f"Or specific: {', '.join(DIAGRAMS.keys())}")
             return
 

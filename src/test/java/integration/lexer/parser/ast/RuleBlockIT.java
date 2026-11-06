@@ -1,26 +1,24 @@
 package integration.lexer.parser.ast;
 
-import ast.AbstractSyntaxTree;
-import ast.ruleblock.CondNode;
-import ast.ruleblock.IdentifierNode;
-import ast.ruleblock.IfNode;
-import ast.ruleblock.RuleBlockNode;
-import ast.ruleblock.WithNode;
-import ast.ruleblock.operators.Operator;
-import ast.ruleblock.operators.OperatorNode;
+import compiler.ast.AbstractSyntaxTree;
+import compiler.ast.ruleblock.CondNode;
+import compiler.ast.ruleblock.IdentifierNode;
+import compiler.ast.ruleblock.IfNode;
+import compiler.ast.ruleblock.RuleBlockNode;
+import compiler.ast.ruleblock.WithNode;
+import compiler.ast.ruleblock.operators.Operator;
+import compiler.ast.ruleblock.operators.OperatorNode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import utils.ParserTestSupport;
+import utils.supports.AstTestSupport;
 import utils.ParsingResults;
-import utils.SourceCode;
+import utils.builders.SourceCode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static utils.AstTestSupport.lines;
-import static utils.AstTestSupport.render;
 
 /**
  * Integration tests for RULEBLOCK AST construction, written against the architecture defined in
@@ -31,7 +29,7 @@ import static utils.AstTestSupport.render;
  * {@link OperatorNode}s rather than as the concrete subclasses used by the AST unit tests.
  * </p>
  */
-public class RuleBlockIT extends ParserTestSupport {
+public class RuleBlockIT extends AstTestSupport {
 
     private static final String DEFAULT_OPERATORS = "    ;";
     private static final String DEFAULT_ACCUMULATION = "    ACCU: MAX;";

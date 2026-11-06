@@ -105,8 +105,8 @@ cp -r opencode.json .opencode/ scripts/ doc/thesis/ doc/assets/ doc/diagrams/ do
 # Docker (recomendado):
 docker compose build
 docker compose up -d docs
-docker compose exec docs bash
-python run_all_agents.py
+docker compose exec -u devuser docs bash
+python3 run_all_agents.py
 ```
 
 ## Extensibilidad

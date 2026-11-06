@@ -2,8 +2,8 @@ package unit.parser;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import parser.Parser;
-import utils.ParserTestSupport;
+import compiler.parser.Parser;
+import utils.supports.ParserTestSupport;
 
 import java.io.*;
 import java.nio.file.Files;

@@ -1,12 +1,12 @@
 # Abstract Syntax Tree Module Documentation
 
-One-line description: The abstract syntax tree models the RULEBLOCK body of a function block as an immutable node hierarchy consumed by the lowering phase.
+One-line description: The abstract syntax tree models the RULEBLOCK body of a function block as an immutable node hierarchy consumed by the lowers phase.
 
 Last update: 2026-11-04
 
 ## Purpose
 
-The `ast` package and its subpackages model the fuzzy rule block of a function block as an immutable tree of typed nodes. The parser builds the tree while reducing the `RULEBLOCK` grammar rules, through `parser.facades.RuleblockASTBuilder`, which maps the `parser.tree.ParserTreeNode` built during the reductions into `ast` nodes. The resulting `ast.AbstractSyntaxTree` is the input of the lowering phase, which turns it into the rule matrix of the code generator.
+The `ast` package and its subpackages model the fuzzy rule block of a function block as an immutable tree of typed nodes. The parser builds the tree while reducing the `RULEBLOCK` grammar rules, through `parser.facades.RuleblockASTBuilder`, which maps the `parser.tree.ParserTreeNode` built during the reductions into `ast` nodes. The resulting `ast.AbstractSyntaxTree` is the input of the lowers phase, which turns it into the rule matrix of the code generator.
 
 Every node extends `ast.AbstractAstNode` and answers with a semantic label. Labels are plain strings computed by each node; there is no separate label enumeration. Examples are `BODY`, `COND`, `IF`, `IS`, `NOT`, the name of the operator, the name of an identifier, the scoped rule-block name, and the program name. Nodes hold their attributes in private final fields and their children in an unmodifiable list.
 
@@ -28,9 +28,9 @@ flowchart LR
     ast_ruleblock["ast.ruleblock"]
     ast_ruleblock_operators["ast.ruleblock.operators"]
     compiler["compiler"]
-    lowering_constructors["lowering.constructors"]
-    lowering_contexts["lowering.contexts"]
-    lowering_lowers["lowering.lowers"]
+    lowering_constructors["lowers.constructors"]
+    lowering_contexts["lowers.contexts"]
+    lowering_lowers["lowers.lowers"]
     parser["parser"]
     parser_facades["parser.facades"]
     ast --> ast_ruleblock
@@ -53,7 +53,7 @@ flowchart LR
     parser_facades --> ast_ruleblock_operators
 ```
 
-The edges follow the `import` statements from the importing package to the imported one. The AST packages have no outgoing dependency on another project package: they use only the Java standard library. Their consumers are `parser`, `parser.facades`, `lowering.constructors`, `lowering.contexts`, `lowering.lowers`, and `compiler`.
+The edges follow the `import` statements from the importing package to the imported one. The AST packages have no outgoing dependency on another project package: they use only the Java standard library. Their consumers are `parser`, `parser.facades`, `lowers.constructors`, `lowers.contexts`, `lowers.lowers`, and `compiler`.
 
 ## Class Diagram
 
@@ -279,10 +279,10 @@ sequenceDiagram
     participant P as parser.Parser
     participant B as parser.facades.RuleblockASTBuilder
     participant T as ast.AbstractSyntaxTree
-    participant C as lowering.lowers.ControllerLower
-    participant R as lowering.constructors.RulesConstructor
-    participant L as lowering.lowers.RuleLower
-    participant M as codegen.evaluation.MinMaxMethod
+    participant C as lowers.ControllerLower
+    participant R as lowers.constructors.RulesConstructor
+    participant L as lowers.RuleLower
+    participant M as generator.evaluation.MinMaxMethod
 
     P->>B: build(COMPONENT, configuration)
     B->>B: traverse ParserTreeNode
@@ -296,13 +296,13 @@ sequenceDiagram
     R->>M: new MinMaxMethod(loweredRules)
 ```
 
-The parser owns construction; the lowering phase only reads the immutable tree. `ControllerLower.newInstance` stores the root and creates `SymbolKeys` from `root.label()`, which is the program name.
+The parser owns construction; the lowers phase only reads the immutable tree. `ControllerLower.newInstance` stores the root and creates `SymbolKeys` from `root.label()`, which is the program name.
 
 ## Lowering
 
-`lowering.lowers.ControllerLower.adapt()` builds the `codegen.ControllerModel` from the symbol table and the AST. It runs three constructors in order: `BitWidthConstructor`, `FuzzyVariablesConstructor`, and `RulesConstructor`. The method returns `Optional.empty()` as soon as one constructor reports an unsupported program.
+`lowers.ControllerLower.adapt()` builds the `generator.ControllerModel` from the symbol table and the AST. It runs three constructors in order: `BitWidthConstructor`, `FuzzyVariablesConstructor`, and `RulesConstructor`. The method returns `Optional.empty()` as soon as one constructor reports an unsupported program.
 
-`lowering.constructors.RulesConstructor` is the part that consumes the rule-block AST. It accepts exactly one rule block, requires accumulation `ACCU: MAX`, and requires at least one rule. Each rule is lowered by `lowering.lowers.RuleLower.adapt()`, which returns one `int[]` row. The rows are collected into a `codegen.evaluation.MinMaxMethod`.
+`lowers.constructors.RulesConstructor` is the part that consumes the rule-block AST. It accepts exactly one rule block, requires accumulation `ACCU: MAX`, and requires at least one rule. Each rule is lowered by `lowers.RuleLower.adapt()`, which returns one `int[]` row. The rows are collected into a `generator.evaluation.MinMaxMethod`.
 
 `RuleLower` builds a row with one column per input followed by one column per output. Each cell holds the index of the term in the variable's fuzzifier or defuzzifier parameter list; `-1` marks an unused cell. The accepted subset is narrower than the full grammar:
 
@@ -392,4 +392,4 @@ src/main/java/ast/
 
 ## Usage in Thesis
 
-The content of this module feeds `doc/thesis/04.1-arbol-sintaxis-ruleblock.md` and `doc/thesis/04.2-lowering.md`. The pipeline description in `doc/thesis/04.5-pipeline-compilador.md` also places the AST between parsing and lowering, and `doc/thesis/07-mantenibilidad.md` uses the immutable node hierarchy as an example of the composite structure of the compiler.
+The content of this module feeds `doc/thesis/04.1-arbol-sintaxis-ruleblock.md` and `doc/thesis/04.2-lowers.md`. The pipeline description in `doc/thesis/04.5-pipeline-compilador.md` also places the AST between parsing and lowers, and `doc/thesis/07-mantenibilidad.md` uses the immutable node hierarchy as an example of the composite structure of the compiler.

@@ -8,7 +8,7 @@ Last update: 2026-11-04
 
 The `utils` package is the shared repository for every compiler phase. It contains the symbol table that stores semantic metadata, the `LexemeInfo` DTO that carries that metadata, the diagnostics collector and diagnostic hierarchy, the builder API used to construct `LexemeInfo`, and the enums that classify symbols.
 
-The package is consumed by the lexer, the parser, the parser publishers and facades, the lowering phase, and the compiler entry point. `utils` itself has no outgoing dependency on another compiler package: it only depends on the JDK, the SpotBugs annotations, and its own `utils.enums` and `utils.diagnostics` subpackages. This page documents `utils` and its subpackages `utils.builders`, `utils.enums`, and `utils.diagnostics`. Helper classes in `parser.utils`, `lexer.semantics.utils`, and `lexer.transformers.utils` belong to the parser and lexer module pages.
+The package is consumed by the lexer, the parser, the parser publishers and facades, the lowers phase, and the compiler entry point. `utils` itself has no outgoing dependency on another compiler package: it only depends on the JDK, the SpotBugs annotations, and its own `utils.enums` and `utils.diagnostics` subpackages. This page documents `utils` and its subpackages `utils.builders`, `utils.enums`, and `utils.diagnostics`. Helper classes in `parser.utils`, `lexer.semantics.utils`, and `lexer.transformers.utils` belong to the parser and lexer module pages.
 
 Source files:
 

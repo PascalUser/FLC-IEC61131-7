@@ -1,5 +1,8 @@
 package utils;
 
+import compiler.repository.LexemeInfo;
+import compiler.repository.SymbolTable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

@@ -1,18 +1,22 @@
 package integration.lexer.parser.symboltable;
 
+import compiler.repository.LexemeInfo;
+import compiler.repository.SymbolTable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import parser.initializations.Initialization;
-import parser.initializations.leafs.VariableInitialization;
+import compiler.parser.initializations.Initialization;
+import compiler.parser.initializations.leafs.VariableInitialization;
 import utils.*;
-import utils.builders.LexemeInfoBuilder;
-import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
+import compiler.repository.builders.LexemeInfoBuilder;
+import compiler.repository.enums.Subtype;
+import compiler.repository.enums.Type;
+import compiler.repository.enums.Use;
+import utils.builders.SourceCode;
+import utils.supports.ParserTestSupport;
 
 import java.util.ArrayList;
 import java.util.Arrays;

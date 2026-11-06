@@ -1,25 +1,25 @@
 package unit.ast.ruleblock;
 
-import ast.AbstractAstNode;
-import ast.ruleblock.BodyNode;
-import ast.ruleblock.CondNode;
-import ast.ruleblock.IdentifierNode;
-import ast.ruleblock.IfNode;
-import ast.ruleblock.IsNode;
-import ast.ruleblock.NotNode;
-import ast.ruleblock.RuleBlockNode;
-import ast.ruleblock.WithNode;
-import ast.ruleblock.operators.MaxNode;
-import ast.ruleblock.operators.MinNode;
-import ast.ruleblock.operators.ProdNode;
+import compiler.ast.AbstractAstNode;
+import compiler.ast.ruleblock.BodyNode;
+import compiler.ast.ruleblock.CondNode;
+import compiler.ast.ruleblock.IdentifierNode;
+import compiler.ast.ruleblock.IfNode;
+import compiler.ast.ruleblock.IsNode;
+import compiler.ast.ruleblock.NotNode;
+import compiler.ast.ruleblock.RuleBlockNode;
+import compiler.ast.ruleblock.WithNode;
+import compiler.ast.ruleblock.operators.MaxNode;
+import compiler.ast.ruleblock.operators.MinNode;
+import compiler.ast.ruleblock.operators.ProdNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static utils.AstTestSupport.lines;
-import static utils.AstTestSupport.render;
+import static utils.supports.AstTestSupport.lines;
+import static utils.supports.AstTestSupport.render;
 
 class RuleBlockTreeTest {
 

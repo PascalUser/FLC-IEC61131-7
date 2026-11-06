@@ -1,25 +1,29 @@
 package integration.lexer.parser.symboltable;
 
+import compiler.repository.LexemeInfo;
+import compiler.repository.SymbolTable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import parser.initializations.Initialization;
-import parser.initializations.leafs.EnumeratedInitialization;
-import parser.initializations.leafs.VariableInitialization;
-import parser.initializations.nodes.RepeatedInitialization;
-import parser.initializations.nodes.StructInitialization;
+import compiler.parser.initializations.Initialization;
+import compiler.parser.initializations.leafs.EnumeratedInitialization;
+import compiler.parser.initializations.leafs.VariableInitialization;
+import compiler.parser.initializations.nodes.RepeatedInitialization;
+import compiler.parser.initializations.nodes.StructInitialization;
 import utils.*;
-import utils.builders.LexemeInfoBuilder;
-import utils.enums.Source;
-import utils.enums.Subtype;
-import utils.enums.Type;
-import utils.enums.Use;
+import compiler.repository.builders.LexemeInfoBuilder;
+import compiler.repository.enums.Source;
+import compiler.repository.enums.Subtype;
+import compiler.repository.enums.Type;
+import compiler.repository.enums.Use;
+import utils.builders.SourceCode;
+import utils.supports.ParserTestSupport;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static utils.AstTestSupport.lines;
+import static utils.supports.AstTestSupport.lines;
 
 /**
  * Integration tests for ARRAY declarations: types, variables, struct members, multidimensional bounds,

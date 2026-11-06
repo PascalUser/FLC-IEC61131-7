@@ -1,26 +1,27 @@
 package unit.lexer;
 
-import lexer.Lexer;
+import compiler.lexer.Lexer;
+import compiler.repository.diagnostics.Error;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import utils.diagnostics.BinaryOutOfRange;
-import utils.diagnostics.DateAndTimeOutOfRange;
-import utils.diagnostics.DateOutOfRange;
-import utils.diagnostics.HexadecimalOutOfRange;
-import utils.diagnostics.IntegerOutOfRange;
-import utils.diagnostics.IntervalConstructionError;
-import utils.diagnostics.IntervalOutOfRange;
-import utils.diagnostics.NaturalOutOfRange;
-import utils.diagnostics.OctalOutOfRange;
-import utils.diagnostics.RealOutOfRange;
-import utils.diagnostics.TimeOfDayOutOfRange;
-import utils.diagnostics.StringLengthWarning;
-import utils.diagnostics.Warning;
-import utils.DiagnosticsHandler;
-import utils.SymbolTable;
-import utils.diagnostics.Diagnostic;
+import compiler.repository.diagnostics.BinaryOutOfRange;
+import compiler.repository.diagnostics.DateAndTimeOutOfRange;
+import compiler.repository.diagnostics.DateOutOfRange;
+import compiler.repository.diagnostics.HexadecimalOutOfRange;
+import compiler.repository.diagnostics.IntegerOutOfRange;
+import compiler.repository.diagnostics.IntervalConstructionError;
+import compiler.repository.diagnostics.IntervalOutOfRange;
+import compiler.repository.diagnostics.NaturalOutOfRange;
+import compiler.repository.diagnostics.OctalOutOfRange;
+import compiler.repository.diagnostics.RealOutOfRange;
+import compiler.repository.diagnostics.TimeOfDayOutOfRange;
+import compiler.repository.diagnostics.StringLengthWarning;
+import compiler.repository.diagnostics.Warning;
+import compiler.repository.DiagnosticsHandler;
+import compiler.repository.SymbolTable;
+import compiler.repository.diagnostics.Diagnostic;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -40,8 +41,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * Tests that the lexer correctly handles out-of-range literals,
  * invalid string lengths, and boundary conditions.
  * <p>
- * Numeric literals (natural, integer, real, based) emit {@link utils.diagnostics.Warning}
- * and use fallback values. Date/time/interval literals emit {@link utils.diagnostics.Error}
+ * Numeric literals (natural, integer, real, based) emit {@link Warning}
+ * and use fallback values. Date/time/interval literals emit {@link Error}
  * and halt token recognition for the invalid lexeme.
  * </p>
  *
@@ -50,7 +51,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @version 1.0
  * @since 1.0
  */
-@Tag("lexer")
+@Tag("compiler/lexer")
 @ExtendWith(MockitoExtension.class)
 public class LexerDiagnosticHandlerTest {
     /**

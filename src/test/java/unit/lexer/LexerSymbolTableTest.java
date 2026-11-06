@@ -1,16 +1,19 @@
 package unit.lexer;
 
-import lexer.Lexer;
+import compiler.lexer.Lexer;
+import compiler.repository.enums.Source;
+import compiler.repository.enums.Subtype;
+import compiler.repository.enums.Type;
+import compiler.repository.enums.Use;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import utils.DiagnosticsHandler;
+import compiler.repository.DiagnosticsHandler;
 import utils.LexemeInfoComparator;
-import utils.SymbolTable;
-import utils.builders.LexemeInfoBuilder;
-import utils.enums.*;
+import compiler.repository.SymbolTable;
+import compiler.repository.builders.LexemeInfoBuilder;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -38,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 1.0
  * @since 1.0
  */
-@Tag("lexer")
+@Tag("compiler/lexer")
 public class LexerSymbolTableTest {
 
     private SymbolTable executeLexer(String literal) throws IOException {

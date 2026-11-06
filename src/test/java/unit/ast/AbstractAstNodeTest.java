@@ -1,6 +1,6 @@
 package unit.ast;
 
-import ast.AbstractAstNode;
+import compiler.ast.AbstractAstNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static utils.AstTestSupport.assertChildrenUnmodifiable;
+import static utils.supports.AstTestSupport.assertChildrenUnmodifiable;
 
 class AbstractAstNodeTest {
 

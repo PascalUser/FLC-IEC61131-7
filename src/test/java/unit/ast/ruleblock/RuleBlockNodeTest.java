@@ -1,14 +1,14 @@
 package unit.ast.ruleblock;
 
-import ast.ruleblock.RuleBlockNode;
-import ast.ruleblock.operators.MaxNode;
+import compiler.ast.ruleblock.RuleBlockNode;
+import compiler.ast.ruleblock.operators.MaxNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static utils.AstTestSupport.assertChildrenUnmodifiable;
+import static utils.supports.AstTestSupport.assertChildrenUnmodifiable;
 
 class RuleBlockNodeTest {
 

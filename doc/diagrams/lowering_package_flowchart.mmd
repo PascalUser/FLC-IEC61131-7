@@ -2,32 +2,32 @@ flowchart LR
     ast["ast"]
     ast_ruleblock["ast.ruleblock"]
     ast_ruleblock_operators["ast.ruleblock.operators"]
-    codegen["codegen"]
-    codegen_defuzzification["codegen.defuzzification"]
-    codegen_evaluation["codegen.evaluation"]
-    codegen_fuzzysets["codegen.fuzzysets"]
+    generator["generator"]
+    codegen_defuzzification["generator.defuzzification"]
+    codegen_evaluation["generator.evaluation"]
+    codegen_fuzzysets["generator.fuzzysets"]
     compiler["compiler"]
-    lowering_builders["lowering.builders"]
-    lowering_constructors["lowering.constructors"]
-    lowering_contexts["lowering.contexts"]
-    lowering_facades["lowering.facades"]
-    lowering_lowers["lowering.lowers"]
-    lowering_utils["lowering.utils"]
+    lowering_builders["lowers.builders"]
+    lowering_constructors["lowers.constructors"]
+    lowering_contexts["lowers.contexts"]
+    lowering_facades["lowers.facades"]
+    lowering_lowers["lowers.lowers"]
+    lowering_utils["lowers.utils"]
     parser_initializations["parser.initializations"]
     parser_metadata["parser.metadata"]
     utils["utils"]
     utils_diagnostics["utils.diagnostics"]
     utils_enums["utils.enums"]
-    codegen --> lowering_utils
+    generator --> lowering_utils
     compiler --> lowering_lowers
-    lowering_builders --> codegen
+    lowering_builders --> generator
     lowering_builders --> codegen_defuzzification
     lowering_builders --> codegen_evaluation
     lowering_builders --> lowering_utils
     lowering_constructors --> ast
     lowering_constructors --> ast_ruleblock
     lowering_constructors --> ast_ruleblock_operators
-    lowering_constructors --> codegen
+    lowering_constructors --> generator
     lowering_constructors --> codegen_defuzzification
     lowering_constructors --> codegen_evaluation
     lowering_constructors --> lowering_builders
@@ -48,7 +48,7 @@ flowchart LR
     lowering_lowers --> ast
     lowering_lowers --> ast_ruleblock
     lowering_lowers --> ast_ruleblock_operators
-    lowering_lowers --> codegen
+    lowering_lowers --> generator
     lowering_lowers --> codegen_fuzzysets
     lowering_lowers --> lowering_builders
     lowering_lowers --> lowering_constructors
@@ -58,7 +58,7 @@ flowchart LR
     lowering_lowers --> utils
     lowering_lowers --> utils_diagnostics
     lowering_lowers --> utils_enums
-    lowering_utils --> codegen
+    lowering_utils --> generator
     lowering_utils --> codegen_defuzzification
     lowering_utils --> codegen_evaluation
     lowering_utils --> parser_metadata

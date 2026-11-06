@@ -1,9 +1,9 @@
 package unit.parser.initializations;
 
 import org.junit.jupiter.api.Test;
-import parser.initializations.Initialization;
-import parser.initializations.nodes.StructInitialization;
-import parser.initializations.leafs.VariableInitialization;
+import compiler.parser.initializations.Initialization;
+import compiler.parser.initializations.nodes.StructInitialization;
+import compiler.parser.initializations.leafs.VariableInitialization;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -34,7 +34,7 @@ sequenceDiagram
             C->>F: new GeneratedFile(name, content)
             C-->>CLI: List of GeneratedFile
             CLI->>CLI: createDirectories and write files
-        else lowering failed
+        else lowers failed
             C-->>CLI: empty List
         end
     end

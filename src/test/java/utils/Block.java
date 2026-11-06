@@ -1,6 +1,6 @@
 package utils;
 
-import utils.enums.Source;
+import compiler.repository.enums.Source;
 
 /**
  * Variable blocks of a FUNCTION_BLOCK, with the {@link Source} the parser assigns to their variables.
@@ -11,7 +11,6 @@ import utils.enums.Source;
 public enum Block {
     VAR_INPUT(Source.IN),
     VAR_OUTPUT(Source.OUT),
-    /** Internal variable block. */
     VAR(Source.INTERNAL);
 
     private final Source source;

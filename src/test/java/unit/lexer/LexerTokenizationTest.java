@@ -1,6 +1,6 @@
 package unit.lexer;
 
-import lexer.Lexer;
+import compiler.lexer.Lexer;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -9,8 +9,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import doubles.FakeReservedWords;
-import utils.DiagnosticsHandler;
-import utils.SymbolTable;
+import compiler.repository.DiagnosticsHandler;
+import compiler.repository.SymbolTable;
 
 import java.io.StringReader;
 import java.io.Reader;
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 1.0
  * @since 1.0
  */
-@Tag("lexer")
+@Tag("compiler/lexer")
 class LexerTokenizationTest {
     private void assertNextToken(@NonNull Lexer lexer, int expectedToken, String expectedText) throws IOException {
         int token = lexer.yylex();

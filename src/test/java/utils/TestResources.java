@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public final class TestResources {
 
     private TestResources() {
+        // utility class
     }
 
     /**

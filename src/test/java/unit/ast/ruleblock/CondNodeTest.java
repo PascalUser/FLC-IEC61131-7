@@ -1,12 +1,12 @@
 package unit.ast.ruleblock;
 
-import ast.ruleblock.CondNode;
-import ast.ruleblock.IdentifierNode;
+import compiler.ast.ruleblock.CondNode;
+import compiler.ast.ruleblock.IdentifierNode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static utils.AstTestSupport.assertChildrenUnmodifiable;
+import static utils.supports.AstTestSupport.assertChildrenUnmodifiable;
 
 class CondNodeTest {
 

@@ -1,6 +1,6 @@
 package doubles;
 
-import lexer.Lexer;
+import compiler.lexer.Lexer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
@@ -108,7 +108,6 @@ public final class FakeReservedWords implements Iterable<Map.Entry<String, Integ
     }
 
     @NonNull
-    /** {@inheritDoc} */
     @Override
     public Iterator<Map.Entry<String, Integer>> iterator() {
         return table.entrySet().iterator();

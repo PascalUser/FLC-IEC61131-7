@@ -1,0 +1,51 @@
+package compiler.lexer.transformers;
+import compiler.lexer.transformers.utils.ExponentFinder;
+/**
+ * Transformer that removes trailing zeros from numeric literals.
+ * <p>
+ * Strips trailing zeros from the mantissa while preserving at least
+ * one digit. The exponent of scientific notation is left unchanged.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
+public final class StripTrailingZeros extends Transformer {
+
+    /**
+     * Creates a transformer followed by the specified next stage.
+     *
+     * @param next the next transformer in the chain
+     */
+    public StripTrailingZeros(Transformer next) {
+        super(next);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String transform(String lexeme) {
+        int end = lexeme.length();
+
+        int exponent = ExponentFinder.find(lexeme);
+
+        int mantissaEnd = exponent == -1 ? end : exponent;
+
+        int dot = lexeme.indexOf('.');
+
+        if (dot != -1 && dot < mantissaEnd) {
+            while (mantissaEnd > dot + 2 && lexeme.charAt(mantissaEnd - 1) == '0') {
+                mantissaEnd--;
+            }
+        }
+        String mantissa = lexeme.substring(0, mantissaEnd);
+
+        if (exponent != -1) {
+            mantissa += lexeme.substring(exponent);
+        }
+
+        return super.giveToNext(mantissa);
+    }
+
+}

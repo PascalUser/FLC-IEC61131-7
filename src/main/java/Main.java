@@ -1,8 +1,8 @@
-import compiler.CommandLine;
+import api.Application;
 
 /**
  * Main entry point for the IEC 61131-7 compiler: {@code java -jar flc-iec61131-7-compiler.jar <program.fcl>
- * [output directory]}. See {@link CommandLine}.
+ * [output directory]}. See {@link Application}.
  *
  * @author Matias Ortiz
  * @author Victoriano Etcheverría
@@ -11,19 +11,11 @@ import compiler.CommandLine;
  */
 class Main {
     /**
-     * Starts the compiler and exits with its status (0 when the code was generated).
-     *
-     * @param args the FCL program and, optionally, the output directory
-     */
-    /**
      * Runs the compiler as a command-line program.
      *
      * @param args source file and optional output directory
      */
     public static void main(final String[] args) {
-        int status = CommandLine.run(args, System.out, System.err);
-        if (status != CommandLine.OK) {
-            System.exit(status);
-        }
+        System.exit(Application.run(args, System.out, System.err));
     }
 }

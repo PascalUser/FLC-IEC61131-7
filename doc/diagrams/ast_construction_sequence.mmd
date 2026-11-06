@@ -2,10 +2,10 @@ sequenceDiagram
     participant P as parser.Parser
     participant B as parser.facades.RuleblockASTBuilder
     participant T as ast.AbstractSyntaxTree
-    participant C as lowering.lowers.ControllerLower
-    participant R as lowering.constructors.RulesConstructor
-    participant L as lowering.lowers.RuleLower
-    participant M as codegen.evaluation.MinMaxMethod
+    participant C as lowers.ControllerLower
+    participant R as lowers.constructors.RulesConstructor
+    participant L as lowers.RuleLower
+    participant M as generator.evaluation.MinMaxMethod
 
     P->>B: build(COMPONENT, configuration)
     B->>B: traverse ParserTreeNode

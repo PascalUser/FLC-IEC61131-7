@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Runs all documentation agents in sequence for full documentation refresh.
-Usage: python run_all_agents.py
+Usage: python3 run_all_agents.py
 
 Note: Some steps require the opencode CLI which is not installed in the Docker container.
 Those steps will be skipped with a warning. Run them manually on the host:

@@ -90,4 +90,4 @@ El analizador léxico reconoce 22 palabras clave FCL, 25 palabras clave Anexo B,
 ./gradlew test --tests unit.lexer.semantics.*
 ```
 
-Clase de soporte: `utils.ParserTestSupport` (configura lexer + parser + symbol table + diagnostics handler).
+Clase de soporte: `utils.supports.ParserTestSupport` (configura lexer + parser + symbol table + diagnostics handler).

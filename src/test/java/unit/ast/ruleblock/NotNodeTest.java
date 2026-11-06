@@ -1,13 +1,13 @@
 package unit.ast.ruleblock;
 
-import ast.ruleblock.IdentifierNode;
-import ast.ruleblock.IsNode;
-import ast.ruleblock.NotNode;
+import compiler.ast.ruleblock.IdentifierNode;
+import compiler.ast.ruleblock.IsNode;
+import compiler.ast.ruleblock.NotNode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static utils.AstTestSupport.assertChildrenUnmodifiable;
+import static utils.supports.AstTestSupport.assertChildrenUnmodifiable;
 
 class NotNodeTest {
 

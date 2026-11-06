@@ -1,7 +1,7 @@
 package unit.lexer.transformers;
 
-import lexer.transformers.hex_resolvers.StringHexResolver;
-import lexer.transformers.Transformer;
+import compiler.lexer.transformers.hex_resolvers.StringHexResolver;
+import compiler.lexer.transformers.Transformer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

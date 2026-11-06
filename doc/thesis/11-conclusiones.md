@@ -48,8 +48,8 @@ Se ha diseñado, implementado y validado un **compilador completo para FCL (IEC 
 |--------------------------|--------------------------------------------------------------------------------------------------|
 | **ST (Structured Text)** | Extender `Parser.y` con expresiones ST; reutilizar `SymbolTable`, `LexemeInfo`, `Initialization` |
 | **LD/FBD/SFC/IL**        | Nuevos parsers (Bison/Flex) compartiendo `SymbolTable`, `LexemeInfo`, `DiagnosticsHandler`       |
-| **Generación de código** | Backend codegen (C, IEC 61131-3 IL, bytecode) usando `SymbolTable` + `Initialization` hierarchy  |
-| **Ejecución en PLC**     | Runtime interpreter / codegen para target PLC                                                    |
+| **Generación de código** | Backend generator (C, IEC 61131-3 IL, bytecode) usando `SymbolTable` + `Initialization` hierarchy  |
+| **Ejecución en PLC**     | Runtime interpreter / generator para target PLC                                                    |
 
 ### Largo plazo — ecosistema
 
@@ -58,7 +58,7 @@ Se ha diseñado, implementado y validado un **compilador completo para FCL (IEC 
 | **IDE integration**      | Language Server Protocol (LSP) usando `SymbolTable` + `DiagnosticsHandler` |
 | **Formal verification**  | Model checking de `RULEBLOCK` usando `SymbolTable` + `Initialization`      |
 | **CI/CD integration**    | GitHub Actions / GitLab CI con `run_all_agents.py` + quality gates         |
-| **Multi-target codegen** | Backend LLVM / C / IEC 61131-3 IL desde `SymbolTable` + `Initialization`   |
+| **Multi-target generator** | Backend LLVM / C / IEC 61131-3 IL desde `SymbolTable` + `Initialization`   |
 
 ## Reflexión final
 

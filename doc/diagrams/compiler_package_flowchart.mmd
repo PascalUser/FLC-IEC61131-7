@@ -1,15 +1,15 @@
 flowchart LR
     ast["ast"]
-    codegen["codegen"]
+    generator["generator"]
     compiler["compiler"]
     lexer["lexer"]
-    lowering_lowers["lowering.lowers"]
+    lowering_lowers["lowers.lowers"]
     parser["parser"]
     utils["utils"]
     utils_diagnostics["utils.diagnostics"]
     main["Main.java"]
     compiler --> ast
-    compiler --> codegen
+    compiler --> generator
     compiler --> lexer
     compiler --> lowering_lowers
     compiler --> parser

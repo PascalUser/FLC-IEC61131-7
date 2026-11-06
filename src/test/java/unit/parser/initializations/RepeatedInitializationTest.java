@@ -1,10 +1,10 @@
 package unit.parser.initializations;
 
 import org.junit.jupiter.api.Test;
-import parser.initializations.Initialization;
-import parser.initializations.leafs.VariableInitialization;
-import parser.initializations.nodes.RepeatedInitialization;
-import parser.initializations.nodes.StructInitialization;
+import compiler.parser.initializations.Initialization;
+import compiler.parser.initializations.leafs.VariableInitialization;
+import compiler.parser.initializations.nodes.RepeatedInitialization;
+import compiler.parser.initializations.nodes.StructInitialization;
 
 import java.util.Optional;
 

@@ -1,10 +1,10 @@
 package unit.ast.ruleblock;
 
-import ast.ruleblock.BodyNode;
-import ast.ruleblock.IdentifierNode;
-import ast.ruleblock.IsNode;
-import ast.ruleblock.operators.MinNode;
-import ast.ruleblock.operators.ProdNode;
+import compiler.ast.ruleblock.BodyNode;
+import compiler.ast.ruleblock.IdentifierNode;
+import compiler.ast.ruleblock.IsNode;
+import compiler.ast.ruleblock.operators.MinNode;
+import compiler.ast.ruleblock.operators.ProdNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static utils.AstTestSupport.assertChildrenUnmodifiable;
+import static utils.supports.AstTestSupport.assertChildrenUnmodifiable;
 
 class BodyNodeTest {
 

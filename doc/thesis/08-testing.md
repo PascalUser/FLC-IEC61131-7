@@ -115,8 +115,8 @@ Los tests de integración parsean un fragmento FCL completo y verifican, lexema 
 ## Tests de SymbolTable y builders
 
 ```bash
-./gradlew test --tests unit.utils.SymbolTableTest
-./gradlew test --tests unit.utils.builders.*
+./gradlew test --tests unit.repository.SymbolTableTest
+./gradlew test --tests unit.repository.builders.*
 ```
 
 | Test                    | Qué verifica                                                                 |
@@ -156,7 +156,7 @@ Los tests de integración parsean un fragmento FCL completo y verifican, lexema 
 ## Tests de utils (SymbolTable, builders, diagnósticos)
 
 ```bash
-./gradlew test --tests unit.utils.*
+./gradlew test --tests unit.repository.*
 ```
 
 | Test                     | Qué verifica                                                                 |

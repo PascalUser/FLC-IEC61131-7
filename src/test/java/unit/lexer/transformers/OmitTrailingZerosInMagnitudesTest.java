@@ -1,7 +1,7 @@
 package unit.lexer.transformers;
 
-import lexer.transformers.OmitTrailingZerosInMagnitudes;
-import lexer.transformers.Transformer;
+import compiler.lexer.transformers.OmitTrailingZerosInMagnitudes;
+import compiler.lexer.transformers.Transformer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

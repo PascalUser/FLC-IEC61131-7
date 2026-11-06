@@ -1,0 +1,43 @@
+package compiler.lexer.semantics;
+
+import compiler.lexer.Lexer;
+import compiler.lexer.semantics.utils.ReservedWords;
+import compiler.repository.builders.Director;
+import compiler.repository.builders.LexemeInfoBuilder;
+import compiler.repository.enums.Subtype;
+
+/**
+ * Semantic analyzer for identifiers and reserved words.
+ * <p>
+ * Checks if the lexeme is a reserved keyword. If not, treats it as an
+ * identifier and ensures it exists in the symbol table.
+ * </p>
+ *
+ * @author Matias Ortiz
+ * @author Victoriano Etcheverría
+ * @version 1.0
+ * @since 1.0
+ */
+public final class Identifiers implements SemanticAnalyzer {
+    /** {@inheritDoc} */
+    @Override
+    public Result analyze(LexicalContext ctx) {
+        String lexeme = ctx.preprocessedLexeme;
+        Integer tokenNumber = ReservedWords.isReserved(lexeme);
+        if (tokenNumber != null) {
+            if (!tokenNumber.equals(Lexer.BOOLEAN_LITERAL)){
+                return new Result(null, tokenNumber);
+            }
+            LexemeInfoBuilder builder = new LexemeInfoBuilder();
+            Director.makeLiteral(builder);
+            ctx.symbolTable.putIfAbsent(lexeme, builder
+                    .subtype(Subtype.BOOL)
+                    .initialValue(Boolean.valueOf(lexeme))
+                    .build()
+            );
+            return new Result(lexeme, Lexer.BOOLEAN_LITERAL);
+        }
+        ctx.symbolTable.putIfAbsent(lexeme, new LexemeInfoBuilder().build());
+        return new Result(lexeme, Lexer.IDENTIFIER);
+    }
+}

@@ -2,8 +2,8 @@ package integration.lexer.parser.symboltable;
 
 import org.junit.jupiter.api.Test;
 import utils.Block;
-import utils.ParserTestSupport;
-import utils.SourceCode;
+import utils.supports.ParserTestSupport;
+import utils.builders.SourceCode;
 
 /**
  * Error cases that apply to any kind of declaration (duplicates, undeclared types).
