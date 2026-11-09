@@ -4,6 +4,7 @@ import compiler.generator.ControllerModel;
 import compiler.generator.CppWriter;
 import compiler.generator.Variable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -64,16 +65,22 @@ public final class MinMaxMethod extends EvaluationMethod {
         out.write("\n");
     }
 
-    private void compileRow(final CppWriter out, final ControllerModel model, final boolean isFirst,
-                            final int row, final int outputIndex, final int setNumber) {
+    private void compileRow(
+            final CppWriter out,
+            final ControllerModel model,
+            final boolean isFirst,
+            final int row,
+            final int outputIndex,
+            final int setNumber
+    ) {
         String membership = model.outputs().get(outputIndex).name() + "MembershipValues" + "[" + setNumber + "]";
         out.write("\t");
         if (isFirst) {
-            out.write(membership + " = min(");
+            out.write(membership + " = ");
             writeMinimumOfInputs(out, model, row);
             out.write("; \n");
         } else {
-            out.write("aux = min(");
+            out.write("aux = ");
             writeMinimumOfInputs(out, model, row);
             out.write("; \n");
             out.write("\tif (" + membership + " < aux) \n");
@@ -83,24 +90,27 @@ public final class MinMaxMethod extends EvaluationMethod {
 
     /** Writes the arguments of the nested {@code min(...)} over every input, with its closing parentheses. */
     private void writeMinimumOfInputs(final CppWriter out, final ControllerModel model, final int row) {
-        List<Variable> inputs = model.inputs();
-        int varsLeft = inputs.size();
-        int minOpened = 1;
-        for (int input = 0; input < inputs.size(); input++) {
-            out.write(inputs.get(input).name() + "Fuzz[" + set(row, model.inputColumn(input)) + "]");
-            if (input != inputs.size() - 1) {
-                if (varsLeft > 2) {
-                    out.write(", min(");
-                    varsLeft--;
-                    minOpened++;
-                } else {
-                    out.write(", ");
-                }
+        List<String> degrees = new ArrayList<>();
+        for (int input = 0; input < model.inputs().size(); input++) {
+            int set = set(row, model.inputColumn(input));
+            if (set != UNUSED) {
+                degrees.add(model.inputs().get(input).name() + "Fuzz[" + set + "]");
             }
         }
-        for (int i = 0; i < minOpened; i++) {
-            out.write(")");
+        if (degrees.isEmpty()) {
+            throw new IllegalStateException("Rule " + row + " does not mention any input");
         }
+        writeNestedMin(out, degrees, 0);
+    }
+
+    private static void writeNestedMin(final CppWriter out, final List<String> degrees, final int from) {
+        if (from == degrees.size() - 1) {
+            out.write(degrees.get(from));
+            return;
+        }
+        out.write("min(" + degrees.get(from) + ", ");
+        writeNestedMin(out, degrees, from + 1);
+        out.write(")");
     }
 
     /** {@inheritDoc} */

@@ -2,6 +2,7 @@ package integration.lexer.parser.lowers;
 
 import compiler.generator.ControllerModel;
 import compiler.generator.Variable;
+import compiler.generator.evaluation.EvaluationMethod;
 import compiler.generator.fuzzysets.FuzzySet;
 import compiler.generator.fuzzysets.SShapeFuzzySet;
 import compiler.generator.fuzzysets.SingletonFuzzySet;
@@ -172,7 +173,7 @@ public class ControllerLowerIT extends ParserTestSupport {
             String rules =
                     "RULEBLOCK r AND : MIN; ACCU : MAX;\n" +
                             "RULE 1 : IF b IS hi AND a IS lo THEN y IS on;\n" +
-                            "END_RULEBLOCK";
+                    "END_RULEBLOCK";
             String source = baseProgram()
                     .body(FUZZIFY_A)
                     .body(FUZZIFY_B)
@@ -187,16 +188,51 @@ public class ControllerLowerIT extends ParserTestSupport {
         }
 
         @Test
+        void Rule_that_does_not_mention_an_input_leaves_it_unused() throws Exception {
+            String sourceCode = baseProgram()
+                    .body(FUZZIFY_A)
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(RULES.replace("a IS lo AND b IS lo", "a IS lo"))
+                    .body(OPTION)
+                    .build();
+
+            ControllerModel model = lowerAndGet(sourceCode);
+
+            assertRow(model, 0, 0, EvaluationMethod.UNUSED, 0);
+        }
+
+        @Test
+        void Rule_may_leave_an_output_unused() throws Exception {
+            String sourceCode = SourceCode.functionBlock()
+                    .var(Block.VAR_INPUT, "a : USINT")
+                    .var(Block.VAR_INPUT, "b : USINT")
+                    .var(Block.VAR_OUTPUT, "y : USINT")
+                    .var(Block.VAR_OUTPUT, "z : USINT")
+                    .body(FUZZIFY_A)
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(DEFUZZIFY.replace("DEFUZZIFY y", "DEFUZZIFY z"))
+                    .body(RULES)
+                    .body(OPTION)
+                    .build();
+
+            ControllerModel model = lowerAndGet(sourceCode);
+
+            assertEquals(EvaluationMethod.UNUSED, model.evaluationMethod().set(0, model.outputColumn(1)));
+        }
+
+        @Test
         void Three_point_term_with_a_peak_is_a_triangle() throws Exception {
             String fuzzifyA =
                     "FUZZIFY a " +
                             "TERM mid := (0,0) (50,1) (100,0); " +
                             "TERM hi := (0,0) (100,1); " +
-                            "END_FUZZIFY";
+                    "END_FUZZIFY";
             String rules =
                     "RULEBLOCK r AND : MIN; ACCU : MAX;\n" +
                             "RULE 1 : IF a IS mid AND b IS lo THEN y IS on;\n" +
-                            "END_RULEBLOCK";
+                    "END_RULEBLOCK";
             String source = baseProgram()
                     .body(fuzzifyA)
                     .body(FUZZIFY_B)
@@ -494,20 +530,6 @@ public class ControllerLowerIT extends ParserTestSupport {
         }
 
         @Test
-        void Rule_that_does_not_use_every_input() throws Exception {
-            String errMssg = "B is not used in rule 1 of R";
-            String sourceCode = baseProgram()
-                    .body(FUZZIFY_A)
-                    .body(FUZZIFY_B)
-                    .body(DEFUZZIFY)
-                    .body(RULES.replace("a IS lo AND b IS lo", "a IS lo"))
-                    .body(OPTION)
-                    .build();
-
-            assertRejectedWith(UnsupportedFeature.class, errMssg, sourceCode);
-        }
-
-        @Test
         void Weighted_rule() throws Exception {
             String errMssg = "weighting factor WITH .5";
             String sourceCode = baseProgram()
@@ -549,7 +571,7 @@ public class ControllerLowerIT extends ParserTestSupport {
 
             int numberOfProblemsFound = (messagesOf(UnsupportedFeature.class).size());
             String errMssg = messagesOf(UnsupportedFeature.class).toString();
-            assertEquals(3, numberOfProblemsFound, errMssg);
+            assertEquals(2, numberOfProblemsFound, errMssg);
         }
 
         @Test

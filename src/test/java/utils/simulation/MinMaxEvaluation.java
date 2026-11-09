@@ -60,11 +60,16 @@ final class MinMaxEvaluation {
         for (int row = 0; row < rules.rows(); row++) {
             double activation = Double.POSITIVE_INFINITY;
             for (int input = 0; input < inputs; input++) {
-                activation = Math.min(activation, inputDegrees[input][rules.set(row, model.inputColumn(input))]);
+                int term = rules.set(row, model.inputColumn(input));
+                if (term != EvaluationMethod.UNUSED) {
+                    activation = Math.min(activation, inputDegrees[input][term]);
+                }
             }
             for (int output = 0; output < outputDegrees.length; output++) {
                 int term = rules.set(row, model.outputColumn(output));
-                outputDegrees[output][term] = Math.max(outputDegrees[output][term], activation);
+                if (term != EvaluationMethod.UNUSED) {
+                    outputDegrees[output][term] = Math.max(outputDegrees[output][term], activation);
+                }
             }
         }
         return outputDegrees;

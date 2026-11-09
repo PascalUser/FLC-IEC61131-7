@@ -4,6 +4,7 @@ import compiler.ast.AbstractAstNode;
 import compiler.ast.ruleblock.*;
 import compiler.ast.ruleblock.operators.Operator;
 import compiler.ast.ruleblock.operators.OperatorNode;
+import compiler.generator.evaluation.EvaluationMethod;
 import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.RuleLoweringContext;
 import compiler.repository.LexemeInfo;
@@ -23,7 +24,6 @@ import java.util.*;
  * @since 1.0-SNAPSHOT
  */
 public final class RuleLower implements Lower<int[]> {
-    private final static int UNUSED = -1;
     private static final List<Operator> INVALID_OPERATORS = Arrays.asList(
             Operator.MAX,
             Operator.ASUM,
@@ -56,7 +56,7 @@ public final class RuleLower implements Lower<int[]> {
         List<String> outputKeys = ctx.outVarKeys();
 
         int[] row = new int[inputKeys.size() + outputKeys.size()];
-        Arrays.fill(row, UNUSED);
+        Arrays.fill(row, EvaluationMethod.UNUSED);
 
         Optional<List<IsNode>> conditionsObj = parseConditions(ifNode.condition().condition());
         if (!conditionsObj.isPresent()) {
@@ -77,22 +77,6 @@ public final class RuleLower implements Lower<int[]> {
                 return Optional.empty();
             }
             if (couldntPlaceInRow(row, (IsNode) conclusion, outputKeys, inputKeys.size())) {
-                return Optional.empty();
-            }
-        }
-        for (int i = 0; i < inputKeys.size(); i++) {
-            if (row[i] == UNUSED) {
-                String varName =  ctx.keys.shortName(inputKeys.get(i));
-                String mssg = ERR_USELESS_IO(ctx.ruleblockName, ctx.ruleNumber, varName);
-                ctx.diagnosticsHandler.add(new UnsupportedFeature(mssg));
-                return Optional.empty();
-            }
-        }
-        for (int i = 0; i < outputKeys.size(); i++) {
-            if (row[inputKeys.size() + i] == UNUSED) {
-                String varName = ctx.keys.shortName(outputKeys.get(i));
-                String mssg = ERR_USELESS_IO(ctx.ruleblockName, ctx.ruleNumber, varName);
-                ctx.diagnosticsHandler.add(new UnsupportedFeature(mssg));
                 return Optional.empty();
             }
         }
@@ -183,7 +167,7 @@ public final class RuleLower implements Lower<int[]> {
             ctx.diagnosticsHandler.add(new UndeclaredReference(mssg));
             return true;
         }
-        if (row[offset + positionOfVarKeyInsideDeclarations] != UNUSED) {
+        if (row[offset + positionOfVarKeyInsideDeclarations] != EvaluationMethod.UNUSED) {
             // TODO: check if the standard admits variable repetition. If it does, this should be a parser check
             String mssg = ERR_VARIABLE_REP(ctx.ruleblockName, ctx.ruleNumber, is.variable().name());
             ctx.diagnosticsHandler.add(new UndeclaredReference(mssg));
@@ -240,9 +224,5 @@ public final class RuleLower implements Lower<int[]> {
 
     private static String ERR_UNSUPPORTED_CONC(String ruleblockName, String ruleNumber) {
         return "rule " + ruleNumber + " of " + ruleblockName + " has a conclusion that is not an IS";
-    }
-
-    private static String ERR_USELESS_IO(String ruleblockName, String ruleNumber, String ioVarName) {
-        return ioVarName + " is not used in rule " + ruleNumber + " of " + ruleblockName;
     }
 }

@@ -22,6 +22,9 @@ import java.util.List;
  * @since 1.0
  */
 public abstract class EvaluationMethod {
+    /** Cell value of a variable that a rule does not mention. */
+    public static final int UNUSED = -1;
+
     private final List<int[]> rules;
 
     /**
