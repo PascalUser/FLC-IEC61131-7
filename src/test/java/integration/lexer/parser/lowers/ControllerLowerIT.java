@@ -313,6 +313,23 @@ public class ControllerLowerIT extends ParserTestSupport {
 
             assertEquals(4, lowerAndGet(source).converterSize());
         }
+
+        @Test
+        void Constant_used_as_a_point_is_replaced_by_its_value() throws Exception {
+            String source = baseProgram()
+                    .body("VAR CONSTANT top : USINT := 100; END_VAR")
+                    .body(FUZZIFY_A.replace("(100,0)", "(top,0)").replace("(100,1)", "(top,1)"))
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(RULES)
+                    .body(OPTION)
+                    .build();
+
+            ControllerModel model = lowerAndGet(source);
+
+            assertSets(model.inputs().get(0), ZShapeFuzzySet.class, SShapeFuzzySet.class);
+            assertEquals(0.5, model.inputs().get(0).sets().get(0).degree(50), 1e-12);
+        }
     }
 
     @Nested
@@ -334,7 +351,9 @@ public class ControllerLowerIT extends ParserTestSupport {
 
         @Test
         void Real_variable() throws Exception {
-            String errMssg = "only unsigned integer types or integer subranges are supported but variable A is REAL";
+            String errMssg =
+                    "only unsigned integer types or INT/SINT or integer subranges are supported " +
+                    "but variable A is REAL";
             String sourceCode = SourceCode.functionBlock()
                     .var(Block.VAR_INPUT, "a : REAL")
                     .var(Block.VAR_INPUT, "b : USINT")
@@ -534,23 +553,10 @@ public class ControllerLowerIT extends ParserTestSupport {
         }
 
         @Test
-        void Signed_variable() throws Exception {
-            String errMssg = "only unsigned integer types or integer subranges are supported but variable A is INT";
-            String sourceCode = variables("INT", "USINT", "USINT")
-                    .body(FUZZIFY_A)
-                    .body(FUZZIFY_B)
-                    .body(DEFUZZIFY)
-                    .body(RULES)
-                    .build();
-
-            assertRejectedWith(UnsupportedFeature.class, errMssg, sourceCode);
-        }
-
-        @Test
         void Subrange_wider_than_the_supported_width() throws Exception {
             String errMssg =
                     "the bit width is taken from the widest variable (A needs 33 bits), " +
-                    "but at most 30 bits are supported: declare PRAGMA bit_width or use a narrower type or subrange";
+                            "but at most 30 bits are supported: declare PRAGMA bit_width or use a narrower type or subrange";
             String sourceCode = variables("ULINT (0..4294967296)", "USINT", "USINT")
                     .body(FUZZIFY_A)
                     .body(FUZZIFY_B)
@@ -572,6 +578,21 @@ public class ControllerLowerIT extends ParserTestSupport {
                     .build();
 
             assertRejectedWith(UnsupportedFeature.class, errMssg, sourceCode);
+        }
+
+        @Test
+        void Internal_variable() throws Exception {
+            String errMssg = "internal variable COUNTER";
+            String source = baseProgram()
+                    .var(Block.VAR, "counter : USINT")
+                    .body(FUZZIFY_A)
+                    .body(FUZZIFY_B)
+                    .body(DEFUZZIFY)
+                    .body(RULES)
+                    .body(OPTION)
+                    .build();
+
+            assertRejectedWith(UnsupportedFeature.class, errMssg, source);
         }
     }
 
@@ -596,7 +617,7 @@ public class ControllerLowerIT extends ParserTestSupport {
         void Variable_used_in_a_rule() throws Exception {
             String errMssg =
                     "undeclared conditions must have inputs variables and conclusion outputs, " +
-                    "but rule 2 of R uses C";
+                            "but rule 2 of R uses C";
             String sourceCode = baseProgram()
                     .body(FUZZIFY_A)
                     .body(FUZZIFY_B)

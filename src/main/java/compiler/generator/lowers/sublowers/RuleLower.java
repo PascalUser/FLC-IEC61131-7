@@ -1,10 +1,10 @@
-package compiler.generator.lowers;
+package compiler.generator.lowers.sublowers;
 
 import compiler.ast.AbstractAstNode;
 import compiler.ast.ruleblock.*;
 import compiler.ast.ruleblock.operators.Operator;
 import compiler.ast.ruleblock.operators.OperatorNode;
-import compiler.generator.Variable;
+import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.RuleLoweringContext;
 import compiler.repository.LexemeInfo;
 import compiler.repository.diagnostics.UndeclaredReference;
@@ -52,8 +52,8 @@ public final class RuleLower implements Lower<int[]> {
         }
         IfNode ifNode = ifNodeObj.get();
 
-        List<String> inputKeys = parseVariables(ctx.controller.inputs());
-        List<String> outputKeys = parseVariables(ctx.controller.outputs());
+        List<String> inputKeys = ctx.inVarKeys();
+        List<String> outputKeys = ctx.outVarKeys();
 
         int[] row = new int[inputKeys.size() + outputKeys.size()];
         Arrays.fill(row, UNUSED);
@@ -114,14 +114,6 @@ public final class RuleLower implements Lower<int[]> {
         }
     }
 
-    private List<String> parseVariables(List<Variable> variables) {
-        List<String> result = new ArrayList<>();
-        for (Variable variable : variables) {
-            result.add(ctx.keys.variable(variable.name()));
-        }
-        return result;
-    }
-
     private Optional<List<IsNode>> parseConditions(final AbstractAstNode node) {
         if (node instanceof IsNode) {
             return Optional.of(Collections.singletonList((IsNode) node));
@@ -164,9 +156,15 @@ public final class RuleLower implements Lower<int[]> {
     private boolean couldntPlaceInRow(final int[] row, final IsNode is, final List<String> ioVars, final int offset) {
         Map<String, List<String>> varWithTermsTable = new LinkedHashMap<>();
         for (String ioVar : ioVars) {
-            boolean isInput =  ctx.symbolTable.get(ioVar).source == Source.IN;
+            LexemeInfo ioVarInfo = ctx.symbolTable.get(ioVar);
+            Objects.requireNonNull(ioVarInfo);
+            boolean isInput =  ioVarInfo.source == Source.IN;
             String componentKey = (isInput) ? ctx.keys.fuzzifier(ioVar) : ctx.keys.defuzzifier(ioVar);
             LexemeInfo componentInfo = ctx.symbolTable.get(componentKey);
+            // This can happen after the variable lower reports there's no component associated to the id
+            if (componentInfo == null) {
+                return true;
+            }
             varWithTermsTable.put(ioVar, componentInfo.parameters);
         }
         String ioVarFromIsNode = ctx.keys.variable(is.variable().name());

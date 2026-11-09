@@ -18,7 +18,7 @@ import java.util.Map;
  * @version 1.0-SNAPSHOT
  * @since 1.0-SNAPSHOT
  */
-public class ControllerModelState {
+public final class ControllerModelState {
     /** Bit-width of every controller value. */
     public int bitWidth;
     /** Input variables in signature order. */

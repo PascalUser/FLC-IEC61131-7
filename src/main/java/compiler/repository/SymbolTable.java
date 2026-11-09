@@ -1,8 +1,7 @@
 package compiler.repository;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Symbol table for the IEC 61131-7 compiler.
@@ -18,11 +17,22 @@ import java.util.HashMap;
  * @since 1.0
  */
 public final class SymbolTable {
-    private final Map<String, LexemeInfo> table;
+    public static class Entry {
+        public final int momentOfInsertion;
+        public final LexemeInfo symbol;
+
+        Entry(int momentOfInsertion, LexemeInfo symbolInfo) {
+            this.momentOfInsertion = momentOfInsertion;
+            this.symbol = symbolInfo;
+        }
+    }
+    private final Map<String, Entry> table;
+    private int serial;
 
     /** Creates an empty symbol table. */
     public SymbolTable() {
         table = new HashMap<>();
+        serial = 0;
     }
 
     /**
@@ -32,7 +42,8 @@ public final class SymbolTable {
      * @return the stored metadata, or {@code null} if the name is absent
      */
     public LexemeInfo get(String lexeme) {
-        return table.get(lexeme);
+        Entry entry = table.get(lexeme);
+        return (entry == null) ? null : entry.symbol;
     }
 
     /**
@@ -43,7 +54,14 @@ public final class SymbolTable {
      * @return the previous metadata, or {@code null} if none was present
      */
     public LexemeInfo put(String lexeme, LexemeInfo info) {
-        return table.put(lexeme, info);
+        Entry oldEntry = table.get(lexeme);
+        if (oldEntry == null) {
+            table.put(lexeme, new Entry(++serial, info));
+            return null;
+        } else {
+            table.put(lexeme, new Entry(oldEntry.momentOfInsertion, info));
+            return oldEntry.symbol;
+        }
     }
 
     /**
@@ -54,7 +72,12 @@ public final class SymbolTable {
      * @return the existing metadata, or {@code null} if none was present
      */
     public LexemeInfo putIfAbsent(String lexeme, LexemeInfo info) {
-        return table.putIfAbsent(lexeme, info);
+        Entry currentEntry = table.get(lexeme);
+        if (currentEntry == null) {
+            table.put(lexeme, new Entry(++serial, info));
+            return null;
+        }
+        return currentEntry.symbol;
     }
 
     /**
@@ -62,8 +85,15 @@ public final class SymbolTable {
      *
      * @return an iterator over the entries of the table
      */
-    public Iterator<Map.Entry<String, LexemeInfo>> iterator() {
+    public Iterator<Map.Entry<String, Entry>> iterator() {
         return table.entrySet().iterator();
+    }
+
+    public List<String> orderedKeysBasedOnInsertion() {
+        return table.entrySet().stream()
+                .sorted(Comparator.comparingInt(e -> e.getValue().momentOfInsertion))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     /**

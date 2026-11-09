@@ -1,6 +1,7 @@
-package compiler.generator.lowers;
+package compiler.generator.lowers.sublowers;
 
 import compiler.generator.fuzzysets.FuzzySet;
+import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.TermLoweringContext;
 import compiler.generator.lowers.facades.TermSetFactory;
 import compiler.generator.lowers.utils.IntegerDomain;
@@ -10,6 +11,7 @@ import compiler.repository.diagnostics.UnsupportedFeature;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static compiler.repository.enums.Subtype.COMPLEX;
@@ -42,15 +44,17 @@ public final class TermLower implements Lower<FuzzySet> {
      */
     public Optional<FuzzySet> adapt() {
         LexemeInfo termInfo = ctx.symbolTable.get(ctx.termKey);
+        Objects.requireNonNull(termInfo);
+
         String varName = ctx.keys.shortName(ctx.varKey);
         String termName = ctx.keys.shortName(ctx.termKey);
 
-        if (termInfo.subtype == VARIABLE) {
-            ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_VARIABLE(varName, termName)));
-            return Optional.empty();
-        }
         if (termInfo.subtype == COMPLEX) {
             ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_FUNCTION(varName, termName)));
+            return Optional.empty();
+        }
+        if (termInfo.subtype == VARIABLE) {
+            ctx.diagnosticsHandler.add(new UnsupportedFeature(ERR_UNSUPPORTED_VARIABLE(varName, termName)));
             return Optional.empty();
         }
         List<String> membershipFunctionXValues = termInfo.parameters;

@@ -41,11 +41,28 @@ class IntegerDomainResolverTest {
         assertEquals(8, domain(simple(Subtype.USINT)).bits());
         assertEquals(16, domain(simple(Subtype.UINT)).bits());
         assertFalse(domain(simple(Subtype.USINT)).isShifted());
+        assertFalse(domain(simple(Subtype.UINT )).isShifted());
     }
 
     @Test
-    void Resolve_WithSignedOrRealTypes_ReturnsEmptyOptional() {
-        for (Subtype s : new Subtype[]{Subtype.INT, Subtype.SINT, Subtype.REAL, Subtype.BOOL}) {
+    void Resolve_WithSignedSimpleTypes_ReturnsDomainWithBaseWidthAndNoOffset() {
+        assertEquals(8,  domain(simple(Subtype.SINT)).bits());
+        assertEquals(16, domain(simple(Subtype.INT) ).bits());
+        assertEquals(32, domain(simple(Subtype.DINT)).bits());
+        assertEquals(64, domain(simple(Subtype.LINT)).bits());
+        assertTrue(domain(simple(Subtype.SINT)).isShifted());
+        assertTrue(domain(simple(Subtype.INT )).isShifted());
+        assertTrue(domain(simple(Subtype.DINT)).isShifted());
+        assertTrue(domain(simple(Subtype.LINT)).isShifted());
+        assertEquals(BigInteger.valueOf(-(1L << 7)),  domain(simple(Subtype.SINT)).offset());
+        assertEquals(BigInteger.valueOf(-(1L << 15)), domain(simple(Subtype.INT )).offset());
+        assertEquals(BigInteger.valueOf(-(1L << 31)), domain(simple(Subtype.DINT)).offset());
+        assertEquals(BigInteger.valueOf(-(1L << 63)), domain(simple(Subtype.LINT)).offset());
+    }
+
+    @Test
+    void Resolve_WithBooleanOrRealTypes_ReturnsEmptyOptional() {
+        for (Subtype s : new Subtype[]{Subtype.REAL, Subtype.BOOL}) {
             assertFalse(IntegerDomainResolver.resolve(simple(s), new SymbolTable()).isPresent(), s.name());
         }
     }

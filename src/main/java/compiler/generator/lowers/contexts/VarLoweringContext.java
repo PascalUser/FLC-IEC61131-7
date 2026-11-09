@@ -1,7 +1,7 @@
 package compiler.generator.lowers.contexts;
 
 import compiler.ast.AbstractSyntaxTree;
-import compiler.generator.lowers.BitWidthLower;
+import compiler.generator.lowers.sublowers.BitWidthLower;
 import compiler.generator.lowers.utils.SymbolKeys;
 import compiler.repository.DiagnosticsHandler;
 import compiler.repository.SymbolTable;

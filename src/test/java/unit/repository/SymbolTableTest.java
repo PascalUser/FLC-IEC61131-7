@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @Tag("utils")
 class SymbolTableTest {
-
     /**
      * Provides various {@link LexemeInfo} instances covering different type/subtype/use/source combinations
      * for parameterized testing of {@code put()} and {@code get()}.

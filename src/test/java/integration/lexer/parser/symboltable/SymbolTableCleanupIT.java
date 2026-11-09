@@ -1,6 +1,5 @@
 package integration.lexer.parser.symboltable;
 
-import compiler.repository.LexemeInfo;
 import compiler.repository.SymbolTable;
 import compiler.repository.enums.Use;
 import org.junit.jupiter.api.Test;
@@ -33,10 +32,10 @@ public class SymbolTableCleanupIT extends ParserTestSupport {
             "END_FUNCTION_BLOCK");
 
     private static void assertNoUnknownUse(SymbolTable table) {
-        Iterator<Map.Entry<String, LexemeInfo>> it = table.iterator();
+        Iterator<Map.Entry<String, SymbolTable.Entry>> it = table.iterator();
         while (it.hasNext()) {
-            Map.Entry<String, LexemeInfo> entry = it.next();
-            assertNotEquals(Use.UNKNOWN, entry.getValue().use, "left over: " + entry.getKey());
+            Map.Entry<String, SymbolTable.Entry> entry = it.next();
+            assertNotEquals(Use.UNKNOWN, entry.getValue().symbol.use, "left over: " + entry.getKey());
         }
     }
 

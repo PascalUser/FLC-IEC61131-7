@@ -2,16 +2,20 @@ package compiler.generator.lowers;
 
 import compiler.ast.AbstractSyntaxTree;
 import compiler.generator.ControllerModel;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import compiler.generator.Variable;
+import compiler.generator.defuzzification.CentroidDefuzzifier;
+import compiler.generator.defuzzification.Defuzzifier;
+import compiler.generator.evaluation.EvaluationMethod;
+import compiler.generator.lowers.sublowers.*;
 import compiler.generator.lowers.builders.ControllerModelBuilder;
-import compiler.generator.lowers.constructors.FuzzyVariablesConstructor;
-import compiler.generator.lowers.constructors.RulesConstructor;
-import compiler.generator.lowers.utils.ControllerModelState;
 import compiler.generator.lowers.contexts.LoweringContext;
 import compiler.generator.lowers.utils.SymbolKeys;
 import compiler.repository.DiagnosticsHandler;
 import compiler.repository.SymbolTable;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -65,10 +69,6 @@ public final class ControllerLower implements Lower<ControllerModel> {
     /**
      * Creates the lowering of a function block.
      */
-    @SuppressFBWarnings(
-            value = "EI_EXPOSE_REP2",
-            justification = "The symbol table is shared by every phase by design; the lowering only reads it"
-    )
     private ControllerLower(final LoweringContext initContext) {
         this.ctx = initContext;
     }
@@ -82,33 +82,65 @@ public final class ControllerLower implements Lower<ControllerModel> {
      * @return the model, or empty if the program has something the generator does not support (reported)
      */
     public Optional<ControllerModel> adapt() {
+        boolean validModel = true;
         ControllerModelBuilder controller = new ControllerModelBuilder();
 
+        // 1. Checks the controller bit width
         BitWidthLower bitWidthLower = new BitWidthLower(ctx);
         Optional<Integer> intObj = bitWidthLower.adapt();
         if (!intObj.isPresent()) {
-            return Optional.empty();
-        }
-        controller.bitWidth(intObj.get());
-
-        FuzzyVariablesConstructor fuzzyVariablesConstructor = new FuzzyVariablesConstructor(ctx, bitWidthLower);
-        if (!fuzzyVariablesConstructor.construct(controller)) {
-            return Optional.empty();
+            validModel = false;
+        } else {
+            controller.bitWidth(intObj.get());
         }
 
-        RulesConstructor rulesConstructor = new RulesConstructor(ctx);
-        if (!rulesConstructor.construct(controller)) {
-            return Optional.empty();
+        // 2. Checks the input variables
+        InputsLower inputsLower = new InputsLower(ctx, bitWidthLower);
+        Optional<List<Variable>> inputVarsObj = inputsLower.adapt();
+        if (!inputVarsObj.isPresent()) {
+            validModel = false;
+        } else {
+            controller.inputs(inputVarsObj.get());
         }
 
-        return Optional.of(new ControllerModel(
-                new ControllerModelState(
-                        controller.bitWidth(),
-                        controller.inputs(),
-                        controller.outputs(),
-                        controller.evaluationMethod(),
-                        controller.defuzzifiers()
-                )
-        ));
+        // 3. Checks the output variables
+        OutputsLower outputsLower = new OutputsLower(ctx, bitWidthLower);
+        Optional<List<Variable>> outputVarsObj = outputsLower.adapt();
+        if (!outputVarsObj.isPresent()) {
+            validModel = false;
+        } else {
+            List<Variable> outputVars = outputVarsObj.get();
+            controller.outputs(outputVars);
+
+            // If they are valid, the defuzzifiers map for the controller model is built
+            Map<String, Defuzzifier> defuzzifiers = new LinkedHashMap<>();
+            for (Variable output : outputVars) {
+                defuzzifiers.put(output.name(), new CentroidDefuzzifier());
+            }
+            controller.defuzzifiers(defuzzifiers);
+        }
+
+        // 4. Checks the internal variables
+        InternalVariablesLower varsLower = new InternalVariablesLower(ctx);
+        Optional<List<String>> varsObj = varsLower.adapt();
+        if (!varsObj.isPresent()) {
+            validModel = false;
+        }
+        // The controller doesn't use local variables, so there's nothing to build
+
+        // 5. Checks the rules
+        RuleBlockLower ruleBlockLower = new RuleBlockLower(ctx);
+        Optional<EvaluationMethod> evalMethodObj = ruleBlockLower.adapt();
+        if (!evalMethodObj.isPresent()) {
+            validModel = false;
+        } else {
+            controller.evaluationMethod(evalMethodObj.get());
+        }
+
+        // 6. If everything is OK, the model is built
+        if (validModel) {
+            return Optional.of(controller.build());
+        }
+        return Optional.empty();
     }
 }

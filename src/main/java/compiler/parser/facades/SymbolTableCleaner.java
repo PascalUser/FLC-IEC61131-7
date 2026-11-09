@@ -1,6 +1,5 @@
 package compiler.parser.facades;
 
-import compiler.repository.LexemeInfo;
 import compiler.repository.SymbolTable;
 import compiler.repository.enums.Use;
 
@@ -27,10 +26,10 @@ public final class SymbolTableCleaner {
      * @param symbolTable the symbol table to clean
      */
     public static void clean(final SymbolTable symbolTable) {
-        Iterator<Map.Entry<String, LexemeInfo>> it = symbolTable.iterator();
+        Iterator<Map.Entry<String, SymbolTable.Entry>> it = symbolTable.iterator();
         while (it.hasNext()) {
-            Map.Entry<String, LexemeInfo> entry = it.next();
-            if (entry.getValue().use == Use.UNKNOWN) {
+            Map.Entry<String, SymbolTable.Entry> entry = it.next();
+            if (entry.getValue().symbol.use == Use.UNKNOWN) {
                 it.remove();
             }
         }

@@ -198,8 +198,6 @@
     var_constant_spec
 
 %type <List<String>>
-    opt_fb_io_var_declarations_list
-    fb_io_var_declarations
     identifier_list
     opt_range
     range
@@ -331,7 +329,7 @@ function_block_declaration:
     END_FUNCTION_BLOCK
     {
         SingleDeclaration functionBlock = new SingleDeclaration(this.symbolTable);
-        Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata($3));
+        Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata());
         functionBlock.identifier(programName).publish();
 
         this.ast = new AbstractSyntaxTree(programName, $5);
@@ -347,14 +345,7 @@ function_block_name:
 
 opt_fb_io_var_declarations_list:
     /* empty */
-    {
-        $$ = new ArrayList<>();
-    }
     | opt_fb_io_var_declarations_list fb_io_var_declarations
-    {
-        $1.addAll($2);
-        $$ = $1;
-    }
 ;
 
 /**
@@ -394,7 +385,6 @@ fb_io_var_declarations:
     io_var_decl var_retain_spec var_init_decl_list ';' END_VAR
     {
         $3.source($1).use(Use.VARIABLE).scope(programName).publish();
-        $$ = $3.keys();
     }
 ;
 
@@ -649,9 +639,21 @@ linguistic_term:
 linguistic_term_value:
     IDENTIFIER ';'
     {
-        LexemeInfoBuilder customTermBuilder = new LexemeInfoBuilder();
-        Director.makeWithMetadata(customTermBuilder, new CustomMetadata(this.symbolTable, $1));
-        $$ = customTermBuilder;
+        List<String> point = new ArrayList<>();
+        String key = IdentifierParser.parse($1, programName).mangled();
+        LexemeInfo metadata = this.symbolTable.get(key);
+        if (metadata == null) {
+            // TODO: undeclared var
+            point.add($1);
+        } else if (metadata.use == Use.CONSTANT) {
+            point.add(((Initialization) metadata.initialValue).variableValue());
+        } else {
+            point.add($1);
+        }
+        point.add("1");
+        LexemeInfoBuilder termBuilder = new LexemeInfoBuilder();
+        Director.makeWithMetadata(termBuilder, new TermMetadata(point));
+        $$ = termBuilder;
     }
     | membership_function ';'
     {
@@ -720,7 +722,16 @@ point:
     | '(' IDENTIFIER ',' numeric_constant ')'
     {
         List<String> point = new ArrayList<>();
-        point.add($2);
+        String key = IdentifierParser.parse($2, programName).mangled();
+        LexemeInfo metadata = this.symbolTable.get(key);
+        if (metadata == null) {
+            // TODO: undeclared var
+            point.add($2);
+        } else if (metadata.use == Use.CONSTANT) {
+            point.add(((Initialization) metadata.initialValue).variableValue());
+        } else {
+            point.add($2);
+        }
         point.add($4);
         $$ = point;
     }

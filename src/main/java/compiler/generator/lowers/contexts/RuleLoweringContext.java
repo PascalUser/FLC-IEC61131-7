@@ -3,7 +3,6 @@ package compiler.generator.lowers.contexts;
 import compiler.ast.AbstractAstNode;
 import compiler.ast.AbstractSyntaxTree;
 import compiler.generator.lowers.utils.SymbolKeys;
-import compiler.generator.lowers.builders.ControllerModelBuilder;
 import compiler.repository.DiagnosticsHandler;
 import compiler.repository.SymbolTable;
 
@@ -16,8 +15,6 @@ import compiler.repository.SymbolTable;
  * @since 1.0-SNAPSHOT
  */
 public final class RuleLoweringContext extends LoweringContext {
-    /** Builder that accumulates the controller model. */
-    public final ControllerModelBuilder controller;
     /** Name of the rule block that contains the rule. */
     public final String ruleblockName;
     /** Number of the rule inside its block. */
@@ -29,14 +26,12 @@ public final class RuleLoweringContext extends LoweringContext {
      * Creates a rule context from an existing context.
      *
      * @param initContext context to copy the shared state from
-     * @param controller builder that accumulates the controller model
      * @param ruleblockName name of the rule block that contains the rule
      * @param ruleNumber number of the rule inside its block
      * @param ruleNode syntax tree node of the rule
      */
     public RuleLoweringContext(
             LoweringContext initContext,
-            ControllerModelBuilder controller,
             String ruleblockName,
             String ruleNumber,
             AbstractAstNode ruleNode
@@ -46,7 +41,6 @@ public final class RuleLoweringContext extends LoweringContext {
                 initContext.diagnosticsHandler,
                 initContext.keys,
                 initContext.ast,
-                controller,
                 ruleblockName,
                 ruleNumber,
                 ruleNode
@@ -60,7 +54,6 @@ public final class RuleLoweringContext extends LoweringContext {
      * @param diagnosticsHandler collector of lowering diagnostics
      * @param keys mangled symbol keys of the function block
      * @param ast syntax tree of the program
-     * @param controller builder that accumulates the controller model
      * @param ruleblockName name of the rule block that contains the rule
      * @param ruleNumber number of the rule inside its block
      * @param ruleNode syntax tree node of the rule
@@ -70,13 +63,11 @@ public final class RuleLoweringContext extends LoweringContext {
             DiagnosticsHandler diagnosticsHandler,
             SymbolKeys keys,
             AbstractSyntaxTree ast,
-            ControllerModelBuilder controller,
             String ruleblockName,
             String ruleNumber,
             AbstractAstNode ruleNode
     ) {
         super(symbolTable, diagnosticsHandler, keys, ast);
-        this.controller = controller;
         this.ruleblockName = ruleblockName;
         this.ruleNumber = ruleNumber;
         this.ruleNode = ruleNode;

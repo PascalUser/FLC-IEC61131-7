@@ -1,6 +1,7 @@
-package compiler.generator.lowers;
+package compiler.generator.lowers.sublowers;
 
 import compiler.generator.ControllerModel;
+import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.LoweringContext;
 import compiler.generator.lowers.facades.IntegerDomainResolver;
 import compiler.generator.lowers.utils.IntegerDomain;
@@ -10,6 +11,8 @@ import compiler.repository.diagnostics.InvalidUse;
 import compiler.repository.diagnostics.UnsupportedFeature;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public final class BitWidthLower implements Lower<Integer> {
@@ -38,9 +41,13 @@ public final class BitWidthLower implements Lower<Integer> {
     }
 
     private static int fromVariables(LoweringContext ctx) {
+        List<String> ioVarKeys = new ArrayList<>(ctx.inVarKeys());
+        ioVarKeys.addAll(ctx.outVarKeys());
+
         int bitsNeeded = NOTHING_TO_INFER;
         String widest = null;
-        for (String key : ctx.ioVarKeys()) {
+
+        for (String key : ioVarKeys) {
             Optional<IntegerDomain> domain = IntegerDomainResolver.resolve(ctx.symbolTable.get(key), ctx.symbolTable);
             if (domain.isPresent() && domain.get().bits() > bitsNeeded) {
                 bitsNeeded = domain.get().bits();

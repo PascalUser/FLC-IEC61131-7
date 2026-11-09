@@ -3,9 +3,12 @@ package compiler.generator.lowers.contexts;
 import compiler.ast.AbstractSyntaxTree;
 import compiler.generator.lowers.utils.SymbolKeys;
 import compiler.repository.DiagnosticsHandler;
+import compiler.repository.LexemeInfo;
 import compiler.repository.SymbolTable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * State shared by the lowering stages: the symbol table produced by the parser, the symbol keys of
@@ -26,6 +29,10 @@ public class LoweringContext {
     /** Syntax tree of the program. */
     public final AbstractSyntaxTree ast;
 
+    public final List<String> inVars;
+    public final List<String> outVars;
+    public final List<String> localVars;
+
     /**
      * Creates a lowering context.
      *
@@ -44,11 +51,31 @@ public class LoweringContext {
         this.diagnosticsHandler = diagnosticsHandler;
         this.keys = keys;
         this.ast = ast;
+
+        this.inVars = new ArrayList<>();
+        this.outVars = new ArrayList<>();
+        this.localVars = new ArrayList<>();
+
+        List<String> orderedKeys = symbolTable.orderedKeysBasedOnInsertion();
+        for (String key : orderedKeys) {
+            LexemeInfo keyInfo = symbolTable.get(key);
+            switch (Objects.requireNonNull(keyInfo).source) {
+                case IN:
+                    inVars.add(key);
+                    break;
+                case OUT:
+                    outVars.add(key);
+                    break;
+                case INTERNAL:
+                    localVars.add(key);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
-    /* Utility function */
-    public List<String> ioVarKeys() {
-        String programKey = keys.functionBlock();
-        return symbolTable.get(programKey).parameters;
-    }
+    public List<String> inVarKeys() { return  inVars; }
+    public List<String> outVarKeys() { return outVars; }
+    public List<String> localVarKeys() { return localVars; }
 }

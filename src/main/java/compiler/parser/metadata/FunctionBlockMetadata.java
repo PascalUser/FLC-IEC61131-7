@@ -6,7 +6,6 @@ import compiler.repository.enums.Subtype;
 import compiler.repository.enums.Type;
 import compiler.repository.enums.Use;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,16 +23,6 @@ import java.util.List;
  * @since 1.0
  */
 public final class FunctionBlockMetadata implements LexemeInfoView {
-    private final List<String> interfaceVariables;
-
-    /**
-     * Creates the entry of a function block.
-     *
-     * @param interfaceVariables keys of its inputs and outputs in declaration order
-     */
-    public FunctionBlockMetadata(final List<String> interfaceVariables) {
-        this.interfaceVariables = new ArrayList<>(interfaceVariables);
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -80,7 +69,7 @@ public final class FunctionBlockMetadata implements LexemeInfoView {
     /** {@inheritDoc} */
     @Override
     public List<String> parameters() {
-        return new ArrayList<>(interfaceVariables);
+        return null;
     }
 
     /** {@inheritDoc} */

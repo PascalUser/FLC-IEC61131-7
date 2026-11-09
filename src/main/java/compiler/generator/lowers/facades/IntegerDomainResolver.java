@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class IntegerDomainResolver {
+    private static final Map<Subtype, Integer> SIGNED_BITS = new EnumMap<>(Subtype.class);
     private static final Map<Subtype, Integer> UNSIGNED_BITS = new EnumMap<>(Subtype.class);
 
     private static final Set<Subtype> INTEGERS = EnumSet.of(
@@ -32,6 +33,11 @@ public final class IntegerDomainResolver {
         UNSIGNED_BITS.put(Subtype.UINT,  16);
         UNSIGNED_BITS.put(Subtype.UDINT, 32);
         UNSIGNED_BITS.put(Subtype.ULINT, 64);
+
+        SIGNED_BITS.put(Subtype.SINT,  8);
+        SIGNED_BITS.put(Subtype.INT,  16);
+        SIGNED_BITS.put(Subtype.DINT, 32);
+        SIGNED_BITS.put(Subtype.LINT, 64);
     }
 
     private IntegerDomainResolver() {
@@ -48,6 +54,11 @@ public final class IntegerDomainResolver {
         }
         if (resolved.type == Type.SIMPLE && UNSIGNED_BITS.containsKey(resolved.subtype)) {
             return Optional.of(new IntegerDomain(BigInteger.ZERO, UNSIGNED_BITS.get(resolved.subtype)));
+        }
+        if (resolved.type == Type.SIMPLE && SIGNED_BITS.containsKey(resolved.subtype)) {
+            int bitsNeeded = SIGNED_BITS.get(resolved.subtype);
+            BigInteger lowerBound = BigInteger.ONE.shiftLeft(bitsNeeded - 1).negate();
+            return Optional.of(new IntegerDomain(lowerBound, bitsNeeded));
         }
         if (resolved.type == Type.SUBRANGE && INTEGERS.contains(resolved.subtype)) {
             return subrange(resolved);

@@ -31,7 +31,7 @@ public final class TermSetFactory {
      * @return the matching fuzzy set
      */
     public static Optional<FuzzySet> create(String termName, LexemeInfo termInfo, BigInteger lowerBound) {
-        List<String> membershipFunctionXValues = termInfo.inferiorLimits;
+        List<String> membershipFunctionXValues = termInfo.parameters;
         List<Integer> X = toIntegerCollection(membershipFunctionXValues, lowerBound);
         Subtype termSubtype = termInfo.subtype;
         switch (termSubtype) {
