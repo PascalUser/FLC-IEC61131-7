@@ -9,7 +9,7 @@ import compiler.lexer.semantics.SemanticAnalyzer;
 
 import compiler.repository.SymbolTable;
 import compiler.repository.DiagnosticsHandler;
-import compiler.repository.diagnostics.SyntaxError;
+import compiler.repository.diagnostics.pinpointed.SyntaxError;
 
 import org.jspecify.annotations.NonNull;
 %%

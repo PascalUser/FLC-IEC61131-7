@@ -1,4 +1,4 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.pinpointed;
 
 /**
  * Error for TIME (interval) literals where a minor magnitude exceeds its natural limit
@@ -14,7 +14,7 @@ package compiler.repository.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public final class IntervalConstructionError extends Error {
+public final class IntervalConstructionError extends PinpointedError {
     private final String intervalLexeme;
 
     /**
@@ -31,6 +31,8 @@ public final class IntervalConstructionError extends Error {
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return super.getMessage() + intervalLexeme + " interval construction error: minor magnitude exceeds limit";
+        return super.getMessage() +
+                " interval construction error in " + intervalLexeme + ": " +
+                "minor magnitude exceeds limit";
     }
 }

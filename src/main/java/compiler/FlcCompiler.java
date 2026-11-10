@@ -54,10 +54,11 @@ public final class FlcCompiler {
      * @throws RuntimeException if an unexpected error happend
      */
     public List<GeneratedFile> compile() {
-        // AST creation
         SymbolTable symbolTable = new SymbolTable();
         DiagnosticsHandler diagnostics = new DiagnosticsHandler();
-        Parser parser = new Parser(new Lexer(sourceCode, symbolTable, diagnostics), symbolTable);
+        // AST creation
+        Lexer lexer = new Lexer(sourceCode, symbolTable, diagnostics);
+        Parser parser = new Parser(lexer, symbolTable, diagnostics);
         try {
             boolean hasErrors = !parser.parse() || diagnostics.hasErrors();
             if (hasErrors) {

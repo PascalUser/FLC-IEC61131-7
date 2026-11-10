@@ -3,8 +3,8 @@ package compiler.lexer.semantics;
 import compiler.lexer.Lexer;
 import compiler.parser.Parser;
 import compiler.repository.builders.Director;
-import compiler.repository.diagnostics.IntervalConstructionError;
-import compiler.repository.diagnostics.IntervalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.IntervalConstructionError;
+import compiler.repository.diagnostics.pinpointed.outofrange.IntervalOutOfRange;
 import compiler.repository.enums.Subtype;
 import compiler.repository.builders.LexemeInfoBuilder;
 

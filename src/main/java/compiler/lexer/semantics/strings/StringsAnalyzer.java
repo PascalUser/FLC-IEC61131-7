@@ -5,7 +5,7 @@ import compiler.parser.Parser;
 import compiler.repository.builders.Director;
 import compiler.repository.builders.LexemeInfoBuilder;
 import compiler.repository.enums.Subtype;
-import compiler.repository.diagnostics.StringLengthWarning;
+import compiler.repository.diagnostics.pinpointed.StringLengthWarning;
 
 /**
  * Abstract base analyzer for string literals (STRING and WSTRING).
@@ -41,10 +41,7 @@ public abstract class StringsAnalyzer implements SemanticAnalyzer {
         String canonicalContent = content;
         if (content.length() > MAX_STRING_LENGTH) {
             canonicalContent = content.substring(0, MAX_STRING_LENGTH);
-            ctx.diagnosticsHandler.add(new StringLengthWarning(
-                    ctx.line,
-                    getSubtype() + " literal exceeds maximum length of " + MAX_STRING_LENGTH + " characters. Truncated."
-            ));
+            ctx.diagnosticsHandler.add(new StringLengthWarning(ctx.line, getSubtype(), MAX_STRING_LENGTH));
             lexeme = lexeme.charAt(0) + canonicalContent + lexeme.charAt(lexeme.length() - 1);
         }
 

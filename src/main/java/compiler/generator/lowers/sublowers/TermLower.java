@@ -6,7 +6,7 @@ import compiler.generator.lowers.contexts.TermLoweringContext;
 import compiler.generator.lowers.facades.TermSetFactory;
 import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.repository.LexemeInfo;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

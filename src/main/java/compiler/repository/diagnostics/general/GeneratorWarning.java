@@ -1,4 +1,4 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.general;
 
 /**
  * The code is generated, but something of the program is ignored or assumed (e.g. {@code DEFAULT} is not
@@ -9,7 +9,7 @@ package compiler.repository.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public final class GeneratorWarning extends Warning {
+public final class GeneratorWarning extends GeneralWarning {
     private final String detail;
 
     /**
@@ -18,13 +18,13 @@ public final class GeneratorWarning extends Warning {
      * @param detail what is ignored or assumed
      */
     public GeneratorWarning(final String detail) {
-        super(0);
+        super();
         this.detail = detail;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return "WARNING: code generator: " + detail;
+        return super.getMessage() + "code generator: " + detail;
     }
 }

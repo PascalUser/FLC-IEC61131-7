@@ -61,6 +61,7 @@
 
     import compiler.repository.LexemeInfo;
     import compiler.repository.SymbolTable;
+    import compiler.repository.DiagnosticsHandler;
     import compiler.repository.enums.*;
     import compiler.repository.builders.*;
 
@@ -100,7 +101,7 @@
  * Parser parameter: the symbol table shared between lexer and parser
  * for storing semantic information during parsing.
  */
-%parse-param { SymbolTable symbolTable }
+%parse-param { SymbolTable symbolTable } { DiagnosticsHandler diagnostics }
 
 %token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK

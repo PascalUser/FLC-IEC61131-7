@@ -1,24 +1,24 @@
 package unit.lexer;
 
 import compiler.lexer.Lexer;
-import compiler.repository.diagnostics.Error;
+import compiler.repository.diagnostics.pinpointed.*;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import compiler.repository.diagnostics.BinaryOutOfRange;
-import compiler.repository.diagnostics.DateAndTimeOutOfRange;
-import compiler.repository.diagnostics.DateOutOfRange;
-import compiler.repository.diagnostics.HexadecimalOutOfRange;
-import compiler.repository.diagnostics.IntegerOutOfRange;
-import compiler.repository.diagnostics.IntervalConstructionError;
-import compiler.repository.diagnostics.IntervalOutOfRange;
-import compiler.repository.diagnostics.NaturalOutOfRange;
-import compiler.repository.diagnostics.OctalOutOfRange;
-import compiler.repository.diagnostics.RealOutOfRange;
-import compiler.repository.diagnostics.TimeOfDayOutOfRange;
-import compiler.repository.diagnostics.StringLengthWarning;
-import compiler.repository.diagnostics.Warning;
+import compiler.repository.diagnostics.pinpointed.outofrange.base.BinaryOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.DateAndTimeOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.DateOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.base.HexadecimalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.IntegerOutOfRange;
+import compiler.repository.diagnostics.pinpointed.IntervalConstructionError;
+import compiler.repository.diagnostics.pinpointed.outofrange.IntervalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.NaturalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.base.OctalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.RealOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.TimeOfDayOutOfRange;
+import compiler.repository.diagnostics.pinpointed.StringLengthWarning;
+import compiler.repository.diagnostics.pinpointed.*;
 import compiler.repository.DiagnosticsHandler;
 import compiler.repository.SymbolTable;
 import compiler.repository.diagnostics.Diagnostic;
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * Tests that the lexer correctly handles out-of-range literals,
  * invalid string lengths, and boundary conditions.
  * <p>
- * Numeric literals (natural, integer, real, based) emit {@link Warning}
+ * Numeric literals (natural, integer, real, based) emit {@link PinpointedWarning}
  * and use fallback values. Date/time/interval literals emit {@link Error}
  * and halt token recognition for the invalid lexeme.
  * </p>
@@ -90,7 +90,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(IntegerOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 
@@ -112,7 +112,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(NaturalOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 
@@ -134,7 +134,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(IntegerOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 
@@ -154,7 +154,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(BinaryOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 
@@ -174,7 +174,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(OctalOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 
@@ -194,7 +194,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(HexadecimalOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 
@@ -216,7 +216,7 @@ public class LexerDiagnosticHandlerTest {
 
         Diagnostic recorded = diagnosticCaptor.getValue();
         assertInstanceOf(RealOutOfRange.class, recorded);
-        assertInstanceOf(Warning.class, recorded);
+        assertInstanceOf(PinpointedWarning.class, recorded);
         assertTrue(recorded.getMessage().contains(invalidLiteral));
     }
 

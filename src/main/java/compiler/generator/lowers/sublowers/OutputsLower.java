@@ -5,8 +5,8 @@ import compiler.generator.fuzzysets.FuzzySet;
 import compiler.generator.fuzzysets.SingletonFuzzySet;
 import compiler.generator.lowers.contexts.LoweringContext;
 import compiler.repository.LexemeInfo;
-import compiler.repository.diagnostics.GeneratorWarning;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.GeneratorWarning;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 import compiler.repository.enums.Subtype;
 
 import java.util.List;

@@ -4,7 +4,7 @@ import compiler.lexer.Lexer;
 import compiler.parser.Parser;
 import compiler.repository.builders.Director;
 import compiler.repository.builders.LexemeInfoBuilder;
-import compiler.repository.diagnostics.DateOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.DateOutOfRange;
 import compiler.repository.enums.Subtype;
 
 import java.time.LocalDate;

@@ -9,7 +9,7 @@ import compiler.generator.evaluation.MinMaxMethod;
 import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.RuleLoweringContext;
 import compiler.generator.lowers.contexts.LoweringContext;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,7 +2,7 @@ package compiler.lexer.semantics;
 
 import compiler.parser.Parser;
 import compiler.repository.builders.Director;
-import compiler.repository.diagnostics.TimeOfDayOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.TimeOfDayOutOfRange;
 import compiler.repository.enums.Subtype;
 import compiler.repository.builders.LexemeInfoBuilder;
 

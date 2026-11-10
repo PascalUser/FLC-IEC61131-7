@@ -2,7 +2,6 @@ package compiler.lexer.semantics.numbers;
 
 import compiler.lexer.semantics.SemanticAnalyzer;
 import compiler.parser.Parser;
-import compiler.repository.diagnostics.Warning;
 import compiler.repository.builders.Director;
 import compiler.repository.builders.LexemeInfoBuilder;
 import compiler.repository.diagnostics.Diagnostic;

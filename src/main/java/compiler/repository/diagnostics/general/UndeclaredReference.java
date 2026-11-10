@@ -1,4 +1,4 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.general;
 
 /**
  * A rule or block names a variable or term that is not declared (IEC 61131-7 requires every name used in a
@@ -13,7 +13,7 @@ package compiler.repository.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public final class UndeclaredReference extends Error {
+public final class UndeclaredReference extends GeneralError {
     private final String detail;
 
     /**
@@ -22,13 +22,13 @@ public final class UndeclaredReference extends Error {
      * @param detail what is undeclared and where, e.g. {@code "term HOT of TEMP in rule 2 of MAIN#RULES"}
      */
     public UndeclaredReference(final String detail) {
-        super(0);
+        super();
         this.detail = detail;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return "ERROR: undeclared " + detail;
+        return super.getMessage() + "undeclared " + detail;
     }
 }

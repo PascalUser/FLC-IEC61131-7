@@ -1,7 +1,7 @@
 package compiler.lexer.semantics.numbers.bases;
 
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.BinaryOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.base.BinaryOutOfRange;
 
 /**
  * Semantic analyzer for binary numeric literals (base 2).
@@ -20,7 +20,7 @@ public final class Binary extends BaseNumbersAnalyzer {
     /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(final int line, final String lexeme) {
-        return new BinaryOutOfRange(line, lexeme);
+        return new BinaryOutOfRange(line, lexeme, CORRECTED);
     }
 
     /** {@inheritDoc} */

@@ -7,8 +7,8 @@ import compiler.generator.lowers.facades.IntegerDomainResolver;
 import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.parser.initializations.Initialization;
 import compiler.repository.LexemeInfo;
-import compiler.repository.diagnostics.InvalidUse;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.InvalidUse;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

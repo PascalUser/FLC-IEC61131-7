@@ -1,7 +1,7 @@
 package compiler.lexer.semantics.numbers.bases;
 
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.OctalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.base.OctalOutOfRange;
 
 /**
  * Semantic analyzer for octal numeric literals (base 8).
@@ -18,7 +18,7 @@ public final class Octal extends BaseNumbersAnalyzer {
     /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
-        return new OctalOutOfRange(line, lexeme);
+        return new OctalOutOfRange(line, lexeme, CORRECTED);
     }
 
     /** {@inheritDoc} */

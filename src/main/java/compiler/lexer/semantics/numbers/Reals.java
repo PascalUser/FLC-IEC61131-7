@@ -2,7 +2,7 @@ package compiler.lexer.semantics.numbers;
 
 import org.jspecify.annotations.NonNull;
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.RealOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.RealOutOfRange;
 import compiler.repository.enums.Subtype;
 
 /**
@@ -19,6 +19,15 @@ import compiler.repository.enums.Subtype;
  * @since 1.0
  */
 public final class Reals extends NumbersAnalyzer {
+    private static class CorrectedInfo {
+        public final String correctedLexeme;
+        public final Object correctedValue;
+
+        private CorrectedInfo(String lexeme, Object initialValue) {
+            this.correctedLexeme = lexeme;
+            this.correctedValue = initialValue;
+        }
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -38,17 +47,14 @@ public final class Reals extends NumbersAnalyzer {
     /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
-        boolean isNegative = lexeme.startsWith("-");
-        double initialValue = isNegative ? -Double.MAX_VALUE : Double.MAX_VALUE;
-        lexeme = Double.toString(initialValue);
-        Subtype subtype = Subtype.LREAL;
-        return new ParsedValue(lexeme, subtype, initialValue);
+        CorrectedInfo i = getCorrectedInfo(lexeme);
+        return new ParsedValue(i.correctedLexeme, Subtype.LREAL, i.correctedValue);
     }
 
     /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
-        return new RealOutOfRange(line, lexeme);
+        return new RealOutOfRange(line, lexeme, getCorrectedInfo(lexeme).correctedLexeme);
     }
 
     /**
@@ -57,10 +63,16 @@ public final class Reals extends NumbersAnalyzer {
      * @param value the parsed double lexeme
      * @return REAL if within float range, LREAL otherwise
      */
-    private Subtype getRange(double value) {
+    private static Subtype getRange(double value) {
         if (Double.isInfinite(value)) return Subtype.UNKNOWN;
         double abs = Math.abs(value);
         if (abs <= Float.MAX_VALUE) return Subtype.REAL;
         return Subtype.LREAL;
+    }
+
+    private static CorrectedInfo getCorrectedInfo(String lexeme) {
+        boolean isNegative = lexeme.startsWith("-");
+        double initialValue = isNegative ? -Double.MAX_VALUE : Double.MAX_VALUE;
+        return new CorrectedInfo(String.valueOf(initialValue), initialValue);
     }
 }

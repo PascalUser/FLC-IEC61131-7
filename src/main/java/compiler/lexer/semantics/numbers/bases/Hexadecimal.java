@@ -1,7 +1,7 @@
 package compiler.lexer.semantics.numbers.bases;
 
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.HexadecimalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.base.HexadecimalOutOfRange;
 
 /**
  * Semantic analyzer for hexadecimal numeric literals (base 16).
@@ -18,7 +18,7 @@ public final class Hexadecimal extends BaseNumbersAnalyzer {
     /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
-        return new HexadecimalOutOfRange(line, lexeme);
+        return new HexadecimalOutOfRange(line, lexeme, CORRECTED);
     }
 
     /** {@inheritDoc} */

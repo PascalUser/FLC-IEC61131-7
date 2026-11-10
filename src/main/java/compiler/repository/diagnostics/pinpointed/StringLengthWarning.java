@@ -1,4 +1,6 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.pinpointed;
+
+import compiler.repository.enums.Subtype;
 
 /**
  * Warning for string literal length exceeding IEC 61131-7 maximum (255 characters).
@@ -13,24 +15,26 @@ package compiler.repository.diagnostics;
  * @since 1.0
  * @see Warning
  */
-public final class StringLengthWarning extends Warning {
-
-    private final String message;
+public final class StringLengthWarning extends PinpointedWarning {
+    private final Subtype strSubtype;
+    private final int maxLength;
 
     /**
      * Creates a string length warning.
      *
      * @param line    the source line number
-     * @param message the warning detail message
      */
-    public StringLengthWarning(int line, String message) {
+    public StringLengthWarning(int line, Subtype strSubtype, int maxLength) {
         super(line);
-        this.message = message;
+        this.strSubtype = strSubtype;
+        this.maxLength = maxLength;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return "WARNING: Line " + line + ", " + message;
+        return super.getMessage() +
+                strSubtype + " literal exceeds maximum length of " + maxLength + " characters. " +
+                "It was truncated.";
     }
 }

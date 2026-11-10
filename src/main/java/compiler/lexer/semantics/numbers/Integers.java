@@ -1,7 +1,7 @@
 package compiler.lexer.semantics.numbers;
 import org.jspecify.annotations.NonNull;
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.IntegerOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.IntegerOutOfRange;
 import compiler.repository.enums.Subtype;
 
 
@@ -27,6 +27,16 @@ public final class Integers extends NumbersAnalyzer {
     private static final long MIN_LINT = Long.MIN_VALUE;
     private static final long MAX_LINT = Long.MAX_VALUE;
 
+    private static class CorrectedInfo {
+        public final String correctedLexeme;
+        public final Object correctedValue;
+
+        private CorrectedInfo(String lexeme, Object initialValue) {
+            this.correctedLexeme = lexeme;
+            this.correctedValue = initialValue;
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     protected ParsedValue parse(String lexeme) {
@@ -45,17 +55,14 @@ public final class Integers extends NumbersAnalyzer {
     /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
-        boolean isNegative = lexeme.startsWith("-");
-        long initialValue = isNegative ? MIN_LINT : MAX_LINT;
-        lexeme = Long.toString(initialValue);
-        Subtype subtype = Subtype.LINT;
-        return new ParsedValue(lexeme, subtype, initialValue);
+        CorrectedInfo i = getCorrectedInfo(lexeme);
+        return new ParsedValue(i.correctedLexeme, Subtype.LINT, i.correctedValue);
     }
 
     /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(int line, String lexeme) {
-        return new IntegerOutOfRange(line, lexeme);
+        return new IntegerOutOfRange(line, lexeme, getCorrectedInfo(lexeme).correctedLexeme);
     }
 
     /**
@@ -64,10 +71,16 @@ public final class Integers extends NumbersAnalyzer {
      * @param value the parsed long lexeme
      * @return the appropriate subtype
      */
-    private Subtype getRange(long value) {
+    private static Subtype getRange(long value) {
         if (value >= MIN_SINT && value <= MAX_SINT) return Subtype.SINT;
         if (value >= MIN_INT  && value <= MAX_INT)  return Subtype.INT;
         if (value >= MIN_DINT && value <= MAX_DINT) return Subtype.DINT;
         return Subtype.LINT;
+    }
+
+    private static CorrectedInfo getCorrectedInfo(String lexeme) {
+        boolean isNegative = lexeme.startsWith("-");
+        long initialValue = isNegative ? MIN_LINT : MAX_LINT;
+        return new CorrectedInfo(Long.toString(initialValue), initialValue);
     }
 }

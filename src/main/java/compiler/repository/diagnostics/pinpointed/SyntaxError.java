@@ -1,4 +1,4 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.pinpointed;
 
 /**
  * Syntax error reported by the lexer for invalid characters.
@@ -14,7 +14,7 @@ package compiler.repository.diagnostics;
  * @since 1.0
  * @see Error
  */
-public class SyntaxError extends Error {
+public final class SyntaxError extends PinpointedError {
     /**
      * Creates a diagnostic for the specified source line.
      *

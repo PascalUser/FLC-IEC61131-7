@@ -8,8 +8,8 @@ import compiler.generator.evaluation.EvaluationMethod;
 import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.RuleLoweringContext;
 import compiler.repository.LexemeInfo;
-import compiler.repository.diagnostics.UndeclaredReference;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.UndeclaredReference;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 import compiler.repository.enums.Source;
 
 import java.math.BigDecimal;

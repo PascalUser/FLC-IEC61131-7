@@ -3,7 +3,7 @@ package compiler.generator.lowers.sublowers;
 import compiler.generator.lowers.Lower;
 import compiler.generator.lowers.contexts.LoweringContext;
 import compiler.repository.LexemeInfo;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 import compiler.repository.enums.Use;
 
 import java.util.List;

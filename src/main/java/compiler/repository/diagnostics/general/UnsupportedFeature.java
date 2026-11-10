@@ -1,4 +1,4 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.general;
 
 /**
  * The program is valid FCL but uses something the code generator cannot produce (e.g. {@code OR} in a rule,
@@ -13,7 +13,7 @@ package compiler.repository.diagnostics;
  * @version 1.0
  * @since 1.0
  */
-public final class UnsupportedFeature extends Error {
+public final class UnsupportedFeature extends GeneralError {
     private final String detail;
 
     /**
@@ -22,13 +22,13 @@ public final class UnsupportedFeature extends Error {
      * @param detail what is not supported and where, e.g. {@code "rule 3 of MAIN#RULES uses OR"}
      */
     public UnsupportedFeature(final String detail) {
-        super(0);
+        super();
         this.detail = detail;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return "ERROR: not supported by the code generator: " + detail;
+        return super.getMessage() + "not supported by the code generator: " + detail;
     }
 }

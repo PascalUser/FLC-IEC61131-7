@@ -2,7 +2,7 @@ package compiler.lexer.semantics.numbers;
 
 import org.jspecify.annotations.NonNull;
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.NaturalOutOfRange;
+import compiler.repository.diagnostics.pinpointed.outofrange.NaturalOutOfRange;
 import compiler.repository.enums.Subtype;
 
 import java.math.BigInteger;
@@ -29,6 +29,8 @@ public final class Naturals extends NumbersAnalyzer {
     private static final BigInteger MAX_UDINT = new BigInteger("4294967295");
     private static final BigInteger MAX_ULINT = new BigInteger("18446744073709551615");
 
+    private static final String CORRECTED = MAX_ULINT.toString();
+
     /** {@inheritDoc} */
     @Override
     protected ParsedValue parse(String lexeme) {
@@ -40,15 +42,14 @@ public final class Naturals extends NumbersAnalyzer {
     /** {@inheritDoc} */
     @Override
     protected ParsedValue fallback(@NonNull String lexeme) {
-        String newLexeme = MAX_ULINT.toString();
         Subtype subtype = Subtype.ULINT;
-        return new ParsedValue(newLexeme, subtype, MAX_ULINT);
+        return new ParsedValue(CORRECTED, subtype, MAX_ULINT);
     }
 
     /** {@inheritDoc} */
     @Override
     protected Diagnostic createDiagnostic(final int line, final String lexeme) {
-        return new NaturalOutOfRange(line, lexeme);
+        return new NaturalOutOfRange(line, lexeme, CORRECTED);
     }
 
     /**

@@ -17,9 +17,9 @@ import utils.supports.ParserTestSupport;
 import utils.ParsingResults;
 import utils.builders.SourceCode;
 import compiler.repository.diagnostics.Diagnostic;
-import compiler.repository.diagnostics.GeneratorWarning;
-import compiler.repository.diagnostics.UndeclaredReference;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.GeneratorWarning;
+import compiler.repository.diagnostics.general.UndeclaredReference;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 
 import java.io.StringReader;
 import java.util.*;

@@ -40,7 +40,7 @@ public abstract class ParserTestSupport {
         DiagnosticsHandler diagnosticHandler = new DiagnosticsHandler();
 
         Lexer lexer = new Lexer(reader, symbolTable, diagnosticHandler);
-        Parser parser = new Parser(lexer, symbolTable);
+        Parser parser = new Parser(lexer, symbolTable, diagnosticHandler);
 
         assertTrue(parser.parse(), "Parsing should succeed");
         assertFalse(diagnosticHandler.hasErrors());
@@ -74,7 +74,7 @@ public abstract class ParserTestSupport {
         DiagnosticsHandler diagnosticHandler = new DiagnosticsHandler();
 
         Lexer lexer = new Lexer(reader, symbolTable, diagnosticHandler);
-        Parser parser = new Parser(lexer, symbolTable);
+        Parser parser = new Parser(lexer, symbolTable, diagnosticHandler);
 
         boolean accepted = parser.parse();
         boolean mustBeTrue = !accepted || diagnosticHandler.hasErrors();

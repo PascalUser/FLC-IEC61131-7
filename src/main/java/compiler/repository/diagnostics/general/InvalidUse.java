@@ -1,6 +1,6 @@
-package compiler.repository.diagnostics;
+package compiler.repository.diagnostics.general;
 
-public class InvalidUse extends Error {
+public final class InvalidUse extends GeneralError {
     private final String detail;
 
     /**
@@ -9,13 +9,13 @@ public class InvalidUse extends Error {
      * @param detail what is not supported and where, e.g. {@code "rule 3 of MAIN#RULES uses OR"}
      */
     public InvalidUse(final String detail) {
-        super(0);
+        super();
         this.detail = detail;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return "ERROR: invalid use: " + detail;
+        return super.getMessage() + "invalid use: " + detail;
     }
 }

@@ -9,8 +9,8 @@ import compiler.generator.lowers.contexts.VarLoweringContext;
 import compiler.generator.lowers.facades.IntegerDomainResolver;
 import compiler.generator.lowers.utils.IntegerDomain;
 import compiler.repository.LexemeInfo;
-import compiler.repository.diagnostics.GeneratorWarning;
-import compiler.repository.diagnostics.UnsupportedFeature;
+import compiler.repository.diagnostics.general.GeneratorWarning;
+import compiler.repository.diagnostics.general.UnsupportedFeature;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
