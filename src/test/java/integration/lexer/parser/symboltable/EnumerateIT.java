@@ -10,8 +10,8 @@ import compiler.parser.initializations.Initialization;
 import compiler.parser.initializations.leafs.EnumeratedInitialization;
 import compiler.parser.initializations.leafs.MacroInitialization;
 import compiler.parser.initializations.leafs.VariableInitialization;
-import utils.*;
-import utils.ParsingResults;
+import utils.builders.Block;
+import utils.supports.ParsingResults;
 import compiler.repository.builders.LexemeInfoBuilder;
 import compiler.repository.enums.Source;
 import compiler.repository.enums.Subtype;
@@ -209,7 +209,6 @@ public class EnumerateIT extends ParserTestSupport {
     @Nested
     class Errors {
         @Test
-        @NotYetImplemented
         void Duplicate_enumerator_is_rejected() throws Exception {
             assertRejected(
                     SourceCode.functionBlock()
@@ -218,7 +217,6 @@ public class EnumerateIT extends ParserTestSupport {
         }
 
         @Test
-        @NotYetImplemented
         void Undefined_enumerator_as_initializer_is_rejected() throws Exception {
             assertRejected(
                     SourceCode.functionBlock()
@@ -228,7 +226,6 @@ public class EnumerateIT extends ParserTestSupport {
         }
 
         @Test
-        @NotYetImplemented
         void Enum_variable_initialized_with_a_number_is_rejected() throws Exception {
             assertRejected(
                     SourceCode.functionBlock()

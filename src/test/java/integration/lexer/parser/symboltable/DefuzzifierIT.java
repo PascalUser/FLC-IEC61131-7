@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import compiler.parser.initializations.leafs.VariableInitialization;
-import utils.ParsingResults;
+import utils.builders.Block;
+import utils.supports.ParsingResults;
 import compiler.repository.builders.LexemeInfoBuilder;
 import compiler.repository.enums.Source;
 import compiler.repository.enums.Subtype;
@@ -39,7 +40,7 @@ public class DefuzzifierIT extends ParserTestSupport {
             "END_DEFUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_DEFUZZIFIER = "DT1";
+    private static final String OUTVAR = "DT1";
     private static final String DEFUZZ_SUFFIX = "@defuzzifier";
 
     @Test
@@ -54,7 +55,7 @@ public class DefuzzifierIT extends ParserTestSupport {
      */
     @Test
     void Anonymous_defuzzifier_is_published_with_its_term_names_and_default_value() throws Exception {
-        String symbol = SourceCode.key(ANONYMOUS_DEFUZZIFIER) + DEFUZZ_SUFFIX;
+        String defuzzSymbol = SourceCode.key(OUTVAR) + DEFUZZ_SUFFIX;
         LexemeInfo expectedInfo = new LexemeInfoBuilder()
                 .type(Type.FUNCTION)
                 .subtype(Subtype.COGS)
@@ -66,11 +67,12 @@ public class DefuzzifierIT extends ParserTestSupport {
 
         ParsingResults results = parse(
                 SourceCode.functionBlock()
+                        .var(Block.VAR_OUTPUT, OUTVAR + ": INT")
                         .body(DT1)
         );
         SymbolTable symbolTable = results.symbolTable();
 
-        assertSymbol(symbolTable, symbol, expectedInfo);
+        assertSymbol(symbolTable, defuzzSymbol, expectedInfo);
     }
 
     @ParameterizedTest(name = "{0}")

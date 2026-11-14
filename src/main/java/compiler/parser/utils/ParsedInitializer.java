@@ -8,7 +8,7 @@ package compiler.parser.utils;
  * @version 1.0-SNAPSHOT
  * @since 1.0-SNAPSHOT
  */
-public final class ParsedIdentifier {
+public final class ParsedInitializer {
     private final String complete;
     private final String scope;
     private final String identifier;
@@ -21,7 +21,7 @@ public final class ParsedIdentifier {
      * @param scope     the scope of the identifier, empty when it has none
      * @param identifier the plain identifier name
      */
-    public ParsedIdentifier(final String complete, final String scope, final String identifier) {
+    public ParsedInitializer(final String complete, final String scope, final String identifier) {
         this.complete = complete;
         this.scope = scope;
         this.identifier = identifier;

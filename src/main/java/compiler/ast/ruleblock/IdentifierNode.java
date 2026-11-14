@@ -27,15 +27,6 @@ public final class IdentifierNode extends AbstractAstNode {
     }
 
     /**
-     * Returns the name of this identifier.
-     *
-     * @return the identifier name
-     */
-    public String name() {
-        return name;
-    }
-
-    /**
      * Returns the label of this node: the identifier name.
      *
      * @return the label of the node

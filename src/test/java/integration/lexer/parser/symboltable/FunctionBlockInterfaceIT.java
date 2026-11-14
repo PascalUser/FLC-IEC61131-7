@@ -3,7 +3,7 @@ package integration.lexer.parser.symboltable;
 import org.junit.jupiter.api.Test;
 import compiler.repository.LexemeInfo;
 import utils.supports.ParserTestSupport;
-import utils.ParsingResults;
+import utils.supports.ParsingResults;
 import compiler.repository.builders.LexemeInfoBuilder;
 import compiler.repository.enums.Source;
 import compiler.repository.enums.Subtype;
@@ -32,10 +32,10 @@ public class FunctionBlockInterfaceIT extends ParserTestSupport {
 
     private static LexemeInfo functionBlock() {
         return new LexemeInfoBuilder()
-                .type(Type.NONE)
+                .type(Type.FUNCTION)
                 .subtype(Subtype.NONE)
-                .use(Use.MAIN)
-                .source(Source.NONE)
+                .use(Use.COMPONENT)
+                .source(Source.MAIN)
                 .build();
     }
 

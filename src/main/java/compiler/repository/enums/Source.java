@@ -20,5 +20,5 @@ public enum Source {
     INTERNAL,
     NONE,
     OUT,
-    UNKNOWN,
+    UNKNOWN, MAIN, RULEBLOCK,
 }

@@ -6,10 +6,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import compiler.parser.initializations.leafs.SubrangeInitialization;
 import compiler.parser.initializations.leafs.VariableInitialization;
-import utils.Block;
+import utils.builders.Block;
 import compiler.repository.LexemeInfo;
 import utils.supports.ParserTestSupport;
-import utils.ParsingResults;
+import utils.supports.ParsingResults;
 import utils.builders.SourceCode;
 import compiler.repository.SymbolTable;
 import compiler.repository.builders.LexemeInfoBuilder;
@@ -163,7 +163,6 @@ public class SubrangeIT extends ParserTestSupport {
     class Errors {
 
         @Test
-        @NotYetImplemented
         void Lower_bound_greater_than_upper_bound_is_rejected() throws Exception {
             assertRejected(
                     SourceCode.functionBlock()

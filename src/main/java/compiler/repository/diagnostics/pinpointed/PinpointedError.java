@@ -9,7 +9,7 @@ public abstract class PinpointedError extends PinpointedDiagnostic {
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-         return "ERROR:" + super.getMessage() + ", ";
+         return "ERROR: " + super.getMessage() + ",";
     }
 
     /** {@inheritDoc} */

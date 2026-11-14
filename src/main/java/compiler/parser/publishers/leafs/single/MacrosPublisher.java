@@ -1,4 +1,4 @@
-package compiler.parser.facades;
+package compiler.parser.publishers.leafs.single;
 
 import compiler.parser.metadata.MacroMetadata;
 import compiler.repository.SymbolTable;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import compiler.parser.initializations.leafs.VariableInitialization;
 import compiler.repository.LexemeInfo;
 import utils.supports.ParserTestSupport;
-import utils.ParsingResults;
+import utils.supports.ParsingResults;
 import utils.builders.SourceCode;
 import compiler.repository.SymbolTable;
 import compiler.repository.builders.LexemeInfoBuilder;
@@ -15,6 +15,7 @@ import compiler.repository.enums.Type;
 import compiler.repository.enums.Use;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Integration tests for OPTION blocks. Each {@code PRAGMA} is published under
@@ -66,7 +67,10 @@ public class OptionIT extends ParserTestSupport {
             SymbolTable symbolTable = results.symbolTable();
 
             assertSymbol(symbolTable, symbol, expectedInfo);
-            assertEquals(Boolean.TRUE, symbolTable.get("TRUE").initialValue, "The TRUE literal is registered");
+
+            LexemeInfo trueLiteralInfo = symbolTable.get("TRUE");
+            assertNotNull(trueLiteralInfo);
+            assertEquals(Boolean.TRUE, trueLiteralInfo.initialValue, "The TRUE literal is registered");
         }
 
         @Test

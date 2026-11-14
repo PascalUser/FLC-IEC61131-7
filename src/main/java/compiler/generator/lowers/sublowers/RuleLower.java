@@ -151,25 +151,19 @@ public final class RuleLower implements Lower<int[]> {
             }
             varWithTermsTable.put(ioVar, componentInfo.parameters);
         }
-        String ioVarFromIsNode = ctx.keys.variable(is.variable().name());
+        String ioVarFromIsNode = is.variable().label();
         int positionOfVarKeyInsideDeclarations = ioVars.indexOf(ioVarFromIsNode);
         if (positionOfVarKeyInsideDeclarations < 0) {
-            String mssg = ERR_UNEXPECTED_VAR(ctx.ruleblockName, ctx.ruleNumber, is.variable().name());
-            ctx.diagnosticsHandler.add(new UndeclaredReference(mssg));
-            return true;
+            throw new IllegalStateException("the parser should have rejected this");
         }
-        String termFromIsNode = is.term().name();
+        String termFromIsNode = ctx.keys.shortName(is.term().label());
         List<String> termsFromComponent = varWithTermsTable.get(ioVarFromIsNode);
         int positionOfTermInComponentDeclaration = termsFromComponent.indexOf(termFromIsNode);
         if (positionOfTermInComponentDeclaration < 0) {
-            // TODO: this should be a parser check because it's not related with the code generator
-            String mssg = ERR_INVALID_TERM(ctx.ruleblockName, ctx.ruleNumber, is.variable().name(), is.term().name());
-            ctx.diagnosticsHandler.add(new UndeclaredReference(mssg));
-            return true;
+            throw new IllegalStateException("the parser should have rejected this");
         }
         if (row[offset + positionOfVarKeyInsideDeclarations] != EvaluationMethod.UNUSED) {
-            // TODO: check if the standard admits variable repetition. If it does, this should be a parser check
-            String mssg = ERR_VARIABLE_REP(ctx.ruleblockName, ctx.ruleNumber, is.variable().name());
+            String mssg = ERR_VARIABLE_REP(ctx.ruleblockName, ctx.ruleNumber, is.variable().label());
             ctx.diagnosticsHandler.add(new UndeclaredReference(mssg));
             return true;
         }
@@ -207,15 +201,6 @@ public final class RuleLower implements Lower<int[]> {
 
     private static String ERR_UNEXPECTED_COND(String ruleblockName, String ruleNumber, String label) {
         return "rule " + ruleNumber + " of " + ruleblockName + " has an unexpected condition " + label;
-    }
-
-    private static String ERR_UNEXPECTED_VAR(String ruleblockName, String ruleNumber, String ioVarName) {
-        String preamble = "conditions must have inputs variables and conclusion outputs, but rule ";
-        return  preamble + ruleNumber + " of " + ruleblockName + " uses " + ioVarName;
-    }
-
-    private static String ERR_INVALID_TERM(String ruleblockName, String ruleNumber, String ioVarName, String termName) {
-        return "in rule " + ruleNumber + " of " + ruleblockName + ", the " + termName + " is not from " + ioVarName;
     }
 
     private static String ERR_VARIABLE_REP(String ruleblockName, String ruleNumber, String ioVarName) {

@@ -9,7 +9,7 @@ public abstract class PinpointedWarning extends PinpointedDiagnostic {
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return "WARNING: " + super.getMessage() + ", ";
+        return "WARNING: " + super.getMessage() + ",";
     }
 
     /** {@inheritDoc} */

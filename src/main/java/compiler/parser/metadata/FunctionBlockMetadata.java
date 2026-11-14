@@ -27,7 +27,7 @@ public final class FunctionBlockMetadata implements LexemeInfoView {
     /** {@inheritDoc} */
     @Override
     public Type type() {
-        return Type.NONE;
+        return Type.FUNCTION;
     }
 
     /** {@inheritDoc} */
@@ -45,13 +45,13 @@ public final class FunctionBlockMetadata implements LexemeInfoView {
     /** {@inheritDoc} */
     @Override
     public Source source() {
-        return Source.NONE;
+        return Source.MAIN;
     }
 
     /** {@inheritDoc} */
     @Override
     public Use use() {
-        return Use.MAIN;
+        return Use.COMPONENT;
     }
 
     /** {@inheritDoc} */

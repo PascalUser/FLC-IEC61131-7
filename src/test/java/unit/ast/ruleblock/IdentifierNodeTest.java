@@ -15,7 +15,7 @@ class IdentifierNodeTest {
         IdentifierNode node = new IdentifierNode("temperature");
 
         assertEquals("temperature", node.label());
-        assertEquals("temperature", node.name());
+        assertEquals("temperature", node.label());
     }
 
     @Test

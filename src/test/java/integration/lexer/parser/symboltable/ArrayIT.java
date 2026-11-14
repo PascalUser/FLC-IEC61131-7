@@ -11,14 +11,15 @@ import compiler.parser.initializations.leafs.EnumeratedInitialization;
 import compiler.parser.initializations.leafs.VariableInitialization;
 import compiler.parser.initializations.nodes.RepeatedInitialization;
 import compiler.parser.initializations.nodes.StructInitialization;
-import utils.*;
 import compiler.repository.builders.LexemeInfoBuilder;
 import compiler.repository.enums.Source;
 import compiler.repository.enums.Subtype;
 import compiler.repository.enums.Type;
 import compiler.repository.enums.Use;
+import utils.builders.Block;
 import utils.builders.SourceCode;
 import utils.supports.ParserTestSupport;
+import utils.supports.ParsingResults;
 
 import java.util.Arrays;
 import java.util.List;
@@ -306,7 +307,6 @@ public class ArrayIT extends ParserTestSupport {
         }
 
         @Test
-        @NotYetImplemented
         void Reversed_bounds_are_rejected() throws Exception {
             assertRejected(
                 SourceCode.functionBlock()

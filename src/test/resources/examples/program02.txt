@@ -42,7 +42,7 @@ RULEBLOCK No1
     AND : MIN;
     ACCU : MAX;
     RULE 1: IF distance IS far AND angle IS zero THEN power IS pos_medium;
-    RULE 2: IF distance IS far AND angle IS neg_small THEN power IS pos_big;
+    RULE 2: IF distance IS far AND angle IS neg_small THEN power IS pos_high;
     RULE 3: IF distance IS far AND angle IS neg_big THEN power IS pos_medium;
     RULE 4: IF distance IS medium AND angle IS neg_small THEN power IS neg_medium;
     RULE 5: IF distance IS close AND angle IS pos_small THEN power IS pos_medium;

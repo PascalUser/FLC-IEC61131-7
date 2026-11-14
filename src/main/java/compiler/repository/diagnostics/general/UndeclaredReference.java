@@ -29,6 +29,6 @@ public final class UndeclaredReference extends GeneralError {
     /** {@inheritDoc} */
     @Override
     public String getMessage() {
-        return super.getMessage() + "undeclared " + detail;
+        return super.getMessage() + "undeclared reference: " + detail;
     }
 }

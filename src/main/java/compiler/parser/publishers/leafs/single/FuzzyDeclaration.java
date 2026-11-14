@@ -1,5 +1,6 @@
 package compiler.parser.publishers.leafs.single;
 
+import compiler.parser.facades.ComponentResolver;
 import compiler.parser.publishers.nodes.FuzzyBlock;
 import compiler.repository.SymbolTable;
 import compiler.repository.enums.Source;
@@ -14,9 +15,6 @@ import compiler.repository.enums.Source;
  */
 public final class FuzzyDeclaration extends SingleDeclaration {
     private final FuzzyBlock termDeclarations;
-    private String suffix;
-
-    private final static String ERR = "FuzzyDeclaration: the component source was not FUZZIFY or DEFUZZIFY";
 
     /**
      * Creates the declaration of a fuzzy variable.
@@ -27,7 +25,6 @@ public final class FuzzyDeclaration extends SingleDeclaration {
     public FuzzyDeclaration(SymbolTable initTable, FuzzyBlock terms) {
         super(initTable);
         termDeclarations = terms;
-        suffix = "";
     }
 
     /** {@inheritDoc} */
@@ -37,16 +34,6 @@ public final class FuzzyDeclaration extends SingleDeclaration {
             termDeclarations.source(newSource);
         }
         super.source(newSource);
-        switch (newSource) {
-            case FUZZIFY:
-                suffix = "@fuzzifier";
-                break;
-            case DEFUZZIFY:
-                suffix = "@defuzzifier";
-                break;
-            default:
-                throw new IllegalArgumentException(ERR);
-        }
         return this;
     }
 
@@ -62,6 +49,6 @@ public final class FuzzyDeclaration extends SingleDeclaration {
     /** {@inheritDoc} */
     @Override
     protected String key() {
-        return super.key() + suffix;
+        return ComponentResolver.resolve(symbolTable, super.key());
     }
 }

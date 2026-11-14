@@ -12,6 +12,7 @@ import utils.simulation.ReferenceSimulator;
 import utils.simulation.SimulationComparison;
 import utils.*;
 import utils.supports.ParserTestSupport;
+import utils.supports.ParsingResults;
 
 import java.io.Reader;
 import java.util.List;

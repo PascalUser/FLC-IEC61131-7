@@ -10,10 +10,10 @@ import compiler.parser.initializations.leafs.EnumeratedInitialization;
 import compiler.parser.initializations.leafs.VariableInitialization;
 import compiler.parser.initializations.nodes.RepeatedInitialization;
 import compiler.parser.initializations.nodes.StructInitialization;
-import utils.Block;
+import utils.builders.Block;
 import compiler.repository.LexemeInfo;
 import utils.supports.ParserTestSupport;
-import utils.ParsingResults;
+import utils.supports.ParsingResults;
 import utils.builders.SourceCode;
 import compiler.repository.SymbolTable;
 import compiler.repository.builders.LexemeInfoBuilder;
@@ -347,7 +347,6 @@ public class StructIT extends ParserTestSupport {
     class Errors {
 
         @Test
-        @NotYetImplemented
         void Duplicate_struct_field_is_rejected() throws Exception {
             assertRejected(
                     SourceCode.functionBlock()
@@ -356,7 +355,6 @@ public class StructIT extends ParserTestSupport {
         }
 
         @Test
-        @NotYetImplemented
         void Override_of_an_unknown_field_is_rejected() throws Exception {
             assertRejected(
                     SourceCode.functionBlock()

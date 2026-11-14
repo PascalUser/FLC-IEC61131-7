@@ -1,6 +1,6 @@
 package compiler.parser.publishers.leafs.multiple;
 
-import compiler.parser.facades.MacrosPublisher;
+import compiler.parser.publishers.leafs.single.MacrosPublisher;
 import compiler.repository.SymbolTable;
 import compiler.repository.builders.LexemeInfoBuilder;
 

@@ -9,6 +9,7 @@ import compiler.parser.initializations.leafs.DefaultInitialization;
 import compiler.repository.DiagnosticsHandler;
 import compiler.repository.LexemeInfo;
 import compiler.repository.SymbolTable;
+import compiler.repository.diagnostics.Diagnostic;
 import utils.*;
 import compiler.repository.enums.Subtype;
 import utils.builders.SourceCode;
@@ -42,11 +43,11 @@ public abstract class ParserTestSupport {
         Lexer lexer = new Lexer(reader, symbolTable, diagnosticHandler);
         Parser parser = new Parser(lexer, symbolTable, diagnosticHandler);
 
-        assertTrue(parser.parse(), "Parsing should succeed");
-        assertFalse(diagnosticHandler.hasErrors());
+        assertTrue(parser.parse(), "Parsing should succeed but:\n" + diagnosticHandler.getOutput());
+        assertFalse(diagnosticHandler.hasErrors(), diagnosticHandler.getOutput());
         AbstractSyntaxTree ast = parser.getAST();
         assertNotNull(ast, "Parser should build an AST");
-        return new ParsingResults(symbolTable, ast);
+        return new ParsingResults(symbolTable, ast, diagnosticHandler);
     }
 
     /**
@@ -69,7 +70,7 @@ public abstract class ParserTestSupport {
      * @param reader program reader of the invalid program
      * @throws Exception if the lexer fails with an I/O error
      */
-    protected void assertRejected(Reader reader) throws Exception {
+    protected ParsingResults assertRejected(Reader reader) throws Exception {
         SymbolTable symbolTable = new SymbolTable();
         DiagnosticsHandler diagnosticHandler = new DiagnosticsHandler();
 
@@ -79,6 +80,7 @@ public abstract class ParserTestSupport {
         boolean accepted = parser.parse();
         boolean mustBeTrue = !accepted || diagnosticHandler.hasErrors();
         assertTrue(mustBeTrue, "Expected the program to be rejected:\n" + reader.toString());
+        return new ParsingResults(symbolTable, parser.getAST(), diagnosticHandler);
     }
 
     /**
@@ -87,8 +89,23 @@ public abstract class ParserTestSupport {
      * @param sourceCode program builder of the invalid program
      * @throws Exception if the lexer fails with an I/O error
      */
-    protected void assertRejected(SourceCode sourceCode) throws Exception {
-        this.assertRejected(new StringReader(sourceCode.build()));
+    protected ParsingResults assertRejected(SourceCode sourceCode) throws Exception {
+        return this.assertRejected(new StringReader(sourceCode.build()));
+    }
+
+    protected void assertDiagnostic(Class<? extends Diagnostic> kind, String mssg, Reader reader) throws Exception {
+        DiagnosticsHandler diagnostics = assertRejected(reader).diagnosticsHandler();
+        assertTrue(diagnostics.hasErrors());
+        assertTrue(
+                diagnostics.getDiagnostics()
+                        .stream()
+                        .anyMatch(d -> kind.isInstance(d) && d.getMessage().contains(mssg)),
+                diagnostics.getOutput()
+        );
+    }
+
+    protected void assertDiagnostic(Class<? extends Diagnostic> kind, String mssg, SourceCode sc) throws Exception {
+        assertDiagnostic(kind, mssg, new StringReader(sc.build()));
     }
 
     /**

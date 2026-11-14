@@ -3,8 +3,9 @@ package integration.lexer.parser.symboltable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import compiler.repository.LexemeInfo;
+import utils.builders.Block;
 import utils.supports.ParserTestSupport;
-import utils.ParsingResults;
+import utils.supports.ParsingResults;
 import utils.builders.SourceCode;
 import compiler.repository.SymbolTable;
 import compiler.repository.builders.LexemeInfoBuilder;
@@ -35,7 +36,7 @@ public class FuzzifierIT extends ParserTestSupport {
             "END_FUZZIFY");
 
     /** Key as written in the documentation: scope, '@' and the lower-case marker, without '#'. */
-    private static final String ANONYMOUS_FUZZIFIER = "HUMIDITY";
+    private static final String INVAR = "HUMIDITY";
     private static final String FUZZ_SUFFIX = "@fuzzifier";
 
     private static List<String> list(String... values) {
@@ -76,16 +77,17 @@ public class FuzzifierIT extends ParserTestSupport {
 
         @Test
         void Anonymous_fuzzifier_is_published_with_the_names_of_its_terms() throws Exception {
-            String symbol = SourceCode.key(ANONYMOUS_FUZZIFIER) + FUZZ_SUFFIX;
+            String fuzzSymbol = SourceCode.key(INVAR) + FUZZ_SUFFIX;
             LexemeInfo expectedInfo = fuzzifierComponent(list("LOW", "MIDDLE", "HIGH")).build();
 
             ParsingResults results = parse(
                     SourceCode.functionBlock()
+                            .var(Block.VAR_INPUT, INVAR + ": INT")
                             .body(HUMIDITY)
             );
             SymbolTable symbolTable = results.symbolTable();
 
-            assertSymbol(symbolTable, symbol, expectedInfo);
+            assertSymbol(symbolTable, fuzzSymbol, expectedInfo);
         }
     }
 

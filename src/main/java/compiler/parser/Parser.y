@@ -75,6 +75,7 @@
     import compiler.parser.publishers.leafs.single.*;
     import compiler.parser.publishers.leafs.multiple.*;
     import compiler.parser.publishers.nodes.*;
+    import compiler.parser.semantics.*;
     import compiler.parser.tree.*;
     import compiler.parser.utils.*;
 
@@ -89,11 +90,21 @@
      * Name of the current program/function block being parsed.
      * Used to scope identifiers in the symbol table.
      */
-    private String programName;
     private AbstractSyntaxTree ast;
 
+    private String programName;
+    private IdentifierResolver identifierResolver;
+
+    private SemanticAnalyzer constantAcceptingType;
+    private SemanticAnalyzer distinctNames;
+    private SemanticAnalyzer declaredType;
+    private SemanticAnalyzer freshKeys;
+    private SemanticAnalyzer orderedBounds;
+    private SemanticAnalyzer ruleTermsBelongToVariables;
+    private SemanticAnalyzer ruleVariableRoles;
+
     public AbstractSyntaxTree getAST() {
-        return ast;
+        return this.ast;
     }
 }
 
@@ -102,6 +113,14 @@
  * for storing semantic information during parsing.
  */
 %parse-param { SymbolTable symbolTable } { DiagnosticsHandler diagnostics }
+
+%initial-action {
+    this.constantAcceptingType = new ConstantAcceptingType(this.symbolTable, this.diagnostics);
+    this.distinctNames = new DistinctNames(this.diagnostics);
+    this.declaredType = new DeclaredType(this.symbolTable, this.diagnostics);
+    this.freshKeys = new FreshKeys(this.symbolTable, this.diagnostics);
+    this.orderedBounds = new OrderedBounds(this.diagnostics);
+}
 
 %token TYPE END_TYPE STRUCT END_STRUCT
 %token FUNCTION_BLOCK END_FUNCTION_BLOCK
@@ -220,7 +239,9 @@
      boolean_constant
      time_constant
      numeric_constant
-     referenced_identifier
+     identifier_intializer
+     left_identifier_operand
+     right_identifier_operand
 
 %type <List<PathInitializationInfo>>
     structure_initialization
@@ -331,9 +352,9 @@ function_block_declaration:
     {
         SingleDeclaration functionBlock = new SingleDeclaration(this.symbolTable);
         Director.makeWithMetadata(functionBlock, new FunctionBlockMetadata());
-        functionBlock.identifier(programName).publish();
+        functionBlock.identifier(this.programName).publish();
 
-        this.ast = new AbstractSyntaxTree(programName, $5);
+        this.ast = new AbstractSyntaxTree(this.programName, $5);
     }
 ;
 
@@ -341,6 +362,18 @@ function_block_name:
     IDENTIFIER
     {
         this.programName = $1;
+        this.identifierResolver = new IdentifierResolver(this.programName);
+
+        this.ruleVariableRoles = new RuleVariableRoles(
+            this.symbolTable,
+            this.diagnostics,
+            this.identifierResolver
+        );
+        this.ruleTermsBelongToVariables = new RuleTermsBelongToVariables(
+            this.symbolTable,
+            this.diagnostics,
+            this.identifierResolver
+        );
     }
 ;
 
@@ -383,9 +416,13 @@ opt_fb_io_var_declarations_list:
  * @see utils.enums.Use
  */
 fb_io_var_declarations:
-    io_var_decl var_retain_spec var_init_decl_list ';' END_VAR
+    io_var_decl var_retain_spec var_init_decl_list END_VAR
     {
-        $3.source($1).use(Use.VARIABLE).scope(programName).publish();
+        $3.source($1).use(Use.VARIABLE).scope(this.programName);
+        List<String> vars = $3.keys();
+        this.distinctNames.check(vars);
+        this.freshKeys.check(vars);
+        $3.publish();
     }
 ;
 
@@ -502,7 +539,7 @@ fuzzify_block:
     {
         FuzzyDeclaration fuzzifierDeclaration = new FuzzyDeclaration(this.symbolTable, $3);
         Director.makeWithMetadata(fuzzifierDeclaration, new FuzzifierMetadata($3));
-        fuzzifierDeclaration.identifier($2).scope(programName).publish();
+        fuzzifierDeclaration.identifier($2).scope(this.programName).publish();
     }
     END_FUZZIFY
 ;
@@ -529,7 +566,7 @@ defuzzify_block:
     {
          FuzzyDeclaration defuzzifierDeclaration = new FuzzyDeclaration(this.symbolTable, $4);
          Director.makeWithMetadata(defuzzifierDeclaration, new DefuzzifierMetadata($3, $4, $5, $6));
-         defuzzifierDeclaration.identifier($2).scope(programName).publish();
+         defuzzifierDeclaration.identifier($2).scope(this.programName).publish();
     }
 ;
 
@@ -641,7 +678,7 @@ linguistic_term_value:
     IDENTIFIER ';'
     {
         List<String> point = new ArrayList<>();
-        String key = IdentifierParser.parse($1, programName).mangled();
+        String key = this.identifierResolver.key($1);
         LexemeInfo metadata = this.symbolTable.get(key);
         if (metadata == null) {
             // TODO: undeclared var
@@ -652,6 +689,7 @@ linguistic_term_value:
             point.add($1);
         }
         point.add("1");
+
         LexemeInfoBuilder termBuilder = new LexemeInfoBuilder();
         Director.makeWithMetadata(termBuilder, new TermMetadata(point));
         $$ = termBuilder;
@@ -723,7 +761,7 @@ point:
     | '(' IDENTIFIER ',' numeric_constant ')'
     {
         List<String> point = new ArrayList<>();
-        String key = IdentifierParser.parse($2, programName).mangled();
+        String key = this.identifierResolver.key($2);
         LexemeInfo metadata = this.symbolTable.get(key);
         if (metadata == null) {
             // TODO: undeclared var
@@ -820,27 +858,34 @@ rule_block:
     accumulation_method
     rules_decl
     END_RULEBLOCK
-    {   
+    {
+        SingleDeclaration ruleblockDeclaration = new SingleDeclaration(this.symbolTable);
+        Director.makeWithMetadata(ruleblockDeclaration, new RuleBlockMetadata());
+        ruleblockDeclaration.identifier($2).scope(this.programName).publish();
+
+        String key = this.identifierResolver.key($2);
         List<Operator> configuration = $3;
         configuration.add($4);
         configuration.add($5);
-        
         List<ParserTreeNode> componentChild = Collections.singletonList($6);
-        ParserTreeNode componentNode = new ParserTreeNode(ParserLabel.COMPONENT, $2, componentChild);
+        ParserTreeNode componentNode = new ParserTreeNode(ParserLabel.COMPONENT, key, componentChild);
 
-        $$ = RuleblockASTBuilder.build(componentNode, configuration);
+        RuleBlockNode ruleBlock = RuleblockASTBuilder.build(componentNode, configuration);
+        this.ruleVariableRoles.check(ruleBlock);
+        this.ruleTermsBelongToVariables.check(ruleBlock);
+        $$ = ruleBlock;
     }
 ;
 
 rule_block_name:
     IDENTIFIER
     {
-        $$ = programName + '#' + $1;
+        $$ = $1;
     }
 ;
 
 operator_definition:
-    opt_operator_or opt_operator_and ';'
+    opt_operator_or opt_operator_and
     {
         List<Operator> operators = new ArrayList<>();
         operators.add($1);
@@ -854,7 +899,7 @@ opt_operator_or:
     {
         $$ = OperatorFactory.orDefault();
     }
-    | OR ':' or_type
+    | OR ':' or_type  ';'
     {
         $$ = $3;
     }
@@ -865,7 +910,7 @@ opt_operator_and:
     {
         $$ = OperatorFactory.andDefault();
     }
-    | AND ':' and_type
+    | AND ':' and_type  ';'
     {
         $$ = $3;
     }
@@ -1008,7 +1053,7 @@ opt_weighting:
     }
     | WITH IDENTIFIER
     {
-        $$ = programName + "#" + $2;
+        $$ = identifierResolver.key($2);
     }
 ;
 
@@ -1161,18 +1206,28 @@ condition_operand:
  * @see #condition
  */
 subcondition:
-    identifier_operand IS identifier_operand
+    left_identifier_operand IS right_identifier_operand
     {
+        String leftKey = this.identifierResolver.key($1);
+        String rightKey = RightOperandResolver.resolve(this.symbolTable, leftKey, $3);
+        ParserTreeNode leftChild = new ParserTreeNode(ParserLabel.IDENTIFIER, leftKey, Collections.emptyList());
+        ParserTreeNode rightChild = new ParserTreeNode(ParserLabel.IDENTIFIER, rightKey, Collections.emptyList());
+
         List<ParserTreeNode> isChildren = new ArrayList<>();
-        isChildren.add($1);
-        isChildren.add($3);
+        isChildren.add(leftChild);
+        isChildren.add(rightChild);
         $$ = new ParserTreeNode(ParserLabel.IS, isChildren);
     }
-    | identifier_operand IS NOT identifier_operand
+    | left_identifier_operand IS NOT right_identifier_operand
     {
+        String leftKey = this.identifierResolver.key($1);
+        String rightKey = RightOperandResolver.resolve(this.symbolTable, leftKey, $4);
+        ParserTreeNode leftChild = new ParserTreeNode(ParserLabel.IDENTIFIER, leftKey, Collections.emptyList());
+        ParserTreeNode rightChild = new ParserTreeNode(ParserLabel.IDENTIFIER, rightKey, Collections.emptyList());
+
         List<ParserTreeNode> isChildren = new ArrayList<>();
-        isChildren.add($1);
-        isChildren.add($4);
+        isChildren.add(leftChild);
+        isChildren.add(rightChild);
         ParserTreeNode isNode = new ParserTreeNode(ParserLabel.IS, isChildren);
 
         List<ParserTreeNode> notChild = Collections.singletonList(isNode);
@@ -1183,7 +1238,22 @@ subcondition:
 identifier_operand:
     IDENTIFIER
     {
-        $$ = new ParserTreeNode(ParserLabel.IDENTIFIER, $1, Collections.emptyList());
+        String key = this.identifierResolver.key($1);
+        $$ = new ParserTreeNode(ParserLabel.IDENTIFIER, key, Collections.emptyList());
+    }
+;
+
+left_identifier_operand:
+    IDENTIFIER
+    {
+        $$ = $1;
+    }
+;
+
+right_identifier_operand:
+    IDENTIFIER
+    {
+        $$ = $1;
     }
 ;
 
@@ -1230,11 +1300,16 @@ conclusion_list:
 ;
 
 conclusion:
-     identifier_operand IS identifier_operand
-     { 
+     left_identifier_operand IS right_identifier_operand
+     {
+        String leftKey = this.identifierResolver.key($1);
+        String rightKey = RightOperandResolver.resolve(this.symbolTable, leftKey, $3);
+        ParserTreeNode leftChild = new ParserTreeNode(ParserLabel.IDENTIFIER, leftKey, Collections.emptyList());
+        ParserTreeNode rightChild = new ParserTreeNode(ParserLabel.IDENTIFIER, rightKey, Collections.emptyList());
+
         List<ParserTreeNode> isChildren = new ArrayList<>();
-        isChildren.add($1);
-        isChildren.add($3);
+        isChildren.add(leftChild);
+        isChildren.add(rightChild);
         $$ = new ParserTreeNode(ParserLabel.IS, isChildren);
      }
      | identifier_operand
@@ -1283,13 +1358,13 @@ pragma:
     {
         SingleDeclaration pragmaDeclaration = new SingleDeclaration(this.symbolTable);
         Director.makeWithMetadata(pragmaDeclaration, PragmaMetadata.flag(this.symbolTable));
-        pragmaDeclaration.identifier($2).scope(programName + PragmaMetadata.SCOPE_SUFFIX).publish();
+        pragmaDeclaration.identifier($2).scope(this.programName + PragmaMetadata.SCOPE_SUFFIX).publish();
     }
     | PRAGMA IDENTIFIER numeric_constant ';'
     {
         SingleDeclaration pragmaDeclaration = new SingleDeclaration(this.symbolTable);
         Director.makeWithMetadata(pragmaDeclaration, PragmaMetadata.valued(this.symbolTable, $3));
-        pragmaDeclaration.identifier($2).scope(programName + PragmaMetadata.SCOPE_SUFFIX).publish();
+        pragmaDeclaration.identifier($2).scope(this.programName + PragmaMetadata.SCOPE_SUFFIX).publish();
     }
 ;
 
@@ -1340,9 +1415,13 @@ pragma:
  * @see parser.initializations.nodes.StructureDeclaration
  */
 var_declarations:
-    var_id_decl var_constant_spec var_init_decl_list ';' END_VAR
+    var_id_decl var_constant_spec var_init_decl_list END_VAR
     {
-        $3.source(Source.INTERNAL).use($2).scope(programName).publish();
+        $3.source(Source.INTERNAL).use($2).scope(this.programName);
+        List<String> vars = $3.keys();
+        distinctNames.check(vars);
+        freshKeys.check(vars);
+        $3.publish();
     }
 ;
 
@@ -1391,15 +1470,15 @@ var_constant_spec:
 ;
 
 var_init_decl_list:
-    var_init_decl
+    var_init_decl ';'
     {
         DeclarationBlock block = new DeclarationBlock();
         block.add($1);
         $$ = block;
     }
-    | var_init_decl_list ';' var_init_decl
+    | var_init_decl_list var_init_decl ';'
     {
-        $1.add($3);
+        $1.add($2);
         $$ = $1;
     }
 ;
@@ -1521,6 +1600,10 @@ custom_spec_init:
 custom_specification:
     IDENTIFIER
     {
+        if (!this.declaredType.check($1)) {
+            return YYERROR;
+        }
+
         LexemeInfoBuilder customDeclaration = new LexemeInfoBuilder();
         Director.makeWithMetadata(customDeclaration, new CustomMetadata(this.symbolTable, $1));
         $$ = customDeclaration;
@@ -1551,25 +1634,21 @@ initialized_custom:
 initialized_custom_with_constant:
     custom_specification ASSIGN_OP constant
     {
-       $1.initialValue(new VariableInitialization($3));
-       $$ = $1;
+        if (this.constantAcceptingType.check($1.customType())) {
+            $1.initialValue(new VariableInitialization($3));
+        }
+        $$ = $1;
     }
 ;
 
 initialized_custom_with_identifier:
-    custom_specification ASSIGN_OP referenced_identifier
+    custom_specification ASSIGN_OP identifier_intializer
     {
-        // TODO: check if it the referenced identifier is valid
-        // In order to do that, the custom type from custom specification needs to be retrieved, then, the referenced
-        // identifier needs to be in it's parameters list and the custom type has to be an enumerated.
-
-        ParsedIdentifier referencedIdentifier = IdentifierParser.parse($3, $1.customType());
-
-        LexemeInfo metadata = this.symbolTable.get($1.customType());
-        if (metadata.type.equals(Type.ENUMERATE) && metadata.parameters.contains(referencedIdentifier.name())) {
-            $1.initialValue(new VariableInitialization(referencedIdentifier.mangled()));
+        ParsedInitializer reference = IdentifierInitializerParser.parse($3, $1.customType());
+        SemanticAnalyzer analyzer = new EnumeratorOfType(this.symbolTable, this.diagnostics, $1.customType());
+        if (analyzer.check(reference.name())) {
+            $1.initialValue(new VariableInitialization(reference.mangled()));
         }
-
         $$ = $1;
     }
 ;
@@ -1577,13 +1656,12 @@ initialized_custom_with_identifier:
 initialized_custom_with_structure:
     custom_specification ASSIGN_OP structure_initialization
     {
-        StructInitialization structInit = (StructInitialization) $1.initialValue();
-
-        for (PathInitializationInfo fieldInfo : $3) {
-            if (structInit.find(fieldInfo.name()).isPresent()) {
-                structInit.put(fieldInfo.name(), fieldInfo.initialValue());
+        NodeInitialization target = (NodeInitialization) $1.initialValue();
+        ExistingField exists = new ExistingField(this.diagnostics, target);
+        for (PathInitializationInfo field : $3) {
+            if (exists.check(field.name())) {
+                target.put(field.name(), field.initialValue());
             }
-            // TODO: error handling
         }
         $$ = $1;
     }
@@ -1971,6 +2049,8 @@ subrange_spec_init:
 subrange_specification:
     integer_type '(' range ')'
     {
+        this.orderedBounds.check($3);
+
         LexemeInfoBuilder subrangeBuilder = new LexemeInfoBuilder();
         Director.makeWithMetadata(subrangeBuilder, new SubrangeMetadata($1, $3.get(0), $3.get(1)));
         $$ = subrangeBuilder;
@@ -2013,6 +2093,8 @@ enumerated_spec_init:
 enumerated_specification:
     '(' identifier_list ')'
     {
+        this.distinctNames.check($2);
+
         LexemeInfoBuilder enumBuilder = new LexemeInfoBuilder();
         Director.makeWithMetadata(enumBuilder, new EnumeratedMetadata($2));
         $$ = enumBuilder;
@@ -2020,17 +2102,13 @@ enumerated_specification:
 ;
 
 initialized_enumerated:
-    enumerated_specification ASSIGN_OP referenced_identifier
+    enumerated_specification ASSIGN_OP identifier_intializer
     {
-        // TODO: semantic check over initial value
-        // Note: it has to be in the enumerated_specification parameters. The initial value can't be global because
-        // it's in a new enumerated specification declaration (type incompatible). However, another enumerated
-        // declaration could have declared the same "<programName>#<enumeratedValue>", so, it's important to check that
-        // there's no redeclaration.
+        SemanticAnalyzer analyzer = new InitializerIsEnumeratedValue($1.parameters(), this.diagnostics);
 
-        ParsedIdentifier referencedIdentifier = IdentifierParser.parse($3, programName);
-        if (!referencedIdentifier.scope().isEmpty()) {
-            // TODO: throw error
+        ParsedInitializer referencedIdentifier = IdentifierInitializerParser.parse($3, this.programName);
+        if (!analyzer.check(referencedIdentifier)) {
+            return YYERROR;
         }
 
         $1.initialValue(new VariableInitialization(referencedIdentifier.mangled()));
@@ -2056,6 +2134,11 @@ array_spec_init:
 array_specification:
     ARRAY '[' range_list ']' OF IDENTIFIER
     {
+        this.orderedBounds.check($3);
+        if (!this.declaredType.check($6)) {
+            return YYERROR;
+        }
+
         ArrayMetadata arrayMetadata = new ArrayMetadata(this.symbolTable, Subtype.CUSTOM, $6, $3);
 
         LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
@@ -2064,6 +2147,8 @@ array_specification:
     }
     | ARRAY '[' range_list ']' OF non_generic_type
     {
+        this.orderedBounds.check($3);
+
         ArrayMetadata arrayMetadata = new ArrayMetadata(this.symbolTable, $6, null, $3);
 
         LexemeInfoBuilder arrayBuilder = new LexemeInfoBuilder();
@@ -2186,7 +2271,7 @@ array_initial_element:
         pathsInfo.add(new PathInitializationInfo("", new VariableInitialization($1)));
         $$ = pathsInfo;
     }
-    | referenced_identifier
+    | identifier_intializer
     {
         // TODO: see how to check semantics
         List<PathInitializationInfo> pathsInfo = new ArrayList<>();
@@ -2293,7 +2378,7 @@ initialized_field_with_constant:
 ;
 
 initialized_field_with_identifier:
-    field_name ASSIGN_OP referenced_identifier
+    field_name ASSIGN_OP identifier_intializer
     {
         List<PathInitializationInfo> fieldsInfo = new ArrayList<>();
         fieldsInfo.add(new PathInitializationInfo($1, new VariableInitialization($3)));
@@ -2325,7 +2410,7 @@ initialized_field_with_structure:
     }
 ;
 
-referenced_identifier:
+identifier_intializer:
     IDENTIFIER
     {
         /**
@@ -2453,6 +2538,9 @@ type_declaration:
     type_name_declaration ':' type_spec_init
     {
         $3.identifier($1).use(Use.TYPE).source(Source.NONE);
+        List<String> vars = $3.keys();
+        this.distinctNames.check(vars);
+        this.freshKeys.check(vars);
         $3.publish();
     }
 ;
@@ -2564,6 +2652,12 @@ type_spec_init:
 structure_specification:
     STRUCT structure_field_init_decl_list END_STRUCT
     {
+        List<String> fieldNames = new ArrayList<>();
+        for (PathInitializationInfo field : $2.getInitializationInfo()) {
+            fieldNames.add(field.name());
+        }
+        this.distinctNames.check(fieldNames);
+
         StructureDeclaration structDeclaration = new StructureDeclaration(this.symbolTable, $2);
         Director.makeWithMetadata(structDeclaration, new StructureMetadata($2));
 

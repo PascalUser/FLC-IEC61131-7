@@ -1,7 +1,8 @@
-package utils;
+package utils.supports;
 
 
 import compiler.ast.AbstractSyntaxTree;
+import compiler.repository.DiagnosticsHandler;
 import compiler.repository.SymbolTable;
 
 /**
@@ -15,6 +16,7 @@ import compiler.repository.SymbolTable;
 public final class ParsingResults {
     private final SymbolTable symbolTable;
     private final AbstractSyntaxTree abstractSyntaxTree;
+    private final DiagnosticsHandler diagnosticsHandler;
 
     /**
      * Creates the result of a parse.
@@ -22,9 +24,10 @@ public final class ParsingResults {
      * @param symbolTable symbol table produced by the parser
      * @param abstractSyntaxTree syntax tree produced by the parser
      */
-    public ParsingResults(SymbolTable symbolTable, AbstractSyntaxTree abstractSyntaxTree) {
+    public ParsingResults(SymbolTable symbolTable, AbstractSyntaxTree abstractSyntaxTree, DiagnosticsHandler diagnosticsHandler) {
         this.symbolTable = symbolTable;
         this.abstractSyntaxTree = abstractSyntaxTree;
+        this.diagnosticsHandler = diagnosticsHandler;
     }
 
     /**
@@ -44,4 +47,6 @@ public final class ParsingResults {
     public AbstractSyntaxTree abstractSyntaxTree() {
         return abstractSyntaxTree;
     }
+
+    public DiagnosticsHandler diagnosticsHandler() { return diagnosticsHandler; }
 }
