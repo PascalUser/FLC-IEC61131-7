@@ -1,20 +1,27 @@
 /**
- * Core utilities - centralized repository pattern implementation.
+ * Shared semantic repository used across compiler phases.
  * <p>
- * The {@code utils} package implements the <b>Repository pattern</b> as the single
- * source of truth for all compilation phases. Key components:
+ * This package centralizes semantic information produced and consumed
+ * during compilation. It is a shared component of the compiler architecture,
+ * rather than a collection of unrelated utilities.
+ * </p>
+ * <p>
+ * Main responsibilities include:
  * </p>
  * <ul>
- *   <li>{@link compiler.repository.SymbolTable} - HashMap-based storage for {@link compiler.repository.LexemeInfo} entries</li>
- *   <li>{@link compiler.repository.LexemeInfo} - immutable DTO with complete semantic attributes</li>
- *   <li>{@link compiler.repository.DiagnosticsHandler} - centralized error/warning collection</li>
- *   <li>{@link compiler.repository.builders.LexemeInfoBuilder} - fluent builder for LexemeInfo</li>
- *   <li>{@link compiler.repository.enums.Type}, {@link compiler.repository.enums.Subtype}, {@link compiler.repository.enums.Use}, {@link compiler.repository.enums.Source} -
- *   classification enums</li>
+ *   <li>{@link compiler.repository.SymbolTable}: stores and exposes
+ *       semantic information about declared lexemes.</li>
+ *   <li>{@link compiler.repository.LexemeInfo}: represents the semantic
+ *       attributes associated with a lexeme.</li>
+ *   <li>{@link compiler.repository.DiagnosticsHandler}: collects
+ *       compilation diagnostics.</li>
+ *   <li>{@link compiler.repository.builders.LexemeInfoBuilder}:
+ *       supports the construction of lexeme information.</li>
  * </ul>
  * <p>
- * All phases (lexer, parser, semantic) share a single SymbolTable instance,
- * ensuring data consistency and decoupling.
+ * The lexer and parser share repository state so that declarations,
+ * semantic classifications, and diagnostics remain available across
+ * compilation phases.
  * </p>
  *
  * @see compiler.repository.SymbolTable

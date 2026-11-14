@@ -12,7 +12,7 @@ import compiler.repository.diagnostics.pinpointed.OutOfRangeWarning;
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
- * @see Warning
+ * @see compiler.repository.diagnostics.pinpointed.PinpointedWarning
  */
 public final class IntegerOutOfRange extends OutOfRangeWarning {
     private final String correctedInteger;

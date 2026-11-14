@@ -13,7 +13,7 @@ import compiler.repository.enums.Subtype;
  * @author Victoriano Etcheverría
  * @version 1.0
  * @since 1.0
- * @see Warning
+ * @see compiler.repository.diagnostics.pinpointed.PinpointedWarning
  */
 public final class StringLengthWarning extends PinpointedWarning {
     private final Subtype strSubtype;

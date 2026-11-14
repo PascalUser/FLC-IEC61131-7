@@ -1,0 +1,48 @@
+{
+  "production_root": "src/main/java/compiler",
+  "modules": {
+    "lexer": {
+      "java_files": 37,
+      "non_comment_lines": 1836
+    },
+    "parser": {
+      "java_files": 68,
+      "non_comment_lines": 5659
+    },
+    "ast": {
+      "java_files": 20,
+      "non_comment_lines": 301
+    },
+    "generator": {
+      "java_files": 36,
+      "non_comment_lines": 1804
+    },
+    "repository": {
+      "java_files": 37,
+      "non_comment_lines": 841
+    }
+  },
+  "tests": {
+    "java_files": 71,
+    "unit_test_classes": 35,
+    "integration_test_classes": 18
+  },
+  "jacoco_line_coverage": {
+    "overall_percent": 68.8,
+    "by_module_percent": {
+      "lexer": 88.8,
+      "parser": 66.4,
+      "ast": 98.9,
+      "generator": 46.9,
+      "repository": 77.2
+    },
+    "covered_lines": 2877,
+    "missed_lines": 1305
+  },
+  "notes": [
+    "Lowering is included in compiler.generator.lowers, not a separate module.",
+    "Simulation helpers under src/test are test support, not production code.",
+    "LOC is a simple source-line inventory, not a standardized complexity metric.",
+    "Coverage is omitted when target/site/jacoco/jacoco.xml is unavailable."
+  ]
+}

@@ -95,7 +95,7 @@ public abstract class NumbersAnalyzer implements SemanticAnalyzer {
      *
      * @param line   source line number
      * @param lexeme the invalid lexeme
-     * @return warning diagnostic instance (extends {@link Warning})
+     * @return warning diagnostic instance (extends {@link compiler.repository.diagnostics.pinpointed.PinpointedWarning})
      */
     protected abstract Diagnostic createDiagnostic(int line, String lexeme);
 }
