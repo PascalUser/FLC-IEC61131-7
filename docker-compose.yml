@@ -7,7 +7,10 @@ services:
         GROUP_ID: ${GID:-1000}
     env_file: .env
     volumes:
+      # Hidden directories
       - ./.opencode:/workspace/.opencode:rw
+      - ./.env:/workspace/.env:ro
+      # Project
       - ./config:/workspace/config:ro
       - ./doc:/workspace/doc:rw
       - ./scripts:/workspace/scripts:rw

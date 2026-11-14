@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "openrouter/recursive/nemotron-3-ultra:free",
+  "model": "openrouter/openrouter/auto",
 
   "agent": {
     "readme-writer": {
