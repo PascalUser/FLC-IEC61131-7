@@ -34,12 +34,12 @@ AUDIT OF LEGACY PATCHES IN handoff/
   Do not apply directly; selectively merge any missing architectural notes.
 
 ROADMAP & CURRENT PHASE STATUS
-- P0 [IN PROGRESS] Reset handoff baseline and establish patch protocol
+- P0 [DONE] Reset handoff baseline and establish patch protocol
   (0000-reset-handoff.patch).
-- P1 [IN PROGRESS] Enforce read-only / patch-proposal policy across OpenCode
+- P1 [DONE] Enforce read-only / patch-proposal policy across OpenCode
   agents (0001-harness-agent-policy.patch).
-- P2 [PENDING] Redesign run_all_agents.py as a deterministic state-tracked
-  orchestrator (PENDING -> RUNNING -> SUCCEEDED / FAILED / SKIPPED).
+- P2 [IN PROGRESS] Redesign run_all_agents.py as a deterministic state-tracked
+  orchestrator (0002-harness-orchestrator.patch).
 - P3 [PENDING] Reconcile single source of truth across statistics, Mermaid
   diagram extraction, and thesis synthesis scripts.
 - P4 [PENDING] Harden validate_docs.py (structural, Mermaid, code-path, and
@@ -68,10 +68,10 @@ From the repository root on feature/refactoring:
   python3 scripts/validate_docs.py
 
 NEXT CONCRETE TASK
-1. Review and apply 0000-reset-handoff.patch and 0001-harness-agent-policy.patch.
+1. Review and apply 0002-harness-orchestrator.patch.
 2. Inspect scripts/generate_general_statistics.py vs scripts/extract_stats.py
-   and scripts/generate_diagrams.py to prepare P2 (orchestrator) and P3
-   (single source of truth).
+   and scripts/generate_diagrams.py to prepare P3 (single source of truth
+   across metrics, Mermaid diagrams, and thesis synthesis).
 
 DOCUMENTATION & SIMULATION INVARIANTS
 Documentation must match the current implementation. A Javadoc comment that
