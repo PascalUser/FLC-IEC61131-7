@@ -1,0 +1,452 @@
+diff --git a/opencode.json b/opencode.json
+index c37bccc..ebde976 100644
+--- a/opencode.json
++++ b/opencode.json
+@@ -1,15 +1,28 @@
+ {
+   "$schema": "https://opencode.ai/config.json",
+   "model": "openrouter/openrouter/auto",
+-
++  "permission": {
++    "edit": "deny",
++    "bash": {
++      "*": "ask",
++      "git status*": "allow",
++      "git diff*": "allow",
++      "git log*": "allow",
++      "git show*": "allow",
++      "python3 scripts/validate_docs.py*": "allow",
++      "mvn javadoc:javadoc*": "allow",
++      "mvn test-compile*": "allow",
++      "mvn test*": "allow"
++    }
++  },
+   "agent": {
+     "readme-writer": {
+       "description": "Maintains README.md from pom.xml and synthesis context",
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/readme-writer.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -18,8 +31,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/doc-writer.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -28,8 +41,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/chart-artist.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -38,8 +51,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/diagram-architect.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -48,8 +61,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/thesis-writer.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -58,6 +71,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/doc-validator.md}",
+       "tools": {
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -66,8 +81,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/harness-documenter.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -76,8 +91,8 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/javadoc-updater.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     },
+@@ -86,13 +101,12 @@
+       "mode": "subagent",
+       "prompt": "{file:./.opencode/agents/java-doc-writer.md}",
+       "tools": {
+-        "write": true,
+-        "edit": true,
++        "write": false,
++        "edit": false,
+         "bash": true
+       }
+     }
+   },
+-
+   "command": {
+     "readme-update": {
+       "description": "Updates README.md from pom.xml and synthesis",
+@@ -150,4 +164,4 @@
+       "template": "Run mvn javadoc:javadoc and confirm zero warnings for $ARGUMENTS. Report any remaining issues."
+     }
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/.opencode/agents/PATCH_POLICY.md b/.opencode/agents/PATCH_POLICY.md
+new file mode 100644
+index 0000000..b2b2eec
+--- /dev/null
++++ b/.opencode/agents/PATCH_POLICY.md
+@@ -0,0 +1,17 @@
++# Shared Agent Patch-First Policy
++
++All subagents in `.opencode/agents/` operate under a strict read-and-propose contract:
++
++1. **No direct repository mutations**: Never modify, create, or delete tracked files directly (`write` and `edit` are disabled in `opencode.json`). Do not use shell commands (`sed -i`, redirection `>`, `tee`, `python` file writes, `git apply`, `git commit`, `git push`) to alter the working tree or Git history.
++2. **Patch-only change proposals**: Whenever your task requires adding, updating, or deleting repository files, output a self-contained unified diff patch (`diff --git a/... b/...`) that passes `git apply --check --whitespace=error`.
++3. **Mandatory patch metadata**: Precede every proposed patch with:
++   - **ID**: `NNNN-short-description.patch`
++   - **Objective**: What problem the patch solves
++   - **Motivation**: Why the change is needed
++   - **Scope**: Exact files affected
++   - **Changes**: Concise technical summary
++   - **Risks**: Potential side effects or ordering constraints
++   - **Validation**: Commands to verify the patch
++   - **Dependencies**: Prior patch IDs required, or `None`
++4. **Source-of-truth grounding**: Inspect the actual `compiler.*` source tree under `src/main/java/compiler/` and tests under `src/test/java/` before making claims. Never invent metrics, classes, packages, or behavior.
++5. **Handoff & logging**: Do NOT write to `/.opencode/log.txt` (deprecated). Include any necessary update to `handoff/HANDOFF.txt` inside the proposed patch or report the status summary for the user to record upon approval.
+diff --git a/.opencode/agents/chart-artist.md b/.opencode/agents/chart-artist.md
+index 6cb0a9b..e324e44 100644
+--- a/.opencode/agents/chart-artist.md
++++ b/.opencode/agents/chart-artist.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Generates and maintains statistical charts (pie/bar/histogram) from real code data
+ mode: subagent
+ temperature: 0.1
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are responsible for `scripts/extract_stats.py`. Your only job: maintain statistical charts reflecting actual source code — never invented data.
+ 
+@@ -38,5 +37,4 @@
+ * Verify PNGs in `doc/assets/` and `stats.json`
+ * Report generated charts with source citations
+ 
+-8. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-   Format: `[2025-01-15T10:30:00Z] [chart-artist] [write] files: [doc/assets/cyclomatic_complexity.png] - Generated cyclomatic complexity chart`
++9. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver proposed script or documentation updates as a self-contained unified diff patch with full metadata.
+diff --git a/.opencode/agents/diagram-architect.md b/.opencode/agents/diagram-architect.md
+index 7c18d0f..e36f085 100644
+--- a/.opencode/agents/diagram-architect.md
++++ b/.opencode/agents/diagram-architect.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Generates mermaid diagrams (class, sequence, flow, package, object) from current source code
+ mode: subagent
+ temperature: 0.1
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the diagram architect for this compiler (FLC for IEC 61131-7). Your job is to generate mermaid diagrams that reflect the actual source code structure — never invented relationships.
+ 
+@@ -54,5 +53,4 @@
+ * Run `python3 scripts/validate_docs.py` to verify syntax
+ * Report which diagrams were generated
+ 
+-10. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-    Format: `[2025-01-15T10:30:00Z] [diagram-architect] [write] files: [doc/diagrams/parser_class_diagram.mmd] - Generated parser class diagram`
++11. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver proposed diagram or generator updates as a self-contained unified diff patch with full metadata.
+diff --git a/.opencode/agents/doc-validator.md b/.opencode/agents/doc-validator.md
+index bb4ef63..62e62ee 100644
+--- a/.opencode/agents/doc-validator.md
++++ b/.opencode/agents/doc-validator.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Validates all markdown files in doc/ against style rules
+ mode: subagent
+ temperature: 0.0
+ tools:
+-bash: true
+-write: true
+-edit: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the documentation validator for this project. Your job is to run validation checks on ALL Markdown files in `doc/` and report violations. You are called automatically by every agent that generates Markdown (readme-writer, doc-writer, thesis-writer).
+ 
+@@ -35,5 +34,4 @@
+ * Called by: readme-writer (after write), doc-writer (after write), thesis-writer (after each chapter), diagram-architect (after generating .mmd files)
+ * Never modify files — only validate and report
+ 
+-12. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-    Format: `[2025-01-15T10:30:00Z] [doc-validator] [validate] files: [doc/modules/lexer.md] - Validated lexer module docs`
++12. **Read-only enforcement**: Follow `.opencode/agents/PATCH_POLICY.md`. Operate strictly in read-and-report mode; never modify files or append to `/.opencode/log.txt`.
+diff --git a/.opencode/agents/doc-writer.md b/.opencode/agents/doc-writer.md
+index 5728351..6e814da 100644
+--- a/.opencode/agents/doc-writer.md
++++ b/.opencode/agents/doc-writer.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Documents compiler modules in Markdown with mermaid diagrams and PNG chart references
+ mode: subagent
+ temperature: 0.2
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the technical documenter for this compiler (IEC 61131-7 / FCL, Java, JFlex + Bison).
+ 
+@@ -34,7 +33,6 @@
+ 9. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 10. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 11. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+-12. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-    Format: `[2025-01-15T10:30:00Z] [doc-writer] [write] files: [doc/modules/lexer.md] - Updated lexer module docs in English`
++12. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver module documentation updates as a self-contained unified diff patch with full metadata.
+ 
+-Command `docs-update` takes package name: `/docs-update lexer` creates `doc/modules/lexer.md`.
++Command `docs-update` takes package name: `/docs-update <package>` prepares a reviewable patch for `doc/modules/<package>.md`.
+diff --git a/.opencode/agents/harness-documenter.md b/.opencode/agents/harness-documenter.md
+index 0675ede..86f32e1 100644
+--- a/.opencode/agents/harness-documenter.md
++++ b/.opencode/agents/harness-documenter.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Documents the harness in thesis chapter (internal agent)
+ mode: subagent
+ temperature: 0.2
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the harness documenter. Your only job is to generate the content for the thesis chapter documenting the OpenCode documentation harness (Chapter 09: HARNESS de documentación).
+ 
+@@ -30,12 +29,11 @@
+ 8. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 9. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 10. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+-11. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-    Format: `[2025-01-15T10:30:00Z] [harness-documenter] [write] files: [doc/thesis/09-harness.md] - Updated harness chapter in Spanish`
++11. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver updates for `doc/thesis/09-harness.md` as a self-contained unified diff patch with full metadata.
+ 
+ Workflow:
+ 
+ * Read `opencode.json`, `.opencode/agents/*.md`, `scripts/*.py`, `doc/HARNESS.md`
+ * Generate mermaid flowchart of the complete pipeline
+-* Write chapter content
+-* Run formatter + validator with retry loop (up to 10 attempts)
++* Draft chapter content verified against `scripts/validate_docs.py` rules
++* Output a reviewable patch targeting `doc/thesis/09-harness.md`
+diff --git a/.opencode/agents/java-doc-writer.md b/.opencode/agents/java-doc-writer.md
+index 1f4e0e6..0c610a9 100644
+--- a/.opencode/agents/java-doc-writer.md
++++ b/.opencode/agents/java-doc-writer.md
+@@ -3,8 +3,8 @@
+ mode: subagent
+ temperature: 0.1
+ tools:
+-  write: true
+-  edit: true
++  write: false
++  edit: false
+   bash: true
+ ---
+ 
+@@ -82,5 +82,4 @@
+ - `/java-doc-write <file>` - Write Javadoc for a Java file
+ - `/java-doc-verify <file>` - Run `mvn javadoc:javadoc` and confirm zero warnings
+ 
+-**Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-Format: `[2025-01-15T10:30:00Z] [java-doc-writer] [write] files: [src/main/java/parser/Parser.java] - Fixed Javadoc for Parser class`
+\ No newline at end of file
++**Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `.java` or `.y` files directly; deliver proposed Javadoc updates as a self-contained unified diff patch with full metadata.
+diff --git a/.opencode/agents/javadoc-updater.md b/.opencode/agents/javadoc-updater.md
+index 8efc6ab..aeaf495 100644
+--- a/.opencode/agents/javadoc-updater.md
++++ b/.opencode/agents/javadoc-updater.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Maintains Javadoc quality - zero broken links, complete coverage
+ mode: subagent
+ temperature: 0.1
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the Javadoc maintainer for the FLC compiler (Java, JFlex + Bison). Your job is to ensure all public APIs have complete, accurate Javadoc with zero broken @link/@see references.
+ 
+@@ -93,5 +92,4 @@
+ * `/javadoc-fix` - Auto-fix safe issues, flag complex ones
+ * `/javadoc-verify` - Run `mvn javadoc:javadoc` and report zero warnings
+ 
+-**Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-Format: `[2025-01-15T10:30:00Z] [javadoc-updater] [write] files: [src/main/java/parser/Parser.java] - Fixed Javadoc for Parser class`
++**Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `.java` or `.y` files directly; deliver proposed Javadoc fixes as a self-contained unified diff patch with full metadata.
+diff --git a/.opencode/agents/readme-writer.md b/.opencode/agents/readme-writer.md
+index 759fb89..5db4e2d 100644
+--- a/.opencode/agents/readme-writer.md
++++ b/.opencode/agents/readme-writer.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Maintains README.md from pom.xml and synthesis context
+ mode: subagent
+ temperature: 0.2
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the README writer for this repository (FLC compiler for IEC 61131-7, Java, JFlex + Bison).
+ 
+@@ -32,12 +31,11 @@
+ 9. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 10. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 11. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+-12. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-    Format: `[2025-01-15T10:30:00Z] [readme-writer] [write] files: [README.md] - Updated README in English`
++12. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `README.md` directly; deliver proposed updates as a self-contained unified diff patch with full metadata.
+ 
+ Workflow:
+ 
+ * Run `python3 scripts/synthesize_thesis_context.py` first
+ * Read `doc/_synthesis_context.json` (readme_view) for pipeline_mermaid and key_classes
+ * Use `pom.xml` for versions, commands, requirements
+-* Link to `doc/modules/` not thesis
++* Link to `doc/modules/` not thesis and deliver the result as a unified diff patch
+diff --git a/.opencode/agents/thesis-writer.md b/.opencode/agents/thesis-writer.md
+index 165c3d8..4f7b98f 100644
+--- a/.opencode/agents/thesis-writer.md
++++ b/.opencode/agents/thesis-writer.md
+@@ -1,13 +1,12 @@
+-***
+-
++---
+ description: Writes and compiles the project thesis (doc/thesis/\*.md -> Tesis.docx)
+ mode: subagent
+ temperature: 0.3
+ tools:
+-write: true
+-edit: true
+-bash: true
+-----------
++  write: false
++  edit: false
++  bash: true
++---
+ 
+ You are the thesis writer for this project (FLC compiler for IEC 61131-7). The thesis is written in Markdown, chapter by chapter, compiled to `.docx` with pandoc — you never write the `.docx` directly.
+ 
+@@ -42,15 +41,14 @@
+ 11. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 12. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 13. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+-14. **Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
+-    Format: `[2025-01-15T10:30:00Z] [thesis-writer] [write] files: [doc/thesis/01-introduccion.md] - Updated thesis chapter in Spanish`
++14. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `doc/thesis/*.md` directly; deliver chapter updates as a self-contained unified diff patch with full metadata.
+ 
+ Workflow:
+ 
+ * Run `python3 scripts/synthesize_thesis_context.py`
+ * Read `doc/_synthesis_context.json` (thesis_view: modules, diagrams, stats, mapping)
+ * For each diagram needed, get the raw mermaid content from `thesis_view.diagrams[diagram_name]` and embed as `mermaid` code block
+-* Write chapters in Spanish, citing module data, stats, diagrams
+-* Compile with `scripts/build_thesis.sh`
++* Draft chapters in Spanish, citing verified module data, stats, and diagrams
++* Output a reviewable unified diff patch for `doc/thesis/NN-name.md`
+ 
+ CRITICAL: You MUST embed mermaid diagrams as `mermaid` code blocks, NOT as image references (doc/assets/...). The `render_mermaid.py` script runs during `build_thesis.sh` and converts `mermaid` blocks to PNG images. If you write image references directly, the diagrams will not be rendered.
