@@ -3,8 +3,8 @@ description: Writes Javadoc for Java files according to project standards
 mode: subagent
 temperature: 0.1
 tools:
-  write: true
-  edit: true
+  write: false
+  edit: false
   bash: true
 ---
 
@@ -82,5 +82,4 @@ Commands available:
 - `/java-doc-write <file>` - Write Javadoc for a Java file
 - `/java-doc-verify <file>` - Run `mvn javadoc:javadoc` and confirm zero warnings
 
-**Change logging**: After making any file changes, append to `/.opencode/log.txt`: `[ISO timestamp] [agent-name] [action] files: [list] - [description]`
-Format: `[2025-01-15T10:30:00Z] [java-doc-writer] [write] files: [src/main/java/parser/Parser.java] - Fixed Javadoc for Parser class`
+**Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `.java` or `.y` files directly; deliver proposed Javadoc updates as a self-contained unified diff patch with full metadata.

@@ -1,91 +1,84 @@
-FLC-IEC61131-7 — DOCUMENTATION PATCH HANDOFF
-Date: 2026-11-14
+FLC-IEC61131-7 — OPERATIONAL DOCUMENTATION & HARNESS HANDOFF
+Date: 2026-11-16
 Repository: https://github.com/PascalUser/FLC-IEC61131-7
 Target branch: feature/refactoring
-Base branch commit observed: 39c6060df2983359ed0b80ad00e52e709d6c9b5d
+Base branch commit observed: ecdf948987df274641d86db7f6d71b2d8d2e70e8
 
-WHY THIS PATCH BUNDLE EXISTS
-The user asked for documentation to reflect the current implementation, not
-historical package names. They also asked to consolidate meaningless
-single-category/single-bar charts, explain Repository and lowering placement,
-justify simulation and its validity, update production and test Javadocs, and
-leave a durable log for future agents.
+PURPOSE
+Maintain an auditable, patch-driven workflow to align the OpenCode harness,
+technical documentation, statistical metrics, Javadocs, and thesis chapters
+with the refactored compiler.* architecture. Every change is proposed as an
+independent unified diff patch; applying and committing remain strictly under
+user control. See handoff/PATCH_PROTOCOL.md for the mandatory patch contract.
 
-PATCHES IN THIS BUNDLE
-0001-architecture-and-simulation-docs.patch
-  Adds doc/ARCHITECTURE.md and doc/SIMULATION.md, plus links from README.
-  Establishes the five production modules:
-    compiler.lexer
-    compiler.parser
-    compiler.ast
-    compiler.generator (including compiler.generator.lowers)
-    compiler.repository
-  Explains FlcCompiler as orchestration facade, not a sixth phase.
-  Explains repository responsibilities and coupling trade-off.
-  Explains simulation's two models, input grid, reported metrics, usefulness,
-  assumptions and limits.
+CURRENT ARCHITECTURE BASELINE (PRODUCTION & TEST)
+- compiler.FlcCompiler: end-to-end orchestration facade (not a sixth phase).
+- compiler.lexer: lexical analysis (JFlex + preprocessors + semantic analyzers).
+- compiler.parser: syntactic and semantic analysis (Bison + initializations).
+- compiler.ast: abstract syntax tree nodes and visitors.
+- compiler.generator: controller model and C++ code generation, including
+  compiler.generator.lowers (AST-to-ControllerModel lowering).
+- compiler.repository: SymbolTable, LexemeInfo, and DiagnosticsHandler.
+- src/test/java/utils/simulation: testing infrastructure comparing
+  ReferenceSimulator and QuantizedSimulator (not a production module).
 
-0002-general-statistics-dashboard.patch
-  Adds scripts/generate_general_statistics.py.
-  Generates one dashboard instead of isolated one-bar charts.
-  Derives counts from current compiler.* production directories and test tree.
-  JaCoCo coverage is included only when a report exists; missing coverage is
-  reported as unavailable rather than fabricated.
-  This script is intentionally additive: it does not delete or rewrite the
-  existing extract_stats.py / generate_charts.py. After review, decide whether
-  to retire the old script and update all callers/docs.
+AUDIT OF LEGACY PATCHES IN handoff/
+- 0001-architecture-and-simulation-docs.patch [STATUS: candidate]
+  doc/ARCHITECTURE.md and doc/SIMULATION.md are not yet in the tree.
+  Reconcile paths and links against current README.md before applying.
+- 0002-general-statistics-dashboard.patch [STATUS: redundant]
+  scripts/generate_general_statistics.py already exists in the branch with
+  identical content. Do not apply.
+- 0003-javadoc-package-foundation.patch [STATUS: requires-reconciliation]
+  package-info.java files already exist under compiler.* with different text.
+  Do not apply directly; selectively merge any missing architectural notes.
 
-0003-javadoc-package-foundation.patch
-  Adds package-info.java documentation for compiler, lexer, parser and
-  generator, and replaces stale repository package-info.java wording.
-  This is a foundation, NOT completion of the requested class/method Javadocs.
+ROADMAP & CURRENT PHASE STATUS
+- P0 [IN PROGRESS] Reset handoff baseline and establish patch protocol
+  (0000-reset-handoff.patch).
+- P1 [IN PROGRESS] Enforce read-only / patch-proposal policy across OpenCode
+  agents (0001-harness-agent-policy.patch).
+- P2 [PENDING] Redesign run_all_agents.py as a deterministic state-tracked
+  orchestrator (PENDING -> RUNNING -> SUCCEEDED / FAILED / SKIPPED).
+- P3 [PENDING] Reconcile single source of truth across statistics, Mermaid
+  diagram extraction, and thesis synthesis scripts.
+- P4 [PENDING] Harden validate_docs.py (structural, Mermaid, code-path, and
+  architectural checks) and update doc/HARNESS.md.
+- P5 [PENDING] Reconcile README.md, doc/ARCHITECTURE.md, doc/SIMULATION.md,
+  and doc/modules/*.md against compiler.* packages.
+- P6 [PENDING] Audit production/test Javadocs, Parser.y comments, and thesis
+  chapters (doc/thesis/*.md).
 
-APPLY
-From the repository root, on feature/refactoring:
-  git apply --check /path/to/0001-architecture-and-simulation-docs.patch
-  git apply /path/to/0001-architecture-and-simulation-docs.patch
-  git apply --check /path/to/0002-general-statistics-dashboard.patch
-  git apply /path/to/0002-general-statistics-dashboard.patch
-  git apply --check /path/to/0003-javadoc-package-foundation.patch
-  git apply /path/to/0003-javadoc-package-foundation.patch
+HARNESS POLICY RULES
+- Agents in opencode.json MUST keep write=false and edit=false.
+- Agents NEVER edit tracked source, documentation, or thesis files directly.
+- Agents deliver proposed changes exclusively as unified diff patches with
+  explicit metadata (ID, Objective, Motivation, Scope, Changes, Risks,
+  Validation, Dependencies).
+- Do NOT append to /.opencode/log.txt (deprecated non-existent path).
+- Applying a patch (git apply) and creating a commit (git commit) are two
+  separate human decisions.
 
-Then run:
-  python3 scripts/generate_general_statistics.py
+VALIDATION COMMANDS
+From the repository root on feature/refactoring:
+  git status --short
+  git apply --check --whitespace=error <patch-file>
   mvn clean verify
   mvn javadoc:javadoc
   python3 scripts/validate_docs.py
 
-IMPORTANT VALIDATION NOTES
-The patches were assembled from read-only inspection of the GitHub branch.
-They have NOT been applied to a working checkout and have NOT been compiled or
-executed. Run git apply --check first. Review the generated chart and compare
-the extracted module counts with the source tree.
+NEXT CONCRETE TASK
+1. Review and apply 0000-reset-handoff.patch and 0001-harness-agent-policy.patch.
+2. Inspect scripts/generate_general_statistics.py vs scripts/extract_stats.py
+   and scripts/generate_diagrams.py to prepare P2 (orchestrator) and P3
+   (single source of truth).
 
-NEXT REQUIRED WORK — DO NOT CLAIM COMPLETED
-1. Update README's remaining historical repository-structure table and stale
-   build paths (for example the old src/main/java/parser path).
-2. Reconcile doc/modules/*.md pages, especially utils.md, codegen.md,
-   lowering.md, simulation.md and compiler.md, against compiler.* paths.
-3. Review generate_charts.py and all chart consumers; decide how to retire
-   extract_stats.py's legacy synthetic/estimated metrics and old charts.
-4. Audit production Javadocs class-by-class and public/protected method by
-   method. Explain contracts, invariants, side effects, exceptions and
-   nullability; do not add redundant comments or guess behavior.
-5. Audit test Javadocs, including unit/integration test classes and test
-   methods. Explain the behavior or regression each test protects. Do not
-   mechanically add comments that merely restate method names.
-6. Review Parser.y semantic-action documentation and generated Parser.java
-   exclusions.
-7. Run validation commands and record exact results, including failures.
-8. Append subsequent changes to .opencode/log.txt.
-
-JAVADOC QUALITY RULE
+DOCUMENTATION & SIMULATION INVARIANTS
 Documentation must match the current implementation. A Javadoc comment that
 names an old package, claims immutability where fields are mutable, or describes
 a former pipeline is worse than no comment. Avoid blanket statements such as
 "all public methods documented" until an audit verifies that claim.
 
-SIMULATION CLAIMS TO PRESERVE
 The current test harness compares ReferenceSimulator and QuantizedSimulator
 over a finite input grid. step=1 enumerates the model's representable input
 combinations; larger steps sample. It covers MIN-MAX and centroid of

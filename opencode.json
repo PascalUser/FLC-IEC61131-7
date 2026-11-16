@@ -1,15 +1,28 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "openrouter/openrouter/auto",
-
+  "permission": {
+    "edit": "deny",
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "python3 scripts/validate_docs.py*": "allow",
+      "mvn javadoc:javadoc*": "allow",
+      "mvn test-compile*": "allow",
+      "mvn test*": "allow"
+    }
+  },
   "agent": {
     "readme-writer": {
       "description": "Maintains README.md from pom.xml and synthesis context",
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/readme-writer.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -18,8 +31,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/doc-writer.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -28,8 +41,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/chart-artist.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -38,8 +51,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/diagram-architect.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -48,8 +61,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/thesis-writer.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -58,6 +71,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/doc-validator.md}",
       "tools": {
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -66,8 +81,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/harness-documenter.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -76,8 +91,8 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/javadoc-updater.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     },
@@ -86,13 +101,12 @@
       "mode": "subagent",
       "prompt": "{file:./.opencode/agents/java-doc-writer.md}",
       "tools": {
-        "write": true,
-        "edit": true,
+        "write": false,
+        "edit": false,
         "bash": true
       }
     }
   },
-
   "command": {
     "readme-update": {
       "description": "Updates README.md from pom.xml and synthesis",
