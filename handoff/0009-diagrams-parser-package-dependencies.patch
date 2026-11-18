@@ -1,0 +1,43 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -176,22 +176,26 @@
+ 
+ 
+ def generate_parser_package_flowchart():
+-    """Import dependencies between parser subpackages and their direct consumers."""
+-    sources = read_java_files(SRC_DIR / "parser")
+-    packages = {
+-        "parser", "parser.publishers", "parser.facades", "parser.initializations",
+-        "parser.initializations.leafs", "parser.initializations.nodes",
+-        "parser.metadata", "parser.tree", "parser.utils",
+-        "ast", "ast.ruleblock", "ast.ruleblock.operators",
+-        "utils", "utils.builders", "utils.enums",
+-    }
++    """Derive parser dependencies from current compiler.* package/import declarations."""
++    sources = read_java_files(SRC_DIR / "compiler" / "parser")
++    tracked_roots = (
++        "compiler.parser", "compiler.ast", "compiler.repository", "compiler.lexer",
++    )
+     edges = set()
+-    for path, content in sources.items():
+-        origin = ".".join(Path(path).parts[:-1])
+-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
++    for _, content in sources.items():
++        declaration = re.search(r'^\s*package\s+([\w.]+)\s*;', content, re.MULTILINE)
++        if declaration is None:
++            raise ValueError("Parser Java source has no package declaration")
++        origin = declaration.group(1)
++        for imp, wildcard in re.findall(
++                r'^\s*import\s+(?:static\s+)?([\w.]+?)(\.\*)?;',
++                content, re.MULTILINE):
+             destination = imp if wildcard else imp.rsplit(".", 1)[0]
+-            if origin in packages and destination in packages and origin != destination:
++            if (destination.startswith(tracked_roots)
++                    and destination != origin):
+                 edges.add((origin, destination))
++    if not edges:
++        raise ValueError("No parser package dependencies found in compiler.* sources")
+     used = sorted({p for edge in edges for p in edge})
+     ids = {pkg: pkg.replace(".", "_") for pkg in used}
+     lines = ["flowchart LR"]

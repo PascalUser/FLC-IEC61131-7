@@ -1,0 +1,29 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -118,3 +118,3 @@
+     """Selected class/interface inheritance and registry uses verified in Java/Flex."""
+-    sources = read_java_files(SRC_DIR / "lexer")
++    sources = read_java_files(SRC_DIR / "compiler" / "lexer")
+     selected = {
+@@ -157,3 +157,3 @@
+             lines.append(f"    {match.group(1)} <|-- {name}")
+-    flex = (SRC_DIR / "lexer" / "Lexer.flex").read_text()
++    flex = (SRC_DIR / "compiler" / "lexer" / "Lexer.flex").read_text()
+     for registry in ("LexicalPreprocessors", "LexicalAnalyzers"):
+@@ -164,3 +164,3 @@
+     """Object chain instantiated for INTERVALS in LexicalPreprocessors.java."""
+-    source = (SRC_DIR / "lexer" / "internals" / "LexicalPreprocessors.java").read_text()
++    source = (SRC_DIR / "compiler" / "lexer" / "internals" / "LexicalPreprocessors.java").read_text()
+     match = re.search(r'public static final Transformer\s+INTERVALS\s*=\s*(.*?);', source, re.DOTALL)
+@@ -459,6 +459,6 @@
+     """Scanner to parser flow checked against Lexer.flex and SemanticAnalyzer.java."""
+-    flex = (SRC_DIR / "lexer" / "Lexer.flex").read_text()
+-    semantics = (SRC_DIR / "lexer" / "semantics" / "SemanticAnalyzer.java").read_text()
+-    numbers = (SRC_DIR / "lexer" / "semantics" / "numbers" / "NumbersAnalyzer.java").read_text()
+-    strings = (SRC_DIR / "lexer" / "semantics" / "strings" / "StringsAnalyzer.java").read_text()
++    flex = (SRC_DIR / "compiler" / "lexer" / "Lexer.flex").read_text()
++    semantics = (SRC_DIR / "compiler" / "lexer" / "semantics" / "SemanticAnalyzer.java").read_text()
++    numbers = (SRC_DIR / "compiler" / "lexer" / "semantics" / "numbers" / "NumbersAnalyzer.java").read_text()
++    strings = (SRC_DIR / "compiler" / "lexer" / "semantics" / "strings" / "StringsAnalyzer.java").read_text()
+     for snippet, text in [("transformer.transform(yytext())", flex),

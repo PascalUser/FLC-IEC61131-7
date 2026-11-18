@@ -116,7 +116,7 @@ def generate_lexer_package_flowchart():
 
 def generate_lexer_class_diagram():
     """Selected class/interface inheritance and registry uses verified in Java/Flex."""
-    sources = read_java_files(SRC_DIR / "lexer")
+    sources = read_java_files(SRC_DIR / "compiler" / "lexer")
     selected = {
         "lexer": ["Lexer"],
         "lexer_internals": ["LexicalPreprocessors", "LexicalAnalyzers"],
@@ -153,7 +153,7 @@ def generate_lexer_class_diagram():
                           + r'\s+(?:extends|implements)\s+(\w+)', content)
         if match and match.group(1) in known:
             lines.append(f"    {match.group(1)} <|-- {name}")
-    flex = (SRC_DIR / "lexer" / "Lexer.flex").read_text()
+    flex = (SRC_DIR / "compiler" / "lexer" / "Lexer.flex").read_text()
     for registry in ("LexicalPreprocessors", "LexicalAnalyzers"):
         if re.search(r'private\s+' + registry + r'\s+', flex):
             lines.append(f"    Lexer --> {registry} : uses")
@@ -162,7 +162,7 @@ def generate_lexer_class_diagram():
 
 def generate_lexer_intervals_object():
     """Object chain instantiated for INTERVALS in LexicalPreprocessors.java."""
-    source = (SRC_DIR / "lexer" / "internals" / "LexicalPreprocessors.java").read_text()
+    source = (SRC_DIR / "compiler" / "lexer" / "internals" / "LexicalPreprocessors.java").read_text()
     match = re.search(r'public static final Transformer\s+INTERVALS\s*=\s*(.*?);', source, re.DOTALL)
     if not match:
         raise ValueError("INTERVALS chain not found")
@@ -176,22 +176,26 @@ def generate_lexer_intervals_object():
 
 
 def generate_parser_package_flowchart():
-    """Import dependencies between parser subpackages and their direct consumers."""
-    sources = read_java_files(SRC_DIR / "parser")
-    packages = {
-        "parser", "parser.publishers", "parser.facades", "parser.initializations",
-        "parser.initializations.leafs", "parser.initializations.nodes",
-        "parser.metadata", "parser.tree", "parser.utils",
-        "ast", "ast.ruleblock", "ast.ruleblock.operators",
-        "utils", "utils.builders", "utils.enums",
-    }
+    """Derive parser dependencies from current compiler.* package/import declarations."""
+    sources = read_java_files(SRC_DIR / "compiler" / "parser")
+    tracked_roots = (
+        "compiler.parser", "compiler.ast", "compiler.repository", "compiler.lexer",
+    )
     edges = set()
-    for path, content in sources.items():
-        origin = ".".join(Path(path).parts[:-1])
-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+    for _, content in sources.items():
+        declaration = re.search(r'^\s*package\s+([\w.]+)\s*;', content, re.MULTILINE)
+        if declaration is None:
+            raise ValueError("Parser Java source has no package declaration")
+        origin = declaration.group(1)
+        for imp, wildcard in re.findall(
+                r'^\s*import\s+(?:static\s+)?([\w.]+?)(\.\*)?;',
+                content, re.MULTILINE):
             destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if origin in packages and destination in packages and origin != destination:
+            if (destination.startswith(tracked_roots)
+                    and destination != origin):
                 edges.add((origin, destination))
+    if not edges:
+        raise ValueError("No parser package dependencies found in compiler.* sources")
     used = sorted({p for edge in edges for p in edge})
     ids = {pkg: pkg.replace(".", "_") for pkg in used}
     lines = ["flowchart LR"]
@@ -457,10 +461,10 @@ def generate_parser_class_diagram():
 
 def generate_lexer_parser_sequence():
     """Scanner to parser flow checked against Lexer.flex and SemanticAnalyzer.java."""
-    flex = (SRC_DIR / "lexer" / "Lexer.flex").read_text()
-    semantics = (SRC_DIR / "lexer" / "semantics" / "SemanticAnalyzer.java").read_text()
-    numbers = (SRC_DIR / "lexer" / "semantics" / "numbers" / "NumbersAnalyzer.java").read_text()
-    strings = (SRC_DIR / "lexer" / "semantics" / "strings" / "StringsAnalyzer.java").read_text()
+    flex = (SRC_DIR / "compiler" / "lexer" / "Lexer.flex").read_text()
+    semantics = (SRC_DIR / "compiler" / "lexer" / "semantics" / "SemanticAnalyzer.java").read_text()
+    numbers = (SRC_DIR / "compiler" / "lexer" / "semantics" / "numbers" / "NumbersAnalyzer.java").read_text()
+    strings = (SRC_DIR / "compiler" / "lexer" / "semantics" / "strings" / "StringsAnalyzer.java").read_text()
     for snippet, text in [("transformer.transform(yytext())", flex),
                           ("analyzer.analyze(lexicalContext)", flex),
                           ("this.yylval = result.lexeme", flex),
@@ -980,7 +984,7 @@ def generate_ast_package_flowchart():
 
 def generate_ast_class_diagram():
     """Class hierarchy and final-field associations read from the AST sources."""
-    sources = read_java_files(SRC_DIR / "ast")
+    sources = read_java_files(SRC_DIR / "compiler" / "ast")
     selected = {
         "ast": ["AbstractAstNode", "AbstractSyntaxTree"],
         "ast_ruleblock": [
@@ -1083,45 +1087,46 @@ def generate_ast_class_diagram():
 
 def generate_ast_construction_sequence():
     """Parser-to-lowers construction flow checked against the Java sources."""
-    parser_y = (SRC_DIR / "parser" / "Parser.y").read_text()
-    builder = (SRC_DIR / "parser" / "facades" / "RuleblockASTBuilder.java").read_text()
-    controller_lower = (SRC_DIR / "lowers" / "lowers" / "ControllerLower.java").read_text()
-    rules_constructor = (SRC_DIR / "lowers" / "constructors" / "RulesConstructor.java").read_text()
-    rule_lower = (SRC_DIR / "lowers" / "lowers" / "RuleLower.java").read_text()
+    parser_y = (SRC_DIR / "compiler" / "parser" / "Parser.y").read_text()
+    builder = (SRC_DIR / "compiler" / "parser" / "facades" / "RuleblockASTBuilder.java").read_text()
+    controller_lower = (SRC_DIR / "compiler" / "generator" / "lowers" / "ControllerLower.java").read_text()
+    ruleblock_lower = (SRC_DIR / "compiler" / "generator" / "lowers" / "sublowers" / "RuleBlockLower.java").read_text()
+    rule_lower = (SRC_DIR / "compiler" / "generator" / "lowers" / "sublowers" / "RuleLower.java").read_text()
     for snippet, text in [
             ("RuleblockASTBuilder.build(componentNode, configuration)", parser_y),
-            ("new AbstractSyntaxTree(programName", parser_y),
+            ("new AbstractSyntaxTree(this.programName, $5)", parser_y),
             ("new RuleBlockNode", builder),
             ("new OperatorNode", builder),
-            ("new RulesConstructor", controller_lower),
-            ("rulesConstructor.construct", controller_lower),
-            ("new RuleLower", rules_constructor),
-            ("ruleLower.adapt", rules_constructor),
-            ("new MinMaxMethod", rules_constructor),
+            ("RuleBlockLower ruleBlockLower = new RuleBlockLower(ctx)", controller_lower),
+            ("ruleBlockLower.adapt()", controller_lower),
+            ("new RuleLower(ruleCtx).adapt()", ruleblock_lower),
+            ("new MinMaxMethod(rows)", ruleblock_lower),
             ("public Optional<int[]> adapt", rule_lower),
     ]:
         if snippet not in text:
             raise ValueError(f"AST sequence source changed: {snippet}")
     return "\n".join([
         "sequenceDiagram",
-        "    participant P as parser.Parser",
-        "    participant B as parser.facades.RuleblockASTBuilder",
-        "    participant T as ast.AbstractSyntaxTree",
-        "    participant C as lowers.ControllerLower",
-        "    participant R as lowers.constructors.RulesConstructor",
-        "    participant L as lowers.RuleLower",
-        "    participant M as generator.evaluation.MinMaxMethod",
+        "    participant P as compiler.parser.Parser",
+        "    participant B as compiler.parser.facades.RuleblockASTBuilder",
+        "    participant T as compiler.ast.AbstractSyntaxTree",
+        "    participant C as compiler.generator.lowers.ControllerLower",
+        "    participant R as compiler.generator.lowers.sublowers.RuleBlockLower",
+        "    participant L as compiler.generator.lowers.sublowers.RuleLower",
+        "    participant M as compiler.generator.evaluation.MinMaxMethod",
         "",
-        "    P->>B: build(COMPONENT, configuration)",
+        "    P->>B: build(componentNode, configuration)",
         "    B->>B: traverse ParserTreeNode",
         "    B->>B: new RuleBlockNode and OperatorNode",
         "    B-->>P: RuleBlockNode",
         "    P->>T: new AbstractSyntaxTree(programName, ruleBlocks)",
         "    P-->>C: getAST()",
-        "    C->>R: construct(controller)",
-        "    R->>L: adapt()",
-        "    L-->>R: int[] row",
-        "    R->>M: new MinMaxMethod(loweredRules)",
+        "    C->>R: new RuleBlockLower(ctx); adapt()",
+        "    R->>L: new RuleLower(ruleCtx); adapt()",
+        "    L-->>R: Optional<int[]> row",
+        "    R->>M: new MinMaxMethod(rows)",
+        "    M-->>R: EvaluationMethod",
+        "    R-->>C: Optional<EvaluationMethod>",
     ])
 
 
@@ -1613,19 +1618,21 @@ def main():
             print(f"Unknown scope: {scope}")
             print(f"Available: all, lexer, parser, ast, utils, generator, lowers, simulation, compiler, architecture")
             print(f"Or specific: {', '.join(DIAGRAMS.keys())}")
-            return
+            return 2
 
     if args.list:
         for name in DIAGRAMS:
             print(name)
-        return
+        return 0
 
     print(f"Generating diagrams for scope: {scope}")
     generated = []
+    failed = []
 
     for name in targets:
         if name not in DIAGRAMS:
             print(f"  ! unknown diagram: {name}")
+            failed.append(name)
             continue
         try:
             mermaid_content = DIAGRAMS[name]()
@@ -1634,10 +1641,15 @@ def main():
             generated.append(str(output_file.relative_to(ROOT)))
             print(f"  -> {output_file.relative_to(ROOT)}")
         except Exception as e:
+            failed.append(name)
             print(f"  ! Error generating {name}: {e}")
 
-    print(f"\nGenerated {len(generated)} diagrams in doc/diagrams/")
+    print(f"\nGenerated {len(generated)}/{len(targets)} diagrams in doc/diagrams/")
+    if failed:
+        print(f"Failed diagrams ({len(failed)}): {', '.join(failed)}")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

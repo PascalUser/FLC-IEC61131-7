@@ -1,0 +1,13 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -980,8 +980,8 @@
+ 
+ def generate_ast_class_diagram():
+     """Class hierarchy and final-field associations read from the AST sources."""
+-    sources = read_java_files(SRC_DIR / "ast")
++    sources = read_java_files(SRC_DIR / "compiler" / "ast")
+     selected = {
+         "ast": ["AbstractAstNode", "AbstractSyntaxTree"],
+         "ast_ruleblock": [
+             "BodyNode", "CondNode", "IdentifierNode", "IfNode", "IsNode",

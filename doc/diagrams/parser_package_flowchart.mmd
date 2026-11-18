@@ -1,59 +1,104 @@
 flowchart LR
-    ast["ast"]
-    ast_ruleblock["ast.ruleblock"]
-    ast_ruleblock_operators["ast.ruleblock.operators"]
-    parser["parser"]
-    parser_facades["parser.facades"]
-    parser_initializations["parser.initializations"]
-    parser_initializations_leafs["parser.initializations.leafs"]
-    parser_initializations_nodes["parser.initializations.nodes"]
-    parser_metadata["parser.metadata"]
-    parser_publishers["parser.publishers"]
-    parser_tree["parser.tree"]
-    parser_utils["parser.utils"]
-    utils["utils"]
-    utils_builders["utils.builders"]
-    utils_enums["utils.enums"]
-    parser --> ast
-    parser --> ast_ruleblock
-    parser --> ast_ruleblock_operators
-    parser --> parser_facades
-    parser --> parser_initializations
-    parser --> parser_initializations_leafs
-    parser --> parser_initializations_nodes
-    parser --> parser_metadata
-    parser --> parser_publishers
-    parser --> parser_tree
-    parser --> parser_utils
-    parser --> utils
-    parser --> utils_builders
-    parser --> utils_enums
-    parser_facades --> ast
-    parser_facades --> ast_ruleblock
-    parser_facades --> ast_ruleblock_operators
-    parser_facades --> parser_metadata
-    parser_facades --> parser_tree
-    parser_facades --> parser_utils
-    parser_facades --> utils
-    parser_facades --> utils_builders
-    parser_facades --> utils_enums
-    parser_initializations --> parser_initializations_leafs
-    parser_initializations --> utils
-    parser_initializations --> utils_enums
-    parser_initializations_leafs --> parser_initializations
-    parser_initializations_leafs --> utils
-    parser_initializations_leafs --> utils_builders
-    parser_initializations_leafs --> utils_enums
-    parser_initializations_nodes --> parser_initializations
-    parser_metadata --> parser_facades
-    parser_metadata --> parser_initializations
-    parser_metadata --> parser_initializations_leafs
-    parser_metadata --> parser_initializations_nodes
-    parser_metadata --> parser_utils
-    parser_metadata --> utils
-    parser_metadata --> utils_builders
-    parser_metadata --> utils_enums
-    parser_publishers --> utils_builders
-    parser_utils --> parser_initializations
-    parser_utils --> parser_tree
-    parser_utils --> utils_enums
+    compiler_ast["compiler.ast"]
+    compiler_ast_ruleblock["compiler.ast.ruleblock"]
+    compiler_ast_ruleblock_operators["compiler.ast.ruleblock.operators"]
+    compiler_parser["compiler.parser"]
+    compiler_parser_facades["compiler.parser.facades"]
+    compiler_parser_initializations["compiler.parser.initializations"]
+    compiler_parser_initializations_leafs["compiler.parser.initializations.leafs"]
+    compiler_parser_initializations_nodes["compiler.parser.initializations.nodes"]
+    compiler_parser_metadata["compiler.parser.metadata"]
+    compiler_parser_publishers["compiler.parser.publishers"]
+    compiler_parser_publishers_leafs["compiler.parser.publishers.leafs"]
+    compiler_parser_publishers_leafs_multiple["compiler.parser.publishers.leafs.multiple"]
+    compiler_parser_publishers_leafs_single["compiler.parser.publishers.leafs.single"]
+    compiler_parser_publishers_nodes["compiler.parser.publishers.nodes"]
+    compiler_parser_semantics["compiler.parser.semantics"]
+    compiler_parser_tree["compiler.parser.tree"]
+    compiler_parser_utils["compiler.parser.utils"]
+    compiler_repository["compiler.repository"]
+    compiler_repository_builders["compiler.repository.builders"]
+    compiler_repository_builders_Director["compiler.repository.builders.Director"]
+    compiler_repository_diagnostics_general["compiler.repository.diagnostics.general"]
+    compiler_repository_enums["compiler.repository.enums"]
+    compiler_parser --> compiler_ast
+    compiler_parser --> compiler_ast_ruleblock
+    compiler_parser --> compiler_ast_ruleblock_operators
+    compiler_parser --> compiler_parser_facades
+    compiler_parser --> compiler_parser_initializations
+    compiler_parser --> compiler_parser_initializations_leafs
+    compiler_parser --> compiler_parser_initializations_nodes
+    compiler_parser --> compiler_parser_metadata
+    compiler_parser --> compiler_parser_publishers
+    compiler_parser --> compiler_parser_publishers_leafs
+    compiler_parser --> compiler_parser_publishers_leafs_multiple
+    compiler_parser --> compiler_parser_publishers_leafs_single
+    compiler_parser --> compiler_parser_publishers_nodes
+    compiler_parser --> compiler_parser_semantics
+    compiler_parser --> compiler_parser_tree
+    compiler_parser --> compiler_parser_utils
+    compiler_parser --> compiler_repository
+    compiler_parser --> compiler_repository_builders
+    compiler_parser --> compiler_repository_enums
+    compiler_parser_facades --> compiler_ast
+    compiler_parser_facades --> compiler_ast_ruleblock
+    compiler_parser_facades --> compiler_ast_ruleblock_operators
+    compiler_parser_facades --> compiler_parser_tree
+    compiler_parser_facades --> compiler_parser_utils
+    compiler_parser_facades --> compiler_repository
+    compiler_parser_facades --> compiler_repository_enums
+    compiler_parser_initializations --> compiler_parser_initializations_leafs
+    compiler_parser_initializations --> compiler_parser_initializations_nodes
+    compiler_parser_initializations --> compiler_repository
+    compiler_parser_initializations --> compiler_repository_builders
+    compiler_parser_initializations --> compiler_repository_enums
+    compiler_parser_initializations_leafs --> compiler_parser_initializations
+    compiler_parser_initializations_leafs --> compiler_repository
+    compiler_parser_initializations_leafs --> compiler_repository_builders
+    compiler_parser_initializations_leafs --> compiler_repository_enums
+    compiler_parser_initializations_nodes --> compiler_parser_initializations
+    compiler_parser_metadata --> compiler_parser_facades
+    compiler_parser_metadata --> compiler_parser_initializations
+    compiler_parser_metadata --> compiler_parser_initializations_leafs
+    compiler_parser_metadata --> compiler_parser_initializations_nodes
+    compiler_parser_metadata --> compiler_parser_publishers_nodes
+    compiler_parser_metadata --> compiler_parser_utils
+    compiler_parser_metadata --> compiler_repository
+    compiler_parser_metadata --> compiler_repository_builders
+    compiler_parser_metadata --> compiler_repository_builders_Director
+    compiler_parser_metadata --> compiler_repository_enums
+    compiler_parser_publishers --> compiler_parser_publishers_leafs_multiple
+    compiler_parser_publishers --> compiler_parser_publishers_nodes
+    compiler_parser_publishers --> compiler_repository_builders
+    compiler_parser_publishers_leafs --> compiler_parser_initializations
+    compiler_parser_publishers_leafs --> compiler_parser_publishers
+    compiler_parser_publishers_leafs --> compiler_repository_builders
+    compiler_parser_publishers_leafs --> compiler_repository_enums
+    compiler_parser_publishers_leafs_multiple --> compiler_parser_publishers_leafs
+    compiler_parser_publishers_leafs_multiple --> compiler_parser_publishers_leafs_single
+    compiler_parser_publishers_leafs_multiple --> compiler_repository
+    compiler_parser_publishers_leafs_multiple --> compiler_repository_builders
+    compiler_parser_publishers_leafs_single --> compiler_parser_facades
+    compiler_parser_publishers_leafs_single --> compiler_parser_metadata
+    compiler_parser_publishers_leafs_single --> compiler_parser_publishers_leafs
+    compiler_parser_publishers_leafs_single --> compiler_parser_publishers_nodes
+    compiler_parser_publishers_leafs_single --> compiler_repository
+    compiler_parser_publishers_leafs_single --> compiler_repository_builders
+    compiler_parser_publishers_leafs_single --> compiler_repository_enums
+    compiler_parser_publishers_nodes --> compiler_parser_publishers
+    compiler_parser_publishers_nodes --> compiler_parser_publishers_leafs
+    compiler_parser_publishers_nodes --> compiler_parser_publishers_leafs_single
+    compiler_parser_publishers_nodes --> compiler_parser_utils
+    compiler_parser_publishers_nodes --> compiler_repository_enums
+    compiler_parser_semantics --> compiler_ast
+    compiler_parser_semantics --> compiler_ast_ruleblock
+    compiler_parser_semantics --> compiler_parser_facades
+    compiler_parser_semantics --> compiler_parser_initializations
+    compiler_parser_semantics --> compiler_parser_utils
+    compiler_parser_semantics --> compiler_repository
+    compiler_parser_semantics --> compiler_repository_diagnostics_general
+    compiler_parser_semantics --> compiler_repository_enums
+    compiler_parser_utils --> compiler_parser_facades
+    compiler_parser_utils --> compiler_parser_initializations
+    compiler_parser_utils --> compiler_parser_tree
+    compiler_parser_utils --> compiler_repository_enums

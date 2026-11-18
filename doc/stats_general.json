@@ -28,16 +28,16 @@
     "integration_test_classes": 18
   },
   "jacoco_line_coverage": {
-    "overall_percent": 68.8,
+    "overall_percent": 70.9,
     "by_module_percent": {
-      "lexer": 88.8,
-      "parser": 66.4,
+      "lexer": 88.9,
+      "parser": 69.1,
       "ast": 98.9,
-      "generator": 46.9,
-      "repository": 77.2
+      "generator": 48.1,
+      "repository": 82.8
     },
-    "covered_lines": 2877,
-    "missed_lines": 1305
+    "covered_lines": 3148,
+    "missed_lines": 1293
   },
   "notes": [
     "Lowering is included in compiler.generator.lowers, not a separate module.",

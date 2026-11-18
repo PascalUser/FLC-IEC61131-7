@@ -500,8 +500,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     records: List[StepRecord] = []
     for spec in specs:
-        if spec.step_id in resumed_map:
-            records.append(resumed_map[spec.step_id])
+        previous = resumed_map.get(spec.step_id)
+        # A command change invalidates the previous step result.
+        # This does not yet detect source or tool-version changes.
+        if previous is not None and previous.command == spec.command:
+            records.append(previous)
         else:
             records.append(
                 StepRecord(
@@ -587,7 +590,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(f"Manifest written to: {rel_state}")
 
     any_failed = any(r.state == StepState.FAILED for r in records)
-    return 1 if any_failed else 0
+    # Skips caused by missing OpenCode are not user-requested skips.
+    unexpected_skip = any(
+        r.state == StepState.SKIPPED
+        and (
+            r.reason == "opencode-cli-not-found"
+            or (r.reason or "").startswith("opencode-binary-not-found")
+        )
+        for r in records
+    )
+    return 1 if any_failed or unexpected_skip else 0
 
 
 if __name__ == "__main__":

@@ -1,0 +1,70 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -1084,42 +1084,43 @@
+ def generate_ast_construction_sequence():
+     """Parser-to-lowers construction flow checked against the Java sources."""
+-    parser_y = (SRC_DIR / "parser" / "Parser.y").read_text()
+-    builder = (SRC_DIR / "parser" / "facades" / "RuleblockASTBuilder.java").read_text()
+-    controller_lower = (SRC_DIR / "lowers" / "lowers" / "ControllerLower.java").read_text()
+-    rules_constructor = (SRC_DIR / "lowers" / "constructors" / "RulesConstructor.java").read_text()
+-    rule_lower = (SRC_DIR / "lowers" / "lowers" / "RuleLower.java").read_text()
++    parser_y = (SRC_DIR / "compiler" / "parser" / "Parser.y").read_text()
++    builder = (SRC_DIR / "compiler" / "parser" / "facades" / "RuleblockASTBuilder.java").read_text()
++    controller_lower = (SRC_DIR / "compiler" / "generator" / "lowers" / "ControllerLower.java").read_text()
++    ruleblock_lower = (SRC_DIR / "compiler" / "generator" / "lowers" / "sublowers" / "RuleBlockLower.java").read_text()
++    rule_lower = (SRC_DIR / "compiler" / "generator" / "lowers" / "sublowers" / "RuleLower.java").read_text()
+     for snippet, text in [
+             ("RuleblockASTBuilder.build(componentNode, configuration)", parser_y),
+-            ("new AbstractSyntaxTree(programName", parser_y),
++            ("new AbstractSyntaxTree(this.programName, $5)", parser_y),
+             ("new RuleBlockNode", builder),
+             ("new OperatorNode", builder),
+-            ("new RulesConstructor", controller_lower),
+-            ("rulesConstructor.construct", controller_lower),
+-            ("new RuleLower", rules_constructor),
+-            ("ruleLower.adapt", rules_constructor),
+-            ("new MinMaxMethod", rules_constructor),
++            ("RuleBlockLower ruleBlockLower = new RuleBlockLower(ctx)", controller_lower),
++            ("ruleBlockLower.adapt()", controller_lower),
++            ("new RuleLower(ruleCtx).adapt()", ruleblock_lower),
++            ("new MinMaxMethod(rows)", ruleblock_lower),
+             ("public Optional<int[]> adapt", rule_lower),
+     ]:
+         if snippet not in text:
+             raise ValueError(f"AST sequence source changed: {snippet}")
+     return "\n".join([
+         "sequenceDiagram",
+-        "    participant P as parser.Parser",
+-        "    participant B as parser.facades.RuleblockASTBuilder",
+-        "    participant T as ast.AbstractSyntaxTree",
+-        "    participant C as lowers.ControllerLower",
+-        "    participant R as lowers.constructors.RulesConstructor",
+-        "    participant L as lowers.RuleLower",
+-        "    participant M as generator.evaluation.MinMaxMethod",
++        "    participant P as compiler.parser.Parser",
++        "    participant B as compiler.parser.facades.RuleblockASTBuilder",
++        "    participant T as compiler.ast.AbstractSyntaxTree",
++        "    participant C as compiler.generator.lowers.ControllerLower",
++        "    participant R as compiler.generator.lowers.sublowers.RuleBlockLower",
++        "    participant L as compiler.generator.lowers.sublowers.RuleLower",
++        "    participant M as compiler.generator.evaluation.MinMaxMethod",
+         "",
+-        "    P->>B: build(COMPONENT, configuration)",
++        "    P->>B: build(componentNode, configuration)",
+         "    B->>B: traverse ParserTreeNode",
+         "    B->>B: new RuleBlockNode and OperatorNode",
+         "    B-->>P: RuleBlockNode",
+         "    P->>T: new AbstractSyntaxTree(programName, ruleBlocks)",
+         "    P-->>C: getAST()",
+-        "    C->>R: construct(controller)",
+-        "    R->>L: adapt()",
+-        "    L-->>R: int[] row",
+-        "    R->>M: new MinMaxMethod(loweredRules)",
++        "    C->>R: new RuleBlockLower(ctx); adapt()",
++        "    R->>L: new RuleLower(ruleCtx); adapt()",
++        "    L-->>R: Optional<int[]> row",
++        "    R->>M: new MinMaxMethod(rows)",
++        "    M-->>R: EvaluationMethod",
++        "    R-->>C: Optional<EvaluationMethod>",
+     ])

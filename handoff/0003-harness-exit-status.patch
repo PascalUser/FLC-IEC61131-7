@@ -1,0 +1,21 @@
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -587,7 +587,16 @@
+     print(f"Manifest written to: {rel_state}")
+ 
+     any_failed = any(r.state == StepState.FAILED for r in records)
+-    return 1 if any_failed else 0
++    # Skips caused by missing OpenCode are not user-requested skips.
++    unexpected_skip = any(
++        r.state == StepState.SKIPPED
++        and (
++            r.reason == "opencode-cli-not-found"
++            or (r.reason or "").startswith("opencode-binary-not-found")
++        )
++        for r in records
++    )
++    return 1 if any_failed or unexpected_skip else 0
+ 
+ 
+ if __name__ == "__main__":

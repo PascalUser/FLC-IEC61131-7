@@ -1,0 +1,17 @@
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -500,8 +500,11 @@
+ 
+     records: List[StepRecord] = []
+     for spec in specs:
+-        if spec.step_id in resumed_map:
+-            records.append(resumed_map[spec.step_id])
++        previous = resumed_map.get(spec.step_id)
++        # A command change invalidates the previous step result.
++        # This does not yet detect source or tool-version changes.
++        if previous is not None and previous.command == spec.command:
++            records.append(previous)
+         else:
+             records.append(
+                 StepRecord(

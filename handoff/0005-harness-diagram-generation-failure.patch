@@ -1,0 +1,45 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -1613,19 +1613,21 @@
+             print(f"Unknown scope: {scope}")
+             print(f"Available: all, lexer, parser, ast, utils, generator, lowers, simulation, compiler, architecture")
+             print(f"Or specific: {', '.join(DIAGRAMS.keys())}")
+-            return
++            return 2
+ 
+     if args.list:
+         for name in DIAGRAMS:
+             print(name)
+-        return
++        return 0
+ 
+     print(f"Generating diagrams for scope: {scope}")
+     generated = []
++    failed = []
+ 
+     for name in targets:
+         if name not in DIAGRAMS:
+             print(f"  ! unknown diagram: {name}")
++            failed.append(name)
+             continue
+         try:
+             mermaid_content = DIAGRAMS[name]()
+@@ -1634,10 +1636,15 @@
+             generated.append(str(output_file.relative_to(ROOT)))
+             print(f"  -> {output_file.relative_to(ROOT)}")
+         except Exception as e:
++            failed.append(name)
+             print(f"  ! Error generating {name}: {e}")
+ 
+-    print(f"\nGenerated {len(generated)} diagrams in doc/diagrams/")
++    print(f"\nGenerated {len(generated)}/{len(targets)} diagrams in doc/diagrams/")
++    if failed:
++        print(f"Failed diagrams ({len(failed)}): {', '.join(failed)}")
++        return 1
++    return 0
+ 
+ 
+ if __name__ == "__main__":
+-    main()
++    raise SystemExit(main())
