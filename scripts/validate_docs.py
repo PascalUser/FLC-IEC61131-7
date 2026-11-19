@@ -6,10 +6,9 @@ Called by doc-validator agent and integrated into markdown-producing agents.
 """
 import re
 import sys
-import subprocess
 from pathlib import Path
 
-from validate_mermaid_integrity import validate_diagrams
+from validate_mermaid_integrity import inspect_diagrams
 
 ROOT = Path(__file__).parent.parent
 DOC_DIR = ROOT / "doc"
@@ -399,106 +398,6 @@ def validate_markdown_tables(content):
     return violations
 
 
-def validate_mermaid_with_mmdc(content):
-    """Validate mermaid syntax by attempting to render with mmdc (comprehensive check)"""
-    violations = []
-    # Extract mermaid blocks
-    mermaid_blocks = []
-    in_mermaid = False
-    mermaid_lines = []
-    start_line = 0
-    
-    for i, line in enumerate(content.split('\n'), 1):
-        if line.strip().startswith('```mermaid'):
-            in_mermaid = True
-            mermaid_lines = []
-            start_line = i
-        elif in_mermaid and line.strip() == '```':
-            in_mermaid = False
-            mermaid_text = '\n'.join(mermaid_lines)
-            if mermaid_text.strip():
-                mermaid_blocks.append((mermaid_text, start_line, i))
-        elif in_mermaid:
-            mermaid_lines.append(line)
-            
-    if not mermaid_blocks:
-        return violations
-        
-    # Try to validate each block with mmdc
-    for mermaid_text, start_line, end_line in mermaid_blocks:
-        try:
-            # Write to temp file and run mmdc
-            import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.mmd', delete=False) as f:
-                f.write(mermaid_text)
-                temp_file = f.name
-            
-            result = subprocess.run(
-                ['./node_modules/.bin/mmdc', '-i', temp_file, '-o', '/dev/null'],
-                capture_output=True,
-                text=True,
-                timeout=30,
-                cwd=ROOT
-            )
-            
-            Path(temp_file).unlink(missing_ok=True)
-            
-            if result.returncode != 0:
-                # Extract error message
-                error_msg = result.stderr.strip()
-                if 'Parse error' in error_msg:
-                    # Extract line number from error if possible
-                    violations.append(f"  Lines {start_line}-{end_line}: Mermaid parse error: {error_msg.split('Error:')[-1].strip()[:200]}")
-                else:
-                    violations.append(f"  Lines {start_line}-{end_line}: Mermaid render failed: {error_msg[:200]}")
-                    
-        except subprocess.TimeoutExpired:
-            violations.append(f"  Lines {start_line}-{end_line}: Mermaid validation timeout")
-        except Exception as e:
-            # If mmdc not available or something else fails, skip but warn
-            print(f"Failed to validate with mmdc: {e}")
-            pass
-            
-    return violations
-
-
-def validate_mmd_file(filepath):
-    """Validate a single .mmd file - check first non-empty line is valid diagram type"""
-    content = filepath.read_text(encoding='utf-8')
-    violations = []
-    
-    # Find first non-empty line
-    first_line = ""
-    for line in content.split('\n'):
-        stripped = line.strip()
-        if stripped:
-            first_line = stripped
-            break
-    
-    if not first_line:
-        violations.append(f"  Empty .mmd file")
-        return violations
-    
-    valid_starts = ['flowchart', 'graph', 'sequenceDiagram', 'classDiagram', 'stateDiagram', 
-                      'erDiagram', 'journey', 'gantt', 'pie', 'bar', 'timeline', 'mindmap',
-                      'quadrantChart', 'requirementDiagram', 'gitgraph', 'C4Context']
-    
-    if not any(first_line.startswith(v) for v in valid_starts):
-        violations.append(f"  Invalid diagram type: {first_line[:50]}")
-    
-    # Ensure no Markdown fences in .mmd file
-    if content.strip().startswith('```'):
-        violations.append(f"  .mmd file should not contain markdown fences (```)")
-    if content.strip().endswith('```'):
-        violations.append(f"  .mmd file should not contain markdown fences (```)")
-    
-    # Enhanced validation for .mmd files (treat as single mermaid block)
-    violations.extend(validate_mermaid_class_diagram(content, filepath))
-    violations.extend(validate_mermaid_flowchart(content, filepath))
-    
-    return violations
-
-
 def validate_file(filepath):
     """Validate a single Markdown file"""
     content = filepath.read_text(encoding='utf-8')
@@ -520,8 +419,7 @@ def main():
     mmd_files = find_mmd_files()
     
     if not md_files and not mmd_files:
-        print("No markdown or mermaid files found in doc/")
-        return 0
+        print("No markdown or mermaid files found in doc/; checking registered diagrams")
     
     total_violations = 0
     
@@ -538,24 +436,18 @@ def main():
             else:
                 print(f"  OK: {rel_path}")
     
-    if mmd_files:
-        print(f"\nValidating {len(mmd_files)} mermaid diagram files...")
-        for filepath in mmd_files:
-            rel_path = filepath.relative_to(ROOT)
-            violations = validate_mmd_file(filepath)
-            if violations:
-                print(f"\n{rel_path}:")
-                for v in violations:
-                    print(v)
-                total_violations += len(violations)
-            else:
-                print(f"  OK: {rel_path}")
-    
-    # Verify evidence, freshness and real Mermaid syntax (no tracked writes).
-    diagram_violations = validate_diagrams()
-    for violation in diagram_violations:
-        print(f"  Mermaid integrity: {violation}")
-    total_violations += len(diagram_violations)
+    # One authoritative status per registered diagram. The renderer checks
+    # syntax only when generation succeeds and the saved .mmd is current.
+    # Results are reported as checks finish rather than after all renders.
+    print(f"\nValidating Mermaid diagrams ({len(mmd_files)} existing files)...", flush=True)
+
+    def report_diagram(name, status, detail):
+        path = f"doc/diagrams/{name}.mmd"
+        suffix = f": {detail}" if detail else ""
+        print(f"  {status}: {path}{suffix}", flush=True)
+
+    results = inspect_diagrams(on_result=report_diagram)
+    total_violations += sum(status != 'OK' for _, status, _ in results)
 
     print(f"\n{'='*50}")
     if total_violations == 0:
