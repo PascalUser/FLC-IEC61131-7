@@ -1,0 +1,179 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+index 380f19c..2e5082e 100755
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -809,51 +809,81 @@
+ def generate_lowering_class_diagram():
+-    """Class structure of the lowers package read from the Java sources."""
+-    sources = read_java_files(SRC_DIR / "lowers")
++    """Current lowering types and source-verified relationships."""
++    root = SRC_DIR / "compiler" / "generator" / "lowers"
+     selected = {
+-        "lowering_builders": ["ControllerModelBuilder", "ControllerModelSchema"],
+-        "lowering_constructors": ["BitWidthConstructor", "FuzzyVariablesConstructor",
+-                                  "ModelConstructor", "RulesConstructor"],
+-        "lowering_contexts": ["LoweringContext", "RuleLoweringContext", "TermLoweringContext",
+-                              "VarLoweringContext"],
+-        "lowering_facades": ["TermSetFactory"],
+-        "lowering_lowers": ["ControllerLower", "Lower", "RuleLower", "TermLower", "VariableLower"],
+-        "lowering_utils": ["ControllerModelState", "SymbolKeys"],
++        "lowering_builders": {
++            "ControllerModelBuilder": "builders/ControllerModelBuilder.java",
++            "ControllerModelSchema": "builders/ControllerModelSchema.java",
++        },
++        "lowering_contexts": {
++            "LoweringContext": "contexts/LoweringContext.java",
++            "RuleLoweringContext": "contexts/RuleLoweringContext.java",
++            "TermLoweringContext": "contexts/TermLoweringContext.java",
++            "VarLoweringContext": "contexts/VarLoweringContext.java",
++        },
++        "lowering_facades": {
++            "TermSetFactory": "facades/TermSetFactory.java",
++        },
++        "lowering_lowers": {
++            "ControllerLower": "ControllerLower.java",
++            "Lower": "Lower.java",
++        },
++        "lowering_sublowers": {
++            "BitWidthLower": "sublowers/BitWidthLower.java",
++            "FuzzyVariablesLower": "sublowers/FuzzyVariablesLower.java",
++            "InputsLower": "sublowers/InputsLower.java",
++            "InternalVariablesLower": "sublowers/InternalVariablesLower.java",
++            "OutputsLower": "sublowers/OutputsLower.java",
++            "RuleBlockLower": "sublowers/RuleBlockLower.java",
++            "RuleLower": "sublowers/RuleLower.java",
++            "TermLower": "sublowers/TermLower.java",
++        },
++        "lowering_utils": {
++            "ControllerModelState": "utils/ControllerModelState.java",
++            "SymbolKeys": "utils/SymbolKeys.java",
++        },
+     }
+-    known = {name for names in selected.values() for name in names}
+-    for name in known:
+-        matches = [(path, content) for path, content in sources.items() if Path(path).stem == name]
+-        if len(matches) != 1 or not re.search(
+-                r'\b(?:class|interface)\s+' + re.escape(name) + r'\b', matches[0][1]):
+-            raise ValueError(f"Missing lowers type: {name}")
++    sources = {}
++    for names in selected.values():
++        for name, relative_path in names.items():
++            source = (root / relative_path).read_text(encoding="utf-8")
++            if not re.search(r"\b(?:class|interface)\s+" + re.escape(name) + r"\b", source):
++                raise ValueError(f"Missing lowers type: {name}")
++            sources[name] = source
++
++    # Relationship evidence is checked, not inferred from historical diagrams.
++    relationships = [
++        ("ControllerModelBuilder", "implements ControllerModelSchema", "ControllerModelSchema <|.. ControllerModelBuilder"),
++        ("ControllerLower", "implements Lower<ControllerModel>", "Lower <|.. ControllerLower"),
++        ("BitWidthLower", "implements Lower<Integer>", "Lower <|.. BitWidthLower"),
++        ("FuzzyVariablesLower", "implements Lower<List<Variable>>", "Lower <|.. FuzzyVariablesLower"),
++        ("RuleBlockLower", "implements Lower<EvaluationMethod>", "Lower <|.. RuleBlockLower"),
++        ("RuleLower", "implements Lower<int[]>", "Lower <|.. RuleLower"),
++        ("TermLower", "implements Lower<FuzzySet>", "Lower <|.. TermLower"),
++        ("InputsLower", "extends FuzzyVariablesLower", "FuzzyVariablesLower <|-- InputsLower"),
++        ("OutputsLower", "extends FuzzyVariablesLower", "FuzzyVariablesLower <|-- OutputsLower"),
++        ("RuleLoweringContext", "extends LoweringContext", "LoweringContext <|-- RuleLoweringContext"),
++        ("VarLoweringContext", "extends LoweringContext", "LoweringContext <|-- VarLoweringContext"),
++        ("TermLoweringContext", "extends VarLoweringContext", "VarLoweringContext <|-- TermLoweringContext"),
++        ("ControllerLower", "new ControllerModelBuilder()", "ControllerLower --> ControllerModelBuilder : builds"),
++        ("ControllerLower", "new BitWidthLower(ctx)", "ControllerLower --> BitWidthLower : uses"),
++        ("ControllerLower", "new InputsLower(ctx, bitWidthLower)", "ControllerLower --> InputsLower : uses"),
++        ("ControllerLower", "new OutputsLower(ctx, bitWidthLower)", "ControllerLower --> OutputsLower : uses"),
++        ("ControllerLower", "new RuleBlockLower(ctx)", "ControllerLower --> RuleBlockLower : uses"),
++        ("RuleBlockLower", "new RuleLower(ruleCtx).adapt()", "RuleBlockLower --> RuleLower : uses"),
++        ("FuzzyVariablesLower", "new TermLower(termCtx).adapt()", "FuzzyVariablesLower --> TermLower : uses"),
++        ("TermLower", "TermSetFactory.create(", "TermLower --> TermSetFactory : creates"),
++        ("ControllerModelBuilder", "new ControllerModelState()", "ControllerModelBuilder --> ControllerModelState : holds"),
++    ]
++    for name, snippet, _ in relationships:
++        if snippet not in sources[name]:
++            raise ValueError(f"Lowering relationship changed: {name}: {snippet}")
+ 
+     lines = ["classDiagram"]
+     for namespace, names in selected.items():
+         lines.append(f"    namespace {namespace} {{")
+-        lines += [f"        class {name}" for name in names]
++        lines.extend(f"        class {name}" for name in names)
+         lines.append("    }")
+-
+-    lines += [
+-        "    ControllerModelSchema <|.. ControllerModelBuilder",
+-        "    ModelConstructor <|.. BitWidthConstructor",
+-        "    ModelConstructor <|.. FuzzyVariablesConstructor",
+-        "    ModelConstructor <|.. RulesConstructor",
+-        "    Lower <|.. ControllerLower",
+-        "    Lower <|.. RuleLower",
+-        "    Lower <|.. TermLower",
+-        "    Lower <|.. VariableLower",
+-        "    LoweringContext <|-- VarLoweringContext",
+-        "    LoweringContext <|-- RuleLoweringContext",
+-        "    VarLoweringContext <|-- TermLoweringContext",
+-        "    ControllerLower --> ControllerModelBuilder : builds",
+-        "    ControllerLower --> BitWidthConstructor : uses",
+-        "    ControllerLower --> FuzzyVariablesConstructor : uses",
+-        "    ControllerLower --> RulesConstructor : uses",
+-        "    FuzzyVariablesConstructor --> VariableLower : uses",
+-        "    RulesConstructor --> RuleLower : uses",
+-        "    VariableLower --> TermLower : uses",
+-        "    TermLower --> TermSetFactory : creates",
+-        "    ControllerModelBuilder --> ControllerModelState : holds",
+-    ]
++    lines.extend(f"    {edge}" for _, _, edge in relationships)
+     return "\n".join(lines)
+ 
+ 
+diff --git a/scripts/tests/test_lowering_class_current_sources.py b/scripts/tests/test_lowering_class_current_sources.py
+new file mode 100644
+index 0000000..34aab28
+--- /dev/null
++++ b/scripts/tests/test_lowering_class_current_sources.py
+@@ -0,0 +1,47 @@
++"""Regression checks for source-backed lowering class diagram."""
++import sys
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import generate_diagrams as diagrams
++
++
++class LoweringClassCurrentSourcesTests(unittest.TestCase):
++    def test_current_types_and_relationships(self):
++        diagram = diagrams.generate_lowering_class_diagram()
++        self.assertTrue(diagram.startswith("classDiagram\n"))
++        self.assertIn("namespace lowering_sublowers {", diagram)
++        self.assertIn("class RuleBlockLower", diagram)
++        self.assertIn("Lower <|.. ControllerLower", diagram)
++        self.assertIn("ControllerLower --> RuleBlockLower : uses", diagram)
++        self.assertIn("RuleBlockLower --> RuleLower : uses", diagram)
++        self.assertNotIn("RulesConstructor", diagram)
++        self.assertNotIn("ModelConstructor", diagram)
++        self.assertEqual(diagram, diagrams.generate_lowering_class_diagram())
++
++    def test_missing_type_fails(self):
++        original = Path.read_text
++        def read_text(path, *args, **kwargs):
++            if path.name == "RuleBlockLower.java":
++                return "package compiler.generator.lowers.sublowers;"
++            return original(path, *args, **kwargs)
++        with patch.object(Path, "read_text", read_text):
++            with self.assertRaisesRegex(ValueError, "Missing lowers type: RuleBlockLower"):
++                diagrams.generate_lowering_class_diagram()
++
++    def test_removed_relationship_fails(self):
++        original = Path.read_text
++        def read_text(path, *args, **kwargs):
++            result = original(path, *args, **kwargs)
++            if path.name == "ControllerLower.java":
++                return result.replace("new RuleBlockLower(ctx)", "somethingElse(ctx)")
++            return result
++        with patch.object(Path, "read_text", read_text):
++            with self.assertRaisesRegex(ValueError, "Lowering relationship changed"):
++                diagrams.generate_lowering_class_diagram()
++
++
++if __name__ == "__main__":
++    unittest.main()
