@@ -1372,90 +1372,101 @@ def generate_compiler_package_flowchart():
 
 
 def generate_compiler_class_diagram():
-    """Compiler facade, command line, and generated file with the pipeline collaborators."""
-    sources = read_java_files(SRC_DIR / "compiler")
-    all_sources = {str(path.relative_to(SRC_DIR)): path.read_text()
-                   for path in SRC_DIR.rglob("*.java") if path.name != "package-info.java"}
+    """Classes in the current CLI-to-compiler pipeline, verified against Java."""
     selected = {
-        "compiler": ["compiler.CommandLine", "FlcCompiler", "GeneratedFile"],
-        "ast": ["AbstractSyntaxTree"],
-        "generator": ["CodeGenerator", "ControllerModel"],
-        "lexer": ["Lexer"],
-        "lowering_lowers": ["ControllerLower"],
-        "parser": ["Parser"],
-        "utils": ["DiagnosticsHandler", "SymbolTable"],
+        "api": {"Application": "api/Application.java"},
+        "compiler": {
+            "FlcCompiler": "compiler/FlcCompiler.java",
+            "GeneratedFile": "compiler/GeneratedFile.java",
+        },
+        "compiler_ast": {"AbstractSyntaxTree": "compiler/ast/AbstractSyntaxTree.java"},
+        "compiler_generator": {
+            "CodeGenerator": "compiler/generator/CodeGenerator.java",
+            "ControllerModel": "compiler/generator/ControllerModel.java",
+        },
+        "compiler_lexer": {"Lexer": "compiler/lexer/Lexer.java"},
+        "compiler_generator_lowers": {
+            "ControllerLower": "compiler/generator/lowers/ControllerLower.java",
+        },
+        "compiler_parser": {"Parser": "compiler/parser/Parser.java"},
+        "compiler_repository": {
+            "DiagnosticsHandler": "compiler/repository/DiagnosticsHandler.java",
+            "SymbolTable": "compiler/repository/SymbolTable.java",
+        },
     }
     members = {
-        "compiler.CommandLine": [
-            "<<utility>>",
-            "+OK int",
-            "+COMPILATION_ERRORS int",
-            "+USAGE_ERROR int",
-            "+INTERNAL_ERROR int",
+        "Application": [
+            "+CODE_OK int", "+CODE_COMPILER_ERR int",
+            "+CODE_ARGUMENT_ERR int", "+CODE_INTERNAL_ERR int",
             "+run(String[], PrintStream, PrintStream) int",
-            "-baseName(Path) String",
+            "-getProgramName(Path) String",
         ],
         "FlcCompiler": [
-            "-diagnostics DiagnosticsHandler",
-            "+FlcCompiler(DiagnosticsHandler)",
-            "+compile(Reader, String) List~GeneratedFile~",
+            "-sourceName String", "-sourceCode Reader", "-report String",
+            "+FlcCompiler(String, Reader)",
+            "+compile() List~GeneratedFile~", "+log() String",
         ],
         "GeneratedFile": [
-            "-name String",
-            "-content String",
-            "+name() String",
-            "+content() String",
-            "+equals(Object) boolean",
+            "-name String", "-content String", "+name() String",
+            "+content() String", "+equals(Object) boolean",
             "+hashCode() int",
         ],
     }
     evidence = {
-        "compiler.CommandLine": [
+        "Application": [
             "public static int run(final String[] args",
-            "new FlcCompiler(diagnostics).compile(source, baseName(program))",
+            "new FlcCompiler(sourceName, sourceCode)",
+            "files = compiler.compile()",
             "Files.write(target, file.content().getBytes(StandardCharsets.UTF_8))",
         ],
         "FlcCompiler": [
-            "new Parser(new Lexer(source, symbolTable, diagnostics), symbolTable)",
+            "public FlcCompiler(final String sourceName, final Reader sourceCode)",
+            "public List<GeneratedFile> compile()",
+            "new SymbolTable()", "new DiagnosticsHandler()",
+            "new Lexer(sourceCode, symbolTable, diagnostics)",
+            "new Parser(lexer, symbolTable, diagnostics)",
+            "AbstractSyntaxTree root = parser.getAST()",
             "ControllerLower.newInstance(symbolTable, root, diagnostics).adapt()",
             "new CodeGenerator(model.get())",
-            "new GeneratedFile(baseName + \"_out.cpp\"",
+            'new GeneratedFile(sourceName + "_out.cpp"',
+            "public String log()",
         ],
         "GeneratedFile": [
-            "public String name()",
-            "public String content()",
+            "public String name()", "public String content()",
             "public boolean equals(final Object other)",
         ],
     }
-    known = {name for names in selected.values() for name in names}
-    for name in known:
-        matches = [(path, content) for path, content in all_sources.items()
-                   if Path(path).stem == name]
-        if len(matches) != 1 or not re.search(
-                r'\b(?:class|interface|enum)\s+' + re.escape(name) + r'\b', matches[0][1]):
-            raise ValueError(f"Missing compiler type: {name}")
-    by_name = {Path(path).stem: content for path, content in sources.items()}
+    sources = {}
+    for classes in selected.values():
+        for name, relative_path in classes.items():
+            source_path = SRC_DIR / relative_path
+            if not source_path.is_file():
+                raise ValueError(f"Missing compiler type: {relative_path}")
+            source = source_path.read_text(encoding="utf-8")
+            if not re.search(r'\b(?:class|interface|enum)\s+' + re.escape(name) + r'\b', source):
+                raise ValueError(f"Missing compiler type declaration: {relative_path}")
+            sources[name] = source
     for name, snippets in evidence.items():
         for snippet in snippets:
-            if snippet not in by_name[name]:
+            if snippet not in sources[name]:
                 raise ValueError(f"Compiler class source changed: {name}: {snippet}")
 
     lines = ["classDiagram"]
-    for namespace, names in selected.items():
+    for namespace, classes in selected.items():
         lines.append(f"    namespace {namespace} {{")
-        for name in names:
-            if members.get(name):
+        for name in classes:
+            if name in members:
                 lines.append(f"        class {name} {{")
-                lines += [f"            {member}" for member in members[name]]
+                lines.extend(f"            {member}" for member in members[name])
                 lines.append("        }")
             else:
                 lines.append(f"        class {name}")
         lines.append("    }")
 
     lines += [
-        "    compiler.CommandLine ..> FlcCompiler : creates",
-        "    compiler.CommandLine ..> GeneratedFile : writes",
-        "    FlcCompiler --> DiagnosticsHandler : reports",
+        "    Application ..> FlcCompiler : creates",
+        "    Application ..> GeneratedFile : writes",
+        "    FlcCompiler ..> DiagnosticsHandler : creates and reports",
         "    FlcCompiler ..> Lexer : creates",
         "    FlcCompiler ..> Parser : creates",
         "    FlcCompiler ..> SymbolTable : creates",

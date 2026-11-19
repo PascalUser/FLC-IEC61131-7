@@ -1,18 +1,22 @@
 classDiagram
-    namespace compiler {
-        class api_Application {
-            <<utility>>
-            +OK int
-            +COMPILATION_ERRORS int
-            +USAGE_ERROR int
-            +INTERNAL_ERROR int
+    namespace api {
+        class Application {
+            +CODE_OK int
+            +CODE_COMPILER_ERR int
+            +CODE_ARGUMENT_ERR int
+            +CODE_INTERNAL_ERR int
             +run(String[], PrintStream, PrintStream) int
-            -baseName(Path) String
+            -getProgramName(Path) String
         }
+    }
+    namespace compiler {
         class FlcCompiler {
-            -diagnostics DiagnosticsHandler
-            +FlcCompiler(DiagnosticsHandler)
-            +compile(Reader, String) List~GeneratedFile~
+            -sourceName String
+            -sourceCode Reader
+            -report String
+            +FlcCompiler(String, Reader)
+            +compile() List~GeneratedFile~
+            +log() String
         }
         class GeneratedFile {
             -name String
@@ -23,29 +27,29 @@ classDiagram
             +hashCode() int
         }
     }
-    namespace ast {
+    namespace compiler_ast {
         class AbstractSyntaxTree
     }
-    namespace generator {
+    namespace compiler_generator {
         class CodeGenerator
         class ControllerModel
     }
-    namespace lexer {
+    namespace compiler_lexer {
         class Lexer
     }
-    namespace lowering_lowers {
+    namespace compiler_generator_lowers {
         class ControllerLower
     }
-    namespace parser {
+    namespace compiler_parser {
         class Parser
     }
-    namespace utils {
+    namespace compiler_repository {
         class DiagnosticsHandler
         class SymbolTable
     }
-    api_Application ..> FlcCompiler : creates
-    api_Application ..> GeneratedFile : writes
-    FlcCompiler --> DiagnosticsHandler : reports
+    Application ..> FlcCompiler : creates
+    Application ..> GeneratedFile : writes
+    FlcCompiler ..> DiagnosticsHandler : creates and reports
     FlcCompiler ..> Lexer : creates
     FlcCompiler ..> Parser : creates
     FlcCompiler ..> SymbolTable : creates
