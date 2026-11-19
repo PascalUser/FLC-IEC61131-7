@@ -1,1 +1,57 @@
 flowchart LR
+    compiler_lexer["compiler.lexer"]
+    compiler_lexer_internals["compiler.lexer.internals"]
+    compiler_lexer_semantics["compiler.lexer.semantics"]
+    compiler_lexer_semantics_numbers["compiler.lexer.semantics.numbers"]
+    compiler_lexer_semantics_numbers_bases["compiler.lexer.semantics.numbers.bases"]
+    compiler_lexer_semantics_strings["compiler.lexer.semantics.strings"]
+    compiler_lexer_semantics_utils["compiler.lexer.semantics.utils"]
+    compiler_lexer_transformers["compiler.lexer.transformers"]
+    compiler_lexer_transformers_hex_resolvers["compiler.lexer.transformers.hex_resolvers"]
+    compiler_lexer_transformers_utils["compiler.lexer.transformers.utils"]
+    compiler_parser["compiler.parser"]
+    compiler_repository["compiler.repository"]
+    compiler_repository_builders["compiler.repository.builders"]
+    compiler_repository_diagnostics["compiler.repository.diagnostics"]
+    compiler_repository_diagnostics_pinpointed["compiler.repository.diagnostics.pinpointed"]
+    compiler_repository_diagnostics_pinpointed_outofrange["compiler.repository.diagnostics.pinpointed.outofrange"]
+    compiler_repository_diagnostics_pinpointed_outofrange_base["compiler.repository.diagnostics.pinpointed.outofrange.base"]
+    compiler_repository_enums["compiler.repository.enums"]
+    compiler_lexer --> compiler_lexer_internals
+    compiler_lexer --> compiler_lexer_semantics
+    compiler_lexer --> compiler_lexer_transformers
+    compiler_lexer --> compiler_parser
+    compiler_lexer --> compiler_repository
+    compiler_lexer --> compiler_repository_diagnostics_pinpointed
+    compiler_lexer_internals --> compiler_lexer_semantics
+    compiler_lexer_internals --> compiler_lexer_semantics_numbers
+    compiler_lexer_internals --> compiler_lexer_semantics_numbers_bases
+    compiler_lexer_internals --> compiler_lexer_semantics_strings
+    compiler_lexer_internals --> compiler_lexer_transformers
+    compiler_lexer_internals --> compiler_lexer_transformers_hex_resolvers
+    compiler_lexer_semantics --> compiler_lexer
+    compiler_lexer_semantics --> compiler_lexer_semantics_utils
+    compiler_lexer_semantics --> compiler_parser
+    compiler_lexer_semantics --> compiler_repository
+    compiler_lexer_semantics --> compiler_repository_builders
+    compiler_lexer_semantics --> compiler_repository_diagnostics_pinpointed
+    compiler_lexer_semantics --> compiler_repository_diagnostics_pinpointed_outofrange
+    compiler_lexer_semantics --> compiler_repository_enums
+    compiler_lexer_semantics_numbers --> compiler_lexer_semantics
+    compiler_lexer_semantics_numbers --> compiler_parser
+    compiler_lexer_semantics_numbers --> compiler_repository_builders
+    compiler_lexer_semantics_numbers --> compiler_repository_diagnostics
+    compiler_lexer_semantics_numbers --> compiler_repository_diagnostics_pinpointed_outofrange
+    compiler_lexer_semantics_numbers --> compiler_repository_enums
+    compiler_lexer_semantics_numbers_bases --> compiler_lexer_semantics_numbers
+    compiler_lexer_semantics_numbers_bases --> compiler_repository_diagnostics
+    compiler_lexer_semantics_numbers_bases --> compiler_repository_diagnostics_pinpointed_outofrange_base
+    compiler_lexer_semantics_numbers_bases --> compiler_repository_enums
+    compiler_lexer_semantics_strings --> compiler_lexer_semantics
+    compiler_lexer_semantics_strings --> compiler_parser
+    compiler_lexer_semantics_strings --> compiler_repository_builders
+    compiler_lexer_semantics_strings --> compiler_repository_diagnostics_pinpointed
+    compiler_lexer_semantics_strings --> compiler_repository_enums
+    compiler_lexer_semantics_utils --> compiler_lexer
+    compiler_lexer_transformers --> compiler_lexer_transformers_utils
+    compiler_lexer_transformers_hex_resolvers --> compiler_lexer_transformers

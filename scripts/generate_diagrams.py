@@ -8,6 +8,8 @@ import argparse
 import re
 from pathlib import Path
 
+from extract_architecture import build_inventory
+
 ROOT = Path(__file__).parent.parent
 SRC_DIR = ROOT / "src" / "main" / "java"
 DIAGRAMS_DIR = ROOT / "doc" / "diagrams"
@@ -90,28 +92,42 @@ def generate_package_flowchart():
     return "\n".join(mermaid)
 
 
-def generate_lexer_package_flowchart():
-    """Import dependencies between lexer packages, read from Java sources."""
-    sources = read_java_files(SRC_DIR / "lexer")
-    packages = {"lexer", "lexer.internals", "lexer.semantics",
-                "lexer.semantics.numbers", "lexer.semantics.numbers.bases",
-                "lexer.semantics.strings", "lexer.semantics.utils",
-                "lexer.transformers", "lexer.transformers.hex_resolvers",
-                "lexer.transformers.utils", "parser", "utils", "utils.builders",
-                "utils.enums", "utils.diagnostics"}
-    edges = set()
-    for path, content in sources.items():
-        origin = ".".join(Path(path).parts[:-1])
-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if origin in packages and destination in packages and origin != destination:
-                edges.add((origin, destination))
-    used = sorted({p for edge in edges for p in edge})
-    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+def generate_import_dependency_flowchart(source_prefix):
+    """Draw production import edges backed by the live architecture inventory.
+
+    An edge is included when its source is the requested package or a child
+    package. This does not infer implicit dependencies or Java call graphs.
+    """
+    inventory = build_inventory(ROOT)
+    production_packages = {
+        item["name"] for item in inventory["packages"]
+        if item["scope"] == "production"
+    }
+    if source_prefix not in production_packages:
+        raise ValueError(f"Production package not found: {source_prefix}")
+
+    edges = {
+        (edge["from_package"], edge["to_package"])
+        for edge in inventory["dependencies"]
+        if edge["from_scope"] == "production"
+        and edge["to_scope"] == "production"
+        and (edge["from_package"] == source_prefix
+             or edge["from_package"].startswith(source_prefix + "."))
+    }
+    if not edges:
+        raise ValueError(f"No production import dependencies found for {source_prefix}")
+
+    used = sorted({package for edge in edges for package in edge})
+    ids = {package: package.replace(".", "_") for package in used}
     lines = ["flowchart LR"]
-    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += [f'    {ids[package]}["{package}"]' for package in used]
     lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
     return "\n".join(lines)
+
+
+def generate_lexer_package_flowchart():
+    """Production lexer package dependencies from the architecture inventory."""
+    return generate_import_dependency_flowchart("compiler.lexer")
 
 
 def generate_lexer_class_diagram():
@@ -176,32 +192,8 @@ def generate_lexer_intervals_object():
 
 
 def generate_parser_package_flowchart():
-    """Derive parser dependencies from current compiler.* package/import declarations."""
-    sources = read_java_files(SRC_DIR / "compiler" / "parser")
-    tracked_roots = (
-        "compiler.parser", "compiler.ast", "compiler.repository", "compiler.lexer",
-    )
-    edges = set()
-    for _, content in sources.items():
-        declaration = re.search(r'^\s*package\s+([\w.]+)\s*;', content, re.MULTILINE)
-        if declaration is None:
-            raise ValueError("Parser Java source has no package declaration")
-        origin = declaration.group(1)
-        for imp, wildcard in re.findall(
-                r'^\s*import\s+(?:static\s+)?([\w.]+?)(\.\*)?;',
-                content, re.MULTILINE):
-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if (destination.startswith(tracked_roots)
-                    and destination != origin):
-                edges.add((origin, destination))
-    if not edges:
-        raise ValueError("No parser package dependencies found in compiler.* sources")
-    used = sorted({p for edge in edges for p in edge})
-    ids = {pkg: pkg.replace(".", "_") for pkg in used}
-    lines = ["flowchart LR"]
-    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
-    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
-    return "\n".join(lines)
+    """Production parser package dependencies from the architecture inventory."""
+    return generate_import_dependency_flowchart("compiler.parser")
 
 
 def generate_parser_class_diagram():

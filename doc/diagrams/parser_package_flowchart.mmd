@@ -18,7 +18,6 @@ flowchart LR
     compiler_parser_utils["compiler.parser.utils"]
     compiler_repository["compiler.repository"]
     compiler_repository_builders["compiler.repository.builders"]
-    compiler_repository_builders_Director["compiler.repository.builders.Director"]
     compiler_repository_diagnostics_general["compiler.repository.diagnostics.general"]
     compiler_repository_enums["compiler.repository.enums"]
     compiler_parser --> compiler_ast
@@ -65,7 +64,6 @@ flowchart LR
     compiler_parser_metadata --> compiler_parser_utils
     compiler_parser_metadata --> compiler_repository
     compiler_parser_metadata --> compiler_repository_builders
-    compiler_parser_metadata --> compiler_repository_builders_Director
     compiler_parser_metadata --> compiler_repository_enums
     compiler_parser_publishers --> compiler_parser_publishers_leafs_multiple
     compiler_parser_publishers --> compiler_parser_publishers_nodes
