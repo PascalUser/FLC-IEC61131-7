@@ -1,0 +1,193 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+old mode 100755
+new mode 100755
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -860,58 +860,89 @@
+ def generate_lowering_controller_sequence():
+-    """Controller lowers flow checked against the method calls in the Java sources."""
+-    controller_lower = (SRC_DIR / "lowers" / "lowers" / "ControllerLower.java").read_text()
+-    fuzzy_variables = (SRC_DIR / "lowers" / "constructors" / "FuzzyVariablesConstructor.java").read_text()
+-    rules_constructor = (SRC_DIR / "lowers" / "constructors" / "RulesConstructor.java").read_text()
+-    variable_lower = (SRC_DIR / "lowers" / "lowers" / "VariableLower.java").read_text()
+-    term_lower = (SRC_DIR / "lowers" / "lowers" / "TermLower.java").read_text()
+-    for snippet, text in [
+-            ("new BitWidthConstructor", controller_lower),
+-            ("new FuzzyVariablesConstructor", controller_lower),
+-            ("new RulesConstructor", controller_lower),
+-            ("new ControllerModel(", controller_lower),
+-            ("new ControllerModelState(", controller_lower),
+-            ("new VariableLower", fuzzy_variables),
+-            ("varLower.adapt", fuzzy_variables),
+-            ("new RuleLower", rules_constructor),
+-            ("ruleLower.adapt", rules_constructor),
+-            ("new TermLower", variable_lower),
+-            ("termLower.adapt", variable_lower),
+-            ("TermSetFactory.create", term_lower),
+-    ]:
+-        if snippet not in text:
+-            raise ValueError(f"Lowering sequence source changed: {snippet}")
++    """Source-checked lowering stages and their Optional result."""
++    lower_dir = SRC_DIR / "compiler" / "generator" / "lowers"
++    sources = {
++        "controller": lower_dir / "ControllerLower.java",
++        "variables": lower_dir / "sublowers" / "FuzzyVariablesLower.java",
++        "term": lower_dir / "sublowers" / "TermLower.java",
++        "rules": lower_dir / "sublowers" / "RuleBlockLower.java",
++    }
++    evidence = {
++        "controller": [
++            "new ControllerModelBuilder()",
++            "new BitWidthLower(ctx)", "bitWidthLower.adapt()",
++            "new InputsLower(ctx, bitWidthLower)", "inputsLower.adapt()",
++            "controller.inputs(inputVarsObj.get())",
++            "new OutputsLower(ctx, bitWidthLower)", "outputsLower.adapt()",
++            "controller.outputs(outputVars)", "controller.defuzzifiers(defuzzifiers)",
++            "new InternalVariablesLower(ctx)", "varsLower.adapt()",
++            "new RuleBlockLower(ctx)", "ruleBlockLower.adapt()",
++            "controller.evaluationMethod(evalMethodObj.get())",
++            "if (validModel)", "Optional.of(controller.build())", "Optional.empty()",
++        ],
++        "variables": ["new TermLower(termCtx).adapt()"],
++        "term": ["TermSetFactory.create(termName, termInfo, lowerBound)"],
++        "rules": ["new RuleLower(ruleCtx).adapt()", "new MinMaxMethod(rows)"],
++    }
++    for stage, path in sources.items():
++        source = path.read_text(encoding="utf-8")
++        for snippet in evidence[stage]:
++            if snippet not in source:
++                raise ValueError(f"Lowering sequence source changed ({path.name}): {snippet}")
++
+     return "\n".join([
+         "sequenceDiagram",
+-        "    participant C as lowering_lowers_ControllerLower",
+-        "    participant B as lowering_constructors_BitWidthConstructor",
+-        "    participant V as lowering_constructors_FuzzyVariablesConstructor",
+-        "    participant L as lowering_lowers_VariableLower",
+-        "    participant T as lowering_lowers_TermLower",
+-        "    participant F as lowering_facades_TermSetFactory",
+-        "    participant R as lowering_constructors_RulesConstructor",
+-        "    participant U as lowering_lowers_RuleLower",
+-        "    participant M as lowering_builders_ControllerModelBuilder",
+-        "    participant O as codegen_ControllerModel",
++        "    participant C as compiler.generator.lowers.ControllerLower",
++        "    participant B as compiler.generator.lowers.sublowers.BitWidthLower",
++        "    participant I as compiler.generator.lowers.sublowers.InputsLower",
++        "    participant O as compiler.generator.lowers.sublowers.OutputsLower",
++        "    participant V as compiler.generator.lowers.sublowers.FuzzyVariablesLower",
++        "    participant T as compiler.generator.lowers.sublowers.TermLower",
++        "    participant F as compiler.generator.lowers.facades.TermSetFactory",
++        "    participant N as compiler.generator.lowers.sublowers.InternalVariablesLower",
++        "    participant R as compiler.generator.lowers.sublowers.RuleBlockLower",
++        "    participant U as compiler.generator.lowers.sublowers.RuleLower",
++        "    participant M as compiler.generator.lowers.builders.ControllerModelBuilder",
+         "",
+-        "    C->>B: construct(controller)",
+-        "    B-->>C: bit width or unsupported feature",
+-        "    C->>V: construct(controller)",
+-        "    loop every input and output",
+-        "        V->>L: adapt()",
+-        "        loop every declared term",
+-        "            L->>T: adapt()",
+-        "            T->>F: create(termName, termInfo)",
+-        "            F-->>T: FuzzySet",
+-        "        end",
+-        "        L-->>V: Variable",
++        "    C->>M: new ControllerModelBuilder()",
++        "    C->>B: new BitWidthLower(ctx), adapt()",
++        "    B-->>C: Optional bit width",
++        "    opt bit width valid",
++        "        C->>M: bitWidth(width)",
+         "    end",
+-        "    V->>M: inputs outputs defuzzifiers",
+-        "    C->>R: construct(controller)",
+-        "    loop every rule",
+-        "        R->>U: adapt()",
+-        "        U-->>R: int[] row",
++        "    C->>I: new InputsLower(ctx, bitWidthLower), adapt()",
++        "    I->>V: inherited adapt()",
++        "    loop each declared input term",
++        "        V->>T: new TermLower(termCtx), adapt()",
++        "        T->>F: create(termName, termInfo, lowerBound)",
++        "        F-->>T: Optional FuzzySet",
+         "    end",
+-        "    R->>M: evaluationMethod(MinMaxMethod)",
+-        "    C->>O: new ControllerModel(new ControllerModelState(...))",
+-        "    O-->>C: Optional.of(model) or Optional.empty()",
++        "    I-->>C: Optional input variables",
++        "    opt inputs valid",
++        "        C->>M: inputs(inputVars)",
++        "    end",
++        "    C->>O: new OutputsLower(ctx, bitWidthLower), adapt()",
++        "    O->>V: inherited adapt()",
++        "    O-->>C: Optional output variables",
++        "    opt outputs valid",
++        "        C->>M: outputs(outputVars)",
++        "        C->>M: defuzzifiers(centroid map)",
++        "    end",
++        "    C->>N: new InternalVariablesLower(ctx), adapt()",
++        "    N-->>C: Optional local variable keys",
++        "    C->>R: new RuleBlockLower(ctx), adapt()",
++        "    loop each rule in rule block",
++        "        R->>U: new RuleLower(ruleCtx), adapt()",
++        "        U-->>R: Optional rule row",
++        "    end",
++        "    R-->>C: Optional MinMaxMethod(rows)",
++        "    opt evaluation method valid",
++        "        C->>M: evaluationMethod(evalMethod)",
++        "    end",
++        "    alt all stages valid",
++        "        C->>M: build()",
++        "        M-->>C: ControllerModel",
++        "        C-->>C: Optional.of(model)",
++        "    else any stage invalid",
++        "        C-->>C: Optional.empty()",
++        "    end",
+     ])
+diff --git a/scripts/tests/test_lowering_controller_sequence.py b/scripts/tests/test_lowering_controller_sequence.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_lowering_controller_sequence.py
+@@ -0,0 +1,42 @@
++"""Regression tests for source-backed lowering controller sequence."""
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++import sys
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import generate_diagrams as diagrams
++
++
++class LoweringControllerSequenceTests(unittest.TestCase):
++    def test_current_sources_and_stages(self):
++        diagram = diagrams.generate_lowering_controller_sequence()
++        self.assertTrue(diagram.startswith("sequenceDiagram\n"))
++        for stage in ("BitWidthLower", "InputsLower", "OutputsLower", "InternalVariablesLower", "RuleBlockLower", "RuleLower", "TermLower", "ControllerModelBuilder"):
++            self.assertIn(stage, diagram)
++        self.assertIn("Optional.empty()", diagram)
++        self.assertIn("Optional.of(model)", diagram)
++        self.assertNotIn("RulesConstructor", diagram)
++        self.assertEqual(diagram, diagrams.generate_lowering_controller_sequence())
++
++    def test_missing_source_fails_instead_of_generating_stale_diagram(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            with patch.object(diagrams, "SRC_DIR", Path(tmp)):
++                with self.assertRaises(FileNotFoundError):
++                    diagrams.generate_lowering_controller_sequence()
++
++    def test_missing_evidence_is_reported(self):
++        original = Path.read_text
++        def changed(path, *args, **kwargs):
++            content = original(path, *args, **kwargs)
++            if path.name == "ControllerLower.java":
++                return content.replace("new RuleBlockLower(ctx)", "new OtherLower(ctx)")
++            return content
++        with patch.object(Path, "read_text", changed):
++            with self.assertRaisesRegex(ValueError, "new RuleBlockLower"):
++                diagrams.generate_lowering_controller_sequence()
++
++
++if __name__ == "__main__":
++    unittest.main()
