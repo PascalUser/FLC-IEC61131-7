@@ -13,8 +13,8 @@ sequenceDiagram
     B-->>P: RuleBlockNode
     P->>T: new AbstractSyntaxTree(programName, ruleBlocks)
     P-->>C: getAST()
-    C->>R: new RuleBlockLower(ctx); adapt()
-    R->>L: new RuleLower(ruleCtx); adapt()
+    C->>R: new RuleBlockLower(ctx), then adapt()
+    R->>L: new RuleLower(ruleCtx), then adapt()
     L-->>R: Optional<int[]> row
     R->>M: new MinMaxMethod(rows)
     M-->>R: EvaluationMethod
