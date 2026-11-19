@@ -1,11 +1,11 @@
 sequenceDiagram
-    participant C as simulation_SimulationComparison
-    participant Q as simulation_QuantizedSimulator
-    participant R as simulation_ReferenceSimulator
-    participant M as simulation_MinMaxEvaluation
-    participant F as codegen_fuzzysets_FuzzySet
-    participant A as Accumulator
-    participant O as simulation_OutputComparison
+    participant C as utils.simulation.SimulationComparison
+    participant Q as utils.simulation.QuantizedSimulator
+    participant R as utils.simulation.ReferenceSimulator
+    participant M as utils.simulation.MinMaxEvaluation
+    participant F as compiler.generator.fuzzysets.FuzzySet
+    participant A as SimulationComparison.Accumulator
+    participant O as utils.simulation.OutputComparison
 
     C->>Q: new QuantizedSimulator(model)
     Q->>M: requireSimulable(model)

@@ -1133,16 +1133,19 @@ def generate_simulation_package_flowchart():
 
 def generate_simulation_class_diagram():
     """Simulator, comparison, and MIN-MAX helper associations read from the Java sources."""
-    sources = read_java_files(SRC_DIR / "simulation")
-    all_sources = {str(path.relative_to(SRC_DIR)): path.read_text()
-                   for path in SRC_DIR.rglob("*.java") if path.name != "package-info.java"}
+    simulation_dir = ROOT / "src" / "test" / "java" / "utils" / "simulation"
+    sources = {str(path): path.read_text(encoding="utf-8")
+               for path in simulation_dir.glob("*.java") if path.name != "package-info.java"}
+    all_sources = {str(path): path.read_text(encoding="utf-8")
+                   for source_root in (SRC_DIR, ROOT / "src" / "test" / "java")
+                   for path in source_root.rglob("*.java") if path.name != "package-info.java"}
     selected = {
-        "simulation": ["ReferenceSimulator", "QuantizedSimulator", "SimulationComparison",
-                       "OutputComparison", "MinMaxEvaluation"],
-        "generator": ["ControllerModel", "Variable"],
-        "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
-        "codegen_defuzzification": ["CentroidDefuzzifier"],
-        "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet"],
+        "utils_simulation": ["ReferenceSimulator", "QuantizedSimulator", "SimulationComparison",
+                             "OutputComparison", "MinMaxEvaluation"],
+        "compiler_generator": ["ControllerModel", "Variable"],
+        "compiler_generator_evaluation": ["EvaluationMethod", "MinMaxMethod"],
+        "compiler_generator_defuzzification": ["CentroidDefuzzifier"],
+        "compiler_generator_fuzzysets": ["FuzzySet", "SingletonFuzzySet"],
     }
     members = {
         "ReferenceSimulator": [
@@ -1263,10 +1266,11 @@ def generate_simulation_class_diagram():
 
 def generate_simulation_comparison_sequence():
     """SimulationComparison.compare flow checked against the simulation Java sources."""
-    comparison = (SRC_DIR / "simulation" / "SimulationComparison.java").read_text()
-    quantized = (SRC_DIR / "simulation" / "QuantizedSimulator.java").read_text()
-    reference = (SRC_DIR / "simulation" / "ReferenceSimulator.java").read_text()
-    evaluation = (SRC_DIR / "simulation" / "MinMaxEvaluation.java").read_text()
+    simulation_dir = ROOT / "src" / "test" / "java" / "utils" / "simulation"
+    comparison = (simulation_dir / "SimulationComparison.java").read_text(encoding="utf-8")
+    quantized = (simulation_dir / "QuantizedSimulator.java").read_text(encoding="utf-8")
+    reference = (simulation_dir / "ReferenceSimulator.java").read_text(encoding="utf-8")
+    evaluation = (simulation_dir / "MinMaxEvaluation.java").read_text(encoding="utf-8")
     for snippet, text in [
             ("new QuantizedSimulator(model)", comparison),
             ("new ReferenceSimulator(model)", comparison),
@@ -1289,13 +1293,13 @@ def generate_simulation_comparison_sequence():
             raise ValueError(f"Simulation sequence source changed: {snippet}")
     return "\n".join([
         "sequenceDiagram",
-        "    participant C as simulation_SimulationComparison",
-        "    participant Q as simulation_QuantizedSimulator",
-        "    participant R as simulation_ReferenceSimulator",
-        "    participant M as simulation_MinMaxEvaluation",
-        "    participant F as codegen_fuzzysets_FuzzySet",
-        "    participant A as Accumulator",
-        "    participant O as simulation_OutputComparison",
+        "    participant C as utils.simulation.SimulationComparison",
+        "    participant Q as utils.simulation.QuantizedSimulator",
+        "    participant R as utils.simulation.ReferenceSimulator",
+        "    participant M as utils.simulation.MinMaxEvaluation",
+        "    participant F as compiler.generator.fuzzysets.FuzzySet",
+        "    participant A as SimulationComparison.Accumulator",
+        "    participant O as utils.simulation.OutputComparison",
         "",
         "    C->>Q: new QuantizedSimulator(model)",
         "    Q->>M: requireSimulable(model)",

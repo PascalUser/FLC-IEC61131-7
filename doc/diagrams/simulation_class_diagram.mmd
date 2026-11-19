@@ -1,5 +1,5 @@
 classDiagram
-    namespace simulation {
+    namespace utils_simulation {
         class ReferenceSimulator {
             -model ControllerModel
             +ReferenceSimulator(ControllerModel)
@@ -40,18 +40,18 @@ classDiagram
             ~outputDegrees(ControllerModel, double[][]) double[][]
         }
     }
-    namespace generator {
+    namespace compiler_generator {
         class ControllerModel
         class Variable
     }
-    namespace codegen_evaluation {
+    namespace compiler_generator_evaluation {
         class EvaluationMethod
         class MinMaxMethod
     }
-    namespace codegen_defuzzification {
+    namespace compiler_generator_defuzzification {
         class CentroidDefuzzifier
     }
-    namespace codegen_fuzzysets {
+    namespace compiler_generator_fuzzysets {
         class FuzzySet
         class SingletonFuzzySet
     }
