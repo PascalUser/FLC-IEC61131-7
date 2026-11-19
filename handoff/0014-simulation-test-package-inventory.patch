@@ -1,0 +1,124 @@
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -1093,24 +1093,37 @@
+ 
+ 
+ def generate_simulation_package_flowchart():
+-    """Import dependencies between simulation, generator, and the generator subpackages it reads."""
+-    sources = read_java_files(SRC_DIR)
+-    packages = {"simulation", "generator", "generator.defuzzification",
+-                "generator.evaluation", "generator.fuzzysets"}
+-    edges = set()
+-    for path, content in sources.items():
+-        origin = ".".join(Path(path).parts[:-1])
+-        if origin not in packages:
+-            continue
+-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
+-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
+-            if destination in packages and origin != destination:
+-                edges.add((origin, destination))
++    """Show test-only simulation imports into production generator packages.
++
++    Edges come from the architecture inventory; this does not imply that the
++    production compiler depends on simulation or that imports are runtime calls.
++    """
++    inventory = build_inventory(ROOT)
++    simulation = "utils.simulation"
++    test_packages = {p["name"] for p in inventory["packages"] if p["scope"] == "test"}
++    if simulation not in test_packages:
++        raise ValueError("Simulation test package not found: utils.simulation")
++
++    # A production-to-test import would violate the intended module boundary.
++    if any(edge["from_scope"] == "production"
++           and edge["to_scope"] == "test"
++           and edge["to_package"] == simulation
++           for edge in inventory["dependencies"]):
++        raise ValueError("Production code must not import utils.simulation")
++
++    edges = {
++        (edge["from_package"], edge["to_package"])
++        for edge in inventory["dependencies"]
++        if edge["from_scope"] == "test"
++        and edge["from_package"] == simulation
++        and edge["to_scope"] == "production"
++        and (edge["to_package"] == "compiler.generator"
++             or edge["to_package"].startswith("compiler.generator."))
++    }
++    if not edges:
++        raise ValueError("Simulation test package has no production generator imports")
++
+     used = sorted({pkg for edge in edges for pkg in edge})
+-    if "simulation" not in used:
+-        raise ValueError("Simulation package has no imports into generator")
+-    if any(origin == "generator" and destination == "simulation" for origin, destination in edges):
+-        raise ValueError("generator must not import simulation")
+     ids = {pkg: pkg.replace(".", "_") for pkg in used}
+     lines = ["flowchart LR"]
+     lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+--- /dev/null
++++ b/scripts/tests/test_simulation_package_diagram.py
+@@ -0,0 +1,64 @@
++"""Simulation package graph is derived from test-to-production import evidence."""
++import sys
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import generate_diagrams as diagrams
++
++
++class SimulationPackageDiagramTests(unittest.TestCase):
++    def inventory(self, edges, include_simulation=True):
++        packages = [{"scope": "production", "name": "compiler.generator"},
++                    {"scope": "production", "name": "compiler.generator.evaluation"}]
++        if include_simulation:
++            packages.append({"scope": "test", "name": "utils.simulation"})
++        return {"packages": packages, "dependencies": edges}
++
++    def edge(self, source_scope="test", source="utils.simulation",
++             target_scope="production", target="compiler.generator"):
++        return {"from_scope": source_scope, "from_package": source,
++                "to_scope": target_scope, "to_package": target,
++                "evidence_files": ["src/test/java/utils/simulation/Simulation.java"]}
++
++    def render(self, inventory):
++        with patch.object(diagrams, "build_inventory", return_value=inventory) as extract:
++            result = diagrams.generate_simulation_package_flowchart()
++        extract.assert_called_once_with(diagrams.ROOT)
++        return result
++
++    def test_only_test_to_generator_imports_are_rendered(self):
++        inventory = self.inventory([
++            self.edge(),
++            self.edge(target="compiler.generator.evaluation"),
++            self.edge(source="utils.other"),
++            self.edge(target="compiler.ast"),
++        ])
++        graph = self.render(inventory)
++        self.assertIn('utils_simulation["utils.simulation"]', graph)
++        self.assertIn("utils_simulation --> compiler_generator", graph)
++        self.assertIn("utils_simulation --> compiler_generator_evaluation", graph)
++        self.assertNotIn("utils_other", graph)
++        self.assertNotIn("compiler_ast", graph)
++        self.assertEqual(graph, self.render(inventory))
++
++    def test_missing_simulation_test_package_is_error(self):
++        with patch.object(diagrams, "build_inventory", return_value=self.inventory([], False)):
++            with self.assertRaisesRegex(ValueError, "Simulation test package not found"):
++                diagrams.generate_simulation_package_flowchart()
++
++    def test_no_generator_imports_is_error(self):
++        with patch.object(diagrams, "build_inventory", return_value=self.inventory([self.edge(target="compiler.ast")])):
++            with self.assertRaisesRegex(ValueError, "no production generator imports"):
++                diagrams.generate_simulation_package_flowchart()
++
++    def test_production_to_simulation_boundary_violation_is_error(self):
++        reverse = self.edge("production", "compiler.generator", "test", "utils.simulation")
++        with patch.object(diagrams, "build_inventory", return_value=self.inventory([self.edge(), reverse])):
++            with self.assertRaisesRegex(ValueError, "Production code must not import"):
++                diagrams.generate_simulation_package_flowchart()
++
++
++if __name__ == "__main__":
++    unittest.main()

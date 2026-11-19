@@ -1,16 +1,10 @@
 flowchart LR
-    generator["generator"]
-    codegen_defuzzification["generator.defuzzification"]
-    codegen_evaluation["generator.evaluation"]
-    codegen_fuzzysets["generator.fuzzysets"]
-    simulation["simulation"]
-    generator --> codegen_defuzzification
-    generator --> codegen_evaluation
-    generator --> codegen_fuzzysets
-    codegen_defuzzification --> generator
-    codegen_evaluation --> generator
-    codegen_fuzzysets --> generator
-    simulation --> generator
-    simulation --> codegen_defuzzification
-    simulation --> codegen_evaluation
-    simulation --> codegen_fuzzysets
+    compiler_generator["compiler.generator"]
+    compiler_generator_defuzzification["compiler.generator.defuzzification"]
+    compiler_generator_evaluation["compiler.generator.evaluation"]
+    compiler_generator_fuzzysets["compiler.generator.fuzzysets"]
+    utils_simulation["utils.simulation"]
+    utils_simulation --> compiler_generator
+    utils_simulation --> compiler_generator_defuzzification
+    utils_simulation --> compiler_generator_evaluation
+    utils_simulation --> compiler_generator_fuzzysets

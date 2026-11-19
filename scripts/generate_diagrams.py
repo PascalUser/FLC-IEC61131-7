@@ -1093,24 +1093,37 @@ def generate_ast_construction_sequence():
 
 
 def generate_simulation_package_flowchart():
-    """Import dependencies between simulation, generator, and the generator subpackages it reads."""
-    sources = read_java_files(SRC_DIR)
-    packages = {"simulation", "generator", "generator.defuzzification",
-                "generator.evaluation", "generator.fuzzysets"}
-    edges = set()
-    for path, content in sources.items():
-        origin = ".".join(Path(path).parts[:-1])
-        if origin not in packages:
-            continue
-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if destination in packages and origin != destination:
-                edges.add((origin, destination))
+    """Show test-only simulation imports into production generator packages.
+
+    Edges come from the architecture inventory; this does not imply that the
+    production compiler depends on simulation or that imports are runtime calls.
+    """
+    inventory = build_inventory(ROOT)
+    simulation = "utils.simulation"
+    test_packages = {p["name"] for p in inventory["packages"] if p["scope"] == "test"}
+    if simulation not in test_packages:
+        raise ValueError("Simulation test package not found: utils.simulation")
+
+    # A production-to-test import would violate the intended module boundary.
+    if any(edge["from_scope"] == "production"
+           and edge["to_scope"] == "test"
+           and edge["to_package"] == simulation
+           for edge in inventory["dependencies"]):
+        raise ValueError("Production code must not import utils.simulation")
+
+    edges = {
+        (edge["from_package"], edge["to_package"])
+        for edge in inventory["dependencies"]
+        if edge["from_scope"] == "test"
+        and edge["from_package"] == simulation
+        and edge["to_scope"] == "production"
+        and (edge["to_package"] == "compiler.generator"
+             or edge["to_package"].startswith("compiler.generator."))
+    }
+    if not edges:
+        raise ValueError("Simulation test package has no production generator imports")
+
     used = sorted({pkg for edge in edges for pkg in edge})
-    if "simulation" not in used:
-        raise ValueError("Simulation package has no imports into generator")
-    if any(origin == "generator" and destination == "simulation" for origin, destination in edges):
-        raise ValueError("generator must not import simulation")
     ids = {pkg: pkg.replace(".", "_") for pkg in used}
     lines = ["flowchart LR"]
     lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
