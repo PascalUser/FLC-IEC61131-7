@@ -1,8 +1,66 @@
 flowchart LR
-    compiler["compiler"]
-    generator["generator"]
-    lowers["lowers"]
-    simulation["simulation"]
-    compiler --> generator
-    lowers --> generator
-    simulation --> generator
+    compiler_ast["compiler.ast"]
+    compiler_ast_ruleblock["compiler.ast.ruleblock"]
+    compiler_ast_ruleblock_operators["compiler.ast.ruleblock.operators"]
+    compiler_generator["compiler.generator"]
+    compiler_generator_defuzzification["compiler.generator.defuzzification"]
+    compiler_generator_evaluation["compiler.generator.evaluation"]
+    compiler_generator_fuzzysets["compiler.generator.fuzzysets"]
+    compiler_generator_lowers["compiler.generator.lowers"]
+    compiler_generator_lowers_builders["compiler.generator.lowers.builders"]
+    compiler_generator_lowers_contexts["compiler.generator.lowers.contexts"]
+    compiler_generator_lowers_facades["compiler.generator.lowers.facades"]
+    compiler_generator_lowers_sublowers["compiler.generator.lowers.sublowers"]
+    compiler_generator_lowers_utils["compiler.generator.lowers.utils"]
+    compiler_parser_initializations["compiler.parser.initializations"]
+    compiler_parser_metadata["compiler.parser.metadata"]
+    compiler_repository["compiler.repository"]
+    compiler_repository_diagnostics_general["compiler.repository.diagnostics.general"]
+    compiler_repository_enums["compiler.repository.enums"]
+    compiler_generator --> compiler_generator_defuzzification
+    compiler_generator --> compiler_generator_evaluation
+    compiler_generator --> compiler_generator_fuzzysets
+    compiler_generator --> compiler_generator_lowers_utils
+    compiler_generator_defuzzification --> compiler_generator
+    compiler_generator_evaluation --> compiler_generator
+    compiler_generator_fuzzysets --> compiler_generator
+    compiler_generator_lowers --> compiler_ast
+    compiler_generator_lowers --> compiler_generator
+    compiler_generator_lowers --> compiler_generator_defuzzification
+    compiler_generator_lowers --> compiler_generator_evaluation
+    compiler_generator_lowers --> compiler_generator_lowers_builders
+    compiler_generator_lowers --> compiler_generator_lowers_contexts
+    compiler_generator_lowers --> compiler_generator_lowers_sublowers
+    compiler_generator_lowers --> compiler_generator_lowers_utils
+    compiler_generator_lowers --> compiler_repository
+    compiler_generator_lowers_builders --> compiler_generator
+    compiler_generator_lowers_builders --> compiler_generator_defuzzification
+    compiler_generator_lowers_builders --> compiler_generator_evaluation
+    compiler_generator_lowers_builders --> compiler_generator_lowers_utils
+    compiler_generator_lowers_contexts --> compiler_ast
+    compiler_generator_lowers_contexts --> compiler_generator_lowers_sublowers
+    compiler_generator_lowers_contexts --> compiler_generator_lowers_utils
+    compiler_generator_lowers_contexts --> compiler_repository
+    compiler_generator_lowers_facades --> compiler_generator_fuzzysets
+    compiler_generator_lowers_facades --> compiler_generator_lowers_utils
+    compiler_generator_lowers_facades --> compiler_repository
+    compiler_generator_lowers_facades --> compiler_repository_enums
+    compiler_generator_lowers_sublowers --> compiler_ast
+    compiler_generator_lowers_sublowers --> compiler_ast_ruleblock
+    compiler_generator_lowers_sublowers --> compiler_ast_ruleblock_operators
+    compiler_generator_lowers_sublowers --> compiler_generator
+    compiler_generator_lowers_sublowers --> compiler_generator_evaluation
+    compiler_generator_lowers_sublowers --> compiler_generator_fuzzysets
+    compiler_generator_lowers_sublowers --> compiler_generator_lowers
+    compiler_generator_lowers_sublowers --> compiler_generator_lowers_contexts
+    compiler_generator_lowers_sublowers --> compiler_generator_lowers_facades
+    compiler_generator_lowers_sublowers --> compiler_generator_lowers_utils
+    compiler_generator_lowers_sublowers --> compiler_parser_initializations
+    compiler_generator_lowers_sublowers --> compiler_repository
+    compiler_generator_lowers_sublowers --> compiler_repository_diagnostics_general
+    compiler_generator_lowers_sublowers --> compiler_repository_enums
+    compiler_generator_lowers_utils --> compiler_generator
+    compiler_generator_lowers_utils --> compiler_generator_defuzzification
+    compiler_generator_lowers_utils --> compiler_generator_evaluation
+    compiler_generator_lowers_utils --> compiler_generator_lowers_builders
+    compiler_generator_lowers_utils --> compiler_parser_metadata

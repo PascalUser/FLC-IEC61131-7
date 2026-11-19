@@ -731,24 +731,12 @@ def generate_publisher_sequence():
 
 
 def generate_codegen_package_flowchart():
-    """Import dependencies of the generator package and its consumers."""
-    sources = read_java_files(SRC_DIR / "generator")
-    packages = {"generator", "generator.defuzzification", "generator.evaluation", "generator.fuzzysets"}
-    edges = set()
-    for path, content in sources.items():
-        origin = ".".join(Path(path).parts[:-1])
-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if origin in packages and destination in packages and origin != destination:
-                edges.add((origin, destination))
-    for consumer in ("compiler", "lowers", "simulation"):
-        edges.add((consumer, "generator"))
-    used = sorted({p for edge in edges for p in edge})
-    ids = {pkg: pkg.replace(".", "_") for pkg in used}
-    lines = ["flowchart LR"]
-    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
-    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
-    return "\n".join(lines)
+    """Generator subtree dependencies based on production Java imports.
+
+    Includes compiler.generator.lowers because lowering belongs to the
+    generator module; no synthetic consumer edges are added.
+    """
+    return generate_import_dependency_flowchart("compiler.generator")
 
 
 def generate_codegen_class_diagram():
@@ -814,37 +802,8 @@ def generate_codegen_controller_sequence():
 
 
 def generate_lowering_package_flowchart():
-    """Import dependencies of the lowers package, its subpackages, and its direct consumers."""
-    sources = read_java_files(SRC_DIR)
-    module_packages = {
-        "lowers", "lowers.builders", "lowers.constructors", "lowers.contexts",
-        "lowers.facades", "lowers.lowers", "lowers.utils",
-    }
-    dependency_packages = {
-        "ast", "ast.ruleblock", "ast.ruleblock.operators",
-        "generator", "generator.defuzzification", "generator.evaluation", "generator.fuzzysets",
-        "parser.initializations", "parser.metadata",
-        "utils", "utils.diagnostics", "utils.enums",
-    }
-    consumers = {"compiler"}
-    packages = module_packages | dependency_packages | consumers
-    edges = set()
-    for path, content in sources.items():
-        origin = ".".join(Path(path).parts[:-1])
-        if origin not in packages:
-            continue
-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if destination not in packages or origin == destination:
-                continue
-            if origin in module_packages or destination in module_packages:
-                edges.add((origin, destination))
-    used = sorted({pkg for edge in edges for pkg in edge})
-    ids = {pkg: pkg.replace(".", "_") for pkg in used}
-    lines = ["flowchart LR"]
-    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
-    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
-    return "\n".join(lines)
+    """Lowering subtree dependencies based on production Java imports."""
+    return generate_import_dependency_flowchart("compiler.generator.lowers")
 
 
 def generate_lowering_class_diagram():
