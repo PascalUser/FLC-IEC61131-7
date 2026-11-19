@@ -9,6 +9,8 @@ import sys
 import subprocess
 from pathlib import Path
 
+from validate_mermaid_integrity import validate_diagrams
+
 ROOT = Path(__file__).parent.parent
 DOC_DIR = ROOT / "doc"
 ASSETS_DIR = DOC_DIR / "assets"
@@ -549,6 +551,12 @@ def main():
             else:
                 print(f"  OK: {rel_path}")
     
+    # Verify evidence, freshness and real Mermaid syntax (no tracked writes).
+    diagram_violations = validate_diagrams()
+    for violation in diagram_violations:
+        print(f"  Mermaid integrity: {violation}")
+    total_violations += len(diagram_violations)
+
     print(f"\n{'='*50}")
     if total_violations == 0:
         print("All validation checks passed!")

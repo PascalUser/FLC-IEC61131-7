@@ -1,0 +1,151 @@
+diff --git a/scripts/validate_docs.py b/scripts/validate_docs.py
+--- a/scripts/validate_docs.py
++++ b/scripts/validate_docs.py
+@@ -7,5 +7,7 @@
+ import sys
+ import subprocess
+ from pathlib import Path
+ 
++from validate_mermaid_integrity import validate_diagrams
++
+ ROOT = Path(__file__).parent.parent
+@@ -552,4 +552,10 @@
++    # Verify evidence, freshness and real Mermaid syntax (no tracked writes).
++    diagram_violations = validate_diagrams()
++    for violation in diagram_violations:
++        print(f"  Mermaid integrity: {violation}")
++    total_violations += len(diagram_violations)
++
+     print(f"\n{'='*50}")
+     if total_violations == 0:
+         print("All validation checks passed!")
+         return 0
+diff --git a/scripts/validate_mermaid_integrity.py b/scripts/validate_mermaid_integrity.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/validate_mermaid_integrity.py
+@@ -0,0 +1,72 @@
++#!/usr/bin/env python3
++"""Check Mermaid generator evidence, file freshness, and actual CLI rendering.
++
++Read-only: no tracked files are written. Requires the Docker image's mmdc and
++headless Chromium; failures are reported rather than silently skipped.
++"""
++import os
++import shutil
++import subprocess
++import tempfile
++from pathlib import Path
++
++import generate_diagrams
++from render_mermaid import find_chrome_executable
++
++
++def validate_diagrams(root=None, diagrams=None, cli=None, chrome=None):
++    """Return diagnostic strings for each generator, file, or rendering failure."""
++    root = Path(root) if root is not None else generate_diagrams.ROOT
++    diagrams = generate_diagrams.DIAGRAMS if diagrams is None else diagrams
++    cli = shutil.which('mmdc') if cli is None else cli
++    chrome = find_chrome_executable() if chrome is None else chrome
++    errors = []
++    if not cli:
++        errors.append('Mermaid CLI (mmdc) not found; syntax checks cannot run')
++    if not chrome:
++        errors.append('Headless Chromium not found; Mermaid syntax checks cannot run')
++
++    for name, generator in sorted(diagrams.items()):
++        path = root / 'doc' / 'diagrams' / (name + '.mmd')
++        try:
++            expected = generator()
++        except Exception as exc:
++            errors.append(f'{name}: generator FAILED: {type(exc).__name__}: {exc}')
++            continue
++        if not isinstance(expected, str) or not expected.strip():
++            errors.append(f'{name}: generator produced empty or non-text content')
++            continue
++        if not path.is_file():
++            errors.append(f'{name}: generated Mermaid file MISSING: {path}')
++            continue
++        try:
++            actual = path.read_text(encoding='utf-8')
++        except (OSError, UnicodeError) as exc:
++            errors.append(f'{name}: cannot read diagram: {exc}')
++            continue
++        if actual != expected:
++            errors.append(f'{name}: generated Mermaid file STALE (differs from current source)')
++        if not cli or not chrome:
++            continue
++        try:
++            with tempfile.TemporaryDirectory(prefix='flc-mermaid-') as tmp:
++                source = Path(tmp) / 'diagram.mmd'
++                target = Path(tmp) / 'diagram.svg'
++                config = Path(tmp) / 'puppeteer.json'
++                source.write_text(actual, encoding='utf-8')
++                config.write_text('{"args":["--no-sandbox","--disable-setuid-sandbox"]}',
++                                  encoding='utf-8')
++                env = os.environ.copy()
++                env['PUPPETEER_EXECUTABLE_PATH'] = str(chrome)
++                result = subprocess.run(
++                    [cli, '-i', str(source), '-o', str(target), '-p', str(config)],
++                    capture_output=True, text=True, timeout=60, env=env,
++                )
++                if result.returncode != 0:
++                    detail = (result.stderr or result.stdout).strip().replace('\n', ' ')
++                    errors.append(f'{name}: Mermaid render FAILED: {detail[:350]}')
++                elif not target.is_file():
++                    errors.append(f'{name}: Mermaid CLI succeeded but did not produce SVG')
++        except (OSError, subprocess.TimeoutExpired) as exc:
++            errors.append(f'{name}: Mermaid validation unavailable: {exc}')
++    return errors
+diff --git a/scripts/tests/test_validate_mermaid_integrity.py b/scripts/tests/test_validate_mermaid_integrity.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_validate_mermaid_integrity.py
+@@ -0,0 +1,47 @@
++"""Regression tests: false-positive Mermaid validations must be rejected."""
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++from validate_mermaid_integrity import validate_diagrams
++
++
++class MermaidIntegrityTests(unittest.TestCase):
++    def setUp(self):
++        temporary = tempfile.TemporaryDirectory()
++        self.addCleanup(temporary.cleanup)
++        self.root = Path(temporary.name)
++        self.path = self.root / 'doc/diagrams/example.mmd'
++        self.path.parent.mkdir(parents=True)
++        self.diagrams = {'example': lambda: 'sequenceDiagram\n    A->>B: hello'}
++
++    def test_missing_diagram_is_reported(self):
++        result = validate_diagrams(self.root, self.diagrams, cli='mmdc', chrome='chrome')
++        self.assertTrue(any('MISSING' in error for error in result))
++
++    def test_stale_diagram_is_reported(self):
++        self.path.write_text('sequenceDiagram\n    A->>B: old')
++        with patch('validate_mermaid_integrity.subprocess.run') as run:
++            run.return_value = subprocess.CompletedProcess([], 1, '', 'Parse error')
++            result = validate_diagrams(self.root, self.diagrams, cli='mmdc', chrome='chrome')
++        self.assertTrue(any('STALE' in error for error in result))
++        self.assertTrue(any('render FAILED' in error for error in result))
++
++    def test_generator_failure_is_reported(self):
++        def fail():
++            raise ValueError('old source path')
++        result = validate_diagrams(self.root, {'broken': fail}, cli='mmdc', chrome='chrome')
++        self.assertTrue(any('generator FAILED' in error for error in result))
++
++    def test_missing_renderer_is_not_silently_accepted(self):
++        self.path.write_text(self.diagrams['example']())
++        result = validate_diagrams(self.root, self.diagrams, cli='', chrome='')
++        self.assertTrue(any('cannot run' in error for error in result))
++
++
++if __name__ == '__main__':
++    unittest.main()
