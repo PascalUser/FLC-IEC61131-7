@@ -1329,31 +1329,45 @@ def generate_simulation_comparison_sequence():
 
 
 def generate_compiler_package_flowchart():
-    """Import dependencies of the compiler facade and its entry point."""
-    sources = read_java_files(SRC_DIR / "compiler")
+    """Production imports of the compiler facade and its CLI entry points.
+
+    The default-package Main.java is not represented by the package inventory,
+    so its delegation to api.Application is checked directly against source.
+    """
+    inventory = build_inventory(ROOT)
     packages = {
-        "compiler", "ast", "generator", "lexer", "lowers", "lowers.lowers",
-        "parser", "utils", "utils.diagnostics",
+        item["name"] for item in inventory["packages"]
+        if item["scope"] == "production"
     }
-    edges = set()
-    for path, content in sources.items():
-        origin = ".".join(Path(path).parts[:-1])
-        for imp, wildcard in re.findall(r'^\s*import\s+([\w.]+?)(\.\*)?;', content, re.MULTILINE):
-            destination = imp if wildcard else imp.rsplit(".", 1)[0]
-            if origin in packages and destination in packages and origin != destination:
-                edges.add((origin, destination))
-    main_source = (SRC_DIR / "Main.java").read_text()
-    if "import compiler.CommandLine;" not in main_source:
-        raise ValueError("Main.java no longer imports compiler.CommandLine")
-    if "compiler" not in {pkg for edge in edges for pkg in edge}:
-        raise ValueError("Compiler package has no dependencies")
-    used = sorted({pkg for edge in edges for pkg in edge})
-    ids = {pkg: pkg.replace(".", "_") for pkg in used}
+    if not {"api", "compiler"}.issubset(packages):
+        raise ValueError("Missing production entry-point packages: api or compiler")
+
+    edges = {
+        (item["from_package"], item["to_package"])
+        for item in inventory["dependencies"]
+        if item["from_scope"] == "production"
+        and item["to_scope"] == "production"
+        and item["from_package"] in {"api", "compiler"}
+        and item["to_package"] != item["from_package"]
+    }
+    if ("api", "compiler") not in edges:
+        raise ValueError("api.Application no longer imports compiler")
+    if not any(source == "compiler" for source, _ in edges):
+        raise ValueError("compiler.FlcCompiler has no production imports")
+
+    main_source = (SRC_DIR / "Main.java").read_text(encoding="utf-8")
+    if ("import api.Application;" not in main_source
+            or "Application.run(args, System.out, System.err)" not in main_source):
+        raise ValueError("Main.java no longer delegates to api.Application")
+
+    used = sorted({package for edge in edges for package in edge})
+    ids = {package: package.replace(".", "_") for package in used}
     lines = ["flowchart LR"]
-    lines += [f'    {ids[pkg]}["{pkg}"]' for pkg in used]
+    lines += [f'    {ids[package]}["{package}"]' for package in used]
     lines += ['    main["Main.java"]']
-    lines += [f"    {ids[src]} --> {ids[dst]}" for src, dst in sorted(edges)]
-    lines.append("    main --> compiler")
+    lines += [f"    {ids[source]} --> {ids[target]}"
+              for source, target in sorted(edges)]
+    lines.append("    main --> api")
     return "\n".join(lines)
 
 

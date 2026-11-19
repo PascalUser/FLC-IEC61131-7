@@ -1,18 +1,18 @@
 flowchart LR
-    ast["ast"]
-    generator["generator"]
+    api["api"]
     compiler["compiler"]
-    lexer["lexer"]
-    lowering_lowers["lowers.lowers"]
-    parser["parser"]
-    utils["utils"]
-    utils_diagnostics["utils.diagnostics"]
+    compiler_ast["compiler.ast"]
+    compiler_generator["compiler.generator"]
+    compiler_generator_lowers["compiler.generator.lowers"]
+    compiler_lexer["compiler.lexer"]
+    compiler_parser["compiler.parser"]
+    compiler_repository["compiler.repository"]
     main["Main.java"]
-    compiler --> ast
-    compiler --> generator
-    compiler --> lexer
-    compiler --> lowering_lowers
-    compiler --> parser
-    compiler --> utils
-    compiler --> utils_diagnostics
-    main --> compiler
+    api --> compiler
+    compiler --> compiler_ast
+    compiler --> compiler_generator
+    compiler --> compiler_generator_lowers
+    compiler --> compiler_lexer
+    compiler --> compiler_parser
+    compiler --> compiler_repository
+    main --> api
