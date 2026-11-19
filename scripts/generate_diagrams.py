@@ -66,30 +66,41 @@ def extract_method_calls(content, class_name):
 
 
 def generate_package_flowchart():
-    """Generate package dependency flowchart"""
-    packages = ["lexer", "parser", "parser_publishers", "parser_facades", "parser_initializations", "utils"]
-    edges = [
-        ("lexer", "parser", "tokens"),
-        ("parser", "utils", "SymbolTable"),
-        ("parser", "utils", "LexemeInfo"),
-        ("parser", "utils", "DiagnosticsHandler"),
-        ("parser", "parser_publishers", "publishers"),
-        ("parser_publishers", "utils", "Director"),
-        ("parser_publishers", "parser_initializations", "Factory"),
-        ("parser", "parser_facades", "facades"),
-        ("parser_facades", "utils", "DimensionCalculator"),
-        ("parser_facades", "utils", "RangesParser"),
-        ("parser_facades", "utils", "MacrosPublisher"),
-        ("lexer", "utils", "SymbolTable"),
-        ("lexer", "utils", "DiagnosticsHandler"),
-    ]
+    """Aggregate explicit production imports into compiler module dependencies.
 
-    mermaid = ["flowchart LR"]
-    for pkg in packages:
-        mermaid.append(f"    {pkg}[{pkg}]")
-    for src, dst, label in edges:
-        mermaid.append(f"    {src} -->|{label}| {dst}")
-    return "\n".join(mermaid)
+    Each node is the ``compiler`` facade or a direct ``compiler.<module>``
+    subtree. The inventory is derived from Java sources at generation time.
+    This graph does not infer runtime calls or dependencies without imports.
+    """
+    inventory = build_inventory(ROOT)
+    production_packages = {
+        item["name"] for item in inventory["packages"]
+        if item["scope"] == "production"
+        and (item["name"] == "compiler" or item["name"].startswith("compiler."))
+    }
+    if not production_packages:
+        raise ValueError("No compiler production packages found")
+
+    def module(package):
+        parts = package.split(".")
+        return ".".join(parts[:2]) if len(parts) > 1 else package
+
+    modules = sorted({module(name) for name in production_packages})
+    edges = {
+        (module(item["from_package"]), module(item["to_package"]))
+        for item in inventory["dependencies"]
+        if item["from_scope"] == "production"
+        and item["to_scope"] == "production"
+        and item["from_package"] in production_packages
+        and item["to_package"] in production_packages
+        and module(item["from_package"]) != module(item["to_package"])
+    }
+    identifiers = {name: name.replace(".", "_") for name in modules}
+    lines = ["flowchart LR"]
+    lines += [f'    {identifiers[name]}["{name}"]' for name in modules]
+    lines += [f"    {identifiers[source]} --> {identifiers[target]}"
+              for source, target in sorted(edges)]
+    return "\n".join(lines)
 
 
 def generate_import_dependency_flowchart(source_prefix):
