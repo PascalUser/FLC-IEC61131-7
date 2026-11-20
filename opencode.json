@@ -131,7 +131,17 @@
     "thesis-build": {
       "description": "Writes thesis chapters and compiles Tesis.docx",
       "agent": "thesis-writer",
-      "template": "Update thesis chapters from synthesis context and diagrams. Focus: $ARGUMENTS"
+      "template": "Audit thesis chapters against implementation, tests and verifiable metrics. Propose reviewable chapter patches, never modify tracked files. Focus: $ARGUMENTS. Follow PATCH_POLICY.md and emit HARNESS_RESULT_JSON."
+    },
+    "harness-update": {
+      "description": "Audit HARNESS implementation and propose documentation corrections",
+      "agent": "harness-documenter",
+      "template": "Inspect opencode.json, agents and run_all_agents.py; propose patch for doc/HARNESS.md and/or doc/thesis/09-harness.md. Do not edit tracked files. Follow PATCH_POLICY.md and emit HARNESS_RESULT_JSON."
+    },
+    "parser-actions-audit": {
+      "description": "Audit Parser.y semantic actions and propose internal Javadoc comments",
+      "agent": "javadoc-writer",
+      "template": "Inspect src/main/java/compiler/parser/Parser.y. Propose /** */ comments INSIDE each undocumented semantic action { } explaining its grammar rule, changes and side effects. Never alter grammar behavior or generated Parser.java or Lexer.java. Also report complex helper methods as TODO candidates with evidence; follow PATCH_POLICY.md and emit HARNESS_RESULT_JSON."
     },
     "doc-validate": {
       "description": "Validates all markdown in doc/",

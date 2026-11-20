@@ -196,17 +196,19 @@ def build_pipeline(
         [
             StepSpec(
                 step_id="synthesize_context",
-                description="Synthesize doc/_synthesis_context.json",
+                description="Synthesize existing documentation (proposals remain unapproved)",
                 command=["python3", "scripts/synthesize_thesis_context.py"],
                 kind="script",
                 blocking=True,
             ),
             StepSpec(
-                step_id="build_thesis",
-                description="Render Mermaid diagrams and compile output/Tesis.docx",
-                command=["bash", "scripts/build_thesis.sh"],
-                kind="script",
-                blocking=True,
+                step_id="harness_documentation",
+                description="Audit and propose HARNESS documentation and chapter 09",
+                command=build_opencode_argv("harness-update", [], opencode_mode),
+                kind="opencode",
+                blocking=False,
+                opencode_command="harness-update",
+                opencode_args=[],
             ),
             StepSpec(
                 step_id="readme_update",
@@ -218,6 +220,15 @@ def build_pipeline(
                 opencode_args=[],
             ),
             StepSpec(
+                step_id="thesis_update",
+                description="Audit thesis chapters and propose evidence-backed chapter patches",
+                command=build_opencode_argv("thesis-build", ["all"], opencode_mode),
+                kind="opencode",
+                blocking=False,
+                opencode_command="thesis-build",
+                opencode_args=["all"],
+            ),
+            StepSpec(
                 step_id="javadoc_audit",
                 description="Run read-only Javadoc audit via javadoc-updater",
                 command=build_opencode_argv("javadoc-audit", [], opencode_mode),
@@ -227,9 +238,34 @@ def build_pipeline(
                 opencode_args=[],
             ),
             StepSpec(
+                step_id="javadoc_fix",
+                description="Propose Javadoc repairs for handwritten Java and test sources",
+                command=build_opencode_argv("javadoc-fix", [], opencode_mode),
+                kind="opencode",
+                blocking=False,
+                opencode_command="javadoc-fix",
+                opencode_args=[],
+            ),
+            StepSpec(
+                step_id="parser_actions_audit",
+                description="Audit Parser.y semantic actions and propose internal Javadoc comments",
+                command=build_opencode_argv("parser-actions-audit", [], opencode_mode),
+                kind="opencode",
+                blocking=False,
+                opencode_command="parser-actions-audit",
+                opencode_args=[],
+            ),
+            StepSpec(
                 step_id="validate_docs",
-                description="Validate Markdown files, Mermaid blocks, and assets in doc/",
+                description="Validate the current, approved documentation and Mermaid artifacts",
                 command=["python3", "scripts/validate_docs.py"],
+                kind="script",
+                blocking=True,
+            ),
+            StepSpec(
+                step_id="build_thesis",
+                description="Compile the approved thesis only when no proposal is pending",
+                command=["bash", "scripts/build_thesis.sh"],
                 kind="script",
                 blocking=True,
             ),
@@ -237,6 +273,40 @@ def build_pipeline(
     )
 
     return steps
+
+
+# A completed subprocess is not proof that its functional responsibility was
+# fulfilled. Report the independently verified step states for all six areas.
+FUNCTIONAL_AREAS = {
+    "statistics": ("general_statistics",),
+    "diagrams": ("generate_diagrams",),
+    "technical_documentation": ("harness_documentation", "docs_update_"),
+    "readme": ("readme_update",),
+    "thesis": ("thesis_update",),
+    "javadocs_and_parser_actions": ("javadoc_audit", "javadoc_fix", "parser_actions_audit"),
+}
+
+
+def functional_coverage(records: Sequence[StepRecord]) -> dict:
+    """Summarize execution coverage, not semantic correctness of generated prose."""
+    coverage = {}
+    for area, prefixes in FUNCTIONAL_AREAS.items():
+        matched = [rec for rec in records if any(
+            rec.step_id == prefix or
+            (prefix.endswith("_") and rec.step_id.startswith(prefix))
+            for prefix in prefixes
+        )]
+        states = {rec.step_id: rec.state.value for rec in matched}
+        if not matched:
+            status = "NOT_CONFIGURED"
+        elif any(rec.state == StepState.FAILED for rec in matched):
+            status = "FAILED"
+        elif all(rec.state == StepState.SUCCEEDED for rec in matched):
+            status = "EXECUTED"
+        else:
+            status = "INCOMPLETE"
+        coverage[area] = {"status": status, "steps": states}
+    return coverage
 
 
 def extract_unified_diff(output_text: str) -> Optional[str]:
@@ -375,6 +445,8 @@ def persist_manifest(
         "repo_root": str(ROOT),
         "opencode_available": opencode_available,
         "summary": counts,
+        "functional_coverage": functional_coverage(records),
+        "review_required": any(rec.agent_outcome == "PATCH_PROPOSED" for rec in records),
         "steps": [
             {
                 **asdict(rec),
@@ -522,7 +594,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--skip-thesis",
         action="store_true",
-        help="Skip thesis DOCX compilation step (build_thesis).",
+        help="Skip both the thesis-writing agent and DOCX compilation.",
     )
     parser.add_argument(
         "--skip-legacy-stats",
@@ -641,8 +713,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             persist_manifest(state_file, run_id, run_started_at, opencode_available, records)
             continue
 
-        if args.skip_thesis and spec.step_id == "build_thesis":
+        if args.skip_thesis and spec.step_id in {"thesis_update", "build_thesis"}:
             rec.transition_to(StepState.SKIPPED, reason="skipped-by-flag:--skip-thesis")
+            persist_manifest(state_file, run_id, run_started_at, opencode_available, records)
+            continue
+
+        # A proposed chapter or source-document change has NOT been applied.
+        # Never compile the old chapters and imply the new proposal is included.
+        if spec.step_id == "build_thesis" and any(
+            item.agent_outcome == "PATCH_PROPOSED" for item in records
+        ):
+            rec.transition_to(StepState.SKIPPED, reason="pending-human-approval")
             persist_manifest(state_file, run_id, run_started_at, opencode_available, records)
             continue
 
@@ -685,6 +766,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except ValueError:
         rel_state = state_file
     print(f"Manifest written to: {rel_state}")
+    print("Functional coverage (execution only, not content quality):")
+    for area, item in functional_coverage(records).items():
+        print(f"  - {area:<28} {item['status']}")
+    if any(r.agent_outcome == "PATCH_PROPOSED" for r in records):
+        print("REVIEW REQUIRED: proposed patches have not been applied or committed")
 
     any_failed = any(r.state == StepState.FAILED for r in records)
     # Skips caused by missing OpenCode are not user-requested skips.
