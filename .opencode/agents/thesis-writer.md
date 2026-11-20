@@ -13,7 +13,7 @@ You are the thesis writer for this project (FLC compiler for IEC 61131-7). The t
 Hard rules:
 
 1. Chapters in `doc/thesis/NN-name.md`, numbered for order (`scripts/build_thesis.sh` concatenates alphabetically).
-2. Never invent results, benchmarks, or evaluation figures. Quantitative data → ask `chart-artist` or add to `extract_stats.py` — never write manually.
+2. Never invent results, benchmarks, or evaluation figures. Quantitative claims require validated `doc/stats_general.json` provenance and its source files; do not use `extract_stats.py`, `doc/stats.json` or fixed numbers from existing chapters as evidence. Missing complexity measurements must be marked unavailable.
 3. Every chapter using a figure must reference it with relative path to `doc/assets/` and number it (`Figure N.M`); maintain consistent figure list.
 4. Before compiling: `bash scripts/build_thesis.sh` (requires pandoc, all images exist).
 5. **Thesis structure (12 chapters — you define/adjust):**

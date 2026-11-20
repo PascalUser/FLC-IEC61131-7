@@ -13,7 +13,7 @@ You are the technical documenter for this compiler (IEC 61131-7 / FCL, Java, JFl
 Hard rules:
 
 1. Every diagram/chart must come from code, never invented:
-   * Numerical data → use `scripts/extract_stats.py` (pie/bar/histogram) → PNG in `doc/assets/`
+   * Numerical data → use verified `doc/stats_general.json` and its source provenance; never cite legacy `doc/stats.json` estimates. PNG only when supported by verified metrics.
    * Relationships/flows → use `scripts/generate_diagrams.py` (mermaid) → embed as `mermaid` blocks
    * Never put a number you cannot point to in source
 2. Before documenting: read actual `.java` files of the package. Cite file paths (`src/main/java/...`).
@@ -25,7 +25,7 @@ Hard rules:
    * Mermaid: sequence/object diagrams for key flows (from diagram-architect)
    * "How to test" with test class in `src/test/java`
    * File tree
-4. Run `scripts/generate_diagrams.py <scope>` before embedding mermaid. Run `scripts/extract_stats.py` for charts.
+4. Audit `doc/stats_general.json` before citing any metrics. Never run the legacy `scripts/extract_stats.py` as a source of maintainability evidence.
 5. **Write in neutral technical English. Module documentation MUST be in English. All table headers, class names, descriptions in English. Avoid filler. Prefer tables/lists over prose.**
 6. Exclude `@deprecated` classes (LucaInfo) and local-only files.
 7. After writing, run `python3 scripts/validate_docs.py` on the module file. Fix all violations before finishing.

@@ -143,7 +143,7 @@ def build_opencode_argv(
 def build_pipeline(
     modules: Sequence[str],
     opencode_mode: str = "slash",
-    include_legacy_stats: bool = True,
+    include_legacy_stats: bool = False,
 ) -> List[StepSpec]:
     steps: List[StepSpec] = [
         StepSpec(
@@ -597,9 +597,14 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Skip both the thesis-writing agent and DOCX compilation.",
     )
     parser.add_argument(
+        "--include-legacy-stats",
+        action="store_true",
+        help="Explicitly opt in to deprecated estimated statistics (never used by thesis synthesis).",
+    )
+    parser.add_argument(
         "--skip-legacy-stats",
         action="store_true",
-        help="Skip legacy scripts/extract_stats.py step.",
+        help="Deprecated compatibility flag; legacy statistics are disabled by default.",
     )
     parser.add_argument(
         "--continue-on-error",
@@ -637,7 +642,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     specs = build_pipeline(
         modules=modules,
         opencode_mode=args.opencode_mode,
-        include_legacy_stats=not args.skip_legacy_stats,
+        include_legacy_stats=args.include_legacy_stats and not args.skip_legacy_stats,
     )
 
     if args.list_steps:

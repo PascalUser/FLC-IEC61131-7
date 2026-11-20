@@ -119,9 +119,9 @@
       "template": "Document module $ARGUMENTS in doc/modules/, using diagrams from diagram-architect and charts from chart-artist. Module: $ARGUMENTS"
     },
     "chart-refresh": {
-      "description": "Regenerates all statistical charts from source code",
+      "description": "Audit and propose source-backed statistics and charts",
       "agent": "chart-artist",
-      "template": "Run extract_stats.py to recalculate metrics (CYCLO, LOC, COVERAGE, coupling, etc.) and regenerate PNGs in doc/assets/."
+      "template": "Inspect scripts/generate_general_statistics.py, doc/stats_general.json, source Java and JaCoCo XML if available. Use only documented metrics with explicit provenance; propose patches for any corrections and report missing evidence. NEVER use legacy doc/stats.json estimates or run scripts/extract_stats.py. Follow PATCH_POLICY.md and emit HARNESS_RESULT_JSON."
     },
     "diagram-refresh": {
       "description": "Regenerates mermaid diagrams from source code",

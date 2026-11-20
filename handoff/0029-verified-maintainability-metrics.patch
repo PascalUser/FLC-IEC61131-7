@@ -1,0 +1,404 @@
+diff --git a/scripts/generate_general_statistics.py b/scripts/generate_general_statistics.py
+--- a/scripts/generate_general_statistics.py
++++ b/scripts/generate_general_statistics.py
+@@ -10,4 +10,6 @@
+ import xml.etree.ElementTree as ET
+ from pathlib import Path
+ 
++from metrics_evidence import provenance, validate_statistics
++
+ import matplotlib
+@@ -106,4 +106,5 @@
+     args = parser.parse_args()
+ 
+     data = {
++        **provenance(ROOT),
+         "production_root": "src/main/java/compiler",
+@@ -119,5 +119,6 @@
+         ],
+     }
++    validate_statistics(data, ROOT)
+     JSON_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+     JSON_OUTPUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+     print(f"Wrote {JSON_OUTPUT.relative_to(ROOT)}")
+diff --git a/scripts/synthesize_thesis_context.py b/scripts/synthesize_thesis_context.py
+--- a/scripts/synthesize_thesis_context.py
++++ b/scripts/synthesize_thesis_context.py
+@@ -9,10 +9,13 @@
+ """
++import json
+ import re
+ from pathlib import Path
+ from typing import Dict, List, Any
+ 
++from metrics_evidence import validate_statistics
++
+ ROOT = Path(__file__).parent.parent
+ MODULES_DIR = ROOT / "doc" / "modules"
+ DIAGRAMS_DIR = ROOT / "doc" / "diagrams"
+-STATS_FILE = ROOT / "doc" / "stats.json"
++STATS_FILE = ROOT / "doc" / "stats_general.json"
+ OUTPUT_FILE = ROOT / "doc" / "_synthesis_context.json"
+@@ -215,11 +215,14 @@
+ 
+ 
+ def load_stats() -> Dict[str, Any]:
+-    """Load statistics from stats.json"""
+-    if STATS_FILE.exists():
+-        with open(STATS_FILE) as f:
+-            return json.load(f)
+-    return {}
++    """Load only current, source-backed canonical statistics.
++
++    Never silently substitute the historical doc/stats.json estimates.
++    """
++    if not STATS_FILE.is_file():
++        raise ValueError("Canonical statistics missing: run generate_general_statistics.py first")
++    with STATS_FILE.open(encoding="utf-8") as handle:
++        return validate_statistics(json.load(handle), ROOT)
+ 
+ 
+ def build_readme_architecture_summary(modules: Dict[str, Any]) -> Dict[str, Any]:
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -143,5 +143,5 @@
+ def build_pipeline(
+     modules: Sequence[str],
+     opencode_mode: str = "slash",
+-    include_legacy_stats: bool = True,
++    include_legacy_stats: bool = False,
+ ) -> List[StepSpec]:
+@@ -598,5 +598,10 @@
++    parser.add_argument(
++        "--include-legacy-stats",
++        action="store_true",
++        help="Explicitly opt in to deprecated estimated statistics (never used by thesis synthesis).",
++    )
+     parser.add_argument(
+         "--skip-legacy-stats",
+         action="store_true",
+-        help="Skip legacy scripts/extract_stats.py step.",
++        help="Deprecated compatibility flag; legacy statistics are disabled by default.",
+     )
+@@ -635,5 +635,5 @@
+     specs = build_pipeline(
+         modules=modules,
+         opencode_mode=args.opencode_mode,
+-        include_legacy_stats=not args.skip_legacy_stats,
++        include_legacy_stats=args.include_legacy_stats and not args.skip_legacy_stats,
+     )
+diff --git a/opencode.json b/opencode.json
+--- a/opencode.json
++++ b/opencode.json
+@@ -120,5 +120,5 @@
+     "chart-refresh": {
+-      "description": "Regenerates all statistical charts from source code",
++      "description": "Audit and propose source-backed statistics and charts",
+       "agent": "chart-artist",
+-      "template": "Run extract_stats.py to recalculate metrics (CYCLO, LOC, COVERAGE, coupling, etc.) and regenerate PNGs in doc/assets/."
++      "template": "Inspect scripts/generate_general_statistics.py, doc/stats_general.json, source Java and JaCoCo XML if available. Use only documented metrics with explicit provenance; propose patches for any corrections and report missing evidence. NEVER use legacy doc/stats.json estimates or run scripts/extract_stats.py. Follow PATCH_POLICY.md and emit HARNESS_RESULT_JSON."
+     },
+diff --git a/.opencode/agents/chart-artist.md b/.opencode/agents/chart-artist.md
+--- a/.opencode/agents/chart-artist.md
++++ b/.opencode/agents/chart-artist.md
+@@ -8,33 +8,17 @@
+   bash: true
+ ---
+ 
+-You are responsible for `scripts/extract_stats.py`. Your only job: maintain statistical charts reflecting actual source code — never invented data.
++You maintain source-backed statistical evidence for compiler design and maintainability. Your task is to audit and PROPOSE repairs, never invent measurements.
+ 
+ Hard rules:
+ 
+-1. **Write in English**. All chart labels, titles, and documentation in English.
+-2. Every chart function in `extract_stats.py` must:
+-   * Count/read verifiable metrics (enums, classes, methods, CYCLO, LOC, COVERAGE, coupling, etc.)
+-   * Document in comments where each number comes from (file + how counted)
+-3. If source changes and counts outdated, update the function and rerun — never edit PNG manually.
+-4. Charts → `doc/assets/<name>.png` using `scripts/chart_style.mplstyle`:
+-   * Minimum 800px width (thesis), 600px (modules)
+-   * No overlapping text (auto-rotate labels, adjust margins)
+-   * Clear descriptive titles (not file names)
+-   * Clean source citation: "Source: `utils/enums/Type.java`" not full path
+-   * Consistent thesis palette
+-5. After regenerating, run `python3 scripts/extract_stats.py --list` and confirm what changed with numbers.
+-6. Charts produced (statistical only — pie, bar, histogram):
+-   * `enum_sizes`, `transformer_chain_lengths`, `diagnostics_error_vs_warning`, `parser_grammar_stats`
+-   * `symboltable_type_distribution`, `lexemeinfo_field_population`
+-   * `cyclomatic_complexity`, `loc_per_module`, `test_coverage`, `package_coupling`
+-7. Also output `doc/stats.json` with all metrics for synthesis.
+-8. Do not create relationship diagrams — that's `diagram-architect` (mermaid).
+-
+-Workflow:
+-
+-* Run `python3 scripts/extract_stats.py` (or specific chart)
+-* Verify PNGs in `doc/assets/` and `stats.json`
+-* Report generated charts with source citations
+-
+-9. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver proposed script or documentation updates as a self-contained unified diff patch with full metadata.
++1. Write chart labels and technical documentation in English.
++2. The authoritative snapshot is `doc/stats_general.json`, generated by `scripts/generate_general_statistics.py`. Its `schema_version`, `input_sha256` and `methodology` must be valid before citation.
++3. `doc/stats.json` and `scripts/extract_stats.py` are legacy: they contain fixed distributions and estimated complexity and MUST NOT be used as evidence in modules, README or thesis.
++4. Only report source counts, explicit import-derived relationships, or JaCoCo coverage with a documented method. When no valid complexity metric exists, say **unavailable**, rather than substituting a heuristic.
++5. A JaCoCo XML file does not prove a fresh test run. Record that limitation and recommend `mvn verify` before using coverage as current evidence.
++6. Explain how each metric relates (or does not relate) to maintainability; raw file counts and LOC are descriptive, not quality scores. Do not claim that one metric proves maintainability.
++7. Inspect actual Java/test sources and source-backed outputs. Propose a unified diff patch if generator code, provenance or chart presentation must change. Do not write tracked PNG or JSON files directly.
++8. Use `scripts/generate_diagrams.py` for architecture relationships; do not invent static coupling or complexity values.
++9. For every proposed chart include its purpose, source files, counting method, limitations, and intended consumer (module, README or thesis). Avoid redundant charts.
++10. Follow `.opencode/agents/PATCH_POLICY.md` and emit exactly one HARNESS_RESULT_JSON result with evidence. Use NO_CHANGES only after checking current inputs and generated statistics.
+diff --git a/.opencode/agents/doc-writer.md b/.opencode/agents/doc-writer.md
+--- a/.opencode/agents/doc-writer.md
++++ b/.opencode/agents/doc-writer.md
+@@ -13,3 +13,3 @@
+ 1. Every diagram/chart must come from code, never invented:
+-   * Numerical data → use `scripts/extract_stats.py` (pie/bar/histogram) → PNG in `doc/assets/`
++   * Numerical data → use verified `doc/stats_general.json` and its source provenance; never cite legacy `doc/stats.json` estimates. PNG only when supported by verified metrics.
+    * Relationships/flows → use `scripts/generate_diagrams.py` (mermaid) → embed as `mermaid` blocks
+@@ -26,3 +26,3 @@
+    * File tree
+-4. Run `scripts/generate_diagrams.py <scope>` before embedding mermaid. Run `scripts/extract_stats.py` for charts.
++4. Audit `doc/stats_general.json` before citing any metrics. Never run the legacy `scripts/extract_stats.py` as a source of maintainability evidence.
+ 5. **Write in neutral technical English. Module documentation MUST be in English. All table headers, class names, descriptions in English. Avoid filler. Prefer tables/lists over prose.**
+diff --git a/.opencode/agents/thesis-writer.md b/.opencode/agents/thesis-writer.md
+--- a/.opencode/agents/thesis-writer.md
++++ b/.opencode/agents/thesis-writer.md
+@@ -11,5 +11,5 @@
+ Hard rules:
+ 
+ 1. Chapters in `doc/thesis/NN-name.md`, numbered for order (`scripts/build_thesis.sh` concatenates alphabetically).
+-2. Never invent results, benchmarks, or evaluation figures. Quantitative data → ask `chart-artist` or add to `extract_stats.py` — never write manually.
++2. Never invent results, benchmarks, or evaluation figures. Quantitative claims require validated `doc/stats_general.json` provenance and its source files; do not use `extract_stats.py`, `doc/stats.json` or fixed numbers from existing chapters as evidence. Missing complexity measurements must be marked unavailable.
+ 3. Every chapter using a figure must reference it with relative path to `doc/assets/` and number it (`Figure N.M`); maintain consistent figure list.
+diff --git a/scripts/metrics_evidence.py b/scripts/metrics_evidence.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/metrics_evidence.py
+@@ -0,0 +1,135 @@
++"""Evidence contract for the canonical source-backed statistics snapshot.
++
++A fingerprint proves that the snapshot references the current inputs, not that
++JaCoCo was produced by a fresh build. Coverage must be described accordingly.
++"""
++import hashlib
++from pathlib import Path
++
++SCHEMA_VERSION = 2
++MODULES = ("lexer", "parser", "ast", "generator", "repository")
++INPUT_ROOTS = ("src/main/java", "src/test/java")
++COVERAGE_PATH = "target/site/jacoco/jacoco.xml"
++
++
++def input_fingerprint(root):
++    """Hash the actual source and coverage inputs in deterministic path order."""
++    root = Path(root)
++    files = []
++    for relative in INPUT_ROOTS:
++        base = root / relative
++        if not base.is_dir():
++            raise ValueError("Missing metrics input directory: " + relative)
++        files.extend(p for p in base.rglob("*")
++                     if p.is_file() and p.suffix in {".java", ".y", ".flex"})
++    for relative in (COVERAGE_PATH, "pom.xml"):
++        path = root / relative
++        if path.is_file():
++            files.append(path)
++    digest = hashlib.sha256()
++    for path in sorted(files, key=lambda p: p.relative_to(root).as_posix()):
++        relative = path.relative_to(root).as_posix().encode("utf-8")
++        digest.update(len(relative).to_bytes(4, "big"))
++        digest.update(relative)
++        digest.update(hashlib.sha256(path.read_bytes()).digest())
++    return digest.hexdigest()
++
++
++def provenance(root):
++    """Describe exactly what the current canonical values measure."""
++    return {
++        "schema_version": SCHEMA_VERSION,
++        "input_sha256": input_fingerprint(root),
++        "methodology": {
++            "modules": {
++                "sources": ["src/main/java/compiler/{module}/**/*.java"],
++                "method": "Count handwritten and generated Java files except package-info; count nonblank/non-comment-only lines (proxy, not standardized LOC).",
++            },
++            "tests": {
++                "sources": ["src/test/java/**/*.java"],
++                "method": "Count Java files and filename suffixes Test.java and IT.java; this is not test coverage.",
++            },
++            "jacoco_line_coverage": {
++                "sources": [COVERAGE_PATH],
++                "method": "Read LINE counters from JaCoCo XML for compiler.* packages; report absent when XML does not exist.",
++                "limitation": "A present XML report is not proof it was generated by a fresh test run. Run mvn verify before citing coverage.",
++            },
++        },
++    }
++
++
++def count_non_comment_lines(path):
++    """Use the same explicitly documented LOC proxy as the overview generator."""
++    count = 0
++    in_block_comment = False
++    for line in Path(path).read_text(encoding="utf-8").splitlines():
++        text = line.strip()
++        if not text:
++            continue
++        if in_block_comment:
++            if "*/" in text:
++                in_block_comment = False
++            continue
++        if text.startswith("//"):
++            continue
++        if text.startswith("/*"):
++            if "*/" not in text[2:]:
++                in_block_comment = True
++            continue
++        if text.startswith("*") or text.startswith("*/"):
++            continue
++        count += 1
++    return count
++
++
++def validate_statistics(data, root):
++    """Reject legacy, incomplete, or stale snapshots before thesis synthesis."""
++    if not isinstance(data, dict) or data.get("schema_version") != SCHEMA_VERSION:
++        raise ValueError("Canonical statistics schema_version=2 is required; regenerate general statistics")
++    if data.get("input_sha256") != input_fingerprint(root):
++        raise ValueError("Statistics are stale relative to source or JaCoCo inputs; regenerate them")
++    methodology = data.get("methodology")
++    if not isinstance(methodology, dict) or any(
++        not isinstance(methodology.get(k), dict)
++        or not methodology[k].get("sources")
++        or not methodology[k].get("method")
++        for k in ("modules", "tests", "jacoco_line_coverage")
++    ):
++        raise ValueError("Statistics lack verifiable methodology and source paths")
++    modules = data.get("modules")
++    if not isinstance(modules, dict) or set(modules) != set(MODULES):
++        raise ValueError("Statistics have missing or unexpected production modules")
++    for name in MODULES:
++        values = modules[name]
++        if not isinstance(values, dict):
++            raise ValueError("Malformed metrics for " + name)
++        count = values.get("java_files")
++        loc = values.get("non_comment_lines")
++        if type(count) is not int or count < 0 or type(loc) is not int or loc < 0:
++            raise ValueError("Invalid source counts for " + name)
++        sources = [p for p in (Path(root) / "src/main/java/compiler" / name).rglob("*.java")
++                   if p.name != "package-info.java"]
++        if count != len(sources) or loc != sum(count_non_comment_lines(p) for p in sources):
++            raise ValueError("Source counts disagree with files for " + name)
++    tests = data.get("tests")
++    if not isinstance(tests, dict) or any(type(tests.get(k)) is not int or tests[k] < 0
++            for k in ("java_files", "unit_test_classes", "integration_test_classes")):
++        raise ValueError("Invalid test source counts")
++    test_sources = [p for p in (Path(root) / "src/test/java").rglob("*.java")
++                    if p.name != "package-info.java"]
++    if (tests["java_files"] != len(test_sources)
++            or tests["unit_test_classes"] != sum(p.name.endswith("Test.java") for p in test_sources)
++            or tests["integration_test_classes"] != sum(p.name.endswith("IT.java") for p in test_sources)):
++        raise ValueError("Test source counts disagree with files")
++    cov = data.get("jacoco_line_coverage")
++    if cov is not None:
++        if not (Path(root) / COVERAGE_PATH).is_file():
++            raise ValueError("Coverage asserted without a JaCoCo XML report")
++        if not isinstance(cov, dict) or any(type(cov.get(k)) is not int or cov[k] < 0
++                                            for k in ("covered_lines", "missed_lines")):
++            raise ValueError("Invalid JaCoCo line counters")
++        total = cov["covered_lines"] + cov["missed_lines"]
++        expected = round(100 * cov["covered_lines"] / total, 1) if total else None
++        if cov.get("overall_percent") != expected:
++            raise ValueError("JaCoCo percentage disagrees with line counters")
++    return data
+diff --git a/scripts/tests/test_metrics_evidence.py b/scripts/tests/test_metrics_evidence.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_metrics_evidence.py
+@@ -0,0 +1,87 @@
++"""Source-backed statistics and integration contract regression tests."""
++import json
++from pathlib import Path
++import sys
++import tempfile
++import unittest
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++sys.path.insert(0, str(ROOT / "scripts"))
++from metrics_evidence import input_fingerprint, provenance, validate_statistics
++from run_all_agents import build_pipeline
++import synthesize_thesis_context
++
++
++class MetricsEvidenceTests(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.tmp.cleanup)
++        self.root = Path(self.tmp.name)
++        for relative in ("src/main/java/compiler", "src/test/java", "doc"):
++            (self.root / relative).mkdir(parents=True)
++        self.source = self.root / "src/main/java/compiler/lexer/A.java"
++        self.source.parent.mkdir(parents=True)
++        self.source.write_text("package compiler.lexer; class A {}\n", encoding="utf-8")
++        self.stats = {
++            "modules": {name: {"java_files": int(name == "lexer"), "non_comment_lines": int(name == "lexer")}
++                        for name in ("lexer", "parser", "ast", "generator", "repository")},
++            "tests": {"java_files": 0, "unit_test_classes": 0, "integration_test_classes": 0},
++            "jacoco_line_coverage": None,
++            **provenance(self.root),
++        }
++
++    def test_valid_source_backed_snapshot(self):
++        self.assertEqual(validate_statistics(self.stats, self.root), self.stats)
++        self.assertEqual(len(input_fingerprint(self.root)), 64)
++
++    def test_stale_snapshot_is_rejected(self):
++        self.source.write_text("package compiler.lexer; class B {}\n", encoding="utf-8")
++        with self.assertRaisesRegex(ValueError, "stale"):
++            validate_statistics(self.stats, self.root)
++
++    def test_legacy_and_invented_counts_are_rejected(self):
++        legacy = dict(self.stats, schema_version=1)
++        with self.assertRaisesRegex(ValueError, "schema_version"):
++            validate_statistics(legacy, self.root)
++        invented = json.loads(json.dumps(self.stats))
++        invented["modules"]["lexer"]["java_files"] = 99
++        with self.assertRaisesRegex(ValueError, "disagree"):
++            validate_statistics(invented, self.root)
++        invented["modules"]["lexer"]["java_files"] = 1
++        invented["modules"]["lexer"]["non_comment_lines"] = 900
++        with self.assertRaisesRegex(ValueError, "disagree"):
++            validate_statistics(invented, self.root)
++
++    def test_coverage_requires_report_and_consistent_counts(self):
++        stale = dict(self.stats, jacoco_line_coverage={"covered_lines": 3,
++                       "missed_lines": 1, "overall_percent": 75.0})
++        with self.assertRaisesRegex(ValueError, "JaCoCo XML"):
++            validate_statistics(stale, self.root)
++
++    def test_synthesis_rejects_legacy_and_uses_canonical_file(self):
++        path = self.root / "doc/stats_general.json"
++        path.write_text(json.dumps(self.stats), encoding="utf-8")
++        original = synthesize_thesis_context.STATS_FILE
++        original_root = synthesize_thesis_context.ROOT
++        try:
++            synthesize_thesis_context.STATS_FILE = path
++            synthesize_thesis_context.ROOT = self.root
++            self.assertEqual(synthesize_thesis_context.load_stats(), self.stats)
++            path.write_text(json.dumps({"test_coverage": {"overall": 89}}), encoding="utf-8")
++            with self.assertRaisesRegex(ValueError, "schema_version"):
++                synthesize_thesis_context.load_stats()
++        finally:
++            synthesize_thesis_context.STATS_FILE = original
++            synthesize_thesis_context.ROOT = original_root
++
++    def test_default_pipeline_never_runs_legacy_estimates(self):
++        steps = build_pipeline(["parser"])
++        self.assertIn("general_statistics", [s.step_id for s in steps])
++        self.assertNotIn("extract_stats", [s.step_id for s in steps])
++        self.assertIn("extract_stats", [s.step_id for s in
++                                     build_pipeline(["parser"], include_legacy_stats=True)])
++
++
++if __name__ == "__main__":
++    unittest.main()
