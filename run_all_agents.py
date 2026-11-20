@@ -93,6 +93,9 @@ class StepRecord:
     reason: Optional[str] = None
     log_file: Optional[str] = None
     proposed_patch_file: Optional[str] = None
+    agent_outcome: Optional[str] = None
+    inspected_sources: List[str] = field(default_factory=list)
+    evidence: List[dict] = field(default_factory=list)
 
     def transition_to(
         self,
@@ -248,6 +251,79 @@ def extract_unified_diff(output_text: str) -> Optional[str]:
     return diff_body
 
 
+AGENT_RESULT_PREFIX = "HARNESS_RESULT_JSON:"
+AGENT_OUTCOMES = {"NO_CHANGES", "PATCH_PROPOSED", "BLOCKED"}
+PATCH_METADATA_FIELDS = (
+    "id", "objective", "motivation", "scope", "changes",
+    "risks", "validation", "dependencies",
+)
+
+
+def validate_agent_output(output_text: str, repo_root: Path) -> dict:
+    """Validate an agent's explicit result and return its evidence and patch.
+
+    This checks structural evidence, not the truth of natural-language claims.
+    A Git dry-run never applies or commits an agent's proposed changes.
+    """
+    markers = [line[len(AGENT_RESULT_PREFIX):].strip()
+               for line in output_text.splitlines()
+               if line.startswith(AGENT_RESULT_PREFIX)]
+    if len(markers) != 1:
+        raise ValueError("expected exactly one HARNESS_RESULT_JSON line")
+    try:
+        report = json.loads(markers[0])
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid agent JSON: {exc}") from exc
+    if not isinstance(report, dict) or report.get("outcome") not in AGENT_OUTCOMES:
+        raise ValueError("agent outcome must be NO_CHANGES, PATCH_PROPOSED or BLOCKED")
+    if not isinstance(report.get("reason"), str) or not report["reason"].strip():
+        raise ValueError("agent result must explain its reason")
+
+    outcome = report["outcome"]
+    patch = extract_unified_diff(output_text)
+    if outcome == "BLOCKED":
+        if patch:
+            raise ValueError("BLOCKED result cannot include a patch")
+        return {"outcome": outcome, "reason": report["reason"], "inspected_sources": [], "evidence": [], "patch": None}
+
+    paths = report.get("inspected_sources")
+    evidence = report.get("evidence")
+    if not isinstance(paths, list) or not paths or not all(isinstance(p, str) for p in paths):
+        raise ValueError("inspected_sources must list at least one source path")
+    if not isinstance(evidence, list) or not evidence:
+        raise ValueError("evidence must contain at least one cited finding")
+    base = repo_root.resolve()
+    for path in paths:
+        source = (base / path).resolve()
+        if source == base or base not in source.parents or not source.is_file():
+            raise ValueError(f"inspected source is missing or outside repository: {path}")
+    for item in evidence:
+        if not isinstance(item, dict) or item.get("path") not in paths or not isinstance(item.get("detail"), str) or not item["detail"].strip():
+            raise ValueError("each evidence entry needs an inspected path and explanation")
+
+    if outcome == "NO_CHANGES":
+        if patch:
+            raise ValueError("NO_CHANGES result cannot include a patch")
+    else:
+        metadata = report.get("metadata")
+        if not isinstance(metadata, dict) or any(
+            not isinstance(metadata.get(key), str) or not metadata[key].strip()
+            for key in PATCH_METADATA_FIELDS
+        ):
+            raise ValueError("PATCH_PROPOSED requires all patch metadata fields")
+        if not patch:
+            raise ValueError("PATCH_PROPOSED requires a unified diff")
+        result = subprocess.run(
+            ["git", "apply", "--check", "--whitespace=error", "-"],
+            cwd=str(base), input=patch, text=True, capture_output=True,
+        )
+        if result.returncode:
+            raise ValueError("proposed patch does not apply: " +
+                             (result.stderr or result.stdout).strip()[:400])
+    return {"outcome": outcome, "reason": report["reason"],
+            "inspected_sources": paths, "evidence": evidence, "patch": patch}
+
+
 def load_previous_succeeded(state_file: Path) -> Dict[str, StepRecord]:
     if not state_file.exists():
         return {}
@@ -272,6 +348,9 @@ def load_previous_succeeded(state_file: Path) -> Dict[str, StepRecord]:
                 reason=item.get("reason") or "resumed-from-previous-run",
                 log_file=item.get("log_file"),
                 proposed_patch_file=item.get("proposed_patch_file"),
+                agent_outcome=item.get("agent_outcome"),
+                inspected_sources=list(item.get("inspected_sources") or []),
+                evidence=list(item.get("evidence") or []),
             )
             recovered[rec.step_id] = rec
     return recovered
@@ -326,7 +405,7 @@ def execute_step(
             spec.command,
             cwd=str(ROOT),
             text=True,
-            capture_output=capture_logs,
+            capture_output=capture_logs or spec.kind == "opencode",
         )
     except FileNotFoundError as exc:
         elapsed = time.monotonic() - t0
@@ -363,19 +442,35 @@ def execute_step(
         log_path.write_text(combined, encoding="utf-8")
         rec.log_file = str(log_path.relative_to(ROOT))
 
-        if spec.kind == "opencode" and proc.stdout:
-            diff_text = extract_unified_diff(proc.stdout)
-            if diff_text:
-                patches_dir.mkdir(parents=True, exist_ok=True)
-                patch_path = patches_dir / f"{spec.step_id}.patch"
-                patch_path.write_text(diff_text, encoding="utf-8")
-                rec.proposed_patch_file = str(patch_path.relative_to(ROOT))
-                print(f"  -> Captured proposed patch: {rec.proposed_patch_file}")
+    if spec.kind == "opencode" and proc.returncode == 0:
+        try:
+            agent_result = validate_agent_output(proc.stdout or "", ROOT)
+        except (ValueError, OSError) as exc:
+            rec.transition_to(StepState.FAILED,
+                              reason=f"invalid-agent-result: {exc}",
+                              returncode=1, duration_sec=elapsed)
+            print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
+            return
+        rec.agent_outcome = agent_result["outcome"]
+        rec.inspected_sources = agent_result["inspected_sources"]
+        rec.evidence = agent_result["evidence"]
+        if rec.agent_outcome == "BLOCKED":
+            rec.transition_to(StepState.FAILED,
+                              reason="agent-blocked: " + agent_result["reason"],
+                              returncode=1, duration_sec=elapsed)
+            print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
+            return
+        if rec.agent_outcome == "PATCH_PROPOSED":
+            patches_dir.mkdir(parents=True, exist_ok=True)
+            patch_path = patches_dir / f"{spec.step_id}.patch"
+            patch_path.write_text(agent_result["patch"], encoding="utf-8")
+            rec.proposed_patch_file = str(patch_path.relative_to(ROOT))
+            print(f"  -> Validated proposed patch: {rec.proposed_patch_file}")
 
     if proc.returncode == 0:
         rec.transition_to(
             StepState.SUCCEEDED,
-            reason="ok",
+            reason=("agent-" + rec.agent_outcome.lower()) if rec.agent_outcome else "ok",
             returncode=0,
             duration_sec=elapsed,
         )
@@ -503,7 +598,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         previous = resumed_map.get(spec.step_id)
         # A command change invalidates the previous step result.
         # This does not yet detect source or tool-version changes.
-        if previous is not None and previous.command == spec.command:
+        if (previous is not None and previous.command == spec.command
+                and (spec.kind != "opencode" or previous.agent_outcome in
+                     {"NO_CHANGES", "PATCH_PROPOSED"})):
             records.append(previous)
         else:
             records.append(

@@ -1,0 +1,315 @@
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -93,6 +93,9 @@
+     reason: Optional[str] = None
+     log_file: Optional[str] = None
+     proposed_patch_file: Optional[str] = None
++    agent_outcome: Optional[str] = None
++    inspected_sources: List[str] = field(default_factory=list)
++    evidence: List[dict] = field(default_factory=list)
+ 
+     def transition_to(
+         self,
+@@ -248,6 +251,79 @@
+     return diff_body
+ 
+ 
++AGENT_RESULT_PREFIX = "HARNESS_RESULT_JSON:"
++AGENT_OUTCOMES = {"NO_CHANGES", "PATCH_PROPOSED", "BLOCKED"}
++PATCH_METADATA_FIELDS = (
++    "id", "objective", "motivation", "scope", "changes",
++    "risks", "validation", "dependencies",
++)
++
++
++def validate_agent_output(output_text: str, repo_root: Path) -> dict:
++    """Validate an agent's explicit result and return its evidence and patch.
++
++    This checks structural evidence, not the truth of natural-language claims.
++    A Git dry-run never applies or commits an agent's proposed changes.
++    """
++    markers = [line[len(AGENT_RESULT_PREFIX):].strip()
++               for line in output_text.splitlines()
++               if line.startswith(AGENT_RESULT_PREFIX)]
++    if len(markers) != 1:
++        raise ValueError("expected exactly one HARNESS_RESULT_JSON line")
++    try:
++        report = json.loads(markers[0])
++    except json.JSONDecodeError as exc:
++        raise ValueError(f"invalid agent JSON: {exc}") from exc
++    if not isinstance(report, dict) or report.get("outcome") not in AGENT_OUTCOMES:
++        raise ValueError("agent outcome must be NO_CHANGES, PATCH_PROPOSED or BLOCKED")
++    if not isinstance(report.get("reason"), str) or not report["reason"].strip():
++        raise ValueError("agent result must explain its reason")
++
++    outcome = report["outcome"]
++    patch = extract_unified_diff(output_text)
++    if outcome == "BLOCKED":
++        if patch:
++            raise ValueError("BLOCKED result cannot include a patch")
++        return {"outcome": outcome, "reason": report["reason"], "inspected_sources": [], "evidence": [], "patch": None}
++
++    paths = report.get("inspected_sources")
++    evidence = report.get("evidence")
++    if not isinstance(paths, list) or not paths or not all(isinstance(p, str) for p in paths):
++        raise ValueError("inspected_sources must list at least one source path")
++    if not isinstance(evidence, list) or not evidence:
++        raise ValueError("evidence must contain at least one cited finding")
++    base = repo_root.resolve()
++    for path in paths:
++        source = (base / path).resolve()
++        if source == base or base not in source.parents or not source.is_file():
++            raise ValueError(f"inspected source is missing or outside repository: {path}")
++    for item in evidence:
++        if not isinstance(item, dict) or item.get("path") not in paths or not isinstance(item.get("detail"), str) or not item["detail"].strip():
++            raise ValueError("each evidence entry needs an inspected path and explanation")
++
++    if outcome == "NO_CHANGES":
++        if patch:
++            raise ValueError("NO_CHANGES result cannot include a patch")
++    else:
++        metadata = report.get("metadata")
++        if not isinstance(metadata, dict) or any(
++            not isinstance(metadata.get(key), str) or not metadata[key].strip()
++            for key in PATCH_METADATA_FIELDS
++        ):
++            raise ValueError("PATCH_PROPOSED requires all patch metadata fields")
++        if not patch:
++            raise ValueError("PATCH_PROPOSED requires a unified diff")
++        result = subprocess.run(
++            ["git", "apply", "--check", "--whitespace=error", "-"],
++            cwd=str(base), input=patch, text=True, capture_output=True,
++        )
++        if result.returncode:
++            raise ValueError("proposed patch does not apply: " +
++                             (result.stderr or result.stdout).strip()[:400])
++    return {"outcome": outcome, "reason": report["reason"],
++            "inspected_sources": paths, "evidence": evidence, "patch": patch}
++
++
+ def load_previous_succeeded(state_file: Path) -> Dict[str, StepRecord]:
+     if not state_file.exists():
+         return {}
+@@ -272,6 +348,9 @@
+                 reason=item.get("reason") or "resumed-from-previous-run",
+                 log_file=item.get("log_file"),
+                 proposed_patch_file=item.get("proposed_patch_file"),
++                agent_outcome=item.get("agent_outcome"),
++                inspected_sources=list(item.get("inspected_sources") or []),
++                evidence=list(item.get("evidence") or []),
+             )
+             recovered[rec.step_id] = rec
+     return recovered
+@@ -326,7 +405,7 @@
+             spec.command,
+             cwd=str(ROOT),
+             text=True,
+-            capture_output=capture_logs,
++            capture_output=capture_logs or spec.kind == "opencode",
+         )
+     except FileNotFoundError as exc:
+         elapsed = time.monotonic() - t0
+@@ -363,19 +442,35 @@
+         log_path.write_text(combined, encoding="utf-8")
+         rec.log_file = str(log_path.relative_to(ROOT))
+ 
+-        if spec.kind == "opencode" and proc.stdout:
+-            diff_text = extract_unified_diff(proc.stdout)
+-            if diff_text:
+-                patches_dir.mkdir(parents=True, exist_ok=True)
+-                patch_path = patches_dir / f"{spec.step_id}.patch"
+-                patch_path.write_text(diff_text, encoding="utf-8")
+-                rec.proposed_patch_file = str(patch_path.relative_to(ROOT))
+-                print(f"  -> Captured proposed patch: {rec.proposed_patch_file}")
++    if spec.kind == "opencode" and proc.returncode == 0:
++        try:
++            agent_result = validate_agent_output(proc.stdout or "", ROOT)
++        except (ValueError, OSError) as exc:
++            rec.transition_to(StepState.FAILED,
++                              reason=f"invalid-agent-result: {exc}",
++                              returncode=1, duration_sec=elapsed)
++            print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
++            return
++        rec.agent_outcome = agent_result["outcome"]
++        rec.inspected_sources = agent_result["inspected_sources"]
++        rec.evidence = agent_result["evidence"]
++        if rec.agent_outcome == "BLOCKED":
++            rec.transition_to(StepState.FAILED,
++                              reason="agent-blocked: " + agent_result["reason"],
++                              returncode=1, duration_sec=elapsed)
++            print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
++            return
++        if rec.agent_outcome == "PATCH_PROPOSED":
++            patches_dir.mkdir(parents=True, exist_ok=True)
++            patch_path = patches_dir / f"{spec.step_id}.patch"
++            patch_path.write_text(agent_result["patch"], encoding="utf-8")
++            rec.proposed_patch_file = str(patch_path.relative_to(ROOT))
++            print(f"  -> Validated proposed patch: {rec.proposed_patch_file}")
+ 
+     if proc.returncode == 0:
+         rec.transition_to(
+             StepState.SUCCEEDED,
+-            reason="ok",
++            reason=("agent-" + rec.agent_outcome.lower()) if rec.agent_outcome else "ok",
+             returncode=0,
+             duration_sec=elapsed,
+         )
+@@ -503,7 +598,9 @@
+         previous = resumed_map.get(spec.step_id)
+         # A command change invalidates the previous step result.
+         # This does not yet detect source or tool-version changes.
+-        if previous is not None and previous.command == spec.command:
++        if (previous is not None and previous.command == spec.command
++                and (spec.kind != "opencode" or previous.agent_outcome in
++                     {"NO_CHANGES", "PATCH_PROPOSED"})):
+             records.append(previous)
+         else:
+             records.append(
+diff --git a/.opencode/agents/PATCH_POLICY.md b/.opencode/agents/PATCH_POLICY.md
+--- a/.opencode/agents/PATCH_POLICY.md
++++ b/.opencode/agents/PATCH_POLICY.md
+@@ -15,3 +15,33 @@
+    - **Dependencies**: Prior patch IDs required, or `None`
+ 4. **Source-of-truth grounding**: Inspect the actual `compiler.*` source tree under `src/main/java/compiler/` and tests under `src/test/java/` before making claims. Never invent metrics, classes, packages, or behavior.
+ 5. **Handoff & logging**: Do NOT write to `/.opencode/log.txt` (deprecated). Include any necessary update to `handoff/HANDOFF.txt` inside the proposed patch or report the status summary for the user to record upon approval.
++
++## Machine-readable result contract (required for every OpenCode invocation)
++
++Print exactly one single-line `HARNESS_RESULT_JSON: {...}` marker on stdout.
++The JSON MUST include:
++
++- `outcome`: `NO_CHANGES`, `PATCH_PROPOSED`, or `BLOCKED`.
++- `reason`: a nonempty explanation of the decision.
++- For `NO_CHANGES` or `PATCH_PROPOSED`, `inspected_sources`: nonempty list of
++  **existing repository-relative file paths** that were actually inspected.
++- `evidence`: nonempty list of objects `{"path": "one/inspected/file", "detail": "what was checked"}`.
++  Each path must occur in `inspected_sources`.
++- For `PATCH_PROPOSED`, `metadata`: a JSON object with nonempty string fields
++  `id`, `objective`, `motivation`, `scope`, `changes`, `risks`, `validation`,
++  and `dependencies` (use `"None"` where applicable).
++
++A `NO_CHANGES` result must not include a diff. A `BLOCKED` result must have a
++reason and must not include a diff. A `PATCH_PROPOSED` result must be followed
++by the **raw** unified diff (`diff --git a/... b/...`) as the final content of
++stdout, without Markdown fences or trailing prose. Keep the JSON marker and
++metadata before the diff, never inside it. The orchestrator checks patch
++applicability read-only with `git apply --check --whitespace=error` and rejects
++missing, empty or malformed results. Agent success does not authorize applying
++or committing any patch.
++
++Example of a no-change result (replace the source/evidence with actual checks):
++
++```text
++HARNESS_RESULT_JSON: {"outcome":"NO_CHANGES","reason":"Verified current output","inspected_sources":["pom.xml"],"evidence":[{"path":"pom.xml","detail":"Checked compiler configuration"}]}
++```
+diff --git a/scripts/tests/test_agent_result_contract.py b/scripts/tests/test_agent_result_contract.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_agent_result_contract.py
+@@ -0,0 +1,105 @@
++import json
++import subprocess
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++from run_all_agents import (
++    StepRecord, StepSpec, StepState, execute_step, validate_agent_output,
++)
++
++
++class AgentOutputContractTests(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.tmp.cleanup)
++        self.root = Path(self.tmp.name)
++        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
++        (self.root / "sample.txt").write_text("before\n", encoding="utf-8")
++        subprocess.run(["git", "add", "sample.txt"], cwd=self.root, check=True)
++
++    def report(self, outcome="NO_CHANGES", **extra):
++        data = {
++            "outcome": outcome,
++            "reason": "Observed checked source",
++            "inspected_sources": ["sample.txt"],
++            "evidence": [{"path": "sample.txt", "detail": "Verified current content"}],
++            **extra,
++        }
++        return "HARNESS_RESULT_JSON: " + json.dumps(data) + "\n"
++
++    def test_no_changes_requires_existing_source_and_evidence(self):
++        result = validate_agent_output(self.report(), self.root)
++        self.assertEqual(result["outcome"], "NO_CHANGES")
++        with self.assertRaisesRegex(ValueError, "outside repository"):
++            validate_agent_output(self.report(inspected_sources=["../outside"]), self.root)
++        with self.assertRaisesRegex(ValueError, "evidence"):
++            validate_agent_output(self.report(evidence=[]), self.root)
++
++    def test_empty_or_ambiguous_output_fails(self):
++        with self.assertRaisesRegex(ValueError, "exactly one"):
++            validate_agent_output("All good!", self.root)
++        with self.assertRaisesRegex(ValueError, "exactly one"):
++            validate_agent_output(self.report() * 2, self.root)
++        with self.assertRaisesRegex(ValueError, "cannot include"):
++            validate_agent_output(self.report() + self.valid_patch(), self.root)
++
++    def valid_patch(self):
++        return ("diff --git a/sample.txt b/sample.txt\n"
++                "--- a/sample.txt\n+++ b/sample.txt\n"
++                "@@ -1 +1 @@\n-before\n+after\n")
++
++    def metadata(self):
++        return {key: "verified" for key in (
++            "id", "objective", "motivation", "scope", "changes",
++            "risks", "validation", "dependencies",
++        )}
++
++    def test_patch_is_checked_but_not_applied(self):
++        before = (self.root / "sample.txt").read_text()
++        content = self.report("PATCH_PROPOSED", metadata=self.metadata()) + self.valid_patch()
++        result = validate_agent_output(content, self.root)
++        self.assertEqual(result["outcome"], "PATCH_PROPOSED")
++        self.assertEqual((self.root / "sample.txt").read_text(), before)
++        with self.assertRaisesRegex(ValueError, "does not apply"):
++            validate_agent_output(content.replace("-before", "-missing"), self.root)
++
++    def test_missing_metadata_and_blocked(self):
++        with self.assertRaisesRegex(ValueError, "metadata"):
++            validate_agent_output(self.report("PATCH_PROPOSED") + self.valid_patch(), self.root)
++        blocked = validate_agent_output(self.report("BLOCKED", inspected_sources=[], evidence=[]), self.root)
++        self.assertEqual(blocked["outcome"], "BLOCKED")
++
++
++    def test_agent_step_does_not_accept_empty_stdout(self):
++        spec = StepSpec("agent", "check", ["opencode", "run"], "opencode")
++        record = StepRecord("agent", "check", "opencode", True, spec.command)
++        completed = subprocess.CompletedProcess(spec.command, 0, stdout="", stderr="")
++        with patch("run_all_agents.ROOT", self.root), patch(
++            "run_all_agents.subprocess.run", return_value=completed
++        ) as run:
++            execute_step(spec, record, logs_dir=self.root / "logs",
++                         patches_dir=self.root / "patches", capture_logs=False)
++            self.assertTrue(run.call_args.kwargs["capture_output"])
++        self.assertEqual(record.state, StepState.FAILED)
++        self.assertIn("invalid-agent-result", record.reason)
++        self.assertFalse((self.root / "patches").exists())
++
++    def test_agent_step_succeeds_with_evidenced_no_changes(self):
++        spec = StepSpec("agent", "check", ["opencode", "run"], "opencode")
++        record = StepRecord("agent", "check", "opencode", True, spec.command)
++        completed = subprocess.CompletedProcess(spec.command, 0, stdout=self.report(), stderr="")
++        with patch("run_all_agents.ROOT", self.root), patch(
++            "run_all_agents.subprocess.run", return_value=completed
++        ):
++            execute_step(spec, record, logs_dir=self.root / "logs",
++                         patches_dir=self.root / "patches", capture_logs=False)
++        self.assertEqual(record.state, StepState.SUCCEEDED)
++        self.assertEqual(record.agent_outcome, "NO_CHANGES")
++        self.assertEqual(record.inspected_sources, ["sample.txt"])
++        self.assertEqual(record.proposed_patch_file, None)
++
++
++if __name__ == "__main__":
++    unittest.main()
