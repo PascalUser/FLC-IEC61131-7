@@ -1,0 +1,139 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+index 39ae8e2..d4b1b7f 100755
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -3,6 +3,9 @@
+ 
+ def generate_parser_class_diagram():
+     """Class diagram of publishers, facades, initializations, metadata, tree, and helpers."""
++    # The new source-backed generator supersedes the historical type inventory.
++    from parser_class_diagram import build_parser_class_diagram
++    return build_parser_class_diagram(SRC_DIR)
+     sources = read_java_files(SRC_DIR / "parser")
+     for extra in ("utils", "ast/ruleblock"):
+         for java_file in (SRC_DIR / extra).rglob("*.java"):
+diff --git a/scripts/parser_class_diagram.py b/scripts/parser_class_diagram.py
+new file mode 100644
+index 0000000..89b923d
+--- /dev/null
++++ b/scripts/parser_class_diagram.py
+@@ -0,0 +1,72 @@
++"""Build a Mermaid class diagram from current parser Java declarations.
++
++Only inheritance and implementation relations explicitly present in source
++are shown; imports and names alone are not treated as class relationships.
++"""
++import re
++from pathlib import Path
++
++IMPORT = re.compile(r'^\s*import\s+([\w.]+)\s*;', re.MULTILINE)
++
++
++def _strip_comments(text):
++    # Strip comments and strings before looking for Java type declarations.
++    return re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', ' ', text, flags=re.DOTALL)
++
++
++def build_parser_class_diagram(src_dir: Path):
++    root = Path(src_dir) / 'compiler' / 'parser'
++    if not root.is_dir():
++        raise ValueError(f'Missing parser Java source directory: {root}')
++    files = sorted(p for p in root.rglob('*.java') if p.name != 'package-info.java')
++    if not files:
++        raise ValueError('No parser Java sources found')
++
++    types = {}
++    declarations = {}
++    for path in files:
++        content = _strip_comments(path.read_text(encoding='utf-8'))
++        name = path.stem
++        if not re.search(r'\b(?:class|interface|enum)\s+' + re.escape(name) + r'\b', content):
++            raise ValueError(f'Missing parser type declaration: {path.relative_to(src_dir)}')
++        pkg = '.'.join(path.relative_to(src_dir).parts[:-1])
++        qualified = pkg + '.' + name
++        types[qualified] = (pkg, name)
++        declarations[qualified] = content
++
++    if 'compiler.parser.Parser' not in types or 'compiler.parser.publishers.Publisher' not in types:
++        raise ValueError('Missing essential parser types: Parser or Publisher')
++
++    lines = ['classDiagram']
++    packages = sorted({pkg for pkg, _ in types.values()})
++    for pkg in packages:
++        namespace = pkg.replace('.', '_')
++        lines.append(f'    namespace {namespace} {{')
++        for _, name in sorted((key, n) for key, (p, n) in types.items() if p == pkg):
++            lines.append(f'        class {name}')
++        lines.append('    }')
++
++    relations = set()
++    for qualified, (pkg, name) in sorted(types.items()):
++        content = declarations[qualified]
++        imported = {q.rsplit('.', 1)[-1]: q for q in IMPORT.findall(content) if q in types}
++        for match in re.finditer(r'\b(?:class|interface)\s+' + re.escape(name) + r'\b([^\{;]*)\{', content):
++            header = match.group(1)
++            # Java generic arguments are not parent types; strip them.
++            header = re.sub(r'<[^<>]*>', '', header)
++            for keyword, kind in (('extends', '<|--'), ('implements', '<|..')):
++                parent_match = re.search(r'\b' + keyword + r'\s+(.+?)(?=\s+implements\b|$)', header)
++                if not parent_match:
++                    continue
++                for item in parent_match.group(1).split(','):
++                    parent = item.strip().split()[0] if item.strip() else ''
++                    target = imported.get(parent, pkg + '.' + parent)
++                    if target in types and target != qualified:
++                        # Mermaid class identifiers are simple names, not dotted Java names.
++                        parent_name = types[target][1]
++                        relations.add((parent_name, kind, name))
++    for parent, arrow, child in sorted(relations):
++        lines.append(f'    {parent} {arrow} {child}')
++    if not relations:
++        raise ValueError('No parser inheritance or implementation relationships found')
++    return '\n'.join(lines)
+diff --git a/scripts/tests/test_parser_class_diagram.py b/scripts/tests/test_parser_class_diagram.py
+new file mode 100644
+index 0000000..45655a4
+--- /dev/null
++++ b/scripts/tests/test_parser_class_diagram.py
+@@ -0,0 +1,41 @@
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++from parser_class_diagram import build_parser_class_diagram
++
++class ParserClassDiagramTests(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.tmp.cleanup)
++        self.root = Path(self.tmp.name)
++
++    def java(self, relative, content):
++        path = self.root / 'compiler/parser' / relative
++        path.parent.mkdir(parents=True, exist_ok=True)
++        path.write_text(content)
++
++    def test_current_package_relationships(self):
++        self.java('Parser.java', 'package compiler.parser; public class Parser {}')
++        self.java('publishers/Publisher.java', 'package compiler.parser.publishers; public interface Publisher {}')
++        self.java('publishers/leafs/Declaration.java', 'package compiler.parser.publishers.leafs;\nimport compiler.parser.publishers.Publisher;\npublic abstract class Declaration implements Publisher {}')
++        diagram = build_parser_class_diagram(self.root)
++        self.assertIn('namespace compiler_parser_publishers_leafs', diagram)
++        self.assertIn('Publisher <|.. Declaration', diagram)
++        self.assertNotIn('parser.Parser', diagram)
++
++    def test_missing_required_type_fails(self):
++        self.java('Parser.java', 'public class Parser {}')
++        with self.assertRaisesRegex(ValueError, 'Publisher'):
++            build_parser_class_diagram(self.root)
++
++    def test_missing_declared_java_type_fails(self):
++        self.java('Parser.java', 'public class Parser {}')
++        self.java('publishers/Publisher.java', 'public interface Publisher {}')
++        self.java('publishers/leafs/Declaration.java', 'class OtherType {}')
++        with self.assertRaisesRegex(ValueError, 'Declaration'):
++            build_parser_class_diagram(self.root)
++
++if __name__ == '__main__':
++    unittest.main()

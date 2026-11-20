@@ -209,6 +209,9 @@ def generate_parser_package_flowchart():
 
 def generate_parser_class_diagram():
     """Class diagram of publishers, facades, initializations, metadata, tree, and helpers."""
+    # The new source-backed generator supersedes the historical type inventory.
+    from parser_class_diagram import build_parser_class_diagram
+    return build_parser_class_diagram(SRC_DIR)
     sources = read_java_files(SRC_DIR / "parser")
     for extra in ("utils", "ast/ruleblock"):
         for java_file in (SRC_DIR / extra).rglob("*.java"):
