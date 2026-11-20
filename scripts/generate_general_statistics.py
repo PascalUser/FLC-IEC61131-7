@@ -10,6 +10,8 @@ import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from metrics_evidence import provenance, validate_statistics
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -106,6 +108,7 @@ def main():
     args = parser.parse_args()
 
     data = {
+        **provenance(ROOT),
         "production_root": "src/main/java/compiler",
         "modules": module_inventory(),
         "tests": test_inventory(),
@@ -117,6 +120,7 @@ def main():
             "Coverage is omitted when target/site/jacoco/jacoco.xml is unavailable.",
         ],
     }
+    validate_statistics(data, ROOT)
     JSON_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     JSON_OUTPUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {JSON_OUTPUT.relative_to(ROOT)}")

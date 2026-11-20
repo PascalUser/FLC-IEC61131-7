@@ -7,14 +7,17 @@ Filters out deprecated/local-only content (LucaInfo, Luca.y).
 
 Output: doc/_synthesis_context.json
 """
+import json
 import re
 from pathlib import Path
 from typing import Dict, List, Any
 
+from metrics_evidence import validate_statistics
+
 ROOT = Path(__file__).parent.parent
 MODULES_DIR = ROOT / "doc" / "modules"
 DIAGRAMS_DIR = ROOT / "doc" / "diagrams"
-STATS_FILE = ROOT / "doc" / "stats.json"
+STATS_FILE = ROOT / "doc" / "stats_general.json"
 OUTPUT_FILE = ROOT / "doc" / "_synthesis_context.json"
 
 # Classes/files to exclude (deprecated or local-only)
@@ -215,11 +218,14 @@ def load_diagrams() -> Dict[str, str]:
 
 
 def load_stats() -> Dict[str, Any]:
-    """Load statistics from stats.json"""
-    if STATS_FILE.exists():
-        with open(STATS_FILE) as f:
-            return json.load(f)
-    return {}
+    """Load only current, source-backed canonical statistics.
+
+    Never silently substitute the historical doc/stats.json estimates.
+    """
+    if not STATS_FILE.is_file():
+        raise ValueError("Canonical statistics missing: run generate_general_statistics.py first")
+    with STATS_FILE.open(encoding="utf-8") as handle:
+        return validate_statistics(json.load(handle), ROOT)
 
 
 def build_readme_architecture_summary(modules: Dict[str, Any]) -> Dict[str, Any]:
