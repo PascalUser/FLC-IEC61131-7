@@ -1,0 +1,62 @@
+diff --git a/scripts/generate_diagrams.py b/scripts/generate_diagrams.py
+index 96e1a11..c6fad82 100755
+--- a/scripts/generate_diagrams.py
++++ b/scripts/generate_diagrams.py
+@@ -744,12 +744,12 @@
+ 
+ def generate_codegen_class_diagram():
+     """Class diagram of the generator package: generator stages, controller model, fuzzy sets."""
+-    sources = read_java_files(SRC_DIR / "generator")
++    sources = read_java_files(SRC_DIR / "compiler" / "generator")
+     selected = {
+-        "generator": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
+-        "codegen_defuzzification": ["Defuzzifier", "CentroidDefuzzifier"],
+-        "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
+-        "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet", "SShapeFuzzySet", "TrapezoidFuzzySet", "TriangularFuzzySet", "ZShapeFuzzySet"],
++        "compiler_generator": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
++        "compiler_generator_defuzzification": ["Defuzzifier", "CentroidDefuzzifier"],
++        "compiler_generator_evaluation": ["EvaluationMethod", "MinMaxMethod"],
++        "compiler_generator_fuzzysets": ["FuzzySet", "SingletonFuzzySet", "SShapeFuzzySet", "TrapezoidFuzzySet", "TriangularFuzzySet", "ZShapeFuzzySet"],
+     }
+     lines = ["classDiagram"]
+     for namespace, names in selected.items():
+diff --git a/scripts/tests/test_codegen_class_diagram.py b/scripts/tests/test_codegen_class_diagram.py
+new file mode 100644
+index 0000000..1c1d5eb
+--- /dev/null
++++ b/scripts/tests/test_codegen_class_diagram.py
+@@ -0,0 +1,34 @@
++"""Regression checks for the current compiler.generator class diagram."""
++import sys
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++from tempfile import TemporaryDirectory
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import generate_diagrams as diagrams
++
++
++class CodegenClassDiagramTests(unittest.TestCase):
++    def test_uses_current_generator_sources_and_namespaces(self):
++        diagram = diagrams.generate_codegen_class_diagram()
++        self.assertTrue(diagram.startswith("classDiagram\n"))
++        for namespace in (
++            "compiler_generator", "compiler_generator_defuzzification",
++            "compiler_generator_evaluation", "compiler_generator_fuzzysets",
++        ):
++            self.assertIn(f"namespace {namespace} {{", diagram)
++        self.assertIn("Defuzzifier <|-- CentroidDefuzzifier", diagram)
++        self.assertIn("EvaluationMethod <|-- MinMaxMethod", diagram)
++        self.assertIn("FuzzySet <|-- SingletonFuzzySet", diagram)
++        self.assertEqual(diagram, diagrams.generate_codegen_class_diagram())
++
++    def test_missing_generator_sources_are_rejected(self):
++        with TemporaryDirectory() as tmp:
++            with patch.object(diagrams, "SRC_DIR", Path(tmp)):
++                with self.assertRaisesRegex(ValueError, "Missing generator type: CodeGenerator"):
++                    diagrams.generate_codegen_class_diagram()
++
++
++if __name__ == "__main__":
++    unittest.main()

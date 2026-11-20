@@ -744,12 +744,12 @@ def generate_codegen_package_flowchart():
 
 def generate_codegen_class_diagram():
     """Class diagram of the generator package: generator stages, controller model, fuzzy sets."""
-    sources = read_java_files(SRC_DIR / "generator")
+    sources = read_java_files(SRC_DIR / "compiler" / "generator")
     selected = {
-        "generator": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
-        "codegen_defuzzification": ["Defuzzifier", "CentroidDefuzzifier"],
-        "codegen_evaluation": ["EvaluationMethod", "MinMaxMethod"],
-        "codegen_fuzzysets": ["FuzzySet", "SingletonFuzzySet", "SShapeFuzzySet", "TrapezoidFuzzySet", "TriangularFuzzySet", "ZShapeFuzzySet"],
+        "compiler_generator": ["CodeGenerator", "ControllerModel", "CppWriter", "Fuzzifier", "Variable"],
+        "compiler_generator_defuzzification": ["Defuzzifier", "CentroidDefuzzifier"],
+        "compiler_generator_evaluation": ["EvaluationMethod", "MinMaxMethod"],
+        "compiler_generator_fuzzysets": ["FuzzySet", "SingletonFuzzySet", "SShapeFuzzySet", "TrapezoidFuzzySet", "TriangularFuzzySet", "ZShapeFuzzySet"],
     }
     lines = ["classDiagram"]
     for namespace, names in selected.items():
