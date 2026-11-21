@@ -20,7 +20,7 @@ Hard rules:
    * Requirements (Java 8, Maven, JFlex/Bison versions from `pom.xml`)
    * Build and test commands (`mvn ...`) from `pom.xml` plugins
    * Architecture: 5-10 lines + simple Mermaid (lexer → parser → symbol table) from `synthesis.readme_view.pipeline_mermaid`
-   * Folder structure (`src/main/java/lexer`, `parser`, `utils`, etc.) with one-line descriptions
+   * Actual folder structure under `src/main/java/compiler/` (including `compiler.generator.lowers` and `compiler.repository`) with one-line descriptions; no historical `src/main/java/lexer`, `parser` or `utils` roots
    * Links to `doc/modules/` for technical docs
    * Authors from `@author` javadoc (Matias Ortiz, Victoriano Etcheverria)
 4. Write in neutral technical English. No emojis unless requested.
@@ -35,7 +35,8 @@ Hard rules:
 
 Workflow:
 
-* Run `python3 scripts/synthesize_thesis_context.py` first
-* Read `doc/_synthesis_context.json` (readme_view) for pipeline_mermaid and key_classes
-* Use `pom.xml` for versions, commands, requirements
-* Link to `doc/modules/` not thesis and deliver the result as a unified diff patch
+* Read `output/documentation_evidence.json` and inspect each relevant finding against README and actual files. Run `python3 scripts/synthesize_thesis_context.py` if the canonical statistics snapshot is current.
+* Read `doc/_synthesis_context.json` (readme_view) as a draft inventory, not an authoritative architecture; verify the pipeline against `compiler.FlcCompiler`, source declarations, and current diagrams.
+* Use `pom.xml` for versions, commands, requirements; cross-check documented examples with the actual build. If evidence is missing, report BLOCKED rather than fabricate a working command.
+* Link to `doc/modules/` not thesis and deliver the result as a unified diff patch.
+* End with exactly one `HARNESS_RESULT_JSON:` outcome and source-backed evidence per `.opencode/agents/PATCH_POLICY.md`; NO_CHANGES requires inspection of the current README and related sources.

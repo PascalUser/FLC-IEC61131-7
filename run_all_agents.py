@@ -176,6 +176,16 @@ def build_pipeline(
         )
     )
 
+    steps.append(
+        StepSpec(
+            step_id="documentation_inventory",
+            description="Inventory stale code paths and build commands before documentation proposals",
+            command=["python3", "scripts/audit_documentation_evidence.py"],
+            kind="script",
+            blocking=True,
+        )
+    )
+
     for pkg in modules:
         clean_pkg = pkg.strip()
         if not clean_pkg:
@@ -287,7 +297,7 @@ def build_pipeline(
 FUNCTIONAL_AREAS = {
     "statistics": ("general_statistics",),
     "diagrams": ("generate_diagrams",),
-    "technical_documentation": ("harness_documentation", "docs_update_"),
+    "technical_documentation": ("documentation_inventory", "harness_documentation", "docs_update_"),
     "readme": ("readme_update",),
     "thesis": ("thesis_update",),
     "javadocs_and_parser_actions": ("javadoc_inventory", "javadoc_audit", "javadoc_fix", "parser_actions_audit"),

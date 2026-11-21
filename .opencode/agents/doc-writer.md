@@ -16,7 +16,7 @@ Hard rules:
    * Numerical data → use verified `doc/stats_general.json` and its source provenance; never cite legacy `doc/stats.json` estimates. PNG only when supported by verified metrics.
    * Relationships/flows → use `scripts/generate_diagrams.py` (mermaid) → embed as `mermaid` blocks
    * Never put a number you cannot point to in source
-2. Before documenting: read actual `.java` files of the package. Cite file paths (`src/main/java/...`).
+2. Before documenting: read `output/documentation_evidence.json`, then the actual Java, Parser.y and relevant tests for the module. Treat inventory findings as candidates requiring source verification, not conclusions. Cite exact existing paths (`src/main/java/...`, `src/test/java/...`).
 3. Each module doc in `doc/modules/<package>.md` with:
    * Header + one-line purpose (no parentheses, brackets, braces in heading)
    * Mermaid: package flowchart, class diagram (from diagram-architect)
@@ -34,5 +34,7 @@ Hard rules:
 10. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
 11. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
 12. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver module documentation updates as a self-contained unified diff patch with full metadata.
+13. Review old package names, cited paths, tests, diagrams, and numerical claims against sources. `doc/_synthesis_context.json` contains extracted *existing prose*; it is not itself proof that the prose is current. For maintainability claims, map decisions to affected classes, test evidence, measurable limits and caveats.
+14. Emit exactly one `HARNESS_RESULT_JSON:` with existing `inspected_sources`, path-specific `evidence` and `NO_CHANGES`, `PATCH_PROPOSED`, or `BLOCKED`; provide a valid unified diff and full metadata for proposals. Never report NO_CHANGES without checking the target document.
 
 Command `docs-update` takes package name: `/docs-update <package>` prepares a reviewable patch for `doc/modules/<package>.md`.

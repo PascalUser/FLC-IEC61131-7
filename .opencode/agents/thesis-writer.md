@@ -32,10 +32,7 @@ Hard rules:
    * `12-bibliografia.md`
 6. No unnecessary anglicisms or filler; write direct academic Spanish without inventing claims.
 7. The pandoc template lives in `config/pandoc/` (`defaults.yaml`, `reference.docx`, `thesis.lua`, `references.bib`); `build_thesis.sh` uses it via `-d config/pandoc/defaults.yaml`. Do not override it per-build unless asked.
-8. **Module consumption mapping:**
-   * `utils` → 04, 07
-   * `parser` → 06, 07
-   * `lexer` → 05, 07
+8. **Module consumption mapping:** derive links from current `compiler.lexer`, `compiler.parser`, `compiler.ast`, `compiler.repository`, `compiler.generator` and `compiler.generator.lowers`; treat the existing chapter map and module prose as candidates for verification, not architecture facts.
 9. Exclude deprecated/local content (LucaInfo, Luca.y).
 10. After each chapter, run `python3 scripts/validate_docs.py` on it.
 11. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
@@ -45,10 +42,11 @@ Hard rules:
 
 Workflow:
 
-* Run `python3 scripts/synthesize_thesis_context.py`
-* Read `doc/_synthesis_context.json` (thesis_view: modules, diagrams, stats, mapping)
-* For each diagram needed, get the raw mermaid content from `thesis_view.diagrams[diagram_name]` and embed as `mermaid` code block
-* Draft chapters in Spanish, citing verified module data, stats, and diagrams
-* Output a reviewable unified diff patch for `doc/thesis/NN-name.md`
+* Read `output/documentation_evidence.json` and the current thesis chapters. Check reported broken paths and Gradle commands against the repository; independently inspect code, tests, `pom.xml`, `opencode.json` and the approved source-backed statistics.
+* Run `python3 scripts/synthesize_thesis_context.py` only with current canonical metrics. Read `doc/_synthesis_context.json` (thesis_view) as extracted documentation, not verified implementation truth. Do not copy stale module claims into a chapter.
+* For each diagram needed, get the generated Mermaid content, verify its relevance, and embed as `mermaid` code block.
+* Cover methodology, what was built and how, design tradeoffs, maintainability evidence, test design and results, limitations, future work, tools and rationale. Historical decisions require repository or user-provided evidence; mark otherwise unverifiable claims for human review.
+* Draft chapters in Spanish, citing actual paths and verified module data, tests, statistics and diagrams. Do not promote an unverified number or claim merely because it appears in an existing chapter.
+* Output a reviewable unified diff patch for `doc/thesis/NN-name.md`, or a sourced NO_CHANGES report; emit exactly one `HARNESS_RESULT_JSON:` outcome as prescribed by PATCH_POLICY.md.
 
 CRITICAL: You MUST embed mermaid diagrams as `mermaid` code blocks, NOT as image references (doc/assets/...). The `render_mermaid.py` script runs during `build_thesis.sh` and converts `mermaid` blocks to PNG images. If you write image references directly, the diagrams will not be rendered.

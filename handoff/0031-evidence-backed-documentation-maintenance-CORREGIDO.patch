@@ -1,0 +1,338 @@
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -176,4 +176,14 @@
+         )
+     )
+ 
++    steps.append(
++        StepSpec(
++            step_id="documentation_inventory",
++            description="Inventory stale code paths and build commands before documentation proposals",
++            command=["python3", "scripts/audit_documentation_evidence.py"],
++            kind="script",
++            blocking=True,
++        )
++    )
++
+     for pkg in modules:
+@@ -277,6 +277,6 @@
+ FUNCTIONAL_AREAS = {
+     "statistics": ("general_statistics",),
+     "diagrams": ("generate_diagrams",),
+-    "technical_documentation": ("harness_documentation", "docs_update_"),
++    "technical_documentation": ("documentation_inventory", "harness_documentation", "docs_update_"),
+     "readme": ("readme_update",),
+     "thesis": ("thesis_update",),
+diff --git a/.opencode/agents/doc-writer.md b/.opencode/agents/doc-writer.md
+--- a/.opencode/agents/doc-writer.md
++++ b/.opencode/agents/doc-writer.md
+@@ -18,4 +18,4 @@
+    * Never put a number you cannot point to in source
+-2. Before documenting: read actual `.java` files of the package. Cite file paths (`src/main/java/...`).
++2. Before documenting: read `output/documentation_evidence.json`, then the actual Java, Parser.y and relevant tests for the module. Treat inventory findings as candidates requiring source verification, not conclusions. Cite exact existing paths (`src/main/java/...`, `src/test/java/...`).
+ 3. Each module doc in `doc/modules/<package>.md` with:
+    * Header + one-line purpose (no parentheses, brackets, braces in heading)
+@@ -35,4 +35,6 @@
+ 11. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+ 12. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver module documentation updates as a self-contained unified diff patch with full metadata.
++13. Review old package names, cited paths, tests, diagrams, and numerical claims against sources. `doc/_synthesis_context.json` contains extracted *existing prose*; it is not itself proof that the prose is current. For maintainability claims, map decisions to affected classes, test evidence, measurable limits and caveats.
++14. Emit exactly one `HARNESS_RESULT_JSON:` with existing `inspected_sources`, path-specific `evidence` and `NO_CHANGES`, `PATCH_PROPOSED`, or `BLOCKED`; provide a valid unified diff and full metadata for proposals. Never report NO_CHANGES without checking the target document.
+ 
+ Command `docs-update` takes package name: `/docs-update <package>` prepares a reviewable patch for `doc/modules/<package>.md`.
+diff --git a/.opencode/agents/readme-writer.md b/.opencode/agents/readme-writer.md
+--- a/.opencode/agents/readme-writer.md
++++ b/.opencode/agents/readme-writer.md
+@@ -22,21 +22,22 @@
+    * Architecture: 5-10 lines + simple Mermaid (lexer → parser → symbol table) from `synthesis.readme_view.pipeline_mermaid`
+-   * Folder structure (`src/main/java/lexer`, `parser`, `utils`, etc.) with one-line descriptions
++   * Actual folder structure under `src/main/java/compiler/` (including `compiler.generator.lowers` and `compiler.repository`) with one-line descriptions; no historical `src/main/java/lexer`, `parser` or `utils` roots
+    * Links to `doc/modules/` for technical docs
+    * Authors from `@author` javadoc (Matias Ortiz, Victoriano Etcheverria)
+ 4. Write in neutral technical English. No emojis unless requested.
+ 5. No Markdown image syntax `![...](...)` — use mermaid for diagrams. No parentheses/brackets/braces in headings.
+ 6. Save as `README.md` (uppercase) in root. If `readme.md` exists, leave it or warn — don't delete.
+ 7. After writing, run `python3 scripts/validate_docs.py` on `README.md`. Fix all violations before finishing.
+ 8. Show summary diff (what sections added/changed) in final response.
+ 9. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 10. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 11. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+ 12. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `README.md` directly; deliver proposed updates as a self-contained unified diff patch with full metadata.
+ 
+ Workflow:
+ 
+-* Run `python3 scripts/synthesize_thesis_context.py` first
+-* Read `doc/_synthesis_context.json` (readme_view) for pipeline_mermaid and key_classes
+-* Use `pom.xml` for versions, commands, requirements
+-* Link to `doc/modules/` not thesis and deliver the result as a unified diff patch
++* Read `output/documentation_evidence.json` and inspect each relevant finding against README and actual files. Run `python3 scripts/synthesize_thesis_context.py` if the canonical statistics snapshot is current.
++* Read `doc/_synthesis_context.json` (readme_view) as a draft inventory, not an authoritative architecture; verify the pipeline against `compiler.FlcCompiler`, source declarations, and current diagrams.
++* Use `pom.xml` for versions, commands, requirements; cross-check documented examples with the actual build. If evidence is missing, report BLOCKED rather than fabricate a working command.
++* Link to `doc/modules/` not thesis and deliver the result as a unified diff patch.
++* End with exactly one `HARNESS_RESULT_JSON:` outcome and source-backed evidence per `.opencode/agents/PATCH_POLICY.md`; NO_CHANGES requires inspection of the current README and related sources.
+ 
+diff --git a/.opencode/agents/thesis-writer.md b/.opencode/agents/thesis-writer.md
+--- a/.opencode/agents/thesis-writer.md
++++ b/.opencode/agents/thesis-writer.md
+@@ -34,21 +34,19 @@
+ 7. The pandoc template lives in `config/pandoc/` (`defaults.yaml`, `reference.docx`, `thesis.lua`, `references.bib`); `build_thesis.sh` uses it via `-d config/pandoc/defaults.yaml`. Do not override it per-build unless asked.
+-8. **Module consumption mapping:**
+-   * `utils` → 04, 07
+-   * `parser` → 06, 07
+-   * `lexer` → 05, 07
++8. **Module consumption mapping:** derive links from current `compiler.lexer`, `compiler.parser`, `compiler.ast`, `compiler.repository`, `compiler.generator` and `compiler.generator.lowers`; treat the existing chapter map and module prose as candidates for verification, not architecture facts.
+ 9. Exclude deprecated/local content (LucaInfo, Luca.y).
+ 10. After each chapter, run `python3 scripts/validate_docs.py` on it.
+ 11. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 12. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 13. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+ 14. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify `doc/thesis/*.md` directly; deliver chapter updates as a self-contained unified diff patch with full metadata.
+ 
+ Workflow:
+ 
+-* Run `python3 scripts/synthesize_thesis_context.py`
+-* Read `doc/_synthesis_context.json` (thesis_view: modules, diagrams, stats, mapping)
+-* For each diagram needed, get the raw mermaid content from `thesis_view.diagrams[diagram_name]` and embed as `mermaid` code block
+-* Draft chapters in Spanish, citing verified module data, stats, and diagrams
+-* Output a reviewable unified diff patch for `doc/thesis/NN-name.md`
++* Read `output/documentation_evidence.json` and the current thesis chapters. Check reported broken paths and Gradle commands against the repository; independently inspect code, tests, `pom.xml`, `opencode.json` and the approved source-backed statistics.
++* Run `python3 scripts/synthesize_thesis_context.py` only with current canonical metrics. Read `doc/_synthesis_context.json` (thesis_view) as extracted documentation, not verified implementation truth. Do not copy stale module claims into a chapter.
++* For each diagram needed, get the generated Mermaid content, verify its relevance, and embed as `mermaid` code block.
++* Cover methodology, what was built and how, design tradeoffs, maintainability evidence, test design and results, limitations, future work, tools and rationale. Historical decisions require repository or user-provided evidence; mark otherwise unverifiable claims for human review.
++* Draft chapters in Spanish, citing actual paths and verified module data, tests, statistics and diagrams. Do not promote an unverified number or claim merely because it appears in an existing chapter.
++* Output a reviewable unified diff patch for `doc/thesis/NN-name.md`, or a sourced NO_CHANGES report; emit exactly one `HARNESS_RESULT_JSON:` outcome as prescribed by PATCH_POLICY.md.
+ 
+ CRITICAL: You MUST embed mermaid diagrams as `mermaid` code blocks, NOT as image references (doc/assets/...). The `render_mermaid.py` script runs during `build_thesis.sh` and converts `mermaid` blocks to PNG images. If you write image references directly, the diagrams will not be rendered.
+diff --git a/.opencode/agents/harness-documenter.md b/.opencode/agents/harness-documenter.md
+--- a/.opencode/agents/harness-documenter.md
++++ b/.opencode/agents/harness-documenter.md
+@@ -8,33 +8,33 @@
+   bash: true
+ ---
+ 
+-You are the harness documenter. Your only job is to generate the content for the thesis chapter documenting the OpenCode documentation harness (Chapter 09: HARNESS de documentación).
++You are the harness documenter. Maintain both `doc/HARNESS.md` (operational documentation) and `doc/thesis/09-harness.md` (academic chapter), always as reviewable patches.
+ 
+ Hard rules:
+ 
+ 1. Write in Spanish (thesis language), academic tone.
+ 2. Base content on actual harness implementation: `opencode.json`, `.opencode/agents/*.md`, `scripts/*.py`, `doc/HARNESS.md`.
+ 3. Do not invent features — only document what exists.
+ 4. Include:
+-   * Agent catalog (7 agents, their roles, commands)
+-   * Pipeline workflow (chart-refresh → diagram-refresh → docs-update → synthesis → thesis-build)
++   * Current agent catalog derived from `opencode.json` (never assume an agent count), roles and configured commands
++   * Actual `run_all_agents.py` step order and functional coverage, including audit, proposal and review boundaries
+    * How agents keep docs in sync with code (no invented data rule)
+-   * Validation integration (doc-validator runs on every Markdown write)
++   * Distinguish deterministic validations from agent assertions and from unapproved patches; never imply proposed changes were already integrated
+    * Benefits: single source of truth, traceability, reproducibility
+    * Lifecycle integration: iterative development with single release
+    * Extensibility: how to add new agents/scripts
+ 5. Reference specific files and commands.
+ 6. Output: mermaid diagram of pipeline + prose sections.
+-7. Save to `doc/thesis/09-harness.md` (thesis-writer will include it).
++7. Propose changes to `doc/HARNESS.md` and `doc/thesis/09-harness.md`; never write either directly.
+ 8. **Mermaid naming convention**: All class/namespace names in Mermaid diagrams and tables MUST use underscores, not dots (e.g., `parser_initializations_Factory`, NOT `parser.initializations.Factory`).
+ 9. **Table formatting**: All Markdown tables MUST have proper separator rows: `|---|---|---|` (one row after header, dashes matching column count).
+ 10. **Post-generation hook**: After generating any Markdown file, immediately run: `python3 scripts/format_markdown.py <generated_file>`
+ 11. **Patch-first delivery**: Follow `.opencode/agents/PATCH_POLICY.md`. Never modify tracked repository files directly; deliver updates for `doc/thesis/09-harness.md` as a self-contained unified diff patch with full metadata.
+ 
+ Workflow:
+ 
+-* Read `opencode.json`, `.opencode/agents/*.md`, `scripts/*.py`, `doc/HARNESS.md`
+-* Generate mermaid flowchart of the complete pipeline
+-* Draft chapter content verified against `scripts/validate_docs.py` rules
+-* Output a reviewable patch targeting `doc/thesis/09-harness.md`
++* Read `output/documentation_evidence.json`, `opencode.json`, `.opencode/agents/*.md`, `run_all_agents.py`, relevant `scripts/*.py`, `doc/HARNESS.md` and `doc/thesis/09-harness.md`.
++* Derive the actual agents, commands, permissions, step states and patch-first review gates; generate a Mermaid flowchart only for verified steps.
++* Draft the operational and academic descriptions and compare them to the implementation, not merely to current prose; verify Markdown rules in a scratch copy before proposing a change.
++* Output a reviewable patch for either or both documents with source-backed evidence, or a justified NO_CHANGES report. Emit exactly one `HARNESS_RESULT_JSON:` under PATCH_POLICY.md.
+ 
+diff --git a/scripts/audit_documentation_evidence.py b/scripts/audit_documentation_evidence.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/audit_documentation_evidence.py
+@@ -0,0 +1,104 @@
++#!/usr/bin/env python3
++"""Read-only, deterministic evidence inventory for maintained Markdown.
++
++Flags mechanically verifiable issues for agents to examine; this is NOT a
++semantic validator. Reports are written only to output/, never to doc/ or README.
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import re
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++OUTPUT = Path('output/documentation_evidence.json')
++DOCUMENTS = (Path('README.md'), Path('doc/HARNESS.md'))
++SOURCE_REF = re.compile(r'(?<![\w/])(?:src/(?:main|test)/java/)[\w./*{}-]+')
++LEGACY_COMMAND = re.compile(r'(?<![\w./])(?:\./)?gradlew\b')
++
++
++def documentation_files(root: Path) -> list[Path]:
++    """Discover README, HARNESS, module docs and thesis chapters explicitly."""
++    paths = [root / path for path in DOCUMENTS]
++    paths += sorted((root / 'doc/modules').glob('*.md'))
++    paths += sorted((root / 'doc/thesis').glob('*.md'))
++    return sorted(p for p in paths if p.is_file())
++
++
++def _normalize_reference(token: str) -> str:
++    # Markdown punctuation is commonly attached to textual path references.
++    return token.rstrip('.,;:!?)]}').rstrip('/')
++
++
++def _reference_issue(root: Path, ref: str) -> str | None:
++    """Return a bounded diagnostic; don't infer source semantics from names."""
++    if any(marker in ref for marker in ('*', '{', '}')):
++        return None  # patterns aren't literal file references
++    if (root / ref).exists():
++        return None
++    # Directory references with Java package roots are actionable too.
++    return 'referenced-source-path-not-found'
++
++
++def audit_documentation(root: Path) -> dict:
++    root = Path(root)
++    files = documentation_files(root)
++    issues: list[dict] = []
++    for path in files:
++        relative = path.relative_to(root).as_posix()
++        for line_no, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
++            for match in SOURCE_REF.finditer(line):
++                ref = _normalize_reference(match.group(0))
++                if _reference_issue(root, ref):
++                    issues.append({
++                        'path': relative, 'line': line_no,
++                        'category': 'missing-source-reference',
++                        'detail': ref,
++                    })
++            if LEGACY_COMMAND.search(line) and not line.lstrip().startswith(('<!--', '#')):
++                issues.append({
++                    'path': relative, 'line': line_no,
++                    'category': 'gradle-command-in-maven-repository',
++                    'detail': 'gradlew (verify build commands against pom.xml)',
++                })
++    return {
++        'schema_version': 1,
++        'method': 'Literal source-path existence and Gradle-command checks; not semantic verification',
++        'sources': [p.relative_to(root).as_posix() for p in files],
++        'findings': sorted(issues, key=lambda x: (x['path'], x['line'], x['category'], x['detail'])),
++        'limitations': [
++            'Wildcard paths and symbolic source patterns are not checked.',
++            'Java package references without src/ paths and historical prose are not inferred.',
++            'Existing paths do not prove that the associated narrative is correct.',
++            'Source-line checks cannot certify claims about maintainability or thesis evidence.',
++        ],
++    }
++
++
++def main(argv=None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--output', type=Path, default=OUTPUT)
++    parser.add_argument('--check', action='store_true', help='Check if an existing report matches without writing')
++    args = parser.parse_args(argv)
++    destination = args.output if args.output.is_absolute() else ROOT / args.output
++    try:
++        report = audit_documentation(ROOT)
++        encoded = json.dumps(report, indent=2, ensure_ascii=False) + '\n'
++        if args.check:
++            if not destination.is_file() or destination.read_text(encoding='utf-8') != encoded:
++                print(f'Documentation evidence report missing or stale: {destination}')
++                return 1
++        else:
++            destination.parent.mkdir(parents=True, exist_ok=True)
++            destination.write_text(encoded, encoding='utf-8')
++        print(f'Documentation evidence: {len(report["sources"])} documents, '
++              f'{len(report["findings"])} candidate findings')
++        return 0
++    except (OSError, UnicodeError, ValueError) as exc:
++        print(f'Documentation evidence audit failed: {exc}')
++        return 2
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+diff --git a/scripts/tests/test_documentation_evidence.py b/scripts/tests/test_documentation_evidence.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_documentation_evidence.py
+@@ -0,0 +1,73 @@
++"""The documentation inventory must expose repair targets without touching docs."""
++import json
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++from audit_documentation_evidence import audit_documentation, main  # noqa: E402
++
++
++class DocumentationEvidenceTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        (self.root / 'doc/modules').mkdir(parents=True)
++        (self.root / 'doc/thesis').mkdir(parents=True)
++        (self.root / 'src/main/java/compiler/parser').mkdir(parents=True)
++        (self.root / 'src/main/java/compiler/parser/Parser.y').write_text('%%\n')
++        (self.root / 'README.md').write_text('# README\n')
++        (self.root / 'doc/HARNESS.md').write_text('# HARNESS\n')
++
++    def test_detects_real_missing_java_path_and_gradle_command(self):
++        source = (self.root / 'doc/modules/parser.md')
++        source.write_text('Use `src/main/java/parser/Parser.y`.\n'
++                          'Real `src/main/java/compiler/parser/Parser.y`.\n'
++                          'Run `./gradlew test`.\n')
++        before = source.read_bytes()
++        report = audit_documentation(self.root)
++        categories = [f['category'] for f in report['findings']]
++        self.assertEqual(categories.count('missing-source-reference'), 1)
++        self.assertEqual(categories.count('gradle-command-in-maven-repository'), 1)
++        self.assertEqual(report['findings'][0]['line'], 1)
++        self.assertEqual(source.read_bytes(), before)
++
++    def test_ignores_wildcards_and_reports_checked_files(self):
++        (self.root / 'README.md').write_text('Inspect `src/main/java/compiler/**/*.java`.\n')
++        report = audit_documentation(self.root)
++        self.assertEqual(report['findings'], [])
++        self.assertIn('README.md', report['sources'])
++
++    def test_machine_report_check_mode_is_read_only(self):
++        (self.root / 'doc/thesis/08-testing.md').write_text('Use ./gradlew test\n')
++        destination = self.root / 'output/report.json'
++        with patch('audit_documentation_evidence.ROOT', self.root):
++            self.assertEqual(main(['--output', str(destination)]), 0)
++            before = destination.read_bytes()
++            self.assertEqual(main(['--output', str(destination), '--check']), 0)
++            self.assertEqual(destination.read_bytes(), before)
++            (self.root / 'doc/thesis/08-testing.md').write_text('Use mvn test\n')
++            self.assertEqual(main(['--output', str(destination), '--check']), 1)
++            self.assertEqual(destination.read_bytes(), before)
++            self.assertEqual(len(json.loads(before)['findings']), 1)
++
++
++    def test_pipeline_and_agents_reference_the_inventory(self):
++        repo = Path(__file__).resolve().parents[2]
++        runner = (repo / 'run_all_agents.py').read_text(encoding='utf-8')
++        self.assertIn('step_id="documentation_inventory"', runner)
++        self.assertIn('scripts/audit_documentation_evidence.py', runner)
++        self.assertLess(runner.index('step_id="documentation_inventory"'),
++                        runner.index('    for pkg in modules:'))
++        for name in ('doc-writer', 'readme-writer', 'thesis-writer',
++                     'harness-documenter'):
++            policy = (repo / '.opencode/agents' / (name + '.md')).read_text(encoding='utf-8')
++            self.assertIn('output/documentation_evidence.json', policy, name)
++            self.assertIn('HARNESS_RESULT_JSON:', policy, name)
++
++
++if __name__ == '__main__':
++    unittest.main()
