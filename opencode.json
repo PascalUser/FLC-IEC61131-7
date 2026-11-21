@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "openrouter/openrouter/auto",
+  "model": "opencode/hy4-flash-free",
   "permission": {
     "edit": "deny",
     "bash": {

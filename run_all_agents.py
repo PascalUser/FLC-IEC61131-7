@@ -135,9 +135,34 @@ def build_opencode_argv(
     opencode_args: Sequence[str],
     mode: str,
 ) -> List[str]:
-    if mode == "command":
-        return ["opencode", "run", "--command", opencode_cmd, *opencode_args]
-    return ["opencode", "run", f"/{opencode_cmd}", *opencode_args]
+    """Build a headless OpenCode invocation without slash-command expansion.
+
+    OpenCode 2.x does not reliably expand /commands in `opencode run`, and
+    some versions reject `--command`. Resolve the configured agent/template
+    locally and submit the expanded prompt using the supported `--agent` flag.
+    The legacy mode selector remains accepted for CLI compatibility.
+    """
+    if mode not in {"slash", "command"}:
+        raise ValueError(f"Unsupported OpenCode invocation mode: {mode}")
+    config_path = ROOT / "opencode.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    entry = config.get("command", {}).get(opencode_cmd)
+    if not isinstance(entry, dict):
+        raise ValueError(f"OpenCode command is not configured: {opencode_cmd}")
+    agent, template = entry.get("agent"), entry.get("template")
+    if (not isinstance(agent, str) or not agent.strip()
+            or agent not in config.get("agent", {})
+            or not isinstance(template, str) or not template.strip()):
+        raise ValueError(f"Invalid OpenCode agent/template for: {opencode_cmd}")
+    arguments = " ".join(opencode_args)
+    if "$ARGUMENTS" in template:
+        prompt = template.replace("$ARGUMENTS", arguments)
+    else:
+        prompt = template + ("\n\n" + arguments if arguments else "")
+    prompt += ("\n\nFollow .opencode/agents/PATCH_POLICY.md. "
+               "Emit exactly one HARNESS_RESULT_JSON line and, only for "
+               "PATCH_PROPOSED, a raw unified diff. Do not edit tracked files.")
+    return ["opencode", "run", "--agent", agent, prompt]
 
 
 def build_pipeline(
@@ -632,7 +657,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--opencode-mode",
         choices=("slash", "command"),
         default="slash",
-        help="OpenCode invocation format: 'slash' (/cmd arg) or 'command' (--command cmd arg).",
+        help="Deprecated compatibility selector; both values use direct --agent prompts (OpenCode 2.x).",
     )
     parser.add_argument(
         "--state-file",

@@ -1,0 +1,14 @@
+diff --git a/scripts/tests/test_harness_end_to_end.py b/scripts/tests/test_harness_end_to_end.py
+index 0b62f9e..a7829bf 100644
+--- a/scripts/tests/test_harness_end_to_end.py
++++ b/scripts/tests/test_harness_end_to_end.py
+@@ -39,6 +39,9 @@ class HarnessEndToEndTests(unittest.TestCase):
+             ROOT / "scripts/audit_documentation_evidence.py",
+             self.root / "scripts/audit_documentation_evidence.py",
+         )
++        # OpenCode v2 resolves agent templates from the project configuration.
++        # The disposable repository must include that same configuration.
++        shutil.copyfile(ROOT / "opencode.json", self.root / "opencode.json")
+         self.original = (
+             "Use `src/main/java/parser/Parser.y`.\n"
+             "Run `./gradlew test`.\n"

@@ -39,6 +39,9 @@ class HarnessEndToEndTests(unittest.TestCase):
             ROOT / "scripts/audit_documentation_evidence.py",
             self.root / "scripts/audit_documentation_evidence.py",
         )
+        # OpenCode v2 resolves agent templates from the project configuration.
+        # The disposable repository must include that same configuration.
+        shutil.copyfile(ROOT / "opencode.json", self.root / "opencode.json")
         self.original = (
             "Use `src/main/java/parser/Parser.y`.\n"
             "Run `./gradlew test`.\n"
@@ -91,8 +94,10 @@ class HarnessEndToEndTests(unittest.TestCase):
                 return self.real_run(command, **kwargs)
             if command[0] == "opencode":
                 seen.append(tuple(command))
-                output = doc_response if "/docs-update" in command or (
-                    "--command" in command and "docs-update" in command
+                output = doc_response if (
+                    "--agent" in command
+                    and command[command.index("--agent") + 1] == "doc-writer"
+                    and "Document module parser" in command[-1]
                 ) else self.result()
                 return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
             if "scripts/audit_documentation_evidence.py" in command:

@@ -1,102 +1,80 @@
-flowchart LR
-    compiler_ast["compiler.ast"]
-    compiler_ast_ruleblock["compiler.ast.ruleblock"]
-    compiler_ast_ruleblock_operators["compiler.ast.ruleblock.operators"]
-    compiler_parser["compiler.parser"]
-    compiler_parser_facades["compiler.parser.facades"]
-    compiler_parser_initializations["compiler.parser.initializations"]
-    compiler_parser_initializations_leafs["compiler.parser.initializations.leafs"]
-    compiler_parser_initializations_nodes["compiler.parser.initializations.nodes"]
-    compiler_parser_metadata["compiler.parser.metadata"]
-    compiler_parser_publishers["compiler.parser.publishers"]
-    compiler_parser_publishers_leafs["compiler.parser.publishers.leafs"]
-    compiler_parser_publishers_leafs_multiple["compiler.parser.publishers.leafs.multiple"]
-    compiler_parser_publishers_leafs_single["compiler.parser.publishers.leafs.single"]
-    compiler_parser_publishers_nodes["compiler.parser.publishers.nodes"]
-    compiler_parser_semantics["compiler.parser.semantics"]
-    compiler_parser_tree["compiler.parser.tree"]
-    compiler_parser_utils["compiler.parser.utils"]
-    compiler_repository["compiler.repository"]
-    compiler_repository_builders["compiler.repository.builders"]
-    compiler_repository_diagnostics_general["compiler.repository.diagnostics.general"]
-    compiler_repository_enums["compiler.repository.enums"]
-    compiler_parser --> compiler_ast
-    compiler_parser --> compiler_ast_ruleblock
-    compiler_parser --> compiler_ast_ruleblock_operators
-    compiler_parser --> compiler_parser_facades
-    compiler_parser --> compiler_parser_initializations
-    compiler_parser --> compiler_parser_initializations_leafs
-    compiler_parser --> compiler_parser_initializations_nodes
-    compiler_parser --> compiler_parser_metadata
-    compiler_parser --> compiler_parser_publishers
-    compiler_parser --> compiler_parser_publishers_leafs
-    compiler_parser --> compiler_parser_publishers_leafs_multiple
-    compiler_parser --> compiler_parser_publishers_leafs_single
-    compiler_parser --> compiler_parser_publishers_nodes
-    compiler_parser --> compiler_parser_semantics
-    compiler_parser --> compiler_parser_tree
-    compiler_parser --> compiler_parser_utils
-    compiler_parser --> compiler_repository
-    compiler_parser --> compiler_repository_builders
-    compiler_parser --> compiler_repository_enums
-    compiler_parser_facades --> compiler_ast
-    compiler_parser_facades --> compiler_ast_ruleblock
-    compiler_parser_facades --> compiler_ast_ruleblock_operators
-    compiler_parser_facades --> compiler_parser_tree
-    compiler_parser_facades --> compiler_parser_utils
-    compiler_parser_facades --> compiler_repository
-    compiler_parser_facades --> compiler_repository_enums
-    compiler_parser_initializations --> compiler_parser_initializations_leafs
-    compiler_parser_initializations --> compiler_parser_initializations_nodes
-    compiler_parser_initializations --> compiler_repository
-    compiler_parser_initializations --> compiler_repository_builders
-    compiler_parser_initializations --> compiler_repository_enums
-    compiler_parser_initializations_leafs --> compiler_parser_initializations
-    compiler_parser_initializations_leafs --> compiler_repository
-    compiler_parser_initializations_leafs --> compiler_repository_builders
-    compiler_parser_initializations_leafs --> compiler_repository_enums
-    compiler_parser_initializations_nodes --> compiler_parser_initializations
-    compiler_parser_metadata --> compiler_parser_facades
-    compiler_parser_metadata --> compiler_parser_initializations
-    compiler_parser_metadata --> compiler_parser_initializations_leafs
-    compiler_parser_metadata --> compiler_parser_initializations_nodes
-    compiler_parser_metadata --> compiler_parser_publishers_nodes
-    compiler_parser_metadata --> compiler_parser_utils
-    compiler_parser_metadata --> compiler_repository
-    compiler_parser_metadata --> compiler_repository_builders
-    compiler_parser_metadata --> compiler_repository_enums
-    compiler_parser_publishers --> compiler_parser_publishers_leafs_multiple
-    compiler_parser_publishers --> compiler_parser_publishers_nodes
-    compiler_parser_publishers --> compiler_repository_builders
-    compiler_parser_publishers_leafs --> compiler_parser_initializations
-    compiler_parser_publishers_leafs --> compiler_parser_publishers
-    compiler_parser_publishers_leafs --> compiler_repository_builders
-    compiler_parser_publishers_leafs --> compiler_repository_enums
-    compiler_parser_publishers_leafs_multiple --> compiler_parser_publishers_leafs
-    compiler_parser_publishers_leafs_multiple --> compiler_parser_publishers_leafs_single
-    compiler_parser_publishers_leafs_multiple --> compiler_repository
-    compiler_parser_publishers_leafs_multiple --> compiler_repository_builders
-    compiler_parser_publishers_leafs_single --> compiler_parser_facades
-    compiler_parser_publishers_leafs_single --> compiler_parser_metadata
-    compiler_parser_publishers_leafs_single --> compiler_parser_publishers_leafs
-    compiler_parser_publishers_leafs_single --> compiler_parser_publishers_nodes
-    compiler_parser_publishers_leafs_single --> compiler_repository
-    compiler_parser_publishers_leafs_single --> compiler_repository_builders
-    compiler_parser_publishers_leafs_single --> compiler_repository_enums
-    compiler_parser_publishers_nodes --> compiler_parser_publishers
-    compiler_parser_publishers_nodes --> compiler_parser_publishers_leafs
-    compiler_parser_publishers_nodes --> compiler_parser_publishers_leafs_single
-    compiler_parser_publishers_nodes --> compiler_parser_utils
-    compiler_parser_publishers_nodes --> compiler_repository_enums
-    compiler_parser_semantics --> compiler_ast
-    compiler_parser_semantics --> compiler_ast_ruleblock
-    compiler_parser_semantics --> compiler_parser_facades
-    compiler_parser_semantics --> compiler_parser_initializations
-    compiler_parser_semantics --> compiler_parser_utils
-    compiler_parser_semantics --> compiler_repository
-    compiler_parser_semantics --> compiler_repository_diagnostics_general
-    compiler_parser_semantics --> compiler_repository_enums
-    compiler_parser_utils --> compiler_parser_facades
-    compiler_parser_utils --> compiler_parser_initializations
-    compiler_parser_utils --> compiler_parser_tree
-    compiler_parser_utils --> compiler_repository_enums
+flowchart TD
+    subgraph parser ["compiler.parser"]
+        direction TB
+        facades["facades\nDimensionCalculator\nComponentResolver\nMembershipFunctionClassifier\nRightOperandResolver\nRangesParser\nSymbolTableCleaner\nRuleblockASTBuilder\nIdentifierInitializerParser"]
+        initializations["initializations\nFactory\nInitialization (interface)"]
+        initializations_leafs["initializations.leafs\nLeafInitialization (abstract)\nVariableInitialization\nEnumeratedInitialization\nDefaultInitialization\nSubrangeInitialization\nMacroInitialization"]
+        initializations_nodes["initializations.nodes\nNodeInitialization (abstract)\nStructInitialization\nRepeatedInitialization"]
+        metadata["metadata\nLexemeInfoView (interface)\nFunctionBlockMetadata\nFuzzifierMetadata\nDefuzzifierMetadata\nTermMetadata\nStructureMetadata\nRuleBlockMetadata\nArrayMetadata\nStringMetadata\nEnumeratedMetadata\nMacroMetadata\nCustomMetadata\nSubrangeMetadata\nPrimitiveMetadata\nPragmaMetadata"]
+        publishers["publishers\nPublisher (interface)"]
+        publishers_leafs["publishers.leafs\nDeclaration (abstract)"]
+        publishers_leafs_single["publishers.leafs.single\nSingleDeclaration\nFuzzyDeclaration\nStructureDeclaration\nEnumeratedTypeDeclaration\nMacrosPublisher\nAnnonymousEnumeratedField"]
+        publishers_leafs_multiple["publishers.leafs.multiple\nMultipleDeclaration\nAnnonymousEnumeratedVariable"]
+        publishers_nodes["publishers.nodes\nBlock<T> (abstract)\nDeclarationBlock\nFuzzyBlock\nStructureBlock"]
+        tree["tree\nParserTreeNode\nParserLabel"]
+        utils["utils\nIdentifierResolver\nPathInitializationInfo\nParsedInitializer\nMembershipFunctionShape\nConditionParsingContext\nArrayParsingContext"]
+        semantics["semantics\nSemanticAnalyzer<T> (interface)\nRuleVariableRoles\nRuleTermsBelongToVariables\nDistinctNames\nFreshKeys\nConstantAcceptingType\nDeclaredType\nExistingField\nInitializerIsEnumeratedValue\nEnumeratorOfType\nOrderedBounds\nRuleIs"]
+        Parser["Parser (generated by Bison)\nLexer (interface)\nSymbolKind (enum)"]
+    end
+
+    subgraph repository ["compiler.repository"]
+        SymbolTable["SymbolTable\nEntry"]
+        DiagnosticsHandler["DiagnosticsHandler"]
+        LexemeInfo["LexemeInfo"]
+        builders["builders\nLexemeInfoBuilder\nLexemeInfoMutator\nLexemeInfoView\nDirector"]
+    end
+
+    subgraph lexer ["compiler.lexer (external)"]
+        LexerImpl["JFlex Lexer\nimplements Parser.Lexer"]
+    end
+
+    subgraph ast ["compiler.ast (external)"]
+        AbstractSyntaxTree["AbstractSyntaxTree"]
+        RuleBlockNode["RuleBlockNode"]
+    end
+
+    Parser --> LexerImpl
+    Parser --> SymbolTable
+    Parser --> DiagnosticsHandler
+    Parser --> builders
+    Parser --> facades
+    Parser --> initializations
+    Parser --> initializations_leafs
+    Parser --> initializations_nodes
+    Parser --> metadata
+    Parser --> publishers
+    Parser --> publishers_leafs
+    Parser --> publishers_leafs_single
+    Parser --> publishers_leafs_multiple
+    Parser --> publishers_nodes
+    Parser --> tree
+    Parser --> utils
+    Parser --> semantics
+    Parser --> AbstractSyntaxTree
+    Parser --> RuleBlockNode
+
+    publishers_leafs --> publishers_leafs_single
+    publishers_leafs --> publishers_leafs_multiple
+    publishers_nodes --> Declaration
+    publishers_nodes --> SingleDeclaration
+    publishers_nodes --> Block
+    publishers_leafs_single --> Declaration
+    publishers_leafs_multiple --> Declaration
+    initializations --> initializations_leafs
+    initializations --> initializations_nodes
+    initializations_leafs --> LeafInitialization
+    initializations_nodes --> NodeInitialization
+
+    Declaration --> LexemeInfoBuilder
+    Block --> Declaration
+    SingleDeclaration --> SymbolTable
+    MultipleDeclaration --> SymbolTable
+    FuzzyBlock --> SingleDeclaration
+    DeclarationBlock --> Declaration
+    StructureBlock --> Declaration
+
+    MetadataClasses["All Metadata Classes"] --> LexemeInfoView
+    LexemeInfoBuilder --> LexemeInfoMutator
+    LexemeInfoMutator --> LexemeInfoView
+    Director --> LexemeInfoView
+    Director --> LexemeInfoMutator
