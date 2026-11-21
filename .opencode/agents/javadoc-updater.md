@@ -27,16 +27,16 @@ Hard rules:
 7. Use standard Javadoc tags: @param, @return, @throws, @see, @link, @author, @since, @version, @deprecated
 8. For overridden methods: {@inheritDoc} or explicit documentation
 9. Document exceptions thrown: both checked and unchecked if part of contract
-10. Private/package-private: optional but encouraged for complex logic
-11. **Parser.y semantic actions**: Every semantic action in src/main/java/parser/Parser.y MUST have a comment explaining its purpose, including the action's role in the grammar, what AST nodes it builds, and any side effects
+10. Private/package-private: REQUIRED for all handwritten helper methods and test helpers. Describe observable behavior and relevant invariants without inventing claims.
+11. **Parser.y semantic actions**: Every semantic action in `src/main/java/compiler/parser/Parser.y` MUST start with a `/** ... */` comment INSIDE its `{ ... }` block explaining the production, AST/SymbolTable effects and diagnostics; a comment above the action does not count.
 12. **Method descriptions**: Every public/protected method MUST have a short description sentence in its Javadoc explaining what it does (first sentence), followed by @param, @return, @throws as applicable
 13. **Test code documentation**: Every test class and test method in src/test MUST have Javadoc explaining what is being tested and why
 14. **Spell checking**: All Javadoc comments and Parser.y semantic action comments MUST be free of spelling errors (run `mvn cpd:check` or use a spell checker)
 
 Validation workflow:
 
-1. Scan src/main/java and src/test/java for missing/broken Javadoc
-2. **Scan src/main/java/parser/Parser.y for undocumented semantic actions** - every `{ ... }` action block must have a preceding comment
+1. Run `python3 scripts/audit_javadocs.py` and inspect `output/javadoc_audit.json` for missing Java/test Javadoc, private helpers, semantic actions and refactoring review candidates. Exclude generated `compiler/parser/Parser.java` and `compiler/lexer/Lexer.java`.
+2. **Inspect src/main/java/compiler/parser/Parser.y for undocumented semantic actions** - every nonempty semantic action requires `/** ... */` inside its braces; review inline layouts the heuristic scanner may miss.
 3. **Scan all Javadoc comments and Parser.y comments for spelling errors** - run spell checker on comments
 4. Run `mvn javadoc:javadoc` - capture all warnings
 5. Fix broken @link/@see references (use IDE/import analysis to find correct target)
@@ -55,7 +55,7 @@ Common broken reference patterns to fix:
 
 Parser.y semantic action documentation patterns:
 
-* Each `%{ ... %}` block or inline `{ ... }` action needs a comment above it explaining:
+* Every nonempty grammar semantic action `{ ... }` needs `/** ... */` as its first content INSIDE the braces, explaining:
   * What grammar rule it belongs to
   * What AST node it creates/modifies
   * What symbol table operations it performs
@@ -72,7 +72,7 @@ Method documentation patterns:
 Spell checking patterns:
 
 * Use `mvn cpd:check` or a spell checker (e.g., `codespell`, `cspell`) on all Javadoc comments
-* Run `codespell src/main/java src/test/java src/main/java/parser/Parser.y` to catch typos
+* Run `codespell src/main/java src/test/java src/main/java/compiler/parser/Parser.y` to catch typos when codespell is available
 * Add project-specific dictionary for technical terms (e.g., "lexeme", "subtype", "fuzzification")
 * Check Parser.y comments separately as they are not Java files
 
@@ -81,7 +81,8 @@ Workflow:
 * Run `mvn javadoc:javadoc` to get baseline warnings
 * Fix each warning category systematically
 * Prioritize: broken links > missing params > missing class docs > undocumented Parser.y actions > missing method descriptions > undocumented test code > spelling errors
-* For ambiguous cases: add TODO comment for human review
+* For `REFACTOR_REVIEW` findings, inspect actual method responsibilities and propose a specific `TODO` with reason/possible extraction; never insert generic TODOs or change code behavior.
+* For ambiguous cases: report uncertainty for human review rather than inventing documentation.
 * Never invent documentation for behavior not in code - flag for review
 * Run `mvn javadoc:javadoc` after each batch of fixes
 * Final run must produce ZERO warnings

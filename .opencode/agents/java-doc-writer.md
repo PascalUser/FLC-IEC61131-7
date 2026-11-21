@@ -25,15 +25,15 @@ Hard rules:
 7. Use standard Javadoc tags: @param, @return, @throws, @see, @link, @author, @since, @version, @deprecated
 8. For overridden methods: {@inheritDoc} or explicit documentation
 9. Document exceptions thrown: both checked and unchecked if part of contract
-10. Private/package-private: optional but encouraged for complex logic
-11. **Parser.y semantic actions**: Every semantic action in src/main/java/parser/Parser.y MUST have a comment explaining its purpose, including the action's role in the grammar, what AST nodes it builds, and any side effects
+10. Private/package-private: REQUIRED for handwritten auxiliary methods and test helpers, even when not part of the public API.
+11. **Parser.y semantic actions**: Every nonempty action in `src/main/java/compiler/parser/Parser.y` requires `/** ... */` INSIDE its `{ ... }` braces, before Java statements, explaining semantic result, AST/SymbolTable operations and diagnostics.
 12. **Method descriptions**: Every public/protected method MUST have a short description sentence in its Javadoc explaining what it does (first sentence), followed by @param, @return, @throws as applicable
 13. **Test code documentation**: Every test class and test method in src/test MUST have Javadoc explaining what is being tested and why
 14. **Spell checking**: All Javadoc comments and Parser.y semantic action comments MUST be free of spelling errors (run `codespell` or `cspell`)
 
 Validation workflow:
-1. Scan the target file(s) for missing/broken Javadoc
-2. **Scan Parser.y for undocumented semantic actions** - every `{ ... }` action block must have a preceding comment
+1. Run `python3 scripts/audit_javadocs.py` and consult `output/javadoc_audit.json`; inspect each flagged handwritten Java/test declaration and private helper, excluding generated Parser.java and Lexer.java.
+2. **Scan Parser.y for undocumented semantic actions** - comments must be `/** ... */` INSIDE `{ ... }`, not before the grammar production; manually inspect action forms omitted by the heuristic scanner.
 3. **Scan all Javadoc comments and Parser.y comments for spelling errors** - run spell checker on comments
 4. Run `mvn javadoc:javadoc` - capture all warnings
 5. Fix broken @link/@see references (use IDE/import analysis to find correct target)
@@ -50,7 +50,7 @@ Common broken reference patterns to fix:
 - {@inheritDoc} on non-overriding methods → remove or add proper docs
 
 Parser.y semantic action documentation patterns:
-* Each `%{ ... %}` block or inline `{ ... }` action needs a comment above it explaining:
+* Each nonempty Bison rule action `{ ... }` needs its explanatory `/** ... */` as first content INSIDE the braces, explaining:
   - What grammar rule it belongs to
   - What AST node it creates/modifies
   - What symbol table operations it performs
@@ -65,7 +65,7 @@ Method documentation patterns:
 
 Spell checking patterns:
 - Use `codespell` or `cspell` on all Javadoc comments
-- Run `codespell src/main/java src/test/java src/main/java/parser/Parser.y` to catch typos
+- Run `codespell src/main/java src/test/java src/main/java/compiler/parser/Parser.y` to catch typos when codespell is available
 - Add project-specific dictionary for technical terms (e.g., "lexeme", "subtype", "fuzzification")
 - Check Parser.y comments separately as they are not Java files
 
@@ -73,7 +73,8 @@ Workflow:
 - Run `mvn javadoc:javadoc` to get baseline warnings
 - Fix each warning category systematically
 - Prioritize: broken links > missing params > missing class docs > undocumented Parser.y actions > missing method descriptions > undocumented test code > spelling errors
-- For ambiguous cases: add TODO comment for human review
+- For `REFACTOR_REVIEW` candidates, propose a specific TODO explaining why the method may benefit from simplification; do not refactor code or create boilerplate TODOs.
+- For ambiguous cases: report uncertainty and request human review.
 - Never invent documentation for behavior not in code - flag for review
 - Run `mvn javadoc:javadoc` after each batch of fixes
 - Final run must produce ZERO warnings

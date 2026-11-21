@@ -229,6 +229,13 @@ def build_pipeline(
                 opencode_args=["all"],
             ),
             StepSpec(
+                step_id="javadoc_inventory",
+                description="Inventory handwritten Java/test Javadocs and Parser.y semantic actions",
+                command=["python3", "scripts/audit_javadocs.py"],
+                kind="script",
+                blocking=True,
+            ),
+            StepSpec(
                 step_id="javadoc_audit",
                 description="Run read-only Javadoc audit via javadoc-updater",
                 command=build_opencode_argv("javadoc-audit", [], opencode_mode),
@@ -283,7 +290,7 @@ FUNCTIONAL_AREAS = {
     "technical_documentation": ("harness_documentation", "docs_update_"),
     "readme": ("readme_update",),
     "thesis": ("thesis_update",),
-    "javadocs_and_parser_actions": ("javadoc_audit", "javadoc_fix", "parser_actions_audit"),
+    "javadocs_and_parser_actions": ("javadoc_inventory", "javadoc_audit", "javadoc_fix", "parser_actions_audit"),
 }
 
 
