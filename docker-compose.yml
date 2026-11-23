@@ -1,10 +1,5 @@
 services:
   docs:
-    environment:
-      NO_COLOR: "1"
-      TERM: "dumb"
-      CLICOLOR: "0"
-      FORCE_COLOR: "0"
     build:
       context: .
       args:

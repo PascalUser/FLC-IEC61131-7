@@ -1,846 +1,125 @@
 classDiagram
-    %% ===== PARSER PACKAGE =====
-    namespace parser {
-        class Parser {
-            +SymbolKind
-            +Lexer
-            +SymbolTable symbolTable
-            +DiagnosticsHandler diagnostics
-            +parse() int
-            +yyerror(String)
-            +getNumberOfErrors() int
-        }
-        class Parser_Lexer {
-            <<interface>>
-            +yylex() int
-            +getLVal() Object
-            +yyerror(String)
-        }
-        class Parser_SymbolKind {
-            <<enumeration>>
-            +S_YYEOF
-            +S_TYPE
-            +S_STRUCT
-            +S_FUNCTION_BLOCK
-            +S_FUZZIFY
-            +S_DEFUZZIFY
-            +S_RULEBLOCK
-            +S_OPTION
-            +S_TERM
-            +S_METHOD
-            +S_DEFAULT
-            +S_RANGE
-            +S_RULE
-            +S_IF
-            +S_THEN
-            +S_WITH
-            +S_ACT
-            +S_ACCU
-            +S_IS
-            +S_NOT
-            +S_AND
-            +S_OR
-            +S_COG
-            +S_COGS
-            +S_COA
-            +S_LM
-            +S_RM
-            +S_NC
-            +S_MIN
-            +S_MAX
-            +S_ASUM
-            +S_BSUM
-            +S_PROD
-            +S_BDIF
-            +S_NSUM
-            +S_IDENTIFIER
-            +S_STD_FB_IDENTIFIER
-            +S_ASSIGN_OP
-            +S_RANGE_OP
-            +S_PRAGMA
-            +S_VAR_INPUT
-            +S_RETAIN
-            +S_NON_RETAIN
-            +S_END_VAR
-            +S_BOOL
-            +S_R_EDGE
-            +S_F_EDGE
-            +S_VAR_OUTPUT
-            +S_VAR
-            +S_CONSTANT
-            +S_STRING
-            +S_WSTRING
-            +S_BYTE
-            +S_WORD
-            +S_DWORD
-            +S_LWORD
-            +S_TIME
-            +S_TIME_OF_DAY
-            +S_DATE
-            +S_DATE_AND_TIME
-            +S_OF
-            +S_SINT
-            +S_INT
-            +S_DINT
-            +S_LINT
-            +S_USINT
-            +S_UINT
-            +S_UDINT
-            +S_ULINT
-            +S_REAL
-            +S_LREAL
-            +S_NUMERIC_LITERAL
-            +S_STRING_LITERAL
-            +S_TIME_LITERAL
-            +S_BOOLEAN_LITERAL
-            +S_ARRAY
-        }
-        Parser --> Parser_Lexer
-        Parser --> Parser_SymbolKind
+    namespace compiler_parser {
+        class Parser
     }
-
-    %% ===== FACADES =====
-    namespace parser_facades {
-        class parser_facades_DimensionCalculator {
-            +calculateDimensions() void
-        }
-        class parser_facades_ComponentResolver {
-            +resolveComponent() void
-        }
-        class parser_facades_MembershipFunctionClassifier {
-            +classify() void
-        }
-        class parser_facades_RightOperandResolver {
-            +resolveRightOperand() void
-        }
-        class parser_facades_RangesParser {
-            +parseRanges() void
-        }
-        class parser_facades_SymbolTableCleaner {
-            +clean(SymbolTable) void
-        }
-        class parser_facades_RuleblockASTBuilder {
-            +build(ParserTreeNode, List~Operator~) RuleBlockNode
-        }
-        class parser_facades_IdentifierInitializerParser {
-            +parseIdentifierInitializer() void
-        }
-        parser_facades_RuleblockASTBuilder --> parser_tree_ParserTreeNode
+    namespace compiler_parser_facades {
+        class ComponentResolver
+        class DimensionCalculator
+        class IdentifierInitializerParser
+        class MembershipFunctionClassifier
+        class RangesParser
+        class RightOperandResolver
+        class RuleblockASTBuilder
+        class SymbolTableCleaner
     }
-
-    %% ===== INITIALIZATIONS =====
-    namespace parser_initializations {
-        class parser_initializations_Initialization {
-            <<interface>>
-            +find(String) Optional~Initialization~
-            +variableValue() String
-            +copy() Initialization
-        }
-        class parser_initializations_Factory {
-            +createPrimitiveInitialization(SymbolTable, Subtype) DefaultInitialization
-        }
-        parser_initializations_Factory --> parser_initializations_leafs_DefaultInitialization
+    namespace compiler_parser_initializations {
+        class Factory
+        class Initialization
     }
-
-    namespace parser_initializations_leafs {
-        class parser_initializations_leafs_LeafInitialization {
-            <<abstract>>
-            +find(String) Optional~Initialization~
-            +copy() Initialization
-            #equals(Object) boolean
-            #hashCode() int
-            #toString() String
-        }
-        class parser_initializations_leafs_VariableInitialization {
-            +variableValue() String
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        class parser_initializations_leafs_EnumeratedInitialization {
-            +variableValue() String
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        class parser_initializations_leafs_DefaultInitialization {
-            +bool(SymbolTable) DefaultInitialization
-            +real(SymbolTable) DefaultInitialization
-            +string(SymbolTable) DefaultInitialization
-            +wstring(SymbolTable) DefaultInitialization
-            +integer(SymbolTable) DefaultInitialization
-            +variableValue() String
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        class parser_initializations_leafs_SubrangeInitialization {
-            +variableValue() String
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        class parser_initializations_leafs_MacroInitialization {
-            +variableValue() String
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        parser_initializations_leafs_VariableInitialization --|> parser_initializations_leafs_LeafInitialization
-        parser_initializations_leafs_EnumeratedInitialization --|> parser_initializations_leafs_LeafInitialization
-        parser_initializations_leafs_DefaultInitialization --|> parser_initializations_leafs_LeafInitialization
-        parser_initializations_leafs_SubrangeInitialization --|> parser_initializations_leafs_LeafInitialization
-        parser_initializations_leafs_MacroInitialization --|> parser_initializations_leafs_LeafInitialization
+    namespace compiler_parser_initializations_leafs {
+        class DefaultInitialization
+        class EnumeratedInitialization
+        class LeafInitialization
+        class MacroInitialization
+        class SubrangeInitialization
+        class VariableInitialization
     }
-
-    namespace parser_initializations_nodes {
-        class parser_initializations_nodes_NodeInitialization {
-            <<abstract>>
-            +put(String, Initialization) Initialization
-            #breakStringPath(String) String[]
-        }
-        class parser_initializations_nodes_StructInitialization {
-            +find(String) Optional~Initialization~
-            +put(String, Initialization) Initialization
-            +variableValue() String
-            +copy() Initialization
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        class parser_initializations_nodes_RepeatedInitialization {
-            +find(String) Optional~Initialization~
-            +put(String, Initialization) Initialization
-            +variableValue() String
-            +copy() Initialization
-            +equals(Object) boolean
-            +hashCode() int
-            +toString() String
-        }
-        parser_initializations_nodes_StructInitialization --|> parser_initializations_nodes_NodeInitialization
-        parser_initializations_nodes_RepeatedInitialization --|> parser_initializations_nodes_NodeInitialization
+    namespace compiler_parser_initializations_nodes {
+        class NodeInitialization
+        class RepeatedInitialization
+        class StructInitialization
     }
-
-    %% ===== METADATA =====
-    namespace parser_metadata {
-        class parser_metadata_LexemeInfoView {
-            <<interface>>
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_FunctionBlockMetadata {
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_FuzzifierMetadata {
-            -terms List~String~
-            +FuzzifierMetadata(FuzzyBlock)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_DefuzzifierMetadata {
-            +DefuzzifierMetadata(List~String~, FuzzyBlock, Subtype, VariableInitialization)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_TermMetadata {
-            +TermMetadata(List~String~)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_StructureMetadata {
-            +StructureMetadata(List~String~)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_RuleBlockMetadata {
-            +RuleBlockMetadata(List~Operator~)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_ArrayMetadata {
-            +ArrayMetadata(List~String~)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_StringMetadata {
-            +StringMetadata(int, int)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_EnumeratedMetadata {
-            +EnumeratedMetadata(List~String~)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_MacroMetadata {
-            +MacroMetadata(String)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_CustomMetadata {
-            +CustomMetadata(String)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_SubrangeMetadata {
-            +SubrangeMetadata(String, String)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_PrimitiveMetadata {
-            +PrimitiveMetadata(Subtype)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class parser_metadata_PragmaMetadata {
-            +PragmaMetadata(String)
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        parser_metadata_FunctionBlockMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_FuzzifierMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_DefuzzifierMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_TermMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_StructureMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_RuleBlockMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_ArrayMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_StringMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_EnumeratedMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_MacroMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_CustomMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_SubrangeMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_PrimitiveMetadata ..|> parser_metadata_LexemeInfoView
-        parser_metadata_PragmaMetadata ..|> parser_metadata_LexemeInfoView
+    namespace compiler_parser_metadata {
+        class ArrayMetadata
+        class CustomMetadata
+        class DefuzzifierMetadata
+        class EnumeratedMetadata
+        class FunctionBlockMetadata
+        class FuzzifierMetadata
+        class MacroMetadata
+        class PragmaMetadata
+        class PrimitiveMetadata
+        class RuleBlockMetadata
+        class StringMetadata
+        class StructureMetadata
+        class SubrangeMetadata
+        class TermMetadata
     }
-
-    %% ===== PUBLISHERS =====
-    namespace parser_publishers {
-        class parser_publishers_Publisher {
-            <<interface>>
-            +scope(String) Publisher
-            +keys() List~String~
-            +publish() void
-            +type(Type) Publisher
-            +subtype(Subtype) Publisher
-            +customType(String) Publisher
-            +source(Source) Publisher
-            +use(Use) Publisher
-            +inferiorLimits(List~String~) Publisher
-            +superiorLimits(List~String~) Publisher
-            +parameters(List~String~) Publisher
-            +initialValue(Object) Publisher
-        }
+    namespace compiler_parser_publishers {
+        class Publisher
     }
-
-    namespace parser_publishers_leafs {
-        class parser_publishers_leafs_Declaration {
-            <<abstract>>
-            +scope(String) Declaration
-            +type(Type) Declaration
-            +subtype(Subtype) Declaration
-            +customType(String) Declaration
-            +source(Source) Declaration
-            +use(Use) Declaration
-            +inferiorLimits(List~String~) Declaration
-            +superiorLimits(List~String~) Declaration
-            +parameters(List~String~) Declaration
-            +initialValue(Object) Declaration
-            +keys() List~String~
-            +publish() void
-            #builder LexemeInfoBuilder
-            #declarationScope String
-        }
-        parser_publishers_leafs_Declaration ..|> parser_publishers_Publisher
+    namespace compiler_parser_publishers_leafs {
+        class Declaration
     }
-
-    namespace parser_publishers_leafs_single {
-        class parser_publishers_leafs_single_SingleDeclaration {
-            -symbolTable SymbolTable
-            -identifier String
-            +SingleDeclaration(SymbolTable)
-            +SingleDeclaration(SymbolTable, LexemeInfoBuilder)
-            +identifier(String) SingleDeclaration
-            +identifier() String
-            +keys() List~String~
-            +publish() void
-            #key() String
-        }
-        class parser_publishers_leafs_single_FuzzyDeclaration {
-            -fuzzyBlock FuzzyBlock
-            +FuzzyDeclaration(SymbolTable, FuzzyBlock)
-            +publish() void
-        }
-        class parser_publishers_leafs_single_StructureDeclaration {
-            +StructureDeclaration(SymbolTable)
-        }
-        class parser_publishers_leafs_single_EnumeratedTypeDeclaration {
-            +EnumeratedTypeDeclaration(SymbolTable)
-        }
-        class parser_publishers_leafs_single_MacrosPublisher {
-            +MacrosPublisher(SymbolTable)
-        }
-        class parser_publishers_leafs_single_AnnonymousEnumeratedField {
-            +AnnonymousEnumeratedField(SymbolTable)
-        }
-        parser_publishers_leafs_single_SingleDeclaration --|> parser_publishers_leafs_Declaration
-        parser_publishers_leafs_single_FuzzyDeclaration --|> parser_publishers_leafs_single_SingleDeclaration
-        parser_publishers_leafs_single_StructureDeclaration --|> parser_publishers_leafs_single_SingleDeclaration
-        parser_publishers_leafs_single_EnumeratedTypeDeclaration --|> parser_publishers_leafs_single_SingleDeclaration
-        parser_publishers_leafs_single_MacrosPublisher --|> parser_publishers_leafs_single_SingleDeclaration
-        parser_publishers_leafs_single_AnnonymousEnumeratedField --|> parser_publishers_leafs_single_SingleDeclaration
+    namespace compiler_parser_publishers_leafs_multiple {
+        class AnnonymousEnumeratedVariable
+        class MultipleDeclaration
     }
-
-    namespace parser_publishers_leafs_multiple {
-        class parser_publishers_leafs_multiple_MultipleDeclaration {
-            -symbolTable SymbolTable
-            -identifiers List~String~
-            +MultipleDeclaration(SymbolTable)
-            +MultipleDeclaration(SymbolTable, LexemeInfoBuilder)
-            +identifiers(List~String~) MultipleDeclaration
-            +keys() List~String~
-            +publish() void
-            #keyOf(String) String
-        }
-        class parser_publishers_leafs_multiple_AnnonymousEnumeratedVariable {
-            +AnnonymousEnumeratedVariable(SymbolTable)
-        }
-        parser_publishers_leafs_multiple_MultipleDeclaration --|> parser_publishers_leafs_Declaration
-        parser_publishers_leafs_multiple_AnnonymousEnumeratedVariable --|> parser_publishers_leafs_multiple_MultipleDeclaration
+    namespace compiler_parser_publishers_leafs_single {
+        class AnnonymousEnumeratedField
+        class EnumeratedTypeDeclaration
+        class FuzzyDeclaration
+        class MacrosPublisher
+        class SingleDeclaration
+        class StructureDeclaration
     }
-
-    namespace parser_publishers_nodes {
-        class parser_publishers_nodes_Block {
-            <<abstract>>
-            #declarations List~ConcreteDecl~
-            +Block()
-            +add(ConcreteDecl) void
-            +scope(String) Block~ConcreteDecl~
-            +keys() List~String~
-            +publish() void
-            +type(Type) Block~ConcreteDecl~
-            +subtype(Subtype) Block~ConcreteDecl~
-            +customType(String) Block~ConcreteDecl~
-            +source(Source) Block~ConcreteDecl~
-            +use(Use) Block~ConcreteDecl~
-            +inferiorLimits(List~String~) Block~ConcreteDecl~
-            +superiorLimits(List~String~) Block~ConcreteDecl~
-            +parameters(List~String~) Block~ConcreteDecl~
-            +initialValue(Object) Block~ConcreteDecl~
-        }
-        class parser_publishers_nodes_DeclarationBlock {
-            +DeclarationBlock()
-            +add(Declaration) void
-        }
-        class parser_publishers_nodes_FuzzyBlock {
-            -declarations List~SingleDeclaration~
-            +FuzzyBlock()
-            +add(SingleDeclaration) void
-            +getTermNames() List~String~
-        }
-        class parser_publishers_nodes_StructureBlock {
-            +StructureBlock()
-            +add(Declaration) void
-        }
-        parser_publishers_nodes_DeclarationBlock --|> parser_publishers_nodes_Block
-        parser_publishers_nodes_FuzzyBlock --|> parser_publishers_nodes_Block
-        parser_publishers_nodes_StructureBlock --|> parser_publishers_nodes_Block
-        parser_publishers_nodes_Block --> parser_publishers_leafs_Declaration
-        parser_publishers_nodes_FuzzyBlock --> parser_publishers_leafs_single_SingleDeclaration
+    namespace compiler_parser_publishers_nodes {
+        class Block
+        class DeclarationBlock
+        class FuzzyBlock
+        class StructureBlock
     }
-
-    %% ===== TREE =====
-    namespace parser_tree {
-        class parser_tree_ParserTreeNode {
-            -label ParserLabel
-            -symbolReference String
-            -children List~ParserTreeNode~
-            +ParserTreeNode(ParserLabel, List~ParserTreeNode~)
-            +ParserTreeNode(ParserLabel, String, List~ParserTreeNode~)
-            +label() ParserLabel
-            +symbolReference() String
-            +children() List~ParserTreeNode~
-        }
-        class parser_tree_ParserLabel {
-            <<enumeration>>
-            +PROGRAM
-            +FUNCTION_BLOCK
-            +VAR_INPUT
-            +VAR_OUTPUT
-            +VAR
-            +CONSTANT
-            +TYPE
-            +STRUCT
-            +FUZZIFY
-            +DEFUZZIFY
-            +RULEBLOCK
-            +OPTION
-            +TERM
-            +METHOD
-            +RULE
-            +IF
-            +THEN
-            +WITH
-            +ACTIVATION
-            +ACCUMULATION
-            +BODY
-            +CONDITION
-            +IS
-            +NOT
-            +OR
-            +AND
-            +IDENTIFIER
-            +COMPONENT
-        }
-        parser_tree_ParserTreeNode --> parser_tree_ParserLabel
+    namespace compiler_parser_semantics {
+        class ConstantAcceptingType
+        class DeclaredType
+        class DistinctNames
+        class EnumeratorOfType
+        class ExistingField
+        class FreshKeys
+        class InitializerIsEnumeratedValue
+        class OrderedBounds
+        class RuleIs
+        class RuleTermsBelongToVariables
+        class RuleVariableRoles
+        class SemanticAnalyzer
     }
-
-    %% ===== UTILS =====
-    namespace parser_utils {
-        class parser_utils_IdentifierResolver {
-            -programName String
-            -octothorpeIdx int
-            +IdentifierResolver(String)
-            +key(String) String
-            +name(String) String
-        }
-        class parser_utils_PathInitializationInfo {
-            +PathInitializationInfo()
-        }
-        class parser_utils_ParsedInitializer {
-            +ParsedInitializer()
-        }
-        class parser_utils_MembershipFunctionShape {
-            <<enumeration>>
-            +TRIANGULAR
-            +TRAPEZOIDAL
-            +GAUSSIAN
-            +SINGLETON
-        }
-        class parser_utils_ConditionParsingContext {
-            +ConditionParsingContext()
-        }
-        class parser_utils_ArrayParsingContext {
-            +ArrayParsingContext()
-        }
+    namespace compiler_parser_tree {
+        class ParserLabel
+        class ParserTreeNode
     }
-
-    %% ===== SEMANTICS =====
-    namespace parser_semantics {
-        class parser_semantics_SemanticAnalyzer {
-            <<interface>>
-            +check(Subject) boolean
-        }
-        class parser_semantics_RuleVariableRoles {
-            -symbolTable SymbolTable
-            -diagnostics DiagnosticsHandler
-            -identifierResolver IdentifierResolver
-            +RuleVariableRoles(SymbolTable, DiagnosticsHandler, IdentifierResolver)
-            +check(Subject) boolean
-        }
-        class parser_semantics_RuleTermsBelongToVariables {
-            -symbolTable SymbolTable
-            -diagnostics DiagnosticsHandler
-            -identifierResolver IdentifierResolver
-            +RuleTermsBelongToVariables(SymbolTable, DiagnosticsHandler, IdentifierResolver)
-            +check(Subject) boolean
-        }
-        class parser_semantics_DistinctNames {
-            +check(List~String~) void
-        }
-        class parser_semantics_FreshKeys {
-            +check(List~String~) void
-        }
-        class parser_semantics_ConstantAcceptingType {
-            +check(Subject) boolean
-        }
-        class parser_semantics_DeclaredType {
-            +check(Subject) boolean
-        }
-        class parser_semantics_ExistingField {
-            +check(Subject) boolean
-        }
-        class parser_semantics_InitializerIsEnumeratedValue {
-            +check(Subject) boolean
-        }
-        class parser_semantics_EnumeratorOfType {
-            +check(Subject) boolean
-        }
-        class parser_semantics_OrderedBounds {
-            +check(Subject) boolean
-        }
-        class parser_semantics_RuleIs {
-            +check(Subject) boolean
-        }
-        parser_semantics_RuleVariableRoles ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_RuleTermsBelongToVariables ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_DistinctNames ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_FreshKeys ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_ConstantAcceptingType ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_DeclaredType ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_ExistingField ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_InitializerIsEnumeratedValue ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_EnumeratorOfType ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_OrderedBounds ..|> parser_semantics_SemanticAnalyzer
-        parser_semantics_RuleIs ..|> parser_semantics_SemanticAnalyzer
+    namespace compiler_parser_utils {
+        class ArrayParsingContext
+        class ConditionParsingContext
+        class IdentifierResolver
+        class MembershipFunctionShape
+        class ParsedInitializer
+        class PathInitializationInfo
     }
-
-    %% ===== REPOSITORY (external) =====
-    namespace repository {
-        class repository_SymbolTable {
-            +get(String) LexemeInfo
-            +put(String, LexemeInfo) LexemeInfo
-            +putIfAbsent(String, LexemeInfo) LexemeInfo
-            +iterator() Iterator
-            +orderedKeysBasedOnInsertion() List~String~
-            +size() int
-        }
-        class repository_DiagnosticsHandler {
-            -hasErrors boolean
-            -diagnostics List~Diagnostic~
-            +DiagnosticsHandler()
-            +add(Diagnostic) void
-            +hasErrors() boolean
-            +getDiagnostics() List~Diagnostic~
-            +getOutput() String
-        }
-        class repository_LexemeInfo {
-        }
-        class repository_builders_LexemeInfoBuilder {
-            +type(Type) LexemeInfoBuilder
-            +subtype(Subtype) LexemeInfoBuilder
-            +customType(String) LexemeInfoBuilder
-            +source(Source) LexemeInfoBuilder
-            +use(Use) LexemeInfoBuilder
-            +inferiorLimits(List~String~) LexemeInfoBuilder
-            +superiorLimits(List~String~) LexemeInfoBuilder
-            +parameters(List~String~) LexemeInfoBuilder
-            +initialValue(Object) LexemeInfoBuilder
-            +build() LexemeInfo
-        }
-        class repository_builders_LexemeInfoMutator {
-            <<interface>>
-            +type(Type) LexemeInfoMutator
-            +subtype(Subtype) LexemeInfoMutator
-            +customType(String) LexemeInfoMutator
-            +source(Source) LexemeInfoMutator
-            +use(Use) LexemeInfoMutator
-            +inferiorLimits(List~String~) LexemeInfoMutator
-            +superiorLimits(List~String~) LexemeInfoMutator
-            +parameters(List~String~) LexemeInfoMutator
-            +initialValue(Object) LexemeInfoMutator
-        }
-        class repository_builders_LexemeInfoView {
-            <<interface>>
-            +type() Type
-            +subtype() Subtype
-            +customType() String
-            +source() Source
-            +use() Use
-            +inferiorLimits() List~String~
-            +superiorLimits() List~String~
-            +parameters() List~String~
-            +initialValue() Object
-        }
-        class repository_builders_Director {
-            +makeWithMetadata(LexemeInfoMutator, LexemeInfoView) void
-            +makeLiteral(LexemeInfoMutator) void
-            +makeIntegerZeroConstant(LexemeInfoMutator) String
-            +makeBooleanTrueConstant(LexemeInfoMutator) String
-            +makeDefaultInteger(LexemeInfoMutator) String
-            +makeDefaultReal(LexemeInfoMutator) String
-            +makeDefaultBoolean(LexemeInfoMutator) String
-            +makeDefaultString(LexemeInfoMutator) String
-            +makeDefaultWString(LexemeInfoMutator) String
-        }
-        repository_builders_LexemeInfoBuilder ..|> repository_builders_LexemeInfoMutator
-        repository_builders_LexemeInfoMutator ..|> repository_builders_LexemeInfoView
-        repository_builders_Director --> repository_builders_LexemeInfoMutator
-        repository_builders_Director --> repository_builders_LexemeInfoView
-    }
-
-    %% ===== CROSS-NAMESPACE RELATIONSHIPS =====
-    parser_Parser --> repository_SymbolTable
-    parser_Parser --> repository_DiagnosticsHandler
-    parser_Parser --> parser_facades_SymbolTableCleaner
-    parser_Parser --> parser_facades_RuleblockASTBuilder
-    parser_Parser --> parser_facades_IdentifierInitializerParser
-    parser_Parser --> parser_metadata_FunctionBlockMetadata
-    parser_Parser --> parser_metadata_FuzzifierMetadata
-    parser_Parser --> parser_metadata_DefuzzifierMetadata
-    parser_Parser --> parser_metadata_TermMetadata
-    parser_Parser --> parser_metadata_StructureMetadata
-    parser_Parser --> parser_metadata_RuleBlockMetadata
-    parser_Parser --> parser_metadata_ArrayMetadata
-    parser_Parser --> parser_metadata_StringMetadata
-    parser_Parser --> parser_metadata_EnumeratedMetadata
-    parser_Parser --> parser_metadata_MacroMetadata
-    parser_Parser --> parser_metadata_CustomMetadata
-    parser_Parser --> parser_metadata_SubrangeMetadata
-    parser_Parser --> parser_metadata_PrimitiveMetadata
-    parser_Parser --> parser_metadata_PragmaMetadata
-    parser_Parser --> parser_publishers_Publisher
-    parser_Parser --> parser_publishers_leafs_Declaration
-    parser_Parser --> parser_publishers_leafs_single_SingleDeclaration
-    parser_Parser --> parser_publishers_leafs_single_FuzzyDeclaration
-    parser_Parser --> parser_publishers_leafs_multiple_MultipleDeclaration
-    parser_Parser --> parser_publishers_nodes_DeclarationBlock
-    parser_Parser --> parser_publishers_nodes_FuzzyBlock
-    parser_Parser --> parser_publishers_nodes_StructureBlock
-    parser_Parser --> parser_tree_ParserTreeNode
-    parser_Parser --> parser_tree_ParserLabel
-    parser_Parser --> parser_utils_IdentifierResolver
-    parser_Parser --> parser_utils_PathInitializationInfo
-    parser_Parser --> parser_utils_ParsedInitializer
-    parser_Parser --> parser_utils_MembershipFunctionShape
-    parser_Parser --> parser_utils_ConditionParsingContext
-    parser_Parser --> parser_utils_ArrayParsingContext
-    parser_Parser --> parser_semantics_RuleVariableRoles
-    parser_Parser --> parser_semantics_RuleTermsBelongToVariables
-    parser_Parser --> parser_semantics_DistinctNames
-    parser_Parser --> parser_semantics_FreshKeys
-    parser_Parser --> parser_semantics_ConstantAcceptingType
-    parser_Parser --> parser_semantics_DeclaredType
-    parser_Parser --> parser_semantics_ExistingField
-    parser_Parser --> parser_semantics_InitializerIsEnumeratedValue
-    parser_Parser --> parser_semantics_EnumeratorOfType
-    parser_Parser --> parser_semantics_OrderedBounds
-    parser_Parser --> parser_semantics_RuleIs
-    parser_Parser --> parser_initializations_Initialization
-    parser_Parser --> parser_initializations_leafs_VariableInitialization
-    parser_Parser --> parser_initializations_leafs_EnumeratedInitialization
-    parser_Parser --> parser_initializations_leafs_DefaultInitialization
-    parser_Parser --> parser_initializations_leafs_SubrangeInitialization
-    parser_Parser --> parser_initializations_leafs_MacroInitialization
-    parser_Parser --> parser_initializations_nodes_StructInitialization
-    parser_Parser --> parser_initializations_nodes_RepeatedInitialization
-    parser_Parser --> parser_initializations_Factory
-
-    parser_publishers_leafs_Declaration --> repository_builders_LexemeInfoBuilder
-    parser_publishers_leafs_single_SingleDeclaration --> repository_SymbolTable
-    parser_publishers_leafs_multiple_MultipleDeclaration --> repository_SymbolTable
-    parser_publishers_nodes_Block --> parser_publishers_leafs_Declaration
-    parser_publishers_nodes_FuzzyBlock --> parser_publishers_leafs_single_SingleDeclaration
-    parser_publishers_nodes_DeclarationBlock --> parser_publishers_leafs_Declaration
-    parser_publishers_nodes_StructureBlock --> parser_publishers_leafs_Declaration
-
-    parser_facades_RuleblockASTBuilder --> parser_tree_ParserTreeNode
-    parser_facades_RuleblockASTBuilder --> repository_builders_Director
-
-    parser_semantics_RuleVariableRoles --> repository_SymbolTable
-    parser_semantics_RuleVariableRoles --> repository_DiagnosticsHandler
-    parser_semantics_RuleVariableRoles --> parser_utils_IdentifierResolver
-    parser_semantics_RuleTermsBelongToVariables --> repository_SymbolTable
-    parser_semantics_RuleTermsBelongToVariables --> repository_DiagnosticsHandler
-    parser_semantics_RuleTermsBelongToVariables --> parser_utils_IdentifierResolver
-
-    parser_metadata_FuzzifierMetadata --> parser_publishers_nodes_FuzzyBlock
-    parser_metadata_DefuzzifierMetadata --> parser_publishers_nodes_FuzzyBlock
-    parser_metadata_DefuzzifierMetadata --> parser_initializations_leafs_VariableInitialization
-
-    parser_initializations_Factory --> repository_SymbolTable
+    Block <|-- DeclarationBlock
+    Block <|-- FuzzyBlock
+    Block <|-- StructureBlock
+    Declaration <|-- MultipleDeclaration
+    Declaration <|-- SingleDeclaration
+    Initialization <|.. LeafInitialization
+    Initialization <|.. NodeInitialization
+    LeafInitialization <|-- DefaultInitialization
+    LeafInitialization <|-- EnumeratedInitialization
+    LeafInitialization <|-- MacroInitialization
+    LeafInitialization <|-- SubrangeInitialization
+    LeafInitialization <|-- VariableInitialization
+    MultipleDeclaration <|-- AnnonymousEnumeratedVariable
+    NodeInitialization <|-- RepeatedInitialization
+    NodeInitialization <|-- StructInitialization
+    Publisher <|.. Block
+    Publisher <|.. Declaration
+    SemanticAnalyzer <|.. ConstantAcceptingType
+    SemanticAnalyzer <|.. DeclaredType
+    SemanticAnalyzer <|.. EnumeratorOfType
+    SemanticAnalyzer <|.. ExistingField
+    SemanticAnalyzer <|.. InitializerIsEnumeratedValue
+    SemanticAnalyzer <|.. RuleTermsBelongToVariables
+    SemanticAnalyzer <|.. RuleVariableRoles
+    SingleDeclaration <|-- AnnonymousEnumeratedField
+    SingleDeclaration <|-- EnumeratedTypeDeclaration
+    SingleDeclaration <|-- FuzzyDeclaration
+    SingleDeclaration <|-- StructureDeclaration

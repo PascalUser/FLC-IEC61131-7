@@ -38,6 +38,19 @@ DEFAULT_STATE_FILE = ROOT / "output" / "harness_state.json"
 DEFAULT_LOGS_DIR = ROOT / "output" / "harness_logs"
 DEFAULT_PATCHES_DIR = ROOT / "output" / "proposed_patches"
 
+# OpenCode can emit ANSI styling even with NO_COLOR=1 / TERM=dumb.
+# Sanitize only presentation and human-readable logs, never the agent's raw
+# stdout used to parse HARNESS_RESULT_JSON and verify a proposed patch.
+ANSI_CSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+ANSI_OSC = re.compile(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
+
+
+def clean_terminal_output(value: str) -> str:
+    """Remove ANSI escape sequences and nonprinting terminal control chars."""
+    cleaned = ANSI_OSC.sub("", ANSI_CSI.sub("", value))
+    return cleaned.replace("\r\n", "\n").replace("\r", "\n")
+
+
 # Current refactored compiler.* modules plus the test simulation harness.
 DEFAULT_MODULES: Sequence[str] = (
     "compiler",
@@ -542,15 +555,20 @@ def execute_step(
 
     elapsed = time.monotonic() - t0
 
-    if capture_logs:
-        combined = ""
-        if proc.stdout:
-            print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
-            combined += proc.stdout
-        if proc.stderr:
-            print(proc.stderr, end="" if proc.stderr.endswith("\n") else "\n", file=sys.stderr)
-            combined += "\n--- STDERR ---\n" + proc.stderr
+    # The agent result contract MUST consume the original stdout. The sanitized
+    # copies below are exclusively for terminal display and human-readable logs.
+    display_stdout = clean_terminal_output(proc.stdout or "")
+    display_stderr = clean_terminal_output(proc.stderr or "")
+    if capture_logs or spec.kind == "opencode":
+        if display_stdout:
+            print(display_stdout, end="" if display_stdout.endswith("\n") else "\n")
+        if display_stderr:
+            print(display_stderr, end="" if display_stderr.endswith("\n") else "\n", file=sys.stderr)
 
+    if capture_logs:
+        combined = display_stdout
+        if display_stderr:
+            combined += "\n--- STDERR ---\n" + display_stderr
         logs_dir.mkdir(parents=True, exist_ok=True)
         log_path = logs_dir / f"{spec.step_id}.log"
         log_path.write_text(combined, encoding="utf-8")
