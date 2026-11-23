@@ -33,6 +33,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Set
 
+from scripts.provider_errors import classify_provider_failure
+
 ROOT = Path(__file__).resolve().parent
 DEFAULT_STATE_FILE = ROOT / "output" / "harness_state.json"
 DEFAULT_LOGS_DIR = ROOT / "output" / "harness_logs"
@@ -610,7 +612,9 @@ def execute_step(
     else:
         rec.transition_to(
             StepState.FAILED,
-            reason=f"exit-code-{proc.returncode}",
+            reason=(classify_provider_failure(display_stderr)
+                    if spec.kind == "opencode" else None)
+                   or f"exit-code-{proc.returncode}",
             returncode=proc.returncode,
             duration_sec=elapsed,
         )

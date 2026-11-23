@@ -1,0 +1,325 @@
+diff --git a/.opencode/plugins/flc-quota-guard/README.md b/.opencode/plugins/flc-quota-guard/README.md
+new file mode 100644
+index 0000000..55bb7d9
+--- /dev/null
++++ b/.opencode/plugins/flc-quota-guard/README.md
+@@ -0,0 +1,34 @@
++# Gemini quota guard for the FLC documentation HARNESS
++
++OpenCode 2 automatically loads this local server plugin from `.opencode/plugins/`.
++It applies only to provider ID `google`; it does not alter other providers.
++
++- **Request pacing:** reserves a shared slot before every native Gemini HTTP
++  request, including model continuations after `Read`, `Glob`, or `Grep`.
++  Default: `16000` ms between reserved starts (under the observed five/minute
++  free-tier limit). Multiple OpenCode processes in the same repository share
++  `output/gemini_request_slots.json`. This is an admission interval, not a
++  throughput or quota guarantee; calls made outside this plugin count too.
++- **Retry:** respects `Please retry in Ns` on temporary rate-limit failures,
++  with at most two attempts after the initial request (subject to OpenCode's
++  own hard retry cap). Daily-limit and insufficient-credit failures are not
++  retried. OpenCode session state is *not* automatically resumed after a
++  terminal failure.
++- **Output budget:** disabled by default to avoid truncating unified diffs.
++  To impose an output token limit, set `FLC_LLM_MAX_OUTPUT_TOKENS=8192` (or a
++  value between 1024 and 65536). This is separate from the input context.
++
++Optional Docker environment via the existing `env_file: .env`:
++
++```dotenv
++FLC_LLM_INTERVAL_MS=16000
++# FLC_LLM_MAX_OUTPUT_TOKENS=8192
++```
++
++After adding the plugin, restart the OpenCode process; the Docker service does
++not need rebuilding for files mounted under `.opencode/`. The Python unit tests
++exercise the quota policy and request reservations without contacting Google.
++**A live OpenCode 2 session is still needed** to verify that the installed CLI
++registers the `http.request` and `retry` hooks. Providers may impose additional
++quotas (requests per day, input/output tokens per minute) which this plugin
++cannot increase. WebSocket-only routes do not pass through `http.request`.
+diff --git a/.opencode/plugins/flc-quota-guard/index.ts b/.opencode/plugins/flc-quota-guard/index.ts
+new file mode 100644
+index 0000000..3b2c19c
+--- /dev/null
++++ b/.opencode/plugins/flc-quota-guard/index.ts
+@@ -0,0 +1,36 @@
++/** OpenCode 2 server plugin: rate limit the actual Gemini API call loop. */
++import { Plugin } from "@opencode/plugin";
++import { join } from "node:path";
++import {
++  outputBudget, positiveMilliseconds, reserveSharedSlot, retryPolicy,
++} from "./quota.mjs";
++
++export default Plugin.define({
++  id: "flc.gemini-quota-guard",
++  async setup(ctx) {
++    const interval = positiveMilliseconds(process.env.FLC_LLM_INTERVAL_MS);
++    const maxOutput = outputBudget(process.env.FLC_LLM_MAX_OUTPUT_TOKENS);
++    const projectRoot = ctx.location.project?.canonical ?? ctx.location.directory;
++    const shared = join(projectRoot, "output", "gemini_request_slots.json");
++
++    // This fires for EVERY native HTTP call, including tool continuations,
++    // compaction and retries. A Python sleep between agents cannot do this.
++    await ctx.session.hook("http.request", async () => {
++      await reserveSharedSlot(shared, interval);
++    }, { providerID: "google" });
++
++    await ctx.session.hook("retry", (event) => {
++      const decision = retryPolicy(event.error, event.attempt);
++      if (decision) event.decision = decision;
++    }, { providerID: "google" });
++
++    // Optional. A forced small default would truncate longer unified diffs.
++    if (maxOutput) {
++      for (const kind of ["context", "compaction", "generate", "title"] as const) {
++        await ctx.session.hook(kind, (event) => {
++          event.options.maxTokens = maxOutput;
++        }, { providerID: "google" });
++      }
++    }
++  },
++});
+diff --git a/.opencode/plugins/flc-quota-guard/quota.mjs b/.opencode/plugins/flc-quota-guard/quota.mjs
+new file mode 100644
+index 0000000..eedb16b
+--- /dev/null
++++ b/.opencode/plugins/flc-quota-guard/quota.mjs
+@@ -0,0 +1,94 @@
++/** Provider quota policy. No OpenCode dependency, so behavior is testable offline. */
++import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
++import { dirname } from "node:path";
++
++export const DEFAULT_INTERVAL_MS = 16000; // 3.75 requests/minute vs observed 5/minute cap
++
++export function positiveMilliseconds(value, fallback = DEFAULT_INTERVAL_MS) {
++  if (value === undefined || value === "") return fallback;
++  const parsed = Number(value);
++  if (!Number.isSafeInteger(parsed) || parsed < 1000 || parsed > 300000) {
++    throw new Error("FLC_LLM_INTERVAL_MS must be an integer between 1000 and 300000");
++  }
++  return parsed;
++}
++
++export function outputBudget(value) {
++  if (value === undefined || value === "") return 0; // no forced cap by default
++  const parsed = Number(value);
++  if (!Number.isSafeInteger(parsed) || parsed < 1024 || parsed > 65536) {
++    throw new Error("FLC_LLM_MAX_OUTPUT_TOKENS must be an integer from 1024 to 65536");
++  }
++  return parsed;
++}
++
++export function retryPolicy(error, attempt) {
++  const message = String(error?.message ?? "").toLowerCase();
++  if (/free-models-per-day|free usage limit reached|daily quota|per.day|insufficient.credits|more credits|billing/.test(message)) {
++    return { retry: false };
++  }
++  if (error?.status !== 429 && !/free_tier_requests|requests per minute|rate limit exceeded|quota exceeded/.test(message)) {
++    return null; // leave OpenCode's built-in decision unchanged
++  }
++  if (attempt >= 3) return { retry: false }; // bounded retry budget
++  const match = /(?:please\s+)?retry\s+(?:in|after)\s+(\d+(?:\.\d+)?)\s*s(?:econds?)?\b/i.exec(message);
++  const suggested = match ? Math.ceil(Number(match[1]) * 1000) + 1000 : 36000;
++  return { retry: true, delay: Math.max(16000, Math.min(120000, suggested)) };
++}
++
++const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
++
++/**
++ * Reserve one timestamp under an inter-process lock before awaiting it.
++ * State lives in output/, not tracked files. A fresh process continues spacing
++ * requests from previous OpenCode invocations; the lock protects concurrency.
++ */
++export async function reserveSharedSlot(stateFile, intervalMs, options = {}) {
++  const now = options.now ?? Date.now;
++  const wait = options.sleep ?? sleep;
++  const lock = `${stateFile}.lock`;
++  await mkdir(dirname(stateFile), { recursive: true });
++  const lockDeadline = now() + 30000;
++  while (true) {
++    try {
++      await mkdir(lock);
++      break;
++    } catch (error) {
++      if (error?.code !== "EEXIST") throw error;
++      // Only reap abandoned locks; a live lock should last milliseconds.
++      try {
++        const info = await stat(lock);
++        if (now() - info.mtimeMs > 60000) {
++          await rm(lock, { recursive: true, force: true });
++          continue;
++        }
++      } catch (e) {
++        if (e?.code !== "ENOENT") throw e;
++      }
++      if (now() >= lockDeadline) throw new Error("FLC quota reservation lock timed out");
++      await wait(100);
++    }
++  }
++  let reserved;
++  try {
++    let nextAllowed = 0;
++    try {
++      const saved = JSON.parse(await readFile(stateFile, "utf8"));
++      if (Number.isFinite(saved.nextAllowedAt)) nextAllowed = saved.nextAllowedAt;
++    } catch (error) {
++      if (error?.code !== "ENOENT") throw error;
++    }
++    reserved = Math.max(now(), nextAllowed);
++    const temporary = `${stateFile}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
++    try {
++      await writeFile(temporary, `${JSON.stringify({ schemaVersion: 1, nextAllowedAt: reserved + intervalMs })}\n`, { flag: "wx" });
++      await rename(temporary, stateFile);
++    } finally {
++      await rm(temporary, { force: true });
++    }
++  } finally {
++    await rm(lock, { recursive: true, force: true });
++  }
++  await wait(Math.max(0, reserved - now()));
++  return reserved;
++}
+diff --git a/run_all_agents.py b/run_all_agents.py
+index 6268581..94c60a7 100644
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -33,6 +33,8 @@ from enum import Enum
+ from pathlib import Path
+ from typing import Dict, List, Optional, Sequence, Set
+ 
++from scripts.provider_errors import classify_provider_failure
++
+ ROOT = Path(__file__).resolve().parent
+ DEFAULT_STATE_FILE = ROOT / "output" / "harness_state.json"
+ DEFAULT_LOGS_DIR = ROOT / "output" / "harness_logs"
+@@ -610,7 +612,9 @@ DEFAULT_PATCHES_DIR = ROOT / "output" / "proposed_patches"
+     else:
+         rec.transition_to(
+             StepState.FAILED,
+-            reason=f"exit-code-{proc.returncode}",
++            reason=(classify_provider_failure(display_stderr)
++                    if spec.kind == "opencode" else None)
++                   or f"exit-code-{proc.returncode}",
+             returncode=proc.returncode,
+             duration_sec=elapsed,
+         )
+diff --git a/scripts/provider_errors.py b/scripts/provider_errors.py
+new file mode 100644
+index 0000000..ddd81c5
+--- /dev/null
++++ b/scripts/provider_errors.py
+@@ -0,0 +1,18 @@
++"""Classify provider failures without confusing them with agent-contract errors."""
++from __future__ import annotations
++
++import re
++
++
++def classify_provider_failure(stderr: str) -> str | None:
++    """Return a bounded manifest reason; never store provider text or API keys."""
++    msg = (stderr or "").lower()
++    if re.search(r"free-models-per-day|free usage limit reached|daily quota|per.day", msg):
++        return "provider-rate-limit:daily-quota"
++    if re.search(r"generate_content_free_tier_requests|requests per minute|free_tier_requests", msg):
++        return "provider-rate-limit:requests-per-minute"
++    if re.search(r"insufficient.credits|requires more credits|can only afford", msg):
++        return "provider-insufficient-credits"
++    if re.search(r"quota exceeded|rate limit exceeded|\b429\b", msg):
++        return "provider-rate-limit:unknown-window"
++    return None
+diff --git a/scripts/tests/test_provider_quota.py b/scripts/tests/test_provider_quota.py
+new file mode 100644
+index 0000000..ed9bfb5
+--- /dev/null
++++ b/scripts/tests/test_provider_quota.py
+@@ -0,0 +1,89 @@
++"""Free-tier safety contract for OpenCode's per-request Gemini plugin."""
++from __future__ import annotations
++
++import contextlib
++import io
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++sys.path.insert(0, str(ROOT / 'scripts'))
++from provider_errors import classify_provider_failure  # noqa: E402
++
++
++class ProviderQuotaTests(unittest.TestCase):
++    def test_classifies_google_and_openrouter_failures(self):
++        self.assertEqual(classify_provider_failure(
++            'Quota exceeded for metric: generate_content_free_tier_requests; limit: 5'),
++            'provider-rate-limit:requests-per-minute')
++        self.assertEqual(classify_provider_failure('Rate limit exceeded: free-models-per-day'),
++                         'provider-rate-limit:daily-quota')
++        self.assertEqual(classify_provider_failure('Free usage limit reached.'),
++                         'provider-rate-limit:daily-quota')
++        self.assertEqual(classify_provider_failure('requires more credits; can only afford 3400'),
++                         'provider-insufficient-credits')
++        self.assertIsNone(classify_provider_failure('Parser failed with a missing token'))
++
++    def test_orchestrator_reason_uses_provider_category(self):
++        from run_all_agents import StepRecord, StepSpec, StepState, execute_step
++        with tempfile.TemporaryDirectory() as temp:
++            root = Path(temp)
++            spec = StepSpec('docs_update_parser', 'agent', ['opencode', 'run'], 'opencode')
++            rec = StepRecord(spec.step_id, spec.description, spec.kind, True, spec.command)
++            proc = subprocess.CompletedProcess(spec.command, 1, stdout='',
++                stderr='Quota exceeded: generate_content_free_tier_requests. Please retry in 33s')
++            with patch('run_all_agents.ROOT', root), patch(
++                'run_all_agents.subprocess.run', return_value=proc
++            ), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
++                execute_step(spec, rec, logs_dir=root / 'output/logs',
++                             patches_dir=root / 'output/patches', capture_logs=True)
++            self.assertEqual(rec.state, StepState.FAILED)
++            self.assertEqual(rec.reason, 'provider-rate-limit:requests-per-minute')
++
++    @unittest.skipUnless(shutil.which('node'), 'Node.js unavailable: run JS tests with node manually')
++    def test_node_policy_and_shared_reservations(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            state = Path(tmp) / 'slots.json'
++            module = (ROOT / '.opencode/plugins/flc-quota-guard/quota.mjs').as_uri()
++            js = '''
++import { positiveMilliseconds, outputBudget, retryPolicy, reserveSharedSlot } from URL;
++import assert from 'node:assert/strict';
++assert.equal(positiveMilliseconds(undefined), 16000);
++assert.equal(outputBudget(undefined), 0);
++assert.throws(() => positiveMilliseconds('0'));
++assert.throws(() => outputBudget('999999'));
++assert.deepEqual(retryPolicy({status:429,message:'Please retry in 33.539s'},1),{retry:true,delay:34539});
++assert.deepEqual(retryPolicy({status:429,message:'Free usage limit reached'},1),{retry:false});
++assert.deepEqual(retryPolicy({status:429,message:'requests per minute'},3),{retry:false});
++assert.equal(retryPolicy({status:400,message:'bad request'},1),null);
++let clock=100000;
++const slept=[];
++const fake={now:()=>clock,sleep:async(n)=>{slept.push(n)}};
++const first=await reserveSharedSlot(STATE,16000,fake);
++const second=await reserveSharedSlot(STATE,16000,fake);
++assert.equal(first,100000);
++assert.equal(second,116000);
++assert.ok(slept.includes(16000));
++console.log('OK');
++'''.replace('URL', json.dumps(module)).replace('STATE', json.dumps(str(state)))
++            proc = subprocess.run(['node', '--input-type=module', '-e', js],
++                                  capture_output=True, text=True)
++            self.assertEqual(proc.returncode, 0, proc.stderr)
++            self.assertIn('OK', proc.stdout)
++
++    def test_plugin_hooks_are_scoped_to_google(self):
++        plugin = (ROOT / '.opencode/plugins/flc-quota-guard/index.ts').read_text()
++        self.assertIn('"http.request"', plugin)
++        self.assertIn('"retry"', plugin)
++        self.assertGreaterEqual(plugin.count('providerID: "google"'), 2)
++
++
++if __name__ == '__main__':
++    unittest.main()
