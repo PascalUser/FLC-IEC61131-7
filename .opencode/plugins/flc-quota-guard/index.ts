@@ -2,7 +2,7 @@
 import { Plugin } from "@opencode/plugin";
 import { join } from "node:path";
 import {
-  outputBudget, positiveMilliseconds, reserveSharedSlot, retryPolicy,
+  modelIntervals, modelStateFile, outputBudget, positiveMilliseconds, reserveSharedSlot, retryPolicy,
 } from "./quota.mjs";
 
 export default Plugin.define({
@@ -10,13 +10,16 @@ export default Plugin.define({
   async setup(ctx) {
     const interval = positiveMilliseconds(process.env.FLC_LLM_INTERVAL_MS);
     const maxOutput = outputBudget(process.env.FLC_LLM_MAX_OUTPUT_TOKENS);
+    const intervals = modelIntervals(process.env.FLC_LLM_MODEL_INTERVALS_JSON);
     const projectRoot = ctx.location.project?.canonical ?? ctx.location.directory;
     const shared = join(projectRoot, "output", "gemini_request_slots.json");
 
     // This fires for EVERY native HTTP call, including tool continuations,
     // compaction and retries. A Python sleep between agents cannot do this.
-    await ctx.session.hook("http.request", async () => {
-      await reserveSharedSlot(shared, interval);
+    await ctx.session.hook("http.request", async (event) => {
+      const modelID = event.model.id;
+      const milliseconds = intervals[modelID] ?? interval;
+      await reserveSharedSlot(modelStateFile(shared, modelID), milliseconds);
     }, { providerID: "google" });
 
     await ctx.session.hook("retry", (event) => {

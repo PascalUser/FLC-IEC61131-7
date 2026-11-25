@@ -1,0 +1,133 @@
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -36,6 +36,7 @@
+ from scripts.provider_errors import classify_provider_failure
+ from scripts.opencode_sessions import (
+-    CONTINUE_PROMPT, SessionStore, parse_json_events, repository_digest,
++    CONTINUE_PROMPT, SessionStore, extract_json_event_errors, parse_json_events,
++    repository_digest,
+ )
+ 
+ ROOT = Path(__file__).resolve().parent
+@@ -594,6 +595,19 @@
+     # cleaning or JSONL tool outputs. Normal mode retains raw stdout as before.
+     display_stdout = clean_terminal_output(agent_stdout)
+     display_stderr = clean_terminal_output(proc.stderr or "")
++    if spec.kind == "opencode" and session_store is not None:
++        # With --format json, OpenCode may put the provider failure in a JSONL
++        # error event on stdout rather than in stderr. Keep tool output out.
++        json_errors = extract_json_event_errors(proc.stdout or "")
++        if json_errors:
++            display_stderr = "\n".join(
++                part for part in (display_stderr.rstrip(), json_errors) if part
++            ) + "\n"
++        elif proc.returncode and not display_stderr and not display_stdout:
++            display_stderr = (
++                f"OpenCode exited with code {proc.returncode} without an "
++                "error message in its JSON events or stderr.\n"
++            )
+     if capture_logs or spec.kind == "opencode":
+         if display_stdout:
+             print(display_stdout, end="" if display_stdout.endswith("\n") else "\n")
+diff --git a/scripts/opencode_sessions.py b/scripts/opencode_sessions.py
+--- a/scripts/opencode_sessions.py
++++ b/scripts/opencode_sessions.py
+@@ -50,6 +50,45 @@
+     # Multiple session IDs could be child-agent events; never pick one arbitrarily.
+     session_id = next(iter(ids)) if len(ids) == 1 else None
+     return session_id, "\n".join(texts)
++
++
++def extract_json_event_errors(raw: str) -> str:
++    """Extract diagnostic messages from OpenCode JSONL error events only.
++
++    Never treat tool outputs as diagnostics or agent conclusions. Restrict the
++    amount of displayed text; provider errors can be verbose.
++    """
++    messages = []
++    for line in raw.splitlines():
++        try:
++            event = json.loads(line)
++        except json.JSONDecodeError:
++            continue
++        if not isinstance(event, dict) or event.get("type") != "error":
++            continue
++        error = event.get("error")
++        message = None
++        if isinstance(error, str):
++            message = error
++        elif isinstance(error, dict):
++            data = error.get("data")
++            if isinstance(data, dict):
++                nested = data.get("error")
++                for candidate in (data.get("message"),
++                                  nested.get("message") if isinstance(nested, dict) else None,
++                                  data.get("detail")):
++                    if isinstance(candidate, str) and candidate.strip():
++                        message = candidate
++                        break
++            if not message:
++                for candidate in (error.get("message"), error.get("name")):
++                    if isinstance(candidate, str) and candidate.strip():
++                        message = candidate
++                        break
++        messages.append((message or "OpenCode emitted an error event without details")[:4000])
++        if len(messages) >= 5:
++            break
++    return "\n".join(messages)
+ 
+ 
+ def task_digest(command: Sequence[str]) -> str:
+diff --git a/scripts/tests/test_opencode_json_errors.py b/scripts/tests/test_opencode_json_errors.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_opencode_json_errors.py
+@@ -0,0 +1,47 @@
++"""OpenCode JSONL error diagnostics survive capture without trusting tool output."""
++import json
++import sys
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++from scripts.opencode_sessions import extract_json_event_errors, parse_json_events
++from scripts.provider_errors import classify_provider_failure
++
++
++class OpenCodeJsonErrorTests(unittest.TestCase):
++    def test_google_daily_quota_event_is_visible_and_classified(self):
++        raw = json.dumps({
++            "type": "error", "sessionID": "ses_abc1234567",
++            "error": {"name": "APIError", "data": {
++                "message": "Quota exceeded for metric: generate_content_free_tier_requests, "
++                           "requests per day limit exceeded on Free Tier"}},
++        })
++        error = extract_json_event_errors(raw)
++        self.assertIn("per day", error)
++        self.assertEqual(classify_provider_failure(error), "provider-rate-limit:daily-quota")
++        self.assertEqual(parse_json_events(raw)[1], "")
++
++    def test_nested_error_and_bounded_message(self):
++        raw = json.dumps({"type": "error", "error": {"data": {
++            "error": {"message": "Rate limit exceeded: 429" + "z" * 5000}}}})
++        errors = extract_json_event_errors(raw)
++        self.assertIn("Rate limit exceeded", errors)
++        self.assertLessEqual(len(errors), 4000)
++
++    def test_tool_output_and_assistant_text_not_treated_as_error(self):
++        raw = "\n".join(json.dumps(item) for item in [
++            {"type": "tool_use", "part": {"state": {"output": "fake quota exceeded"}}},
++            {"type": "text", "part": {"text": "quota exceeded"}},
++            {"type": "step_finish", "part": {"reason": "stop"}},
++        ])
++        self.assertEqual(extract_json_event_errors(raw), "")
++
++    def test_plain_text_and_error_without_detail(self):
++        self.assertEqual(extract_json_event_errors("not json"), "")
++        self.assertIn("without details", extract_json_event_errors('{"type":"error"}'))
++
++
++if __name__ == "__main__":
++    unittest.main()

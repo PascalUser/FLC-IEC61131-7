@@ -34,6 +34,12 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Set
 
 from scripts.provider_errors import classify_provider_failure
+from scripts.agent_edits import build_patch_from_edits
+from scripts.agent_repair import repair_agent_turn
+from scripts.opencode_sessions import (
+    CONTINUE_PROMPT, SessionStore, extract_json_event_errors, parse_json_events,
+    repository_digest,
+)
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_STATE_FILE = ROOT / "output" / "harness_state.json"
@@ -111,6 +117,8 @@ class StepRecord:
     agent_outcome: Optional[str] = None
     inspected_sources: List[str] = field(default_factory=list)
     evidence: List[dict] = field(default_factory=list)
+    opencode_session_id: Optional[str] = None
+    resumed_session: bool = False
 
     def transition_to(
         self,
@@ -175,8 +183,9 @@ def build_opencode_argv(
     else:
         prompt = template + ("\n\n" + arguments if arguments else "")
     prompt += ("\n\nFollow .opencode/agents/PATCH_POLICY.md. "
-               "Emit exactly one HARNESS_RESULT_JSON line and, only for "
-               "PATCH_PROPOSED, a raw unified diff. Do not edit tracked files.")
+               "Emit exactly one HARNESS_RESULT_JSON line. For PATCH_PROPOSED, "
+               "prefer exact JSON edits (path, old, new); no raw diff when "
+               "edits are present. Do not edit tracked files.")
     return ["opencode", "run", "--agent", agent, prompt]
 
 
@@ -408,6 +417,11 @@ def validate_agent_output(output_text: str, repo_root: Path) -> dict:
 
     outcome = report["outcome"]
     patch = extract_unified_diff(output_text)
+    edits = report.get("edits")
+    if edits is not None:
+        if outcome != "PATCH_PROPOSED" or patch:
+            raise ValueError("structured edits require PATCH_PROPOSED and no raw diff")
+        patch = build_patch_from_edits(edits, repo_root)
     if outcome == "BLOCKED":
         if patch:
             raise ValueError("BLOCKED result cannot include a patch")
@@ -428,6 +442,10 @@ def validate_agent_output(output_text: str, repo_root: Path) -> dict:
         if not isinstance(item, dict) or item.get("path") not in paths or not isinstance(item.get("detail"), str) or not item["detail"].strip():
             raise ValueError("each evidence entry needs an inspected path and explanation")
 
+    if edits is not None:
+        for edit in edits:
+            if edit["path"] not in paths:
+                raise ValueError("structured edit path must be among inspected_sources")
     if outcome == "NO_CHANGES":
         if patch:
             raise ValueError("NO_CHANGES result cannot include a patch")
@@ -439,7 +457,7 @@ def validate_agent_output(output_text: str, repo_root: Path) -> dict:
         ):
             raise ValueError("PATCH_PROPOSED requires all patch metadata fields")
         if not patch:
-            raise ValueError("PATCH_PROPOSED requires a unified diff")
+            raise ValueError("PATCH_PROPOSED requires a unified diff or structured edits")
         result = subprocess.run(
             ["git", "apply", "--check", "--whitespace=error", "-"],
             cwd=str(base), input=patch, text=True, capture_output=True,
@@ -478,6 +496,8 @@ def load_previous_succeeded(state_file: Path) -> Dict[str, StepRecord]:
                 agent_outcome=item.get("agent_outcome"),
                 inspected_sources=list(item.get("inspected_sources") or []),
                 evidence=list(item.get("evidence") or []),
+                opencode_session_id=item.get("opencode_session_id"),
+                resumed_session=bool(item.get("resumed_session", False)),
             )
             recovered[rec.step_id] = rec
     return recovered
@@ -522,16 +542,35 @@ def execute_step(
     logs_dir: Path,
     patches_dir: Path,
     capture_logs: bool,
+    session_store: Optional[SessionStore] = None,
+    model_override: Optional[str] = None,
+    repair_invalid_result: bool = False,
 ) -> None:
+    command = list(spec.command)
+    snapshot = None
+    if spec.kind == "opencode":
+        if model_override:
+            command = command[:-1] + ["--model", model_override, command[-1]]
+        if session_store is not None:
+            snapshot = repository_digest(ROOT)
+            if snapshot is None:
+                print("WARNING: Git snapshot unavailable; session checkpoint disabled", file=sys.stderr)
+            else:
+                previous = session_store.load(spec.step_id, spec.command, snapshot)
+                if previous is not None:
+                    rec.resumed_session = True
+                    rec.opencode_session_id = previous["session_id"]
+                    command = command[:-1] + ["--session", rec.opencode_session_id, CONTINUE_PROMPT]
+            command = command[:-1] + ["--format", "json", command[-1]]
     print(f"\n{'=' * 68}")
     print(f"[{StepState.RUNNING.value}] {spec.step_id}: {spec.description}")
-    print(f"  $ {' '.join(spec.command)}")
+    print(f"  $ {' '.join(command)}")
     rec.transition_to(StepState.RUNNING)
 
     t0 = time.monotonic()
     try:
         proc = subprocess.run(
-            spec.command,
+            command,
             cwd=str(ROOT),
             text=True,
             capture_output=capture_logs or spec.kind == "opencode",
@@ -557,10 +596,33 @@ def execute_step(
 
     elapsed = time.monotonic() - t0
 
-    # The agent result contract MUST consume the original stdout. The sanitized
-    # copies below are exclusively for terminal display and human-readable logs.
-    display_stdout = clean_terminal_output(proc.stdout or "")
+    # JSONL carries an explicit session ID and assistant text. Tool event output
+    # cannot substitute for HARNESS_RESULT_JSON or provide an unchecked patch.
+    agent_stdout = proc.stdout or ""
+    if spec.kind == "opencode" and session_store is not None:
+        session_id, agent_stdout = parse_json_events(agent_stdout)
+        session_id = session_id or rec.opencode_session_id
+        if session_id and snapshot:
+            rec.opencode_session_id = session_id
+            session_store.save(spec.step_id, spec.command, snapshot, session_id,
+                               "PAUSED", model_override)
+    # The result contract receives unmodified assistant text, not terminal ANSI
+    # cleaning or JSONL tool outputs. Normal mode retains raw stdout as before.
+    display_stdout = clean_terminal_output(agent_stdout)
     display_stderr = clean_terminal_output(proc.stderr or "")
+    if spec.kind == "opencode" and session_store is not None:
+        # With --format json, OpenCode may put the provider failure in a JSONL
+        # error event on stdout rather than in stderr. Keep tool output out.
+        json_errors = extract_json_event_errors(proc.stdout or "")
+        if json_errors:
+            display_stderr = "\n".join(
+                part for part in (display_stderr.rstrip(), json_errors) if part
+            ) + "\n"
+        elif proc.returncode and not display_stderr and not display_stdout:
+            display_stderr = (
+                f"OpenCode exited with code {proc.returncode} without an "
+                "error message in its JSON events or stderr.\n"
+            )
     if capture_logs or spec.kind == "opencode":
         if display_stdout:
             print(display_stdout, end="" if display_stdout.endswith("\n") else "\n")
@@ -578,13 +640,29 @@ def execute_step(
 
     if spec.kind == "opencode" and proc.returncode == 0:
         try:
-            agent_result = validate_agent_output(proc.stdout or "", ROOT)
+            agent_result = validate_agent_output(agent_stdout, ROOT)
         except (ValueError, OSError) as exc:
-            rec.transition_to(StepState.FAILED,
-                              reason=f"invalid-agent-result: {exc}",
-                              returncode=1, duration_sec=elapsed)
-            print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
-            return
+            # At most one explicit repair call. The previous assistant text is
+            # never concatenated with the repair turn's result contract.
+            if (repair_invalid_result and session_store is not None and snapshot
+                    and rec.opencode_session_id):
+                try:
+                    repaired = repair_agent_turn(
+                        spec.command, spec.step_id, ROOT,
+                        rec.opencode_session_id, model_override, str(exc),
+                        logs_dir=logs_dir, capture_logs=capture_logs,
+                    )
+                    agent_result = validate_agent_output(repaired, ROOT)
+                except (ValueError, OSError) as repair_error:
+                    exc = repair_error
+                else:
+                    exc = None
+            if exc is not None:
+                rec.transition_to(StepState.FAILED,
+                                  reason=f"invalid-agent-result: {exc}",
+                                  returncode=1, duration_sec=elapsed)
+                print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
+                return
         rec.agent_outcome = agent_result["outcome"]
         rec.inspected_sources = agent_result["inspected_sources"]
         rec.evidence = agent_result["evidence"]
@@ -608,6 +686,9 @@ def execute_step(
             returncode=0,
             duration_sec=elapsed,
         )
+        if spec.kind == "opencode" and session_store and snapshot and rec.opencode_session_id:
+            session_store.save(spec.step_id, spec.command, snapshot,
+                               rec.opencode_session_id, "COMPLETED", model_override)
         print(f"[{StepState.SUCCEEDED.value}] {spec.step_id} ({rec.duration_sec}s)")
     else:
         rec.transition_to(
@@ -680,6 +761,27 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         choices=("slash", "command"),
         default="slash",
         help="Deprecated compatibility selector; both values use direct --agent prompts (OpenCode 2.x).",
+    )
+    parser.add_argument(
+        "--resume-agent-sessions",
+        action="store_true",
+        help="Opt in to OpenCode JSONL session checkpoints; resume PAUSED agents across runs.",
+    )
+    parser.add_argument(
+        "--agent-session-dir",
+        type=Path,
+        default=Path("output/agent_sessions"),
+        help="Checkpoint directory (default: output/agent_sessions).",
+    )
+    parser.add_argument(
+        "--opencode-model",
+        default=None,
+        help="Optional provider/model override; can switch models within a resumed session.",
+    )
+    parser.add_argument(
+        "--repair-invalid-agent-result",
+        action="store_true",
+        help="Spend at most one extra model call to repair an invalid response; requires --resume-agent-sessions.",
     )
     parser.add_argument(
         "--state-file",
@@ -819,6 +921,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             logs_dir=DEFAULT_LOGS_DIR,
             patches_dir=DEFAULT_PATCHES_DIR,
             capture_logs=not args.no_capture_logs,
+            session_store=(SessionStore(args.agent_session_dir if args.agent_session_dir.is_absolute()
+                                        else ROOT / args.agent_session_dir)
+                           if args.resume_agent_sessions else None),
+            model_override=args.opencode_model,
+            repair_invalid_result=args.repair_invalid_agent_result,
         )
         persist_manifest(state_file, run_id, run_started_at, opencode_available, records)
 

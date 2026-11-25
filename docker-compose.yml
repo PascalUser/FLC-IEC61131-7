@@ -9,7 +9,11 @@ services:
     volumes:
       # Hidden directories
       - ./.opencode:/workspace/.opencode:rw
+      # Expose local Git metadata read-only for source-bound session checkpoints.
+      - ./.git:/workspace/.git:ro
       - ./.env:/workspace/.env:ro
+      # Persistent OpenCode session database (not checked into Git)
+      - flc-opencode-data:/home/devuser/.local/share/opencode
       # Project
       - ./config:/workspace/config:ro
       - ./doc:/workspace/doc:rw
@@ -22,3 +26,6 @@ services:
       - ./run_all_agents.py:/workspace/run_all_agents.py:ro
     working_dir: /workspace
     command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  flc-opencode-data:

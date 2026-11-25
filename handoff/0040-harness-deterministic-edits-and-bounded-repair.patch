@@ -1,0 +1,515 @@
+diff --git a/run_all_agents.py b/run_all_agents.py
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -15,2 +15,4 @@
+ from scripts.provider_errors import classify_provider_failure
++from scripts.agent_edits import build_patch_from_edits
++from scripts.agent_repair import repair_agent_turn
+ from scripts.opencode_sessions import (
+@@ -38,4 +40,5 @@
+     prompt += ("\n\nFollow .opencode/agents/PATCH_POLICY.md. "
+-               "Emit exactly one HARNESS_RESULT_JSON line and, only for "
+-               "PATCH_PROPOSED, a raw unified diff. Do not edit tracked files.")
++               "Emit exactly one HARNESS_RESULT_JSON line. For PATCH_PROPOSED, "
++               "prefer exact JSON edits (path, old, new); no raw diff when "
++               "edits are present. Do not edit tracked files.")
+     return ["opencode", "run", "--agent", agent, prompt]
+@@ -59,2 +62,7 @@
+     patch = extract_unified_diff(output_text)
++    edits = report.get("edits")
++    if edits is not None:
++        if outcome != "PATCH_PROPOSED" or patch:
++            raise ValueError("structured edits require PATCH_PROPOSED and no raw diff")
++        patch = build_patch_from_edits(edits, repo_root)
+     if outcome == "BLOCKED":
+@@ -82,2 +90,6 @@
+ 
++    if edits is not None:
++        for edit in edits:
++            if edit["path"] not in paths:
++                raise ValueError("structured edit path must be among inspected_sources")
+     if outcome == "NO_CHANGES":
+@@ -102,3 +114,3 @@
+         if not patch:
+-            raise ValueError("PATCH_PROPOSED requires a unified diff")
++            raise ValueError("PATCH_PROPOSED requires a unified diff or structured edits")
+         result = subprocess.run(
+@@ -133,2 +145,3 @@
+     model_override: Optional[str] = None,
++    repair_invalid_result: bool = False,
+ ) -> None:
+@@ -155,7 +168,23 @@
+         except (ValueError, OSError) as exc:
+-            rec.transition_to(StepState.FAILED,
+-                              reason=f"invalid-agent-result: {exc}",
+-                              returncode=1, duration_sec=elapsed)
+-            print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
+-            return
++            # At most one explicit repair call. The previous assistant text is
++            # never concatenated with the repair turn's result contract.
++            if (repair_invalid_result and session_store is not None and snapshot
++                    and rec.opencode_session_id):
++                try:
++                    repaired = repair_agent_turn(
++                        spec.command, spec.step_id, ROOT,
++                        rec.opencode_session_id, model_override, str(exc),
++                        logs_dir=logs_dir, capture_logs=capture_logs,
++                    )
++                    agent_result = validate_agent_output(repaired, ROOT)
++                except (ValueError, OSError) as repair_error:
++                    exc = repair_error
++                else:
++                    exc = None
++            if exc is not None:
++                rec.transition_to(StepState.FAILED,
++                                  reason=f"invalid-agent-result: {exc}",
++                                  returncode=1, duration_sec=elapsed)
++                print(f"[{StepState.FAILED.value}] {spec.step_id}: {rec.reason}")
++                return
+         rec.agent_outcome = agent_result["outcome"]
+@@ -183,2 +212,7 @@
+     parser.add_argument(
++        "--repair-invalid-agent-result",
++        action="store_true",
++        help="Spend at most one extra model call to repair an invalid response; requires --resume-agent-sessions.",
++    )
++    parser.add_argument(
+         "--state-file",
+@@ -205,2 +239,3 @@
+             model_override=args.opencode_model,
++            repair_invalid_result=args.repair_invalid_agent_result,
+         )
+diff --git a/.opencode/agents/PATCH_POLICY.md b/.opencode/agents/PATCH_POLICY.md
+--- a/.opencode/agents/PATCH_POLICY.md
++++ b/.opencode/agents/PATCH_POLICY.md
+@@ -1,3 +1,24 @@
+ ```text
+ HARNESS_RESULT_JSON: {"outcome":"NO_CHANGES","reason":"Verified current output","inspected_sources":["pom.xml"],"evidence":[{"path":"pom.xml","detail":"Checked compiler configuration"}]}
+ ```
++
++## Deterministic edits (preferred for PATCH_PROPOSED)
++
++Instead of hand-writing `@@` hunk offsets and context, put an `edits` array in
++**the same single-line** `HARNESS_RESULT_JSON` report. Each element must have
++exactly `{"path": "existing/repository/file", "old": "exact current text",
++"new": "replacement text"}`. Escape newlines as `\n` in the JSON string.
++Use sufficient literal surrounding text so each `old` occurs exactly once in
++its original file. Prefer short edits focused on one verified finding.
++
++When `edits` is provided, output **no** `diff --git` block. The HARNESS checks
++paths and unique non-overlapping anchors, constructs the unified diff using
++Python, and runs `git apply --check --whitespace=error`. It never modifies
++tracked files. Keep the same `metadata`, `inspected_sources` and `evidence`
++requirements. Existing raw diffs remain accepted for compatibility, but **do
++not combine** a raw diff and structured edits. The structured route currently
++replaces text in existing UTF-8 files that end with a newline; use a raw diff
++for new files or binary changes.
++
++If an output is rejected, recheck the current file; do **not** repeat an
++invalid old diff, and do not emit multiple `HARNESS_RESULT_JSON` markers.
+diff --git a/scripts/opencode_sessions.py b/scripts/opencode_sessions.py
+--- a/scripts/opencode_sessions.py
++++ b/scripts/opencode_sessions.py
+@@ -3,6 +3,6 @@
+     "messages and tool results; do not assume that inspected files are already "
+     "documented. Verify evidence against the current repository. Follow "
+     ".opencode/agents/PATCH_POLICY.md. Emit exactly one HARNESS_RESULT_JSON "
+-    "line for THIS turn and, only for PATCH_PROPOSED, the full raw unified "
+-    "diff. Do not edit tracked files."
++    "line for THIS turn. For PATCH_PROPOSED, prefer exact JSON edits "
++    "(path, old, new) and no raw diff. Do not edit tracked files."
+ )
+diff --git a/scripts/agent_edits.py b/scripts/agent_edits.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/agent_edits.py
+@@ -0,0 +1,83 @@
++"""Deterministic, read-only unified diffs from exact agent-proposed text edits.
++
++The agent describes intent and exact anchors. Python owns hunk locations,
++context, and counts. A stale or ambiguous anchor is a rejected proposal, not a
++best-effort edit. The repository itself is never written by this module.
++"""
++from __future__ import annotations
++
++import difflib
++import re
++from pathlib import Path
++
++MAX_EDITS = 40
++MAX_PATCH_BYTES = 512_000
++SAFE_PATH = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_./-]*$")
++
++
++def build_patch_from_edits(edits: object, repo_root: Path) -> str:
++    """Build an applicable unified diff using original, unique text anchors.
++
++    Edit shape: {"path": "repo/relative.ext", "old": "exact text", "new": "text"}.
++    All matches refer to *original* file contents. Overlap, ambiguity, absent
++    paths, no-ops and non-newline-terminated files are deliberately rejected.
++    """
++    if not isinstance(edits, list) or not 1 <= len(edits) <= MAX_EDITS:
++        raise ValueError(f"edits must contain 1..{MAX_EDITS} replacements")
++    root = repo_root.resolve()
++    grouped: dict[str, list[tuple[int, int, str]]] = {}
++    sources: dict[str, str] = {}
++    for idx, edit in enumerate(edits, 1):
++        if not isinstance(edit, dict) or set(edit) != {"path", "old", "new"}:
++            raise ValueError(f"edit {idx} must contain only path, old and new")
++        path, old, new = edit["path"], edit["old"], edit["new"]
++        if (not isinstance(path, str) or not SAFE_PATH.fullmatch(path)
++                or path.startswith("/") or ".." in Path(path).parts
++                or path.startswith(".git/")):
++            raise ValueError(f"edit {idx}: unsafe repository path")
++        if (not isinstance(old, str) or not old or not isinstance(new, str)
++                or old == new or "\x00" in old or "\x00" in new):
++            raise ValueError(f"edit {idx}: old/new must be distinct valid text")
++        source_path = (root / path).resolve()
++        if root not in source_path.parents or not source_path.is_file():
++            raise ValueError(f"edit {idx}: path missing or outside repository: {path}")
++        if path not in sources:
++            try:
++                original = source_path.read_text(encoding="utf-8")
++            except (OSError, UnicodeError) as exc:
++                raise ValueError(f"edit {idx}: file is not readable UTF-8: {path}") from exc
++            if not original.endswith("\n"):
++                raise ValueError(f"edit {idx}: file must end with a newline: {path}")
++            sources[path] = original
++        original = sources[path]
++        count = original.count(old)
++        if count != 1:
++            raise ValueError(f"edit {idx}: anchor occurs {count} times in {path}; expected exactly once")
++        start = original.find(old)
++        grouped.setdefault(path, []).append((start, start + len(old), new))
++
++    sections: list[str] = []
++    for path in sorted(grouped):
++        original = sources[path]
++        replacements = sorted(grouped[path], key=lambda entry: entry[0])
++        for previous, current in zip(replacements, replacements[1:]):
++            if previous[1] > current[0]:
++                raise ValueError(f"overlapping edits in {path}")
++        updated = original
++        for start, end, new in reversed(replacements):
++            updated = updated[:start] + new + updated[end:]
++        if not updated.endswith("\n"):
++            raise ValueError(f"updated file must end with a newline: {path}")
++        if updated == original:
++            raise ValueError(f"all edits cancel out in {path}")
++        section = "".join(difflib.unified_diff(
++            original.splitlines(keepends=True),
++            updated.splitlines(keepends=True),
++            fromfile=f"a/{path}", tofile=f"b/{path}", n=3,
++        ))
++        sections.append(f"diff --git a/{path} b/{path}\n" + section)
++
++    patch = "".join(sections)
++    if len(patch.encode("utf-8")) > MAX_PATCH_BYTES:
++        raise ValueError("proposed patch exceeds size limit")
++    return patch
+diff --git a/scripts/agent_repair.py b/scripts/agent_repair.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/agent_repair.py
+@@ -0,0 +1,69 @@
++"""One bounded follow-up to repair an invalid OpenCode agent result.
++
++This is opt-in because it makes an additional paid/provider-limited request.
++Only the new assistant turn is returned for independent contract verification.
++"""
++from __future__ import annotations
++
++import re
++import subprocess
++from pathlib import Path
++from typing import Optional, Sequence
++
++from scripts.opencode_sessions import extract_json_event_errors, parse_json_events
++from scripts.provider_errors import classify_provider_failure
++
++ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
++
++
++def repair_agent_turn(
++    original_command: Sequence[str], step_id: str, root: Path,
++    session_id: str, model: Optional[str], failure: str, *,
++    logs_dir: Path, capture_logs: bool,
++) -> str:
++    """Request one corrected answer in the same session; never accept old output.
++
++    The caller must validate the returned turn using validate_agent_output.
++    We never modify tracked files, run git apply, or retry an API failure.
++    """
++    # Original argv always ends in the user's task prompt.
++    if len(original_command) < 4 or original_command[:2] != ["opencode", "run"]:
++        raise ValueError("repair requires a configured OpenCode command")
++    hint = ANSI.sub("", failure).replace("\n", " ")[:360]
++    prompt = (
++        "Your immediately preceding HARNESS answer FAILED validation: " + hint + ". "
++        "Reinspect the current source where necessary. Emit a single NEW "
++        "HARNESS_RESULT_JSON line for this turn, containing reason, inspected_sources, "
++        "evidence and metadata. For PATCH_PROPOSED prefer 'edits': a JSON array of "
++        "objects with exactly path, old (literal unique current-file text), new. "
++        "Escape embedded line breaks inside JSON strings. Do NOT hand-write a unified diff when "
++        "using edits; do NOT repeat your prior diff or earlier result markers. "
++        "Follow .opencode/agents/PATCH_POLICY.md; do not edit tracked files."
++    )
++    cmd = list(original_command[:-1])
++    if model:
++        cmd += ["--model", model]
++    cmd += ["--session", session_id, "--format", "json", prompt]
++    print(f"[REPAIR] {step_id}: one additional turn in session {session_id}")
++    proc = subprocess.run(cmd, cwd=str(root), text=True, capture_output=True)
++    seen_session_id, new_text = parse_json_events(proc.stdout or "")
++    if seen_session_id is not None and seen_session_id != session_id:
++        raise ValueError("repair returned a different OpenCode session")
++    diagnostics = ANSI.sub("", proc.stderr or "")
++    events_error = extract_json_event_errors(proc.stdout or "")
++    if events_error:
++        diagnostics = diagnostics.rstrip() + "\n" + events_error
++    if capture_logs:
++        logs_dir.mkdir(parents=True, exist_ok=True)
++        with (logs_dir / f"{step_id}.log").open("a", encoding="utf-8") as log:
++            log.write("\n--- ONE-TURN REPAIR ---\n" + ANSI.sub("", new_text))
++            if diagnostics.strip():
++                log.write("\n--- REPAIR STDERR ---\n" + diagnostics.strip() + "\n")
++    if new_text.strip():
++        print(ANSI.sub("", new_text))
++    if diagnostics.strip():
++        print("[REPAIR] " + diagnostics.strip()[:500])
++    if proc.returncode:
++        reason = classify_provider_failure(diagnostics) or f"exit-code-{proc.returncode}"
++        raise ValueError("repair request failed: " + reason)
++    return new_text
+diff --git a/scripts/tests/test_agent_edits.py b/scripts/tests/test_agent_edits.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_agent_edits.py
+@@ -0,0 +1,82 @@
++"""Deterministic patch assembly and read-only contract regression."""
++from __future__ import annotations
++
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++from scripts.agent_edits import build_patch_from_edits  # noqa: E402
++
++
++class DeterministicAgentEditsTests(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.tmp.cleanup)
++        self.root = Path(self.tmp.name)
++        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
++        (self.root / "doc/modules").mkdir(parents=True)
++        self.source = self.root / "doc/modules/parser.md"
++        self.original = ("# Parser\n\n"
++                         "| parser | src/main/java/parser/ |\n"
++                         "| utils | src/main/java/utils/ |\n"
++                         "\n## More\n\nSee src/main/java/parser/Parser.y\n")
++        self.source.write_text(self.original, encoding="utf-8")
++        subprocess.run(["git", "add", "doc/modules/parser.md"], cwd=self.root, check=True)
++
++    def test_multiple_edits_produce_correct_hunks_without_mutation(self):
++        edits = [
++            {"path": "doc/modules/parser.md",
++             "old": "| parser | src/main/java/parser/ |",
++             "new": "| parser | src/main/java/compiler/parser/ |"},
++            {"path": "doc/modules/parser.md",
++             "old": "src/main/java/parser/Parser.y",
++             "new": "src/main/java/compiler/parser/Parser.y"},
++        ]
++        patch = build_patch_from_edits(edits, self.root)
++        self.assertIn("@@ -", patch)
++        self.assertEqual(subprocess.run(
++            ["git", "apply", "--check", "--whitespace=error", "-"],
++            input=patch, text=True, capture_output=True, cwd=self.root,
++        ).returncode, 0)
++        self.assertEqual(self.source.read_text(), self.original)
++
++    def test_rejects_missing_ambiguous_and_overlapping_anchors(self):
++        template = {"path": "doc/modules/parser.md", "old": "missing", "new": "new"}
++        with self.assertRaisesRegex(ValueError, "occurs 0 times"):
++            build_patch_from_edits([template], self.root)
++        with self.assertRaisesRegex(ValueError, "occurs 3 times"):
++            build_patch_from_edits([{**template, "old": "parser"}], self.root)
++        with self.assertRaisesRegex(ValueError, "overlapping"):
++            build_patch_from_edits([
++                {**template, "old": "| parser |", "new": "| module |"},
++                {**template, "old": "parser | src/main", "new": "module | src/main"},
++            ], self.root)
++
++    def test_rejects_unsafe_paths_and_noops(self):
++        for path in ("../secret", "/etc/passwd", ".git/config", "bad name"):
++            with self.subTest(path=path), self.assertRaises(ValueError):
++                build_patch_from_edits([{"path": path, "old": "A", "new": "B"}], self.root)
++        with self.assertRaisesRegex(ValueError, "distinct"):
++            build_patch_from_edits([{
++                "path": "doc/modules/parser.md", "old": "# Parser", "new": "# Parser",
++            }], self.root)
++
++    def test_parser_like_diff_does_not_depend_on_model_hunk_counts(self):
++        patch = build_patch_from_edits([{
++            "path": "doc/modules/parser.md",
++            "old": "| parser | src/main/java/parser/ |",
++            "new": "| parser | src/main/java/compiler/parser/ |",
++        }], self.root)
++        self.assertNotIn("@@ -81", patch)
++        self.assertEqual(subprocess.run(
++            ["git", "apply", "--check", "--whitespace=error", "-"],
++            input=patch, text=True, capture_output=True, cwd=self.root,
++        ).returncode, 0)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scripts/tests/test_agent_repair.py b/scripts/tests/test_agent_repair.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_agent_repair.py
+@@ -0,0 +1,68 @@
++"""Opt-in bounded repair submits a new turn, never reuses the old answer."""
++from __future__ import annotations
++
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++from scripts.agent_repair import repair_agent_turn  # noqa: E402
++
++
++class AgentRepairTests(unittest.TestCase):
++    def test_repair_uses_same_session_and_current_turn_only(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            sid = "ses_abc123456789"
++            report = 'HARNESS_RESULT_JSON: {"outcome":"BLOCKED","reason":"test"}'
++            events = [
++                {"type": "text", "sessionID": sid, "part": {"text": report}},
++            ]
++            calls = []
++            def fake_run(command, **kwargs):
++                calls.append(command)
++                return subprocess.CompletedProcess(command, 0,
++                    stdout="\n".join(json.dumps(e) for e in events), stderr="")
++            with patch("scripts.agent_repair.subprocess.run", side_effect=fake_run):
++                text = repair_agent_turn(
++                    ["opencode", "run", "--agent", "doc-writer", "original"],
++                    "docs_update_parser", root, sid, "google/gemini-3.6-flash",
++                    "expected exactly one HARNESS_RESULT_JSON line",
++                    logs_dir=root / "output/logs", capture_logs=True,
++                )
++            self.assertEqual(text, report)
++            self.assertEqual(len(calls), 1)
++            self.assertIn("--session", calls[0])
++            self.assertEqual(calls[0][calls[0].index("--session") + 1], sid)
++            self.assertEqual(calls[0][calls[0].index("--model") + 1], "google/gemini-3.6-flash")
++            self.assertTrue((root / "output/logs/docs_update_parser.log").exists())
++
++    def test_fails_closed_on_provider_error_or_session_mismatch(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            cases = [
++                (1, {"type": "error", "sessionID": "ses_abc123456789",
++                     "error": {"message": "Rate limit exceeded: 429"}}, "repair request failed"),
++                (0, {"type": "text", "sessionID": "ses_wrong1234567",
++                     "part": {"text": "fake"}}, "different OpenCode session"),
++            ]
++            for code, event, pattern in cases:
++                with self.subTest(pattern=pattern), patch(
++                    "scripts.agent_repair.subprocess.run",
++                    return_value=subprocess.CompletedProcess(["opencode"], code,
++                        stdout=json.dumps(event), stderr=""),
++                ), self.assertRaisesRegex(ValueError, pattern):
++                    repair_agent_turn(
++                        ["opencode", "run", "--agent", "doc-writer", "task"],
++                        "docs_update_parser", root, "ses_abc123456789", None,
++                        "bad output", logs_dir=root / "logs", capture_logs=False,
++                    )
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scripts/tests/test_agent_structured_contract.py b/scripts/tests/test_agent_structured_contract.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/tests/test_agent_structured_contract.py
+@@ -0,0 +1,67 @@
++"""Agent structured edits go through the existing evidence and Git checks."""
++from __future__ import annotations
++
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++from run_all_agents import validate_agent_output  # noqa: E402
++
++
++class StructuredAgentContractTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
++        (self.root / "parser.md").write_text("Old parser path\n", encoding="utf-8")
++        subprocess.run(["git", "add", "parser.md"], cwd=self.root, check=True)
++        self.report = {
++            "outcome": "PATCH_PROPOSED",
++            "reason": "Checked parser documentation",
++            "inspected_sources": ["parser.md"],
++            "evidence": [{"path": "parser.md", "detail": "Read the current source"}],
++            "metadata": {key: "checked" for key in (
++                "id", "objective", "motivation", "scope", "changes",
++                "risks", "validation", "dependencies",
++            )},
++            "edits": [{"path": "parser.md", "old": "Old parser path", "new": "New parser path"}],
++        }
++
++    def message(self, report=None):
++        return "HARNESS_RESULT_JSON: " + json.dumps(report or self.report) + "\n"
++
++    def test_structured_report_builds_valid_git_patch_without_mutation(self):
++        before = (self.root / "parser.md").read_text()
++        result = validate_agent_output(self.message(), self.root)
++        self.assertEqual(result["outcome"], "PATCH_PROPOSED")
++        self.assertIn("+New parser path", result["patch"])
++        self.assertEqual((self.root / "parser.md").read_text(), before)
++        self.assertEqual(subprocess.run(
++            ["git", "apply", "--check", "--whitespace=error", "-"],
++            cwd=self.root, input=result["patch"], text=True, capture_output=True,
++        ).returncode, 0)
++
++    def test_rejects_structured_and_raw_diff_mixed(self):
++        diff = ("diff --git a/parser.md b/parser.md\n"
++                "--- a/parser.md\n+++ b/parser.md\n"
++                "@@ -1 +1 @@\n-Old parser path\n+New parser path\n")
++        with self.assertRaisesRegex(ValueError, "no raw diff"):
++            validate_agent_output(self.message() + diff, self.root)
++
++    def test_rejects_multiple_result_markers_and_stale_anchor(self):
++        with self.assertRaisesRegex(ValueError, "exactly one"):
++            validate_agent_output(self.message() * 2, self.root)
++        report = json.loads(json.dumps(self.report))
++        report["edits"][0]["old"] = "Missing stale path"
++        with self.assertRaisesRegex(ValueError, "occurs 0 times"):
++            validate_agent_output(self.message(report), self.root)
++
++
++if __name__ == "__main__":
++    unittest.main()

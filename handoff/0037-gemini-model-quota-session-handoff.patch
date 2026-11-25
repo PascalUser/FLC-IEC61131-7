@@ -1,0 +1,665 @@
+diff --git a/.opencode/plugins/flc-quota-guard/README.md b/.opencode/plugins/flc-quota-guard/README.md
+index 55bb7d9..38fca6b 100644
+--- a/.opencode/plugins/flc-quota-guard/README.md
++++ b/.opencode/plugins/flc-quota-guard/README.md
+@@ -32,3 +32,28 @@ exercise the quota policy and request reservations without contacting Google.
+ registers the `http.request` and `retry` hooks. Providers may impose additional
+ quotas (requests per day, input/output tokens per minute) which this plugin
+ cannot increase. WebSocket-only routes do not pass through `http.request`.
++
++## Model-specific pacing (patch 0037)
++
++The request hook reads `event.model.id`. Set `FLC_LLM_MODEL_INTERVALS_JSON`
++for exact model IDs (milliseconds), for example in `.env`:
++
++```dotenv
++FLC_LLM_INTERVAL_MS=16000
++FLC_LLM_MODEL_INTERVALS_JSON={"gemini-3.6-flash":16000,"gemini-3.5-flash":25000}
++```
++
++Values above are examples, **not Google's published limits**. Check your
++project's quotas in Google AI Studio before setting them. Unlisted models use
++`FLC_LLM_INTERVAL_MS`. A separate `output/gemini_request_slots.json.<hash>.json`
++file reserves calls for each model across OpenCode processes. The older shared
++slot file is not used after upgrade. The plugin is scoped to provider `google`.
++Quota accounting is per project and calls made outside this plugin count too.
++The plugin does not prevent exhaustion of daily or token-per-minute limits.
++
++## HARNESS session continuation (opt-in)
++
++For the actual agent lifecycle, see `doc/agent-session-continuation.md`. OpenCode's session database
++must survive container recreation; `docker-compose.yml` mounts a named volume at
++`/home/devuser/.local/share/opencode`. The separate HARNESS checkpoint stores
++only the session ID and a task/source fingerprint, **not** trusted partial work.
+diff --git a/.opencode/plugins/flc-quota-guard/index.ts b/.opencode/plugins/flc-quota-guard/index.ts
+index 3b2c19c..66bd87b 100644
+--- a/.opencode/plugins/flc-quota-guard/index.ts
++++ b/.opencode/plugins/flc-quota-guard/index.ts
+@@ -2,7 +2,7 @@
+ import { Plugin } from "@opencode/plugin";
+ import { join } from "node:path";
+ import {
+-  outputBudget, positiveMilliseconds, reserveSharedSlot, retryPolicy,
++  modelIntervals, modelStateFile, outputBudget, positiveMilliseconds, reserveSharedSlot, retryPolicy,
+ } from "./quota.mjs";
+ 
+ export default Plugin.define({
+@@ -10,13 +10,16 @@ export default Plugin.define({
+   async setup(ctx) {
+     const interval = positiveMilliseconds(process.env.FLC_LLM_INTERVAL_MS);
+     const maxOutput = outputBudget(process.env.FLC_LLM_MAX_OUTPUT_TOKENS);
++    const intervals = modelIntervals(process.env.FLC_LLM_MODEL_INTERVALS_JSON);
+     const projectRoot = ctx.location.project?.canonical ?? ctx.location.directory;
+     const shared = join(projectRoot, "output", "gemini_request_slots.json");
+ 
+     // This fires for EVERY native HTTP call, including tool continuations,
+     // compaction and retries. A Python sleep between agents cannot do this.
+-    await ctx.session.hook("http.request", async () => {
+-      await reserveSharedSlot(shared, interval);
++    await ctx.session.hook("http.request", async (event) => {
++      const modelID = event.model.id;
++      const milliseconds = intervals[modelID] ?? interval;
++      await reserveSharedSlot(modelStateFile(shared, modelID), milliseconds);
+     }, { providerID: "google" });
+ 
+     await ctx.session.hook("retry", (event) => {
+diff --git a/.opencode/plugins/flc-quota-guard/quota.mjs b/.opencode/plugins/flc-quota-guard/quota.mjs
+index eedb16b..e90a9bd 100644
+--- a/.opencode/plugins/flc-quota-guard/quota.mjs
++++ b/.opencode/plugins/flc-quota-guard/quota.mjs
+@@ -1,6 +1,7 @@
+ /** Provider quota policy. No OpenCode dependency, so behavior is testable offline. */
+ import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+ import { dirname } from "node:path";
++import { createHash } from "node:crypto";
+ 
+ export const DEFAULT_INTERVAL_MS = 16000; // 3.75 requests/minute vs observed 5/minute cap
+ 
+@@ -13,6 +14,30 @@ export function positiveMilliseconds(value, fallback = DEFAULT_INTERVAL_MS) {
+   return parsed;
+ }
+ 
++/** Optional exact model-ID to interval mapping. No guessed provider limits. */
++export function modelIntervals(value) {
++  if (value === undefined || value.trim() === "") return {};
++  const input = JSON.parse(value);
++  if (!input || typeof input !== "object" || Array.isArray(input)) {
++    throw new Error("FLC_LLM_MODEL_INTERVALS_JSON must be a JSON object");
++  }
++  const result = {};
++  for (const [modelID, milliseconds] of Object.entries(input)) {
++    if (!modelID || modelID.length > 180 || modelID.includes("/")) {
++      throw new Error(`Invalid Gemini model ID: ${modelID}`);
++    }
++    result[modelID] = positiveMilliseconds(milliseconds);
++  }
++  return result;
++}
++
++/** One throttling state per model; hashes prevent filesystem traversal. */
++export function modelStateFile(sharedBase, modelID) {
++  if (typeof modelID !== "string" || !modelID) throw new Error("Missing Gemini model ID");
++  const id = createHash("sha256").update(modelID).digest("hex").slice(0, 24);
++  return `${sharedBase}.${id}.json`;
++}
++
+ export function outputBudget(value) {
+   if (value === undefined || value === "") return 0; // no forced cap by default
+   const parsed = Number(value);
+diff --git a/doc/agent-session-continuation.md b/doc/agent-session-continuation.md
+new file mode 100644
+index 0000000..de86e9b
+--- /dev/null
++++ b/doc/agent-session-continuation.md
+@@ -0,0 +1,71 @@
++# Continuación de sesiones de agentes OpenCode (HARNESS)
++
++Desde el patch 0037, la continuación de sesiones es **optativa**. No es lo mismo
++que `--resume`: ese flag omite etapas `SUCCEEDED` del manifiesto; el nuevo
++`--resume-agent-sessions` retoma una conversación OpenCode que quedó incompleta.
++
++## Ejecución
++
++```bash
++docker compose exec -u devuser docs python3 run_all_agents.py \
++  --modules parser \
++  --only documentation_inventory,docs_update_parser \
++  --resume-agent-sessions \
++  --opencode-model google/gemini-3.6-flash
++```
++
++Si el agente devuelve un error de cuota, el HARNESS conserva el ID de sesión
++**si OpenCode lo emitió** mediante `--format json`. Cuando tengas otro modelo
++disponible, podés continuar la misma tarea en su historial:
++
++```bash
++docker compose exec -u devuser docs python3 run_all_agents.py \
++  --modules parser \
++  --only docs_update_parser \
++  --resume-agent-sessions \
++  --opencode-model google/gemini-3.5-flash
++```
++
++El flag `--opencode-model` selecciona el modelo solo para esa invocación; no
++requiere modificar `opencode.json`. No cambia el nombre ni las instrucciones
++del agente, aunque puede cambiarse el modelo de la misma sesión.
++
++## Checkpoints
++
++- `output/agent_sessions/docs_update_parser.json` conserva estado `PAUSED` o
++  `COMPLETED`, ID de sesión, modelo utilizado e identificadores SHA256.
++- El historial real de herramientas y mensajes vive en la base local de
++  OpenCode, no en este JSON. Docker Compose incluye un volumen nombrado
++  `flc-opencode-data` que conserva el historial ante recreaciones **futuras**.
++  Las sesiones que ya existían exclusivamente en el contenedor anterior no
++  migran automáticamente al volumen nuevo.
++- La continuación se cancela si cambia el comando/tarea, el commit o el diff
++  de archivos versionados. Los archivos no versionados no se incluyen en ese
++  fingerprint: el agente siempre debe volver a verificar la evidencia.
++- Si se perdió la sesión de OpenCode, eliminá únicamente el checkpoint de la
++  etapa (por ejemplo, `rm output/agent_sessions/docs_update_parser.json`) y
++  ejecutá de nuevo. No utilices `--continue`, que podría seleccionar otra tarea.
++- Si OpenCode falla antes de emitir un ID de sesión, el HARNESS no inventa uno.
++- El estado `PAUSED` **no certifica progreso**. Sólo `HARNESS_RESULT_JSON` del
++  turno actual, validado por `validate_agent_output` y `git apply --check`,
++  permite aprobar un resultado. Los patches siguen sin aplicarse automáticamente.
++
++## Intervalos de Gemini por modelo
++
++Podés configurarlos en `.env`:
++
++```dotenv
++FLC_LLM_INTERVAL_MS=16000
++FLC_LLM_MODEL_INTERVALS_JSON={"gemini-3.6-flash":16000,"gemini-3.5-flash":25000}
++```
++
++Esos intervalos son **ejemplos**, no las cuotas reales. Consultá
++[Google AI Studio](https://aistudio.google.com/rate-limit) para tu cuenta y
++proyecto. Si un modelo no aparece en el mapa, usa el intervalo predeterminado.
++El plugin sólo actúa para `providerID: google`; el estado de cada modelo se
++guarda por separado en `output/`. Se respeta la frecuencia de llamadas, pero
++**no se garantiza** la disponibilidad de una cuota diaria o TPM. Las solicitudes
++hechas desde otras aplicaciones consumen la cuota del proveedor igualmente.
++
++Para verificar el resultado, ejecutá la suite de Python y revisá
++`output/harness_state.json`, los checkpoints y `output/harness_logs/`.
+diff --git a/docker-compose.yml b/docker-compose.yml
+index e1d5071..4b19373 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -10,6 +10,8 @@ services:
+       # Hidden directories
+       - ./.opencode:/workspace/.opencode:rw
+       - ./.env:/workspace/.env:ro
++      # Persistent OpenCode session database (not checked into Git)
++      - flc-opencode-data:/home/devuser/.local/share/opencode
+       # Project
+       - ./config:/workspace/config:ro
+       - ./doc:/workspace/doc:rw
+@@ -21,4 +23,7 @@ services:
+       - ./README.md:/workspace/README.md:rw
+       - ./run_all_agents.py:/workspace/run_all_agents.py:ro
+     working_dir: /workspace
+-    command: ["tail", "-f", "/dev/null"]
+\ No newline at end of file
++    command: ["tail", "-f", "/dev/null"]
++
++volumes:
++  flc-opencode-data:
+diff --git a/entrypoint.sh b/entrypoint.sh
+index df2dc92..cd40931 100644
+--- a/entrypoint.sh
++++ b/entrypoint.sh
+@@ -1,4 +1,5 @@
+ #!/bin/bash
+ 
+-chown -R devuser:devgroup /workspace/output
+-exec gosu devuser "$@"
+\ No newline at end of file
++mkdir -p /home/devuser/.local/share/opencode
++chown -R devuser:devgroup /workspace/output /home/devuser/.local/share/opencode
++exec gosu devuser "$@"
+diff --git a/run_all_agents.py b/run_all_agents.py
+index 7919684..1337e17 100644
+--- a/run_all_agents.py
++++ b/run_all_agents.py
+@@ -34,6 +34,9 @@ from pathlib import Path
+ from typing import Dict, List, Optional, Sequence, Set
+ 
+ from scripts.provider_errors import classify_provider_failure
++from scripts.opencode_sessions import (
++    CONTINUE_PROMPT, SessionStore, parse_json_events, repository_digest,
++)
+ 
+ ROOT = Path(__file__).resolve().parent
+ DEFAULT_STATE_FILE = ROOT / "output" / "harness_state.json"
+@@ -111,6 +114,8 @@ class StepRecord:
+     agent_outcome: Optional[str] = None
+     inspected_sources: List[str] = field(default_factory=list)
+     evidence: List[dict] = field(default_factory=list)
++    opencode_session_id: Optional[str] = None
++    resumed_session: bool = False
+ 
+     def transition_to(
+         self,
+@@ -478,6 +483,8 @@ class StepRecord:
+                 agent_outcome=item.get("agent_outcome"),
+                 inspected_sources=list(item.get("inspected_sources") or []),
+                 evidence=list(item.get("evidence") or []),
++                opencode_session_id=item.get("opencode_session_id"),
++                resumed_session=bool(item.get("resumed_session", False)),
+             )
+             recovered[rec.step_id] = rec
+     return recovered
+@@ -522,16 +529,34 @@ def execute_step(
+     logs_dir: Path,
+     patches_dir: Path,
+     capture_logs: bool,
++    session_store: Optional[SessionStore] = None,
++    model_override: Optional[str] = None,
+ ) -> None:
++    command = list(spec.command)
++    snapshot = None
++    if spec.kind == "opencode":
++        if model_override:
++            command = command[:-1] + ["--model", model_override, command[-1]]
++        if session_store is not None:
++            snapshot = repository_digest(ROOT)
++            if snapshot is None:
++                print("WARNING: Git snapshot unavailable; session checkpoint disabled", file=sys.stderr)
++            else:
++                previous = session_store.load(spec.step_id, spec.command, snapshot)
++                if previous is not None:
++                    rec.resumed_session = True
++                    rec.opencode_session_id = previous["session_id"]
++                    command = command[:-1] + ["--session", rec.opencode_session_id, CONTINUE_PROMPT]
++            command = command[:-1] + ["--format", "json", command[-1]]
+     print(f"\n{'=' * 68}")
+     print(f"[{StepState.RUNNING.value}] {spec.step_id}: {spec.description}")
+-    print(f"  $ {' '.join(spec.command)}")
++    print(f"  $ {' '.join(command)}")
+     rec.transition_to(StepState.RUNNING)
+ 
+     t0 = time.monotonic()
+     try:
+         proc = subprocess.run(
+-            spec.command,
++            command,
+             cwd=str(ROOT),
+             text=True,
+             capture_output=capture_logs or spec.kind == "opencode",
+@@ -557,9 +582,19 @@ def execute_step(
+ 
+     elapsed = time.monotonic() - t0
+ 
+-    # The agent result contract MUST consume the original stdout. The sanitized
+-    # copies below are exclusively for terminal display and human-readable logs.
+-    display_stdout = clean_terminal_output(proc.stdout or "")
++    # JSONL carries an explicit session ID and assistant text. Tool event output
++    # cannot substitute for HARNESS_RESULT_JSON or provide an unchecked patch.
++    agent_stdout = proc.stdout or ""
++    if spec.kind == "opencode" and session_store is not None:
++        session_id, agent_stdout = parse_json_events(agent_stdout)
++        session_id = session_id or rec.opencode_session_id
++        if session_id and snapshot:
++            rec.opencode_session_id = session_id
++            session_store.save(spec.step_id, spec.command, snapshot, session_id,
++                               "PAUSED", model_override)
++    # The result contract receives unmodified assistant text, not terminal ANSI
++    # cleaning or JSONL tool outputs. Normal mode retains raw stdout as before.
++    display_stdout = clean_terminal_output(agent_stdout)
+     display_stderr = clean_terminal_output(proc.stderr or "")
+     if capture_logs or spec.kind == "opencode":
+         if display_stdout:
+@@ -578,7 +613,7 @@ def execute_step(
+ 
+     if spec.kind == "opencode" and proc.returncode == 0:
+         try:
+-            agent_result = validate_agent_output(proc.stdout or "", ROOT)
++            agent_result = validate_agent_output(agent_stdout, ROOT)
+         except (ValueError, OSError) as exc:
+             rec.transition_to(StepState.FAILED,
+                               reason=f"invalid-agent-result: {exc}",
+@@ -608,6 +643,9 @@ def execute_step(
+             returncode=0,
+             duration_sec=elapsed,
+         )
++        if spec.kind == "opencode" and session_store and snapshot and rec.opencode_session_id:
++            session_store.save(spec.step_id, spec.command, snapshot,
++                               rec.opencode_session_id, "COMPLETED", model_override)
+         print(f"[{StepState.SUCCEEDED.value}] {spec.step_id} ({rec.duration_sec}s)")
+     else:
+         rec.transition_to(
+@@ -681,6 +719,22 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+         default="slash",
+         help="Deprecated compatibility selector; both values use direct --agent prompts (OpenCode 2.x).",
+     )
++    parser.add_argument(
++        "--resume-agent-sessions",
++        action="store_true",
++        help="Opt in to OpenCode JSONL session checkpoints; resume PAUSED agents across runs.",
++    )
++    parser.add_argument(
++        "--agent-session-dir",
++        type=Path,
++        default=Path("output/agent_sessions"),
++        help="Checkpoint directory (default: output/agent_sessions).",
++    )
++    parser.add_argument(
++        "--opencode-model",
++        default=None,
++        help="Optional provider/model override; can switch models within a resumed session.",
++    )
+     parser.add_argument(
+         "--state-file",
+         type=Path,
+@@ -819,6 +873,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
+             logs_dir=DEFAULT_LOGS_DIR,
+             patches_dir=DEFAULT_PATCHES_DIR,
+             capture_logs=not args.no_capture_logs,
++            session_store=(SessionStore(args.agent_session_dir if args.agent_session_dir.is_absolute()
++                                        else ROOT / args.agent_session_dir)
++                           if args.resume_agent_sessions else None),
++            model_override=args.opencode_model,
+         )
+         persist_manifest(state_file, run_id, run_started_at, opencode_available, records)
+ 
+diff --git a/scripts/opencode_sessions.py b/scripts/opencode_sessions.py
+new file mode 100644
+index 0000000..d01d504
+--- /dev/null
++++ b/scripts/opencode_sessions.py
+@@ -0,0 +1,122 @@
++"""Opt-in, source-bound OpenCode v2 session handoff for HARNESS agents.
++
++Only a session ID is persisted. No claim is made about completed subtasks until
++validate_agent_output verifies the current turn's HARNESS_RESULT_JSON and diff.
++"""
++from __future__ import annotations
++
++import hashlib
++import json
++import re
++import subprocess
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Dict, Optional, Sequence, Tuple
++
++SESSION_ID = re.compile(r"^ses_[A-Za-z0-9_-]{6,128}$")
++STEP_ID = re.compile(r"^[a-z][a-z0-9_]{0,100}$")
++CONTINUE_PROMPT = (
++    "Continue the unfinished HARNESS task in this session. Inspect the previous "
++    "messages and tool results; do not assume that inspected files are already "
++    "documented. Verify evidence against the current repository. Follow "
++    ".opencode/agents/PATCH_POLICY.md. Emit exactly one HARNESS_RESULT_JSON "
++    "line for THIS turn and, only for PATCH_PROPOSED, the full raw unified "
++    "diff. Do not edit tracked files."
++)
++
++
++def parse_json_events(raw: str) -> Tuple[Optional[str], str]:
++    """Extract this run's assistant text and primary session ID from OpenCode JSONL.
++
++    Tool results are never treated as agent conclusions or accepted patch text.
++    Unknown/invalid events are ignored; missing text still fails the contract.
++    """
++    ids = set()
++    texts = []
++    for line in raw.splitlines():
++        try:
++            event = json.loads(line)
++        except json.JSONDecodeError:
++            continue
++        if not isinstance(event, dict):
++            continue
++        sid = event.get("sessionID")
++        if isinstance(sid, str) and SESSION_ID.fullmatch(sid):
++            ids.add(sid)
++        part = event.get("part")
++        if (event.get("type") == "text" and isinstance(part, dict)
++                and isinstance(part.get("text"), str)):
++            texts.append(part["text"])
++    # Multiple session IDs could be child-agent events; never pick one arbitrarily.
++    session_id = next(iter(ids)) if len(ids) == 1 else None
++    return session_id, "\n".join(texts)
++
++
++def task_digest(command: Sequence[str]) -> str:
++    """Stable task identity independent of the selected model and session ID."""
++    return hashlib.sha256(json.dumps(list(command), ensure_ascii=False).encode()).hexdigest()
++
++
++def repository_digest(root: Path) -> Optional[str]:
++    """Invalidate handoff after a tracked source change, including dirty files.
++
++    Git HEAD alone is insufficient, because an uncommitted edit may invalidate
++    previously inspected evidence. Untracked inputs are not captured; the agent
++    must still verify relevant sources before claiming a completed patch.
++    """
++    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root,
++                          capture_output=True, text=True, check=False)
++    if head.returncode or not re.fullmatch(r"[0-9a-f]{40,64}", head.stdout.strip()):
++        return None
++    diff = subprocess.run(["git", "diff", "--binary", "HEAD", "--"], cwd=root,
++                          capture_output=True, check=False)
++    if diff.returncode:
++        return None
++    return hashlib.sha256(head.stdout.strip().encode() + b"\n" + diff.stdout).hexdigest()
++
++
++class SessionStore:
++    """One checkpoint per step, stored under an untracked output directory."""
++
++    def __init__(self, directory: Path):
++        self.directory = Path(directory)
++
++    def _path(self, step_id: str) -> Path:
++        if not STEP_ID.fullmatch(step_id):
++            raise ValueError(f"Unsafe step ID: {step_id!r}")
++        return self.directory / f"{step_id}.json"
++
++    def load(self, step_id: str, command: Sequence[str], repo_digest: str) -> Optional[Dict]:
++        try:
++            payload = json.loads(self._path(step_id).read_text(encoding="utf-8"))
++        except (OSError, ValueError):
++            return None
++        if not isinstance(payload, dict):
++            return None
++        sid = payload.get("session_id")
++        if (payload.get("state") == "PAUSED" and isinstance(sid, str)
++                and SESSION_ID.fullmatch(sid)
++                and payload.get("command_sha256") == task_digest(command)
++                and payload.get("repository_sha256") == repo_digest):
++            return payload
++        return None
++
++    def save(self, step_id: str, command: Sequence[str], repo_digest: str,
++             session_id: str, state: str, model: Optional[str]) -> None:
++        if not SESSION_ID.fullmatch(session_id) or state not in {"PAUSED", "COMPLETED"}:
++            raise ValueError("Invalid OpenCode checkpoint")
++        path = self._path(step_id)
++        path.parent.mkdir(parents=True, exist_ok=True)
++        payload = {
++            "schema_version": 1,
++            "step_id": step_id,
++            "state": state,
++            "session_id": session_id,
++            "model": model,
++            "command_sha256": task_digest(command),
++            "repository_sha256": repo_digest,
++            "updated_at": datetime.now(timezone.utc).isoformat(),
++        }
++        temp = path.with_suffix(".json.tmp")
++        temp.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
++        temp.replace(path)
+diff --git a/scripts/tests/test_agent_session_handoff.py b/scripts/tests/test_agent_session_handoff.py
+new file mode 100644
+index 0000000..07ffdec
+--- /dev/null
++++ b/scripts/tests/test_agent_session_handoff.py
+@@ -0,0 +1,165 @@
++"""Opt-in OpenCode session checkpoints, safe resumption and model pacing."""
++from __future__ import annotations
++
++import contextlib
++import io
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++from scripts.opencode_sessions import (  # noqa: E402
++    SessionStore, parse_json_events, repository_digest, task_digest,
++)
++from run_all_agents import StepRecord, StepSpec, StepState, execute_step  # noqa: E402
++
++
++class AgentSessionHandoffTests(unittest.TestCase):
++    def test_json_events_select_only_assistant_text_not_tool_output(self):
++        sid = "ses_abc123456789"
++        events = [
++            {"type": "step_start", "sessionID": sid, "part": {"type": "step-start"}},
++            {"type": "tool_use", "sessionID": sid,
++             "part": {"state": {"output": "HARNESS_RESULT_JSON: malicious"}}},
++            {"type": "text", "sessionID": sid,
++             "part": {"type": "text", "text": "HARNESS_RESULT_JSON: legit\n"}},
++            {"type": "text", "sessionID": sid,
++             "part": {"type": "text", "text": "diff --git a/A b/A\n"}},
++        ]
++        result = parse_json_events("\n".join(json.dumps(e) for e in events))
++        self.assertEqual(result[0], sid)
++        self.assertNotIn("malicious", result[1])
++        self.assertIn("HARNESS_RESULT_JSON: legit", result[1])
++        self.assertIn("diff --git", result[1])
++        self.assertEqual(parse_json_events('not json\n')[0], None)
++        self.assertIsNone(parse_json_events("\n".join(json.dumps(x) for x in [
++            {"type":"text", "sessionID":"ses_abc123456", "part":{"text":"x"}},
++            {"type":"text", "sessionID":"ses_zbc123456", "part":{"text":"y"}},
++        ]))[0])
++
++    def test_checkpoint_is_task_and_source_bound(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            store = SessionStore(Path(tmp))
++            cmd = ["opencode", "run", "--agent", "doc-writer", "parser"]
++            store.save("docs_update_parser", cmd, "source-a", "ses_abc123456789",
++                       "PAUSED", "google/gemini-3.6-flash")
++            self.assertEqual(store.load("docs_update_parser", cmd, "source-a")["session_id"],
++                             "ses_abc123456789")
++            self.assertIsNone(store.load("docs_update_parser", cmd, "source-b"))
++            self.assertIsNone(store.load("docs_update_parser", cmd+["new"], "source-a"))
++            store.save("docs_update_parser", cmd, "source-a", "ses_abc123456789",
++                       "COMPLETED", None)
++            self.assertIsNone(store.load("docs_update_parser", cmd, "source-a"))
++            with self.assertRaisesRegex(ValueError, "Unsafe step ID"):
++                store.save("../escape", cmd, "source-a", "ses_abc123456789",
++                           "PAUSED", None)
++
++    def test_repository_stamp_changes_with_dirty_tracked_files(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
++            (root / "README.md").write_text("one\n")
++            subprocess.run(["git", "add", "README.md"], cwd=root, check=True)
++            subprocess.run(["git", "-c", "user.email=a@b.test", "-c", "user.name=Test",
++                            "commit", "-qm", "initial"], cwd=root, check=True)
++            before = repository_digest(root)
++            self.assertIsNotNone(before)
++            (root / "README.md").write_text("two\n")
++            self.assertNotEqual(before, repository_digest(root))
++
++    def test_failed_jsonl_agent_resumes_with_different_model_then_completes(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            original_run = subprocess.run
++            original_run(["git", "init", "-q"], cwd=root, check=True)
++            (root / "README.md").write_text("fixture\n")
++            original_run(["git", "add", "README.md"], cwd=root, check=True)
++            original_run(["git", "-c", "user.email=a@b.test", "-c", "user.name=Test",
++                          "commit", "-qm", "baseline"], cwd=root, check=True)
++            store = SessionStore(root / "output/agent_sessions")
++            spec = StepSpec("docs_update_parser", "Documentation", [
++                "opencode", "run", "--agent", "doc-writer", "Document module parser"
++            ], "opencode")
++            sid = "ses_abc123456789"
++            invocations = []
++            def fake_run(command, **kwargs):
++                if command[0] == "git":
++                    return original_run(command, **kwargs)
++                invocations.append(list(command))
++                if len(invocations) == 1:
++                    return subprocess.CompletedProcess(command, 1, stdout=json.dumps({
++                        "type": "step_start", "sessionID": sid,
++                        "part": {"type": "step-start"}
++                    })+"\n", stderr="Quota exceeded: requests per day")
++                answer = "HARNESS_RESULT_JSON: {}\n"
++                return subprocess.CompletedProcess(command, 0, stdout=json.dumps({
++                    "type": "text", "sessionID": sid,
++                    "part": {"type": "text", "text": answer}
++                })+"\n", stderr="")
++            output = io.StringIO()
++            validated = {"outcome": "NO_CHANGES", "reason": "verified",
++                         "inspected_sources": ["README.md"], "evidence": [], "patch": None}
++            with patch("run_all_agents.ROOT", root), \
++                 patch("run_all_agents.subprocess.run", side_effect=fake_run), \
++                 patch("run_all_agents.validate_agent_output", return_value=validated) as check, \
++                 contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
++                def run(model):
++                    rec = StepRecord(spec.step_id, spec.description, spec.kind, True, spec.command)
++                    execute_step(spec, rec, logs_dir=root / "output/logs",
++                                 patches_dir=root / "output/patches", capture_logs=True,
++                                 session_store=store, model_override=model)
++                    return rec
++                first = run("google/gemini-3.6-flash")
++                self.assertEqual(first.state, StepState.FAILED)
++                self.assertEqual(first.opencode_session_id, sid)
++                self.assertEqual(store.load(spec.step_id, spec.command, repository_digest(root))["state"], "PAUSED")
++                second = run("google/gemini-3.5-flash")
++                self.assertEqual(second.state, StepState.SUCCEEDED)
++                self.assertTrue(second.resumed_session)
++                self.assertEqual(second.opencode_session_id, sid)
++                self.assertIsNone(store.load(spec.step_id, spec.command, repository_digest(root)))
++            self.assertIn("--format", invocations[0])
++            self.assertNotIn("--session", invocations[0])
++            self.assertEqual(invocations[1][invocations[1].index("--session")+1], sid)
++            self.assertEqual(invocations[1][invocations[1].index("--model")+1],
++                             "google/gemini-3.5-flash")
++            self.assertNotIn("Document module parser", invocations[1][-1])
++            check.assert_called_once_with("HARNESS_RESULT_JSON: {}\n", root)
++            self.assertIn("COMPLETED", (root / "output/agent_sessions/docs_update_parser.json").read_text())
++
++    @unittest.skipUnless(shutil.which("node"), "Node.js unavailable")
++    def test_model_specific_request_slots(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            uri = (ROOT / ".opencode/plugins/flc-quota-guard/quota.mjs").as_uri()
++            code = '''
++import assert from "node:assert/strict";
++import {modelIntervals, modelStateFile, reserveSharedSlot} from MODULE;
++const limits = modelIntervals('{"gemini-3.6-flash":16000,"gemini-3.5-flash":30000}');
++assert.equal(limits["gemini-3.5-flash"],30000);
++assert.equal(modelIntervals(undefined)["missing"],undefined);
++assert.throws(()=>modelIntervals('{"a":999}'));
++assert.throws(()=>modelIntervals('[]'));
++const a=modelStateFile(BASE,"gemini-3.6-flash");
++const b=modelStateFile(BASE,"gemini-3.5-flash");
++assert.notEqual(a,b);
++let now=100000; const fake={now:()=>now,sleep:async()=>{}};
++assert.equal(await reserveSharedSlot(a,16000,fake),100000);
++assert.equal(await reserveSharedSlot(a,16000,fake),116000);
++assert.equal(await reserveSharedSlot(b,30000,fake),100000);
++assert.equal(await reserveSharedSlot(b,30000,fake),130000);
++console.log("OK");
++'''.replace("MODULE", json.dumps(uri)).replace("BASE", json.dumps(str(Path(tmp) / "slots")))
++            p = subprocess.run(["node", "--input-type=module", "-e", code],
++                               text=True, capture_output=True)
++            self.assertEqual(p.returncode, 0, p.stderr)
++            self.assertIn("OK", p.stdout)
++
++
++if __name__ == "__main__":
++    unittest.main()

@@ -1,6 +1,7 @@
 /** Provider quota policy. No OpenCode dependency, so behavior is testable offline. */
 import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { createHash } from "node:crypto";
 
 export const DEFAULT_INTERVAL_MS = 16000; // 3.75 requests/minute vs observed 5/minute cap
 
@@ -11,6 +12,30 @@ export function positiveMilliseconds(value, fallback = DEFAULT_INTERVAL_MS) {
     throw new Error("FLC_LLM_INTERVAL_MS must be an integer between 1000 and 300000");
   }
   return parsed;
+}
+
+/** Optional exact model-ID to interval mapping. No guessed provider limits. */
+export function modelIntervals(value) {
+  if (value === undefined || value.trim() === "") return {};
+  const input = JSON.parse(value);
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("FLC_LLM_MODEL_INTERVALS_JSON must be a JSON object");
+  }
+  const result = {};
+  for (const [modelID, milliseconds] of Object.entries(input)) {
+    if (!modelID || modelID.length > 180 || modelID.includes("/")) {
+      throw new Error(`Invalid Gemini model ID: ${modelID}`);
+    }
+    result[modelID] = positiveMilliseconds(milliseconds);
+  }
+  return result;
+}
+
+/** One throttling state per model; hashes prevent filesystem traversal. */
+export function modelStateFile(sharedBase, modelID) {
+  if (typeof modelID !== "string" || !modelID) throw new Error("Missing Gemini model ID");
+  const id = createHash("sha256").update(modelID).digest("hex").slice(0, 24);
+  return `${sharedBase}.${id}.json`;
 }
 
 export function outputBudget(value) {

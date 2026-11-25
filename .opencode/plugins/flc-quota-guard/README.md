@@ -32,3 +32,28 @@ exercise the quota policy and request reservations without contacting Google.
 registers the `http.request` and `retry` hooks. Providers may impose additional
 quotas (requests per day, input/output tokens per minute) which this plugin
 cannot increase. WebSocket-only routes do not pass through `http.request`.
+
+## Model-specific pacing (patch 0037)
+
+The request hook reads `event.model.id`. Set `FLC_LLM_MODEL_INTERVALS_JSON`
+for exact model IDs (milliseconds), for example in `.env`:
+
+```dotenv
+FLC_LLM_INTERVAL_MS=16000
+FLC_LLM_MODEL_INTERVALS_JSON={"gemini-3.6-flash":16000,"gemini-3.5-flash":25000}
+```
+
+Values above are examples, **not Google's published limits**. Check your
+project's quotas in Google AI Studio before setting them. Unlisted models use
+`FLC_LLM_INTERVAL_MS`. A separate `output/gemini_request_slots.json.<hash>.json`
+file reserves calls for each model across OpenCode processes. The older shared
+slot file is not used after upgrade. The plugin is scoped to provider `google`.
+Quota accounting is per project and calls made outside this plugin count too.
+The plugin does not prevent exhaustion of daily or token-per-minute limits.
+
+## HARNESS session continuation (opt-in)
+
+For the actual agent lifecycle, see `doc/agent-session-continuation.md`. OpenCode's session database
+must survive container recreation; `docker-compose.yml` mounts a named volume at
+`/home/devuser/.local/share/opencode`. The separate HARNESS checkpoint stores
+only the session ID and a task/source fingerprint, **not** trusted partial work.

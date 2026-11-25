@@ -1,0 +1,25 @@
+diff --git a/docker-compose.yml b/docker-compose.yml
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -9,6 +9,8 @@
+     volumes:
+       # Hidden directories
+       - ./.opencode:/workspace/.opencode:rw
++      # Expose local Git metadata read-only for source-bound session checkpoints.
++      - ./.git:/workspace/.git:ro
+       - ./.env:/workspace/.env:ro
+       # Persistent OpenCode session database (not checked into Git)
+       - flc-opencode-data:/home/devuser/.local/share/opencode
+diff --git a/entrypoint.sh b/entrypoint.sh
+--- a/entrypoint.sh
++++ b/entrypoint.sh
+@@ -1,5 +1,7 @@
+ #!/bin/bash
+ 
+-mkdir -p /home/devuser/.local/share/opencode
+-chown -R devuser:devgroup /workspace/output /home/devuser/.local/share/opencode
++mkdir -p /home/devuser/.local/share/opencode /home/devuser/.local/state \
++         /home/devuser/.cache /home/devuser/.config
++chown -R devuser:devgroup /workspace/output /home/devuser/.local \
++         /home/devuser/.cache /home/devuser/.config
+ exec gosu devuser "$@"

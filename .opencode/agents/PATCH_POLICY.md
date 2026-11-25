@@ -45,3 +45,24 @@ Example of a no-change result (replace the source/evidence with actual checks):
 ```text
 HARNESS_RESULT_JSON: {"outcome":"NO_CHANGES","reason":"Verified current output","inspected_sources":["pom.xml"],"evidence":[{"path":"pom.xml","detail":"Checked compiler configuration"}]}
 ```
+
+## Deterministic edits (preferred for PATCH_PROPOSED)
+
+Instead of hand-writing `@@` hunk offsets and context, put an `edits` array in
+**the same single-line** `HARNESS_RESULT_JSON` report. Each element must have
+exactly `{"path": "existing/repository/file", "old": "exact current text",
+"new": "replacement text"}`. Escape newlines as `\n` in the JSON string.
+Use sufficient literal surrounding text so each `old` occurs exactly once in
+its original file. Prefer short edits focused on one verified finding.
+
+When `edits` is provided, output **no** `diff --git` block. The HARNESS checks
+paths and unique non-overlapping anchors, constructs the unified diff using
+Python, and runs `git apply --check --whitespace=error`. It never modifies
+tracked files. Keep the same `metadata`, `inspected_sources` and `evidence`
+requirements. Existing raw diffs remain accepted for compatibility, but **do
+not combine** a raw diff and structured edits. The structured route currently
+replaces text in existing UTF-8 files that end with a newline; use a raw diff
+for new files or binary changes.
+
+If an output is rejected, recheck the current file; do **not** repeat an
+invalid old diff, and do not emit multiple `HARNESS_RESULT_JSON` markers.
